@@ -1,0 +1,17 @@
+dependencies {
+    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("org.jetbrains:annotations:24.0.1")
+    compileOnly("com.google.code.gson:gson:2.10.1")
+    compileOnly("org.spigotmc:spigot:1.20")
+    compileOnly(project(":common"))
+    implementation(project(":nms:common"))
+    implementation(project(":nms:shaded"))
+    implementation(project(":nms:v1_17_R1"))
+    implementation(project(":nms:v1_18_R1"))
+    implementation(project(":nms:v1_18_R2"))
+    implementation(project(":nms:v1_19_R1"))
+    implementation(project(":nms:v1_19_R2"))
+    implementation(project(":nms:v1_19_R3"))
+    implementation(project(":nms:v1_20_R1"))
+    implementation(project(":nms:v1_20_R2"))
+}
