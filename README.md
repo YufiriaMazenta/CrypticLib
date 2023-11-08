@@ -8,16 +8,14 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
 
 将CrypticLib作为依赖打包到插件中，并将crypticlib包relocate
 
-[![](https://jitpack.io/v/com.crypticlib/crypticlib.svg)](https://jitpack.io/#com.crypticlib/crypticlib)
-
 参考 https://github.com/YufiriaMazenta/CrypticLibExample
 
 #### pom.xml
 ```xml
 <repositories>
 	<repository>
-	    <id>jitpack.io</id>
-	    <url>https://jitpack.io</url>
+	    <id>crypticlib</id>
+	    <url>http://repo.crypticlib.com:8081/repository/maven-public/</url>
 	</repository>
 </repositories>
 ```
@@ -25,7 +23,7 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
 <dependencies>
     <dependency>
         <groupId>com.crypticlib</groupId>
-        <artifactId>crypticlib</artifactId>
+        <artifactId>CrypticLib</artifactId>
         <version>Tag</version>
     </dependency>
 </dependencies>
@@ -34,23 +32,28 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
 #### build.gradle.kts
 ```kotlin
 repositories {
-    maven("https://jitpack.io")
+    maven("http://repo.crypticlib.com:8081/repository/maven-public/") {
+        isAllowInsecureProtocol = true
+    }
 }
 ```
 ```kotlin
 dependencies {
-    implementation("com.crypticlib:crypticlib:0.0.1")
+    implementation("com.crypticlib:CrypticLib:0.0.1")
 }
 ```
 
 #### build.gradle
 ```groovy
 repositories {
-    maven { url 'https://jitpack.io' }
+    maven {
+        url = "http://repo.crypticlib.com:8081/repository/maven-public/"
+        allowInsecureProtocol = true
+    }
 }
 ```
-```kotlin
+```groovy
 dependencies {
-    implementation 'com.crypticlib:crypticlib:Tag'
+    implementation 'com.crypticlib:CrypticLib:version'
 }
 ```

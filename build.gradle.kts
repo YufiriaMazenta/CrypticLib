@@ -24,7 +24,9 @@ tasks {
     compileJava {
         options.encoding = "UTF-8"
     }
-    build { dependsOn(shadowJar) }
+    build {
+        dependsOn(shadowJar)
+    }
     shadowJar {
         archiveFileName.set("${rootProject.name}-${version}.jar")
     }
@@ -33,6 +35,16 @@ tasks {
 publishing {
     publications.create<MavenPublication>("maven") {
         from(components["java"])
+        groupId = rootProject.group as String?
+    }
+    repositories {
+        maven("http://repo.crypticlib.com:8081/repository/maven-releases/") {
+            isAllowInsecureProtocol = true
+            credentials {
+                username = project.findProperty("maven_username").toString()
+                password = project.findProperty("maven_password").toString()
+            }
+        }
     }
 }
 
@@ -63,7 +75,19 @@ subprojects {
     publishing {
         publications.create<MavenPublication>("maven") {
             from(components["java"])
-            artifactId = "${this.groupId}.${this.artifactId}".replace(".", "-")
+            groupId = "${rootProject.group}${project.path.replace(":", ".")}"
+            artifactId = project.name
+        }
+        repositories {
+            maven {
+                name = "crypticlib_repo"
+                url = uri("http://repo.crypticlib.com:8081/repository/maven-releases/")
+                isAllowInsecureProtocol = true
+                credentials {
+                    username = project.findProperty("maven_username").toString()
+                    password = project.findProperty("maven_password").toString()
+                }
+            }
         }
     }
     java.sourceCompatibility = JavaVersion.VERSION_1_8
