@@ -104,17 +104,25 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             } catch (ClassNotFoundException | NoClassDefFoundError ignored) {}
         }
+
         //注册监听器
         for (Class<?> listenerClass : listenerClasses) {
             try {
-                Constructor<?> listenerConstructor = listenerClass.getDeclaredConstructor();
-                listenerConstructor.setAccessible(true);
-                Listener listener = (Listener) listenerConstructor.newInstance();
-                Bukkit.getPluginManager().registerEvents(listener, this);
+                if (listenerClass.isEnum()) {
+                    for (Object listenerEnum : listenerClass.getEnumConstants()) {
+                        Bukkit.getPluginManager().registerEvents((Listener) listenerEnum, this);
+                    }
+                } else {
+                    Constructor<?> listenerConstructor = listenerClass.getDeclaredConstructor();
+                    listenerConstructor.setAccessible(true);
+                    Listener listener = (Listener) listenerConstructor.newInstance();
+                    Bukkit.getPluginManager().registerEvents(listener, this);
+                }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
+
         //注册命令
         Method getCommandMapMethod;
         CommandMap commandMap;
@@ -126,11 +134,17 @@ public abstract class BukkitPlugin extends JavaPlugin {
         }
         for (Class<?> commandClass : pluginCommandClasses) {
             try {
-                Constructor<?> commandConstructor = commandClass.getDeclaredConstructor();
-                commandConstructor.setAccessible(true);
-                IPluginCmdExecutor pluginCommand = (IPluginCmdExecutor) commandConstructor.newInstance();
                 BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
-                regCommand(commandMap, pluginCommand, commandAnnotation);
+                if (commandClass.isEnum()) {
+                    for (Object cmdExecutorEnum : commandClass.getEnumConstants()) {
+                        regCommand(commandMap, (IPluginCmdExecutor) cmdExecutorEnum, commandAnnotation);
+                    }
+                } else {
+                    Constructor<?> commandConstructor = commandClass.getDeclaredConstructor();
+                    commandConstructor.setAccessible(true);
+                    IPluginCmdExecutor cmdExecutor = (IPluginCmdExecutor) commandConstructor.newInstance();
+                    regCommand(commandMap, cmdExecutor, commandAnnotation);
+                }
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
