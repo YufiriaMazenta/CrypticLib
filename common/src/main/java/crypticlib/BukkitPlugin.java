@@ -5,6 +5,7 @@ import crypticlib.annotations.BukkitListener;
 import crypticlib.command.IPluginCmdExecutor;
 import crypticlib.util.MsgUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -13,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -114,20 +116,28 @@ public abstract class BukkitPlugin extends JavaPlugin {
             }
         }
         //注册命令
+        Method getCommandMapMethod;
+        CommandMap commandMap;
+        try {
+            getCommandMapMethod = Bukkit.getServer().getClass().getMethod("getCommandMap");
+            commandMap = (CommandMap) getCommandMapMethod.invoke(Bukkit.getServer());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         for (Class<?> commandClass : pluginCommandClasses) {
             try {
                 Constructor<?> commandConstructor = commandClass.getDeclaredConstructor();
                 commandConstructor.setAccessible(true);
                 IPluginCmdExecutor pluginCommand = (IPluginCmdExecutor) commandConstructor.newInstance();
                 BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
-                regCommand(pluginCommand, commandAnnotation);
+                regCommand(commandMap, pluginCommand, commandAnnotation);
             } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void regCommand(IPluginCmdExecutor pluginCommand, BukkitCommand commandAnnotation) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private void regCommand(CommandMap commandMap, IPluginCmdExecutor pluginCommand, BukkitCommand commandAnnotation) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         PluginCommand command;
         Constructor<PluginCommand> pluginCommandConstructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
         pluginCommandConstructor.setAccessible(true);
@@ -141,7 +151,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
             command.setPermission(commandAnnotation.permission());
         if (!commandAnnotation.usage().isEmpty())
             command.setUsage(commandAnnotation.usage());
-        Bukkit.getServer().getCommandMap().register(this.getName().toLowerCase(), command);
+
+        commandMap.register(this.getName().toLowerCase(), command);
     }
 
 }
