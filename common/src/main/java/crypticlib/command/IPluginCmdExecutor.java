@@ -19,7 +19,7 @@ public interface IPluginCmdExecutor extends TabExecutor, ICmdExecutor {
 
     @Override
     default List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        return ICmdExecutor.super.onTabComplete(sender, Arrays.asList(args));
+        return onTabComplete(sender, Arrays.asList(args));
     }
 
     @Override

@@ -2,8 +2,8 @@ package crypticlib.nms.nbt;
 
 public interface INbtTranslator {
 
-    INbtTag<?> fromNms(Object nmsNbt);
+    INbtTag<?> translateNmsNbt(Object nmsNbt);
 
-    INbtTag<?> fromObject(Object object);
+    INbtTag<?> translateObject(Object object);
 
 }

@@ -1,22 +1,22 @@
 package crypticlib.nms.nbt.v1_16_R2;
 
-import crypticlib.nms.nbt.AbstractNbtCompound;
+import crypticlib.nms.nbt.AbstractNbtTagCompound;
 import net.minecraft.server.v1_16_R2.NBTBase;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 
 import java.util.Map;
 
-public class V1_16_R2NbtCompound extends AbstractNbtCompound {
+public class V1_16_R2NbtTagCompound extends AbstractNbtTagCompound {
 
-    public V1_16_R2NbtCompound() {
+    public V1_16_R2NbtTagCompound() {
         super(V1_16_R2NbtTranslator.INSTANCE);
     }
 
-    public V1_16_R2NbtCompound(Object nmsNbtCompound) {
+    public V1_16_R2NbtTagCompound(Object nmsNbtCompound) {
         super(nmsNbtCompound, V1_16_R2NbtTranslator.INSTANCE);
     }
 
-    public V1_16_R2NbtCompound(Map<String, Object> nbtValueMap) {
+    public V1_16_R2NbtTagCompound(Map<String, Object> nbtValueMap) {
         super(nbtValueMap, V1_16_R2NbtTranslator.INSTANCE);
     }
 
@@ -24,7 +24,7 @@ public class V1_16_R2NbtCompound extends AbstractNbtCompound {
     public void fromNms(Object nmsNbt) {
         NBTTagCompound nms = (NBTTagCompound) nmsNbt;
         for (String key : nms.getKeys()) {
-            value().put(key, getNbtTranslator().fromNms(nms.get(key)));
+            value().put(key, nbtTranslator().translateNmsNbt(nms.get(key)));
         }
     }
 

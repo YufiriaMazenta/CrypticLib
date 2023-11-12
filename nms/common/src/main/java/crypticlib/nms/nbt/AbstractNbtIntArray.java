@@ -3,9 +3,10 @@ package crypticlib.nms.nbt;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 
+import java.util.Arrays;
 import java.util.StringJoiner;
 
-public abstract class AbstractNbtIntArray implements INbtTag<int[]>, IFormatNbtNumber {
+public abstract class AbstractNbtIntArray implements INbtTag<int[]>, INumberNbt {
 
     private int[] value;
 
@@ -42,11 +43,27 @@ public abstract class AbstractNbtIntArray implements INbtTag<int[]>, IFormatNbtN
     }
 
     @Override
-    public String formatString() {
+    public String format() {
         StringJoiner str = new StringJoiner(",", "INT$[", "]");
         for (int i : value) {
             str.add(i + "");
         }
         return str.toString();
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        AbstractNbtIntArray that = (AbstractNbtIntArray) object;
+
+        return Arrays.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(value);
+    }
+
 }

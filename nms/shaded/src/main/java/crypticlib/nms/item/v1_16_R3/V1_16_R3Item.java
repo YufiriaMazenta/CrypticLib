@@ -1,8 +1,8 @@
 package crypticlib.nms.item.v1_16_R3;
 
 import crypticlib.nms.item.Item;
-import crypticlib.nms.nbt.AbstractNbtCompound;
-import crypticlib.nms.nbt.v1_16_R3.V1_16_R3NbtCompound;
+import crypticlib.nms.nbt.AbstractNbtTagCompound;
+import crypticlib.nms.nbt.v1_16_R3.V1_16_R3NbtTagCompound;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
@@ -11,14 +11,14 @@ import org.bukkit.inventory.ItemStack;
 public class V1_16_R3Item implements Item {
 
     private String material;
-    private AbstractNbtCompound nbtCompound;
+    private AbstractNbtTagCompound nbtCompound;
 
     public V1_16_R3Item(ItemStack itemStack) {
         this.material = itemStack.getType().name();
-        this.nbtCompound = new V1_16_R3NbtCompound(CraftItemStack.asNMSCopy(itemStack).getOrCreateTag());
+        this.nbtCompound = new V1_16_R3NbtTagCompound(CraftItemStack.asNMSCopy(itemStack).getOrCreateTag());
     }
 
-    public V1_16_R3Item(String material, AbstractNbtCompound nbtCompound) {
+    public V1_16_R3Item(String material, AbstractNbtTagCompound nbtCompound) {
         this.material = material;
         this.nbtCompound = nbtCompound;
     }
@@ -34,12 +34,12 @@ public class V1_16_R3Item implements Item {
     }
 
     @Override
-    public AbstractNbtCompound nbtCompound() {
+    public AbstractNbtTagCompound nbtTagCompound() {
         return nbtCompound;
     }
 
     @Override
-    public void setNbtCompound(AbstractNbtCompound nbtCompound) {
+    public void setNbtTagCompound(AbstractNbtTagCompound nbtCompound) {
         this.nbtCompound = nbtCompound;
     }
 

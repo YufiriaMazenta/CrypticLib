@@ -12,7 +12,7 @@ public enum V1_13_R1NbtTranslator implements INbtTranslator {
     INSTANCE;
 
     @Override
-    public INbtTag<?> fromNms(Object nmsNbt) {
+    public INbtTag<?> translateNmsNbt(Object nmsNbt) {
         switch (((NBTBase) nmsNbt).getTypeId()) {
             case 1:
                 return new V1_13_R1NbtByte(nmsNbt);
@@ -33,7 +33,7 @@ public enum V1_13_R1NbtTranslator implements INbtTranslator {
             case 9:
                 return new V1_13_R1NbtTagList(nmsNbt);
             case 10:
-                return new V1_13_R1NbtCompound(nmsNbt);
+                return new V1_13_R1NbtTagCompound(nmsNbt);
             case 11:
                 return new V1_13_R1NbtIntArray(nmsNbt);
             case 12:
@@ -43,13 +43,13 @@ public enum V1_13_R1NbtTranslator implements INbtTranslator {
     }
 
     @Override
-    public INbtTag<?> fromObject(Object object) {
+    public INbtTag<?> translateObject(Object object) {
         if (object instanceof Byte) {
             return new V1_13_R1NbtByte((byte) object);
         } else if (object instanceof byte[]) {
             return new V1_13_R1NbtByteArray((byte[])object);
         } else if (object instanceof Map) {
-            return new V1_13_R1NbtCompound(((Map<String, Object>) object));
+            return new V1_13_R1NbtTagCompound(((Map<String, Object>) object));
         } else if (object instanceof Double) {
             return new V1_13_R1NbtDouble(((double) object));
         } else if (object instanceof Float) {
@@ -71,7 +71,7 @@ public enum V1_13_R1NbtTranslator implements INbtTranslator {
         } else if (object instanceof INbtTag) {
             return (INbtTag<?>) object;
         } else {
-            return fromNms(object);
+            return translateNmsNbt(object);
         }
     }
 
