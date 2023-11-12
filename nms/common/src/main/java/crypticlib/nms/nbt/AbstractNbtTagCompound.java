@@ -117,6 +117,11 @@ public abstract class AbstractNbtTagCompound implements INbtTag<Map<String, INbt
         return this;
     }
 
+    public AbstractNbtTagCompound clear() {
+        nbtMap.clear();
+        return this;
+    }
+
     public INbtTag<?> get(String key) {
         return nbtMap.get(key);
     }

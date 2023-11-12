@@ -15,10 +15,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -46,8 +43,14 @@ public abstract class BukkitPlugin extends JavaPlugin {
         disable();
     }
 
+    /**
+     * 插件开始加载执行的方法
+     */
     public void enable() {}
 
+    /**
+     * 插件卸载时执行的方法
+     */
     public void disable() {}
 
     public static BukkitPlugin instance() {
@@ -156,7 +159,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         Constructor<PluginCommand> pluginCommandConstructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
         pluginCommandConstructor.setAccessible(true);
         command = pluginCommandConstructor.newInstance(commandAnnotation.name(), this);
-        command.getAliases().addAll(Arrays.asList(commandAnnotation.alias()));
+        command.setAliases(new ArrayList<>(Arrays.asList(commandAnnotation.alias())));
         command.setExecutor(pluginCommand);
         command.setTabCompleter(pluginCommand);
         if (!commandAnnotation.description().isEmpty())

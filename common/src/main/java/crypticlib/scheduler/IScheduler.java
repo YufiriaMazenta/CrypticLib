@@ -58,6 +58,10 @@ public interface IScheduler {
      */
     ITaskWrapper runTaskTimerAsync(Plugin plugin, Runnable task, long delayTicks, long periodTicks);
 
+    /**
+     * 取消某个任务
+     * @param task 需要取消的任务的包装
+     */
     default void cancelTask(ITaskWrapper task) {
         if (task instanceof BukkitTask) {
             ((BukkitTask) task).cancel();

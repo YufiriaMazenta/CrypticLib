@@ -2,6 +2,7 @@ package crypticlib.command;
 
 import org.bukkit.command.CommandSender;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -36,9 +37,19 @@ public interface ISubCmdExecutor extends ICmdExecutor {
     String subCommandName();
 
     /**
-     * 获取此子命令所需的权限
+     * 获取此子命令的别名
+     * @return 子命令的别名
+     */
+    default List<String> alias() {
+        return new ArrayList<>();
+    }
+
+    /**
+     * 获取此子命令所需的权限,如果不需要权限则返回null
      * @return 子命令所需权限
      */
-    String permission();
+    default String permission() {
+        return null;
+    }
 
 }

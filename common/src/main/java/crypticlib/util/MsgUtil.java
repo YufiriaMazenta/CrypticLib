@@ -78,6 +78,11 @@ public class MsgUtil {
         sendTitle(player, title, subTitle, 10, 70, 20);
     }
 
+    /**
+     * 给玩家发送Action Bar消息
+     * @param player 发送的玩家
+     * @param text 发送的ActionBar文本
+     */
     public static void sendActionBar(Player player, String text) {
         text = color(placeholder(player, text));
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component(text));
@@ -107,6 +112,52 @@ public class MsgUtil {
     }
 
     /**
+     * 为所有玩家发送一条消息,这条消息会处理颜色代码和PlaceholderAPI变量
+     * @param msg 发送的消息
+     */
+    public static void broadcast(String msg) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendMsg(player, msg);
+        }
+        info(msg);
+    }
+
+    /**
+     * 给所有玩家发送一条ActionBar位置的消息
+     * @param msg 发送的消息
+     */
+    public static void broadcastActionbar(String msg) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendActionBar(player, msg);
+        }
+    }
+
+    /**
+     * 给所有玩家发送一条title
+     * @param title 发送的title文本
+     * @param subtitle 发送的subtitle文本
+     * @param fadeIn 淡入时间
+     * @param stay 停留时间
+     * @param fadeOut 淡出时间
+     */
+    public static void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+
+    /**
+     * 给所有玩家发送一条title
+     * @param title 发送的title文本
+     * @param subtitle 发送的subtitle文本
+     */
+    public static void broadcastTitle(String title, String subtitle) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle);
+        }
+    }
+
+    /**
      * 将一个文本的颜色代码进行处理
      * @param text 需要处理的文本
      * @return 处理完颜色代码的文本
@@ -126,6 +177,11 @@ public class MsgUtil {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
+    /**
+     * 将文本转化为Bungee聊天组件
+     * @param text 原始文本
+     * @return 转化完毕的Bungee聊天组件
+     */
     public static BaseComponent component(String text) {
         BaseComponent[] baseComponents = TextComponent.fromLegacyText(text);
         TextComponent textComponent = new TextComponent();
