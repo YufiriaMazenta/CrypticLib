@@ -2,7 +2,7 @@ package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
 
-public abstract class AbstractNbtByte implements INbtTag<Byte>, IFormatNbtNumber {
+public abstract class AbstractNbtByte implements INbtTag<Byte>, INumberNbt {
 
     private Byte value;
 
@@ -35,8 +35,23 @@ public abstract class AbstractNbtByte implements INbtTag<Byte>, IFormatNbtNumber
     }
 
     @Override
-    public String formatString() {
+    public String format() {
         return "BYTE@" + value;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        AbstractNbtByte that = (AbstractNbtByte) object;
+
+        return value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value.hashCode();
     }
 
 }

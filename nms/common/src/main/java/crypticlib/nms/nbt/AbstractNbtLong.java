@@ -2,7 +2,9 @@ package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
 
-public abstract class AbstractNbtLong implements INbtTag<Long>, IFormatNbtNumber {
+import java.util.Objects;
+
+public abstract class AbstractNbtLong implements INbtTag<Long>, INumberNbt {
 
     private Long value;
 
@@ -35,8 +37,23 @@ public abstract class AbstractNbtLong implements INbtTag<Long>, IFormatNbtNumber
     }
 
     @Override
-    public String formatString() {
+    public String format() {
         return "LONG@" + value;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        AbstractNbtLong that = (AbstractNbtLong) object;
+
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value != null ? value.hashCode() : 0;
     }
 
 }

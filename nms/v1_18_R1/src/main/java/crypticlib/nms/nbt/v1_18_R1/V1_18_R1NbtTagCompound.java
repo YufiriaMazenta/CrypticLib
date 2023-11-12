@@ -1,22 +1,22 @@
 package crypticlib.nms.nbt.v1_18_R1;
 
-import crypticlib.nms.nbt.AbstractNbtCompound;
+import crypticlib.nms.nbt.AbstractNbtTagCompound;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Map;
 
-public class V1_18_R1NbtCompound extends AbstractNbtCompound {
+public class V1_18_R1NbtTagCompound extends AbstractNbtTagCompound {
 
-    public V1_18_R1NbtCompound() {
+    public V1_18_R1NbtTagCompound() {
         super(V1_18_R1NbtTranslator.INSTANCE);
     }
 
-    public V1_18_R1NbtCompound(Object nmsNbtCompound) {
+    public V1_18_R1NbtTagCompound(Object nmsNbtCompound) {
         super(nmsNbtCompound, V1_18_R1NbtTranslator.INSTANCE);
     }
 
-    public V1_18_R1NbtCompound(Map<String, Object> nbtValueMap) {
+    public V1_18_R1NbtTagCompound(Map<String, Object> nbtValueMap) {
         super(nbtValueMap, V1_18_R1NbtTranslator.INSTANCE);
     }
 
@@ -24,7 +24,7 @@ public class V1_18_R1NbtCompound extends AbstractNbtCompound {
     public void fromNms(Object nmsNbt) {
         NBTTagCompound nms = (NBTTagCompound) nmsNbt;
         for (String key : nms.d()) {
-            value().put(key, getNbtTranslator().fromNms(nms.c(key)));
+            value().put(key, nbtTranslator().translateNmsNbt(nms.c(key)));
         }
     }
 

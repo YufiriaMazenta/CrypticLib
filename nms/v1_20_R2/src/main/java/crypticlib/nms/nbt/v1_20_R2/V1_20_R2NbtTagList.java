@@ -25,7 +25,7 @@ public class V1_20_R2NbtTagList extends AbstractNbtTagList {
     public void fromNms(Object nmsNbt) {
         NBTTagList nbtTagList = (NBTTagList) nmsNbt;
         for (NBTBase nbtBase : nbtTagList) {
-            value().add(getNbtTranslator().fromNms(nbtBase));
+            value().add(nbtTranslator().translateNmsNbt(nbtBase));
         }
     }
 

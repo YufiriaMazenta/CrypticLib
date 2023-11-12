@@ -1,7 +1,7 @@
 package crypticlib.nms.item;
 
 import com.google.gson.JsonObject;
-import crypticlib.nms.nbt.AbstractNbtCompound;
+import crypticlib.nms.nbt.AbstractNbtTagCompound;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -13,9 +13,9 @@ public interface Item {
 
     void setMaterial(String material);
 
-    AbstractNbtCompound nbtCompound();
+    AbstractNbtTagCompound nbtTagCompound();
 
-    void setNbtCompound(AbstractNbtCompound nbtCompound);
+    void setNbtTagCompound(AbstractNbtTagCompound nbtCompound);
 
     ItemStack buildBukkit();
 
@@ -24,14 +24,14 @@ public interface Item {
     default Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("material", material());
-        map.put("nbt", nbtCompound().unwrappedValue());
+        map.put("nbt", nbtTagCompound().unwarppedMap());
         return map;
     }
 
     default JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("material", material());
-        jsonObject.add("nbt", nbtCompound().toJson());
+        jsonObject.add("nbt", nbtTagCompound().toJson());
         return jsonObject;
     }
 

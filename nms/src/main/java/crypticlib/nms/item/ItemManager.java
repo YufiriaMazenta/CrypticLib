@@ -16,7 +16,7 @@ import crypticlib.nms.item.v1_19_R2.V1_19_R2Item;
 import crypticlib.nms.item.v1_19_R3.V1_19_R3Item;
 import crypticlib.nms.item.v1_20_R1.V1_20_R1Item;
 import crypticlib.nms.item.v1_20_R2.V1_20_R2Item;
-import crypticlib.nms.nbt.AbstractNbtCompound;
+import crypticlib.nms.nbt.AbstractNbtTagCompound;
 import crypticlib.nms.nbt.NbtManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +29,7 @@ import java.util.function.Function;
 public class ItemManager {
 
     private static final Map<String, Function<ItemStack, Item>> itemProviderMap1;
-    private static final Map<String, BiFunction<String, AbstractNbtCompound, Item>> itemProviderMap2;
+    private static final Map<String, BiFunction<String, AbstractNbtTagCompound, Item>> itemProviderMap2;
 
     static {
         itemProviderMap1 = new HashMap<>();
@@ -73,7 +73,7 @@ public class ItemManager {
         }).apply(itemStack);
     }
 
-    public static Item item(String material, AbstractNbtCompound nbtCompound) {
+    public static Item item(String material, AbstractNbtTagCompound nbtCompound) {
         return itemProviderMap2.getOrDefault(CrypticLib.nmsVersion(), (material1, nbtCompound1) -> {
             throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
         }).apply(material, nbtCompound);
@@ -81,14 +81,14 @@ public class ItemManager {
 
     public static Item item(ConfigurationSection config) {
         String material = config.getString("material");
-        AbstractNbtCompound nbtCompound = null;
+        AbstractNbtTagCompound nbtCompound = null;
         if (config.isConfigurationSection("nbt")) {
             nbtCompound = NbtManager.config2NbtCompound(config.getConfigurationSection("nbt"));
         }
         return item(material, nbtCompound);
     }
 
-    public static void regItemProvider(String nmsVersion, Function<ItemStack, Item> provider1, BiFunction<String, AbstractNbtCompound, Item> provider2) {
+    public static void regItemProvider(String nmsVersion, Function<ItemStack, Item> provider1, BiFunction<String, AbstractNbtTagCompound, Item> provider2) {
         itemProviderMap1.put(nmsVersion, provider1);
         itemProviderMap2.put(nmsVersion, provider2);
     }

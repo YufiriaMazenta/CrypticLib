@@ -2,7 +2,9 @@ package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
 
-public abstract class AbstractNbtDouble implements INbtTag<Double> {
+import java.util.Objects;
+
+public abstract class AbstractNbtDouble implements INbtTag<Double>, INumberNbt {
 
     public AbstractNbtDouble(double value) {
         this.value = value;
@@ -32,6 +34,26 @@ public abstract class AbstractNbtDouble implements INbtTag<Double> {
     @Override
     public JsonPrimitive toJson() {
         return new JsonPrimitive(value);
+    }
+
+    @Override
+    public String format() {
+        return "DOUBLE@" + value;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+
+        AbstractNbtDouble that = (AbstractNbtDouble) object;
+
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return value != null ? value.hashCode() : 0;
     }
 
 }
