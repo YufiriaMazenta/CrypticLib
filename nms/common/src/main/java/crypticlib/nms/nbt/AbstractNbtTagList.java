@@ -99,11 +99,6 @@ public abstract class AbstractNbtTagList implements INbtTag<List<INbtTag<?>>> {
         return this;
     }
 
-    public AbstractNbtTagList remove(int index) {
-        nbtList.remove(index);
-        return this;
-    }
-
     public AbstractNbtTagList add(INbtTag<?> nbt) {
         nbtList.add(nbt);
         return this;
@@ -166,6 +161,16 @@ public abstract class AbstractNbtTagList implements INbtTag<List<INbtTag<?>>> {
 
     public AbstractNbtTagList add(List<Object> value) {
         nbtList.add(nbtTranslator.translateObject(value));
+        return this;
+    }
+
+    public AbstractNbtTagList remove(int index) {
+        nbtList.remove(index);
+        return this;
+    }
+
+    public AbstractNbtTagList clear() {
+        nbtList.clear();
         return this;
     }
 

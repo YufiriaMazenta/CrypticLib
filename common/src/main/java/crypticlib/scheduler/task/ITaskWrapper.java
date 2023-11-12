@@ -4,12 +4,27 @@ import org.bukkit.plugin.Plugin;
 
 public interface ITaskWrapper {
 
+    /**
+     * 取消此任务
+     */
     void cancel();
 
+    /**
+     * 获取此任务的所属插件
+     * @return 此任务的所属插件
+     */
     Plugin owner();
 
+    /**
+     * 获取此任务的Task Id,Folia平台不支持此方法
+     * @return 此任务的Task id
+     */
     int taskId();
 
+    /**
+     * 获取此任务是否被取消
+     * @return 此任务是否被取消
+     */
     boolean isCancelled();
 
     /**

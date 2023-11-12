@@ -39,6 +39,11 @@ public class FileUtil {
         return fileList;
     }
 
+    /**
+     * 创建一个文件
+     * @param file 需要创建的文件
+     * @return 是否创建成功
+     */
     public static boolean createNewFile(File file) {
         if (!file.getParentFile().exists()) {
             file.getParentFile().mkdirs();

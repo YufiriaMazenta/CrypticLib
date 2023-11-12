@@ -23,15 +23,15 @@ public interface IPlatform {
     IScheduler scheduler();
 
     /**
-     * 将玩家传送至一个坐标
-     * @param entity 被传送的玩家
+     * 将实体传送至一个坐标
+     * @param entity 被传送的实体
      * @param location 传送的目标点
      * @param cause 传送的原因
      */
     void teleportEntity(Entity entity, Location location, PlayerTeleportEvent.TeleportCause cause);
 
     /**
-     * 将玩家传送至一个坐标
+     * 将实体传送至一个坐标
      * @param entity 被传送的玩家
      * @param location 传送的目标点
      */

@@ -24,6 +24,9 @@ interface ICmdExecutor {
      */
     default void regSubCommand(ISubCmdExecutor subCommand) {
         subCommands().put(subCommand.subCommandName(), subCommand);
+        for (String alias : subCommand.alias()) {
+            subCommands().put(alias, subCommand);
+        }
     }
 
     /**

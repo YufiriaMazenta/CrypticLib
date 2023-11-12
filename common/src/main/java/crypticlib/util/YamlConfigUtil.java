@@ -6,6 +6,11 @@ import java.util.*;
 
 public class YamlConfigUtil {
 
+    /**
+     * 将yaml config转化为map
+     * @param configSection 原始yaml config
+     * @return 转化的map
+     */
     public static Map<String, Object> configSection2Map(ConfigurationSection configSection) {
         Map<String, Object> map = new HashMap<>();
         for (String key : configSection.getKeys(false)) {
@@ -20,6 +25,11 @@ public class YamlConfigUtil {
         return map;
     }
 
+    /**
+     * 将yaml config列表转化为基础数据类型列表
+     * @param origin 原始yaml config
+     * @return 转化的列表
+     */
     public static List<Object> configList2List(List<?> origin) {
         List<Object> list = new ArrayList<>();
         for (Object o : origin) {

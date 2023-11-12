@@ -18,14 +18,28 @@ public class CrypticLib {
         loadVersion();
     }
 
+    /**
+     * 获取当前运行的平台实例
+     * @return 当前运行的平台实例
+     */
     public static IPlatform platform() {
         return platform;
     }
 
+    /**
+     * 获取当前运行的Minecraft版本
+     * 示例:当前版本为1.20.2时,返回12002
+     * 当前版本为1.7.10时,返回10710(虽然CrypticLib并不支持这个版本)
+     * @return 当前运行的Minecraft版本
+     */
     public static int minecraftVersion() {
         return minecraftVersion;
     }
 
+    /**
+     * 获取当前运行的NMS版本
+     * @return 当前运行的NMS版本
+     */
     public static String nmsVersion() {
         return nmsVersion;
     }

@@ -24,7 +24,7 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
     <dependency>
         <groupId>com.crypticlib</groupId>
         <artifactId>CrypticLib</artifactId>
-        <version>0.0.4</version>
+        <version>0.0.5</version>
     </dependency>
 </dependencies>
 ```
@@ -39,7 +39,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("com.crypticlib:CrypticLib:0.0.4")
+    implementation("com.crypticlib:CrypticLib:0.0.5")
 }
 ```
 
@@ -54,6 +54,6 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'com.crypticlib:CrypticLib:0.0.4'
+    implementation 'com.crypticlib:CrypticLib:0.0.5'
 }
 ```
