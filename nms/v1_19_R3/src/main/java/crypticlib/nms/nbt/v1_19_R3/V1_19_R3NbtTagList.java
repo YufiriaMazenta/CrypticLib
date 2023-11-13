@@ -1,13 +1,13 @@
 package crypticlib.nms.nbt.v1_19_R3;
 
-import crypticlib.nms.nbt.AbstractNbtTagList;
 import crypticlib.nms.nbt.INbtTag;
+import crypticlib.nms.nbt.NbtTagList;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
 
 import java.util.List;
 
-public class V1_19_R3NbtTagList extends AbstractNbtTagList {
+public class V1_19_R3NbtTagList extends NbtTagList {
 
     public V1_19_R3NbtTagList(List<Object> nbtList) {
         super(nbtList, V1_19_R3NbtTranslator.INSTANCE);
