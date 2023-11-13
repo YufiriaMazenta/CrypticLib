@@ -23,8 +23,7 @@ public class V1_18_R2ProxyEntity extends ProxyEntity {
     public void fromNms() {
         net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) bukkitEntity()).getHandle();
         NBTTagCompound nmsNbt = new NBTTagCompound();
-        nmsEntity.e(nmsNbt);
-        this.setNbtTagCompound(new V1_18_R2NbtTagCompound(nmsNbt));
+        this.setNbtTagCompound(new V1_18_R2NbtTagCompound(nmsEntity.f(nmsNbt)));
     }
 
 }
