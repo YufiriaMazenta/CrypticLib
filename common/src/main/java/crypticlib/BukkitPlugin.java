@@ -32,8 +32,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void onEnable() {
-        loadListenersAndCommands();
         enable();
+        loadListenersAndCommands();
         checkVersion();
     }
 
