@@ -2,6 +2,7 @@ package crypticlib.nms.nbt;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
+import crypticlib.util.JsonUtil;
 
 import java.util.Arrays;
 import java.util.StringJoiner;
@@ -64,6 +65,11 @@ public abstract class NbtTagIntArray implements INbtTag<int[]>, INumberNbt {
     @Override
     public int hashCode() {
         return Arrays.hashCode(value);
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
     }
 
 }

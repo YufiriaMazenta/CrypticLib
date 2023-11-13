@@ -1,6 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonArray;
+import crypticlib.util.JsonUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -221,6 +222,11 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
             }
         }
         return list;
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
     }
 
 }

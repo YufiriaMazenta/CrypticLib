@@ -1,6 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
+import crypticlib.util.JsonUtil;
 
 import java.util.Objects;
 
@@ -49,6 +50,11 @@ public abstract class NbtTagString implements INbtTag<String> {
     @Override
     public int hashCode() {
         return value != null ? value.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
     }
 
 }

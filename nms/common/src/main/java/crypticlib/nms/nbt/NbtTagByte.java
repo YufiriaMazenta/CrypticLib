@@ -1,6 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
+import crypticlib.util.JsonUtil;
 
 public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
 
@@ -52,6 +53,11 @@ public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
     @Override
     public int hashCode() {
         return value.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
     }
 
 }
