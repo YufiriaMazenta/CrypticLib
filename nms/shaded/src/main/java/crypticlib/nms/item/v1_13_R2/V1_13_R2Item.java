@@ -1,46 +1,21 @@
 package crypticlib.nms.item.v1_13_R2;
 
 import crypticlib.nms.item.Item;
-import crypticlib.nms.nbt.AbstractNbtTagCompound;
+import crypticlib.nms.nbt.NbtTagCompound;
 import crypticlib.nms.nbt.v1_13_R2.V1_13_R2NbtTagCompound;
 import net.minecraft.server.v1_13_R2.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_13_R2.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 
-public class V1_13_R2Item implements Item {
-
-    private String material;
-    private AbstractNbtTagCompound nbtCompound;
+public class V1_13_R2Item extends Item {
 
     public V1_13_R2Item(ItemStack itemStack) {
-        this.material = itemStack.getType().name();
-        this.nbtCompound = new V1_13_R2NbtTagCompound(CraftItemStack.asNMSCopy(itemStack).getOrCreateTag());
+        super(itemStack.getType().name(), new V1_13_R2NbtTagCompound(CraftItemStack.asNMSCopy(itemStack).getOrCreateTag()));
     }
 
-    public V1_13_R2Item(String material, AbstractNbtTagCompound nbtCompound) {
-        this.material = material;
-        this.nbtCompound = nbtCompound;
-    }
-
-    @Override
-    public String material() {
-        return this.material;
-    }
-
-    @Override
-    public void setMaterial(String material) {
-        this.material = material;
-    }
-
-    @Override
-    public AbstractNbtTagCompound nbtTagCompound() {
-        return nbtCompound;
-    }
-
-    @Override
-    public void setNbtTagCompound(AbstractNbtTagCompound nbtCompound) {
-        this.nbtCompound = nbtCompound;
+    public V1_13_R2Item(String material, NbtTagCompound nbtTagCompound) {
+        super(material, nbtTagCompound);
     }
 
     @Override
@@ -50,13 +25,13 @@ public class V1_13_R2Item implements Item {
 
     @Override
     public net.minecraft.server.v1_13_R2.ItemStack buildNMS() {
-        Material type = Material.matchMaterial(material);
+        Material type = Material.matchMaterial(material());
         if (type == null) {
-            throw new IllegalArgumentException(material + " is an undefined item");
+            throw new IllegalArgumentException(material() + " is an undefined item");
         }
         ItemStack item = new ItemStack(type);
         net.minecraft.server.v1_13_R2.ItemStack nms = CraftItemStack.asNMSCopy(item);
-        nms.setTag((NBTTagCompound) nbtCompound.toNms());
+        nms.setTag((NBTTagCompound) nbtTagCompound().toNms());
         return nms;
     }
 

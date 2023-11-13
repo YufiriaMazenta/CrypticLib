@@ -1,12 +1,12 @@
 package crypticlib.nms.nbt.v1_19_R3;
 
-import crypticlib.nms.nbt.AbstractNbtTagCompound;
+import crypticlib.nms.nbt.NbtTagCompound;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.Map;
 
-public class V1_19_R3NbtTagCompound extends AbstractNbtTagCompound {
+public class V1_19_R3NbtTagCompound extends NbtTagCompound {
 
     public V1_19_R3NbtTagCompound() {
         super(V1_19_R3NbtTranslator.INSTANCE);
