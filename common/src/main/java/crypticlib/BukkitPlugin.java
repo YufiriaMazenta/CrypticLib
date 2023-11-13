@@ -22,7 +22,7 @@ import java.util.jar.JarFile;
 public abstract class BukkitPlugin extends JavaPlugin {
 
     private static BukkitPlugin INSTANCE;
-    private static int lowestSupportVersion = 11300;
+    private static int lowestSupportVersion = 11200;
     private static int highestSupportVersion = 12002;
 
     protected BukkitPlugin() {
