@@ -1,7 +1,7 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "0.0.7"
+rootProject.version = "0.0.8-SNAPSHOT"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
 plugins {
@@ -38,7 +38,7 @@ publishing {
         groupId = rootProject.group as String?
     }
     repositories {
-        maven("http://repo.crypticlib.com:8081/repository/maven-releases/") {
+        maven("http://repo.crypticlib.com:8081/repository/maven-snapshots/") {
             isAllowInsecureProtocol = true
             credentials {
                 username = project.findProperty("maven_username").toString()
@@ -54,7 +54,7 @@ subprojects {
     version = rootProject.version
     repositories {
         mavenLocal()
-        maven("https://hub.spigotmc.org/nexus/content/repositories/releases/")
+        maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
         maven("https://oss.sonatype.org/content/groups/public/")
         maven("https://jitpack.io")
         maven("https://repo.rosewooddev.io/repository/public/")
@@ -81,7 +81,7 @@ subprojects {
         repositories {
             maven {
                 name = "crypticlib_repo"
-                url = uri("http://repo.crypticlib.com:8081/repository/maven-releases/")
+                url = uri("http://repo.crypticlib.com:8081/repository/maven-snapshots/")
                 isAllowInsecureProtocol = true
                 credentials {
                     username = project.findProperty("maven_username").toString()

@@ -1,6 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonObject;
+import crypticlib.util.JsonUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -173,6 +174,11 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
     @Override
     public int hashCode() {
         return nbtMap != null ? nbtMap.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
     }
 
 }

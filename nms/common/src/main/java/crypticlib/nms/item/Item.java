@@ -2,6 +2,7 @@ package crypticlib.nms.item;
 
 import com.google.gson.JsonObject;
 import crypticlib.nms.nbt.NbtTagCompound;
+import crypticlib.util.JsonUtil;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -85,4 +86,8 @@ public abstract class Item {
         return jsonObject;
     }
 
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
+    }
 }
