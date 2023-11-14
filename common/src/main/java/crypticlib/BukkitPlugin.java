@@ -86,7 +86,9 @@ public abstract class BukkitPlugin extends JavaPlugin {
         Set<Class<?>> pluginCommandClasses = new HashSet<>();
         //扫描类
         Enumeration<JarEntry> entries;
-        try(JarFile pluginJar = new JarFile(getFile())) {
+        JarFile pluginJar;
+        try {
+            pluginJar = new JarFile(getFile());
             entries = pluginJar.entries();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -110,9 +112,14 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
         //注册监听器
         regListeners(listenerClasses);
-
         //注册命令
         regCommands(pluginCommandClasses);
+
+        try {
+            pluginJar.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void regListeners(Set<Class<?>> listenerClasses) {
