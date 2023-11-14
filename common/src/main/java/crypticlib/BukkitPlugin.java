@@ -86,12 +86,12 @@ public abstract class BukkitPlugin extends JavaPlugin {
         Set<Class<?>> pluginCommandClasses = new HashSet<>();
         //扫描类
         Enumeration<JarEntry> entries;
-        try {
-            JarFile pluginJar = new JarFile(getFile());
+        try(JarFile pluginJar = new JarFile(getFile())) {
             entries = pluginJar.entries();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         while (entries.hasMoreElements()) {
             try {
                 JarEntry entry = entries.nextElement();
@@ -109,8 +109,19 @@ public abstract class BukkitPlugin extends JavaPlugin {
         }
 
         //注册监听器
+        regListeners(listenerClasses);
+
+        //注册命令
+        regCommands(pluginCommandClasses);
+    }
+
+    private void regListeners(Set<Class<?>> listenerClasses) {
         for (Class<?> listenerClass : listenerClasses) {
             try {
+                BukkitListener listenerAnnotation = listenerClass.getAnnotation(BukkitListener.class);
+                if (!listenerAnnotation.reg())
+                    continue;
+
                 if (listenerClass.isEnum()) {
                     for (Object listenerEnum : listenerClass.getEnumConstants()) {
                         Bukkit.getPluginManager().registerEvents((Listener) listenerEnum, this);
@@ -125,8 +136,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 e.printStackTrace();
             }
         }
+    }
 
-        //注册命令
+
+    private void regCommands(Set<Class<?>> pluginCommandClasses) {
         Method getCommandMapMethod;
         CommandMap commandMap;
         try {
@@ -138,6 +151,9 @@ public abstract class BukkitPlugin extends JavaPlugin {
         for (Class<?> commandClass : pluginCommandClasses) {
             try {
                 BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
+                if (!commandAnnotation.reg())
+                    continue;
+
                 if (commandClass.isEnum()) {
                     for (Object cmdExecutorEnum : commandClass.getEnumConstants()) {
                         regCommand(commandMap, (IPluginCmdExecutor) cmdExecutorEnum, commandAnnotation);
@@ -153,6 +169,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
             }
         }
     }
+
 
     private void regCommand(CommandMap commandMap, IPluginCmdExecutor pluginCommand, BukkitCommand commandAnnotation) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         PluginCommand command;

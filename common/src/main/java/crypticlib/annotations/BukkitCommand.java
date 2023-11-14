@@ -10,6 +10,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface BukkitCommand {
 
+    boolean reg() default true;
+
     /**
      * 命令的名字
      * @return 命令的名字,不能为空
