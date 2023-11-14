@@ -13,7 +13,7 @@ public class V1_12_R1ProxyEntity extends ProxyEntity {
     }
 
     @Override
-    public ProxyEntity saveToEntity() {
+    public ProxyEntity saveNbtToEntity() {
         net.minecraft.server.v1_12_R1.Entity nmsEntity = ((CraftEntity) bukkitEntity()).getHandle();
         nmsEntity.f((NBTTagCompound) nbtTagCompound().toNms());
         return this;

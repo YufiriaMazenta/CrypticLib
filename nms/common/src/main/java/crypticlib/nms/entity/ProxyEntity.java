@@ -3,12 +3,15 @@ package crypticlib.nms.entity;
 import crypticlib.nms.nbt.NbtTagCompound;
 import org.bukkit.entity.Entity;
 
+/**
+ * 代理Bukkit实体对象,用于直接操作NBT数据
+ */
 public abstract class ProxyEntity {
 
     private NbtTagCompound nbtTagCompound;
     private Entity bukkit;
 
-    public ProxyEntity(Entity entity) {
+    protected ProxyEntity(Entity entity) {
         this.bukkit = entity;
         fromNms();
     }
@@ -26,12 +29,12 @@ public abstract class ProxyEntity {
         return bukkit;
     }
 
-    public ProxyEntity setEntity(Entity bukkit) {
+    public ProxyEntity setBukkitEntity(Entity bukkit) {
         this.bukkit = bukkit;
         return this;
     }
 
-    public abstract ProxyEntity saveToEntity();
+    public abstract ProxyEntity saveNbtToEntity();
 
     public abstract void fromNms();
 

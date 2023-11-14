@@ -2,6 +2,7 @@ package crypticlib.nms.nbt;
 
 import com.google.gson.JsonObject;
 import crypticlib.CrypticLib;
+import crypticlib.nms.nbt.v1_12_R1.V1_12_R1NbtTagCompound;
 import crypticlib.nms.nbt.v1_13_R1.V1_13_R1NbtTagCompound;
 import crypticlib.nms.nbt.v1_13_R2.V1_13_R2NbtTagCompound;
 import crypticlib.nms.nbt.v1_14_R1.V1_14_R1NbtTagCompound;
@@ -26,42 +27,51 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+/**
+ * CrypticLib的Nbt提供工厂
+ */
 public class NbtFactory {
 
-    private static final Map<String, Function<Map<String, Object>, NbtTagCompound>> nbtCompoundProviderMap;
+    private static final Map<String, Function<Map<String, Object>, NbtTagCompound>> nbtTagCompoundProviderMap;
 
     static {
-        nbtCompoundProviderMap = new ConcurrentHashMap<>();
-        nbtCompoundProviderMap.put("v1_13_R1", V1_13_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_13_R2", V1_13_R2NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_14_R1", V1_14_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_15_R1", V1_15_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_16_R1", V1_16_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_16_R2", V1_16_R2NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_16_R3", V1_16_R3NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_17_R1", V1_17_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_18_R1", V1_18_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_18_R2", V1_18_R2NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_19_R1", V1_19_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_19_R2", V1_19_R2NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_19_R3", V1_19_R3NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_20_R1", V1_20_R1NbtTagCompound::new);
-        nbtCompoundProviderMap.put("v1_20_R2", V1_20_R2NbtTagCompound::new);
+        nbtTagCompoundProviderMap = new ConcurrentHashMap<>();
+
+        regNbtTagCompoundProvider("v1_12_R1", V1_12_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_13_R1", V1_13_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_13_R2", V1_13_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_14_R1", V1_14_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_15_R1", V1_15_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_16_R1", V1_16_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_16_R2", V1_16_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_16_R3", V1_16_R3NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_17_R1", V1_17_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_18_R1", V1_18_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_18_R2", V1_18_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_19_R1", V1_19_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_19_R2", V1_19_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_19_R3", V1_19_R3NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_20_R1", V1_20_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_20_R2", V1_20_R2NbtTagCompound::new);
     }
 
-    public static NbtTagCompound map2NbtCompound(Map<String, Object> map) {
+    public static NbtTagCompound map2NbtTagCompound(Map<String, Object> map) {
         processMap(map);
-        return nbtCompoundProviderMap.getOrDefault(CrypticLib.nmsVersion(), (map1) -> {
+        return nbtTagCompoundProviderMap.getOrDefault(CrypticLib.nmsVersion(), (map1) -> {
             throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
         }).apply(map);
     }
 
-    public static NbtTagCompound config2NbtCompound(ConfigurationSection config) {
-        return map2NbtCompound(YamlConfigUtil.configSection2Map(config));
+    public static NbtTagCompound config2NbtTagCompound(ConfigurationSection config) {
+        return map2NbtTagCompound(YamlConfigUtil.configSection2Map(config));
     }
 
-    public static NbtTagCompound json2NbtCompound(JsonObject jsonObject) {
-        return map2NbtCompound(JsonUtil.json2Map(jsonObject));
+    public static NbtTagCompound json2NbtTagCompound(JsonObject jsonObject) {
+        return map2NbtTagCompound(JsonUtil.json2Map(jsonObject));
+    }
+
+    public static void regNbtTagCompoundProvider(String nmsVersion, Function<Map<String, Object>, NbtTagCompound> nbtTagCompoundProvider) {
+        nbtTagCompoundProviderMap.put(nmsVersion, nbtTagCompoundProvider);
     }
 
     private static void processMap(Map<String, Object> originMap) {
