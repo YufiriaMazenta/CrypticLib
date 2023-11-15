@@ -22,29 +22,46 @@ public class MsgUtil {
 
     /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量
-     * @param sender 发送到的对象
+     * @param receiver 发送到的对象
      * @param msg 发送的消息
      */
-    public static void sendMsg(CommandSender sender, String msg) {
-        sendMsg(sender, msg, new HashMap<>());
+    public static void sendMsg(CommandSender receiver, String msg) {
+        sendMsg(receiver, msg, new HashMap<>());
     }
 
     /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量，并根据replaceMap的内容替换源文本
-     * @param sender 发送到的对象
+     * @param receiver 发送到的对象
      * @param msg 发送的消息
      * @param replaceMap 需要替换的文本
      */
-    public static void sendMsg(CommandSender sender, String msg, Map<String, String> replaceMap) {
-        if (sender == null) {
-            return;
-        }
+    public static void sendMsg(CommandSender receiver, String msg, Map<String, String> replaceMap) {
         for (String formatStr : replaceMap.keySet()) {
             msg = msg.replace(formatStr, replaceMap.get(formatStr));
         }
-        if (sender instanceof Player)
-            msg = placeholder((Player) sender, msg);
-        sender.spigot().sendMessage(component(color(msg)));
+        if (receiver instanceof Player)
+            msg = placeholder((Player) receiver, msg);
+        sendMsg(receiver, color(color(msg)));
+    }
+
+    /**
+     * 发送多个Bungee聊天组件给接收者
+     * @param receiver 接收者
+     * @param baseComponents bungee聊天组件
+     */
+    public static void sendMsg(CommandSender receiver, BaseComponent... baseComponents) {
+        sendMsg(receiver, new TextComponent(baseComponents));
+    }
+
+    /**
+     * 发送Bungee聊天组件给接收者
+     * @param receiver 接收者
+     * @param baseComponent bungee聊天组件
+     */
+    public static void sendMsg(CommandSender receiver, BaseComponent baseComponent) {
+        if (receiver == null)
+            return;
+        receiver.spigot().sendMessage(baseComponent);
     }
 
     /**
@@ -57,6 +74,8 @@ public class MsgUtil {
      * @param fadeOut Title的淡出时间
      */
     public static void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+        if (player == null)
+            return;
         if (title == null) {
             title = "";
         }
@@ -79,36 +98,51 @@ public class MsgUtil {
     }
 
     /**
+     * 给玩家发送Action Bar
+     * @param player 发送的玩家
+     * @param component 发送的ActionBar聊天组件
+     */
+    public static void sendActionBar(Player player, BaseComponent component) {
+        if (player == null)
+            return;
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
+    }
+
+    public static void sendActionBar(Player player, BaseComponent... components) {
+        sendActionBar(player, new TextComponent(components));
+    }
+
+    /**
      * 给玩家发送Action Bar消息
      * @param player 发送的玩家
      * @param text 发送的ActionBar文本
      */
     public static void sendActionBar(Player player, String text) {
         text = color(placeholder(player, text));
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component(text));
+        sendActionBar(player, component(text));
     }
 
     /**
      * 根据传入的配置文件，发送一条语言文本
-     * @param sender 发送到的对象
+     * @param receiver 发送到的对象
      * @param langConfig 语言文本的来源文件
      * @param msgKey 发送消息的key
      * @param replaceMap 需要替换的文本
      */
-    public static void sendLang(CommandSender sender, FileConfiguration langConfig, String msgKey, Map<String, String> replaceMap) {
+    public static void sendLang(CommandSender receiver, FileConfiguration langConfig, String msgKey, Map<String, String> replaceMap) {
         String msg = langConfig.getString(msgKey, msgKey);
-        sendMsg(sender, msg, replaceMap);
+        sendMsg(receiver, msg, replaceMap);
     }
 
     /**
      * 根据传入的配置文件，发送一条语言文本
-     * @param sender 发送到的对象
+     * @param receiver 发送到的对象
      * @param langConfig 语言文本的来源文件
      * @param msgKey 发送消息的key
      */
-    public static void sendLang(CommandSender sender, FileConfiguration langConfig, String msgKey) {
+    public static void sendLang(CommandSender receiver, FileConfiguration langConfig, String msgKey) {
         String msg = langConfig.getString(msgKey, msgKey);
-        sendMsg(sender, msg);
+        sendMsg(receiver, msg);
     }
 
     /**
@@ -184,11 +218,7 @@ public class MsgUtil {
      */
     public static BaseComponent component(String text) {
         BaseComponent[] baseComponents = TextComponent.fromLegacyText(text);
-        TextComponent textComponent = new TextComponent();
-        for (BaseComponent baseComponent : baseComponents) {
-            textComponent.addExtra(baseComponent);
-        }
-        return textComponent;
+        return new TextComponent(baseComponents);
     }
 
     /**
