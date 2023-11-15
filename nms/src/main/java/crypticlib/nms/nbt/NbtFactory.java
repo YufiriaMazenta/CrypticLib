@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * CrypticLib的Nbt提供工厂
@@ -33,26 +34,28 @@ import java.util.function.Function;
 public class NbtFactory {
 
     private static final Map<String, Function<Map<String, Object>, NbtTagCompound>> nbtTagCompoundProviderMap;
+    private static final Map<String, Supplier<NbtTagCompound>> emptyNbtTagCompoundProviderMap;
 
     static {
         nbtTagCompoundProviderMap = new ConcurrentHashMap<>();
+        emptyNbtTagCompoundProviderMap = new ConcurrentHashMap<>();
 
-        regNbtTagCompoundProvider("v1_12_R1", V1_12_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_13_R1", V1_13_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_13_R2", V1_13_R2NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_14_R1", V1_14_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_15_R1", V1_15_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_16_R1", V1_16_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_16_R2", V1_16_R2NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_16_R3", V1_16_R3NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_17_R1", V1_17_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_18_R1", V1_18_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_18_R2", V1_18_R2NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_19_R1", V1_19_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_19_R2", V1_19_R2NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_19_R3", V1_19_R3NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_20_R1", V1_20_R1NbtTagCompound::new);
-        regNbtTagCompoundProvider("v1_20_R2", V1_20_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_12_R1", V1_12_R1NbtTagCompound::new, V1_12_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_13_R1", V1_13_R1NbtTagCompound::new, V1_13_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_13_R2", V1_13_R2NbtTagCompound::new, V1_13_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_14_R1", V1_14_R1NbtTagCompound::new, V1_14_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_15_R1", V1_15_R1NbtTagCompound::new, V1_15_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_16_R1", V1_16_R1NbtTagCompound::new, V1_16_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_16_R2", V1_16_R2NbtTagCompound::new, V1_16_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_16_R3", V1_16_R3NbtTagCompound::new, V1_16_R3NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_17_R1", V1_17_R1NbtTagCompound::new, V1_17_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_18_R1", V1_18_R1NbtTagCompound::new, V1_18_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_18_R2", V1_18_R2NbtTagCompound::new, V1_18_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_19_R1", V1_19_R1NbtTagCompound::new, V1_19_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_19_R2", V1_19_R2NbtTagCompound::new, V1_19_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_19_R3", V1_19_R3NbtTagCompound::new, V1_19_R3NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_20_R1", V1_20_R1NbtTagCompound::new, V1_20_R1NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_20_R2", V1_20_R2NbtTagCompound::new, V1_20_R2NbtTagCompound::new);
     }
 
     public static NbtTagCompound map2NbtTagCompound(Map<String, Object> map) {
@@ -70,8 +73,15 @@ public class NbtFactory {
         return map2NbtTagCompound(JsonUtil.json2Map(jsonObject));
     }
 
-    public static void regNbtTagCompoundProvider(String nmsVersion, Function<Map<String, Object>, NbtTagCompound> nbtTagCompoundProvider) {
+    public static NbtTagCompound emptyNbtCompound() {
+        return emptyNbtTagCompoundProviderMap.getOrDefault(CrypticLib.nmsVersion(), () -> {
+            throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
+        }).get();
+    }
+
+    public static void regNbtTagCompoundProvider(String nmsVersion, Function<Map<String, Object>, NbtTagCompound> nbtTagCompoundProvider, Supplier<NbtTagCompound> emptyNbtTagCompoundProvider) {
         nbtTagCompoundProviderMap.put(nmsVersion, nbtTagCompoundProvider);
+        emptyNbtTagCompoundProviderMap.put(nmsVersion, emptyNbtTagCompoundProvider);
     }
 
     private static void processMap(Map<String, Object> originMap) {

@@ -12,10 +12,16 @@ public abstract class Item {
 
     private String material;
     private NbtTagCompound nbtTagCompound;
+    private Integer amount;
 
     public Item(String material, NbtTagCompound nbtTagCompound) {
+        this(material, nbtTagCompound, 1);
+    }
+
+    public Item(String material, NbtTagCompound nbtTagCompound, Integer amount) {
         this.material = material;
         this.nbtTagCompound = nbtTagCompound;
+        this.amount = amount;
     }
 
     /**
@@ -53,6 +59,23 @@ public abstract class Item {
     }
 
     /**
+     * 获取物品的数量
+     * @return 物品的数量
+     */
+    public Integer amount() {
+        return amount;
+    }
+
+    /**
+     * 设置物品的数量
+     * @param amount 设置的数量
+     */
+    public Item setAmount(Integer amount) {
+        this.amount = amount;
+        return this;
+    }
+
+    /**
      * 构建一个Bukkit物品
      * @return 构建的bukkit物品
      */
@@ -72,6 +95,7 @@ public abstract class Item {
         Map<String, Object> map = new HashMap<>();
         map.put("material", material());
         map.put("nbt", nbtTagCompound().unwarppedMap());
+        map.put("amount", amount());
         return map;
     }
 
@@ -83,6 +107,7 @@ public abstract class Item {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("material", material());
         jsonObject.add("nbt", nbtTagCompound().toJson());
+        jsonObject.addProperty("amount", amount());
         return jsonObject;
     }
 
@@ -90,4 +115,5 @@ public abstract class Item {
     public String toString() {
         return JsonUtil.json2Str(toJson());
     }
+
 }

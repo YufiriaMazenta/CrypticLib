@@ -24,7 +24,7 @@ public @interface BukkitCommand {
      */
     String permission() default "";
 
-    /**
+    /**1
      * 命令的别名,空即为无别名
      * @return 命令的别名
      */

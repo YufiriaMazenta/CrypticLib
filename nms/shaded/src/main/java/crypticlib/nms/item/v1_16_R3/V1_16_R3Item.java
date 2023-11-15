@@ -11,11 +11,15 @@ import org.bukkit.inventory.ItemStack;
 public class V1_16_R3Item extends Item {
 
     public V1_16_R3Item(ItemStack itemStack) {
-        super(itemStack.getType().name(), new V1_16_R3NbtTagCompound(CraftItemStack.asNMSCopy(itemStack).getOrCreateTag()));
+        super(itemStack.getType().name(), new V1_16_R3NbtTagCompound(CraftItemStack.asNMSCopy(itemStack).getOrCreateTag()), itemStack.getAmount());
     }
 
     public V1_16_R3Item(String material, NbtTagCompound nbtTagCompound) {
         super(material, nbtTagCompound);
+    }
+
+    public V1_16_R3Item(String material, NbtTagCompound nbtTagCompound, Integer amount) {
+        super(material, nbtTagCompound, amount);
     }
 
     @Override
@@ -29,7 +33,7 @@ public class V1_16_R3Item extends Item {
         if (type == null) {
             throw new IllegalArgumentException(material() + " is an undefined item");
         }
-        ItemStack item = new ItemStack(type);
+        ItemStack item = new ItemStack(type, amount());
         net.minecraft.server.v1_16_R3.ItemStack nms = CraftItemStack.asNMSCopy(item);
         nms.setTag((NBTTagCompound) nbtTagCompound().toNms());
         return nms;
