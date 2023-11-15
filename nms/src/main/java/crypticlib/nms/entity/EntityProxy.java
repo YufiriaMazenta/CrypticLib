@@ -19,7 +19,6 @@ import crypticlib.nms.entity.v1_20_R1.V1_20_R1ProxyEntity;
 import crypticlib.nms.entity.v1_20_R2.V1_20_R2ProxyEntity;
 import org.bukkit.entity.Entity;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
