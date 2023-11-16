@@ -13,7 +13,6 @@ import java.io.IOException;
  * 对Yaml类型的配置文件的封装
  */
 public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
-
     private final File configFile;
     private YamlConfiguration config;
     private final String path;
@@ -135,6 +134,11 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      */
     @Override
     public String filePath() { return path; }
+
+    @Override
+    public File configFile() {
+        return configFile;
+    }
 
     @Override
     public Plugin plugin() {
