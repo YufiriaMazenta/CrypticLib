@@ -3,6 +3,8 @@ package crypticlib.config.api;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 public interface IConfigWrapper<T> {
     /**
      * 创建默认配置文件
@@ -26,6 +28,8 @@ public interface IConfigWrapper<T> {
     void setAutoReload(boolean autoReload);
 
     String filePath();
+
+    File configFile();
 
     @Nullable Plugin plugin();
 
