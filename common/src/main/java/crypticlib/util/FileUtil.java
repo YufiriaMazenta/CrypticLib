@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 
 public class FileUtil {
 
+    public static final Pattern YAML_FILE_PATTERN = Pattern.compile("^(.*)\\.(yaml|yml)$");
+    public static final Pattern JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(json)$");
+    public static final Pattern YAML_AND_JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(json)$");
+
     /**
      * 获取一个文件夹下的所有文件名符合条件的文件
      * @param folder 遍历的文件夹
