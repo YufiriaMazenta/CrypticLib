@@ -42,7 +42,7 @@ public interface ICmdExecutor {
      */
     default ICmdExecutor regSub(String name, BiFunction<CommandSender, List<String>, Boolean> executor) {
         SubcmdExecutor subcmdExecutor = new SubcmdExecutor(name, executor);
-        subcmdExecutor.regSub(subcmdExecutor);
+        regSub(subcmdExecutor);
         return this;
     }
 

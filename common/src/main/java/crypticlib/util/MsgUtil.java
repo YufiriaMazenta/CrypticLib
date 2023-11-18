@@ -37,7 +37,7 @@ public class MsgUtil {
         }
         if (receiver instanceof Player)
             msg = TextUtil.placeholder((Player) receiver, msg);
-        sendMsg(receiver, TextUtil.color(TextUtil.color(msg)));
+        sendMsg(receiver, TextUtil.toComponent(TextUtil.color(msg)));
     }
 
     /**
