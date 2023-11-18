@@ -123,6 +123,24 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
         return this;
     }
 
+    /**
+     * 与另外一个NbtTagCompound合并
+     * @param other 另外一个NbtTagCompound
+     * @param rewrite 当出现相同的key时，是否让另外一个重写本身的nbt
+     * @return 自身（合并完毕的NbtTagCompound）
+     */
+    public NbtTagCompound merge(NbtTagCompound other, boolean rewrite) {
+        other.value().forEach((key, nbt) -> {
+            if (value().containsKey(key)) {
+                if (rewrite)
+                    value().put(key, nbt);
+            } else {
+                value().put(key, nbt);
+            }
+        });
+        return this;
+    }
+
     public INbtTag<?> get(String key) {
         return nbtMap.get(key);
     }

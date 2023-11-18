@@ -8,12 +8,4 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface BukkitListener {
-
-    /**
-     * 是否注册此监听器
-     * @return 是否注册此监听器
-     */
-    boolean reg() default true;
-
-}
+public @interface BukkitListener { }

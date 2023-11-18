@@ -125,10 +125,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     private void regListeners(Set<Class<?>> listenerClasses) {
         for (Class<?> listenerClass : listenerClasses) {
             try {
-                BukkitListener listenerAnnotation = listenerClass.getAnnotation(BukkitListener.class);
-                if (!listenerAnnotation.reg())
-                    continue;
-
                 if (listenerClass.isEnum()) {
                     for (Object listenerEnum : listenerClass.getEnumConstants()) {
                         Bukkit.getPluginManager().registerEvents((Listener) listenerEnum, this);
@@ -158,9 +154,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
         for (Class<?> commandClass : pluginCommandClasses) {
             try {
                 BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
-                if (!commandAnnotation.reg())
-                    continue;
-
                 if (commandClass.isEnum()) {
                     for (Object cmdExecutorEnum : commandClass.getEnumConstants()) {
                         regCommand(commandMap, (IPluginCmdExecutor) cmdExecutorEnum, commandAnnotation);
@@ -183,7 +176,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         Constructor<PluginCommand> pluginCommandConstructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
         pluginCommandConstructor.setAccessible(true);
         command = pluginCommandConstructor.newInstance(commandAnnotation.name(), this);
-        command.setAliases(new ArrayList<>(Arrays.asList(commandAnnotation.alias())));
+        command.setAliases(new ArrayList<>(Arrays.asList(commandAnnotation.aliases())));
         command.setExecutor(pluginCommand);
         command.setTabCompleter(pluginCommand);
         if (!commandAnnotation.description().isEmpty())
