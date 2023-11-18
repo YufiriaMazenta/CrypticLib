@@ -1,4 +1,4 @@
-package crypticlib.annotations;
+package crypticlib.command;
 
 import java.lang.annotation.*;
 
@@ -17,7 +17,7 @@ public @interface BukkitCommand {
     String name();
 
     /**
-     * 命令所需的权限,空字符串即为无权限
+     * 命令所需的权限
      * @return 命令所需的权限
      */
     String permission() default "";

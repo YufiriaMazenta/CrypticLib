@@ -1,20 +1,18 @@
 package crypticlib;
 
-import crypticlib.annotations.BukkitCommand;
-import crypticlib.annotations.BukkitListener;
-import crypticlib.command.IPluginCmdExecutor;
+import crypticlib.command.BukkitCommand;
+import crypticlib.listener.BukkitListener;
+import crypticlib.command.CommandInfo;
+import crypticlib.command.RootCmdExecutor;
 import crypticlib.util.MsgUtil;
+import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.PluginCommand;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -33,7 +31,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public final void onEnable() {
         enable();
-        loadListenersAndCommands();
+        scanListenersAndCommands();
         checkVersion();
     }
 
@@ -81,7 +79,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         BukkitPlugin.highestSupportVersion = highestSupportVersion;
     }
 
-    private void loadListenersAndCommands() {
+    private void scanListenersAndCommands() {
         Set<Class<?>> listenerClasses = new HashSet<>();
         Set<Class<?>> pluginCommandClasses = new HashSet<>();
         //扫描类
@@ -143,50 +141,18 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
 
     private void regCommands(Set<Class<?>> pluginCommandClasses) {
-        Method getCommandMapMethod;
-        CommandMap commandMap;
-        try {
-            getCommandMapMethod = Bukkit.getServer().getClass().getMethod("getCommandMap");
-            commandMap = (CommandMap) getCommandMapMethod.invoke(Bukkit.getServer());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
         for (Class<?> commandClass : pluginCommandClasses) {
-            try {
-                BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
-                if (commandClass.isEnum()) {
-                    for (Object cmdExecutorEnum : commandClass.getEnumConstants()) {
-                        regCommand(commandMap, (IPluginCmdExecutor) cmdExecutorEnum, commandAnnotation);
-                    }
-                } else {
-                    Constructor<?> commandConstructor = commandClass.getDeclaredConstructor();
-                    commandConstructor.setAccessible(true);
-                    IPluginCmdExecutor cmdExecutor = (IPluginCmdExecutor) commandConstructor.newInstance();
-                    regCommand(commandMap, cmdExecutor, commandAnnotation);
+            BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
+            if (commandClass.isEnum()) {
+                for (Object cmdExecutorEnum : commandClass.getEnumConstants()) {
+                    CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), (RootCmdExecutor) cmdExecutorEnum);
                 }
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
+            } else {
+                Constructor<?> commandConstructor = ReflectUtil.getDeclaredConstructor(commandClass);
+                RootCmdExecutor cmdExecutor = (RootCmdExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
+                CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), cmdExecutor);
             }
         }
-    }
-
-
-    private void regCommand(CommandMap commandMap, IPluginCmdExecutor pluginCommand, BukkitCommand commandAnnotation) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        PluginCommand command;
-        Constructor<PluginCommand> pluginCommandConstructor = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
-        pluginCommandConstructor.setAccessible(true);
-        command = pluginCommandConstructor.newInstance(commandAnnotation.name(), this);
-        command.setAliases(new ArrayList<>(Arrays.asList(commandAnnotation.aliases())));
-        command.setExecutor(pluginCommand);
-        command.setTabCompleter(pluginCommand);
-        if (!commandAnnotation.description().isEmpty())
-            command.setDescription(commandAnnotation.description());
-        if (!commandAnnotation.permission().isEmpty())
-            command.setPermission(commandAnnotation.permission());
-        if (!commandAnnotation.usage().isEmpty())
-            command.setUsage(commandAnnotation.usage());
-
-        commandMap.register(this.getName().toLowerCase(), command);
     }
 
 }

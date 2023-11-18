@@ -175,6 +175,15 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
         return this;
     }
 
+    /**
+     * 将另外一个NbtTagList的内容全部添加到此NbtTagList
+     * @param nbtTagList 另外一个NbtTagList
+     */
+    public NbtTagList addAll(NbtTagList nbtTagList) {
+        this.value().addAll(nbtTagList.value());
+        return this;
+    }
+
     @Override
     public NbtType type() {
         return NbtType.LIST;

@@ -1,5 +1,6 @@
 package crypticlib;
 
+import crypticlib.command.CommandManager;
 import crypticlib.platform.BukkitPlatform;
 import crypticlib.platform.FoliaPlatform;
 import crypticlib.platform.IPlatform;
@@ -12,10 +13,12 @@ public class CrypticLib {
     private static IPlatform platform;
     private static int minecraftVersion;
     private static String nmsVersion;
+    private static final CommandManager commandManager;
 
     static {
         loadPlatform();
         loadVersion();
+        commandManager = CommandManager.INSTANCE;
     }
 
     /**
@@ -72,5 +75,8 @@ public class CrypticLib {
     }
 
 
+    public static CommandManager commandManager() {
+        return commandManager;
+    }
 
 }
