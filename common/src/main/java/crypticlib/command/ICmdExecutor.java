@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 /**
  * CrypticLib提供的命令接口，简便了对于Tab返回的编写
  */
-interface ICmdExecutor {
+public interface ICmdExecutor {
 
     /**
      * 获得子命令表
