@@ -15,8 +15,6 @@ import java.util.List;
  */
 public interface IPluginCmdExecutor extends TabExecutor, ICmdExecutor {
 
-    Plugin getPlugin();
-
     @Override
     default List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         return onTabComplete(sender, Arrays.asList(args));
@@ -24,18 +22,7 @@ public interface IPluginCmdExecutor extends TabExecutor, ICmdExecutor {
 
     @Override
     default boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length < 1) {
-            return false;
-        }
-        List<String> argList = new ArrayList<>(Arrays.asList(args));
-        ISubCmdExecutor subCommand = subCommands().get(argList.get(0));
-        if (subCommand != null) {
-            String perm = subCommand.permission();
-            if (perm == null || sender.hasPermission(perm)) {
-                return subCommand.onCommand(sender, argList.subList(1, argList.size()));
-            }
-        }
-        return false;
+        return onCommand(sender, Arrays.asList(args));
     }
 
 }

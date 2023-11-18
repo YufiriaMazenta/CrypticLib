@@ -2,8 +2,10 @@ package crypticlib.command;
 
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * CrypticLib提供的命令接口，简便了对于Tab返回的编写
@@ -22,11 +24,51 @@ interface ICmdExecutor {
      * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
      * @param subCommand 注册的命令
      */
-    default void regSubCommand(ISubCmdExecutor subCommand) {
-        subCommands().put(subCommand.subCommandName(), subCommand);
-        for (String alias : subCommand.alias()) {
+    default ICmdExecutor regSub(ISubCmdExecutor subCommand) {
+        subCommands().put(subCommand.name(), subCommand);
+        for (String alias : subCommand.aliases()) {
             subCommands().put(alias, subCommand);
         }
+        return this;
+    }
+
+    /**
+     * 获得命令默认执行的方法，当未输入参数或者没有子命令时执行
+     * @return 默认执行的方法
+     */
+    @Nullable default BiFunction<CommandSender, List<String>, Boolean> defExecFunc() {
+        return null;
+    }
+
+    /**
+     * 设置命令默认执行的方法，当未输入参数或者没有子命令时执行
+     * @param defExecFunc 默认执行的方法
+     */
+    @NotNull default ICmdExecutor setDefExecFunc(BiFunction<CommandSender, List<String>, Boolean> defExecFunc) {
+        return this;
+    }
+
+    /**
+     * 执行此子命令
+     * @param sender 发送此命令的人
+     * @param args 发送时的参数
+     * @return 执行结果
+     */
+    default boolean onCommand(CommandSender sender, List<String> args) {
+        if (args.isEmpty() || subCommands().isEmpty()) {
+            BiFunction<CommandSender, List<String>, Boolean> defExecFunc = defExecFunc();
+            if (defExecFunc != null)
+                return defExecFunc.apply(sender, args);
+            return true;
+        }
+        ISubCmdExecutor subCommand = subCommands().get(args.get(0));
+        if (subCommand != null) {
+            String perm = subCommand.permission();
+            if (perm == null || sender.hasPermission(perm)) {
+                return subCommand.onCommand(sender, args.subList(1, args.size()));
+            }
+        }
+        return true;
     }
 
     /**
