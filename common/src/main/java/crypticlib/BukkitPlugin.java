@@ -1,9 +1,9 @@
 package crypticlib;
 
-import crypticlib.command.BukkitCommand;
+import crypticlib.command.api.BukkitCommand;
+import crypticlib.command.api.CommandInfo;
+import crypticlib.command.impl.RootCmdExecutor;
 import crypticlib.listener.BukkitListener;
-import crypticlib.command.CommandInfo;
-import crypticlib.command.RootCmdExecutor;
 import crypticlib.util.MsgUtil;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
@@ -13,7 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 

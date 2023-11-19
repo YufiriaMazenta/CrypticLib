@@ -1,10 +1,14 @@
 package crypticlib.command;
 
+import crypticlib.command.api.CommandInfo;
+import crypticlib.command.impl.RootCmdExecutor;
+import crypticlib.command.impl.SubcmdExecutor;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
@@ -28,14 +32,14 @@ public enum CommandManager {
         registeredCommands = new CopyOnWriteArrayList<>();
     }
 
-    public CommandManager register(Plugin plugin, CommandInfo commandInfo, RootCmdExecutor rootCmdExecutor) {
+    public CommandManager register(Plugin plugin, CommandInfo commandInfo, TabExecutor commandExecutor) {
         PluginCommand pluginCommand = (PluginCommand) ReflectUtil.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
         pluginCommand.setAliases(Arrays.asList(commandInfo.aliases()));
-        pluginCommand.setExecutor(rootCmdExecutor);
-        pluginCommand.setTabCompleter(plugin);
         pluginCommand.setDescription(commandInfo.description());
         pluginCommand.setPermission(commandInfo.permission());
         pluginCommand.setUsage(commandInfo.usage());
+        pluginCommand.setExecutor(commandExecutor);
+        pluginCommand.setTabCompleter(commandExecutor);
         serverCommandMap.register(plugin.getName(), pluginCommand);
         registeredCommands.add(pluginCommand);
         return this;
@@ -51,10 +55,6 @@ public enum CommandManager {
 
     public static SubcmdExecutor subcommand(String name) {
         return new SubcmdExecutor(name);
-    }
-
-    public static RootCmdExecutor rootCommand() {
-        return new RootCmdExecutor();
     }
 
 }

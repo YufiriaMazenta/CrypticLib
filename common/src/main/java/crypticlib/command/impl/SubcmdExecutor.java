@@ -1,5 +1,6 @@
-package crypticlib.command;
+package crypticlib.command.impl;
 
+import crypticlib.command.api.ISubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,13 +13,13 @@ import java.util.function.BiFunction;
 /**
  * CrypticLib提供的子命令接口
  */
-public class SubcmdExecutor implements ICmdExecutor {
+public class SubcmdExecutor implements ISubcmdExecutor {
 
     private final String name;
     private String permission;
     private final List<String> aliases;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
-    private final Map<String, SubcmdExecutor> subcommands;
+    private final Map<String, ISubcmdExecutor> subcommands;
 
     public SubcmdExecutor(String name) {
         this(name, null, new ArrayList<>());
@@ -62,7 +63,7 @@ public class SubcmdExecutor implements ICmdExecutor {
     }
 
     @Override
-    public ICmdExecutor setExecutor(BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public ISubcmdExecutor setExecutor(BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
         return this;
     }
@@ -71,6 +72,7 @@ public class SubcmdExecutor implements ICmdExecutor {
      * 获取此子命令的名字
      * @return 子命令的名字
      */
+    @Override
     public String name() {
         return name;
     }
@@ -79,6 +81,7 @@ public class SubcmdExecutor implements ICmdExecutor {
      * 获取此子命令的别名
      * @return 子命令的别名
      */
+    @Override
     public List<String> aliases() {
         return aliases;
     }
@@ -87,6 +90,7 @@ public class SubcmdExecutor implements ICmdExecutor {
      * 获取此子命令所需的权限,如果不需要权限则返回null
      * @return 子命令所需权限
      */
+    @Override
     public String permission() {
         return permission;
     }
@@ -97,7 +101,7 @@ public class SubcmdExecutor implements ICmdExecutor {
     }
 
     @Override
-    public @NotNull Map<String, SubcmdExecutor> subcommands() {
+    public @NotNull Map<String, ISubcmdExecutor> subcommands() {
         return subcommands;
     }
 

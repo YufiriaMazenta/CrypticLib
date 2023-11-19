@@ -1,5 +1,6 @@
-package crypticlib.command;
+package crypticlib.command.api;
 
+import crypticlib.command.impl.SubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,19 +16,15 @@ public interface ICmdExecutor {
      * 获得子命令表
      * @return 命令的子命令表
      */
-    default @NotNull Map<String, SubcmdExecutor> subcommands() {
+    default @NotNull Map<String, ISubcmdExecutor> subcommands() {
         return new HashMap<>();
     }
 
     /**
      * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
-     * @param cmdExecutor 注册的命令
+     * @param subcmdExecutor 注册的命令
      */
-    default ICmdExecutor regSub(ICmdExecutor cmdExecutor) {
-        if (!(cmdExecutor instanceof SubcmdExecutor)) {
-            return this;
-        }
-        SubcmdExecutor subcmdExecutor = (SubcmdExecutor) cmdExecutor;
+    default ICmdExecutor regSub(ISubcmdExecutor subcmdExecutor) {
         subcommands().put(subcmdExecutor.name(), subcmdExecutor);
         for (String alias : subcmdExecutor.aliases()) {
             subcommands().put(alias, subcmdExecutor);
@@ -71,7 +68,7 @@ public interface ICmdExecutor {
         if (args.isEmpty() || subcommands().isEmpty()) {
             return execute(sender, args);
         }
-        SubcmdExecutor subCommand = subcommands().get(args.get(0));
+        ISubcmdExecutor subCommand = subcommands().get(args.get(0));
         if (subCommand != null) {
             String perm = subCommand.permission();
             if (perm == null || sender.hasPermission(perm)) {
@@ -93,7 +90,7 @@ public interface ICmdExecutor {
         if (args.size() <= 1) {
             List<String> tabList = new ArrayList<>();
             for (String subCmd : subcommands().keySet()) {
-                SubcmdExecutor subCommand = subcommands().get(subCmd);
+                ISubcmdExecutor subCommand = subcommands().get(subCmd);
                 if (subCommand.permission() != null) {
                     if (sender.hasPermission(subCommand.permission()))
                         tabList.add(subCmd);
@@ -104,7 +101,7 @@ public interface ICmdExecutor {
             tabList.removeIf(str -> !str.startsWith(args.get(0)));
             return tabList;
         }
-        SubcmdExecutor subCommand = subcommands().get(args.get(0));
+        ISubcmdExecutor subCommand = subcommands().get(args.get(0));
         if (subCommand != null) {
             if (subCommand.permission() != null) {
                 if (!sender.hasPermission(subCommand.permission()))

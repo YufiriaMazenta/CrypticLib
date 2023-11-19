@@ -1,4 +1,4 @@
-package crypticlib.command;
+package crypticlib.command.api;
 
 import java.lang.annotation.*;
 

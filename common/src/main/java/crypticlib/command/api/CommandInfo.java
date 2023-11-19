@@ -1,4 +1,4 @@
-package crypticlib.command;
+package crypticlib.command.api;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
