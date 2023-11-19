@@ -95,7 +95,8 @@ public class SubcmdExecutor implements ISubcmdExecutor {
         return permission;
     }
 
-    public SubcmdExecutor setPermission(String permission) {
+    @Override
+    public ISubcmdExecutor setPermission(String permission) {
         this.permission = permission;
         return this;
     }

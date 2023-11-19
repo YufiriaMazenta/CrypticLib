@@ -1,5 +1,6 @@
 package crypticlib.command.api;
 
+import crypticlib.command.impl.SubcmdExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;
@@ -25,5 +26,7 @@ public interface ISubcmdExecutor extends ICmdExecutor {
 
     @Override
     ISubcmdExecutor setExecutor(BiFunction<CommandSender, List<String>, Boolean> executor);
+
+    ISubcmdExecutor setPermission(String permission);
 
 }
