@@ -65,7 +65,7 @@ public interface ICmdExecutor {
      * @return 执行结果
      */
     default boolean onCommand(CommandSender sender, List<String> args) {
-        if (args.isEmpty() || subcommands().isEmpty()) {
+        if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
             return execute(sender, args);
         }
         ISubcmdExecutor subCommand = subcommands().get(args.get(0));
