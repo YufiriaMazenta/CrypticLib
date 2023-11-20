@@ -33,6 +33,14 @@ public interface IRootCmdExecutor extends TabExecutor, ICmdExecutor {
         return (IRootCmdExecutor) ICmdExecutor.super.regSub(name, executor);
     }
 
+    @Override
+    IRootCmdExecutor setTabArguments(List<String> tabArguments);
+
+    @Override
+    default IRootCmdExecutor addTabArguments(String tabArgument) {
+        return (IRootCmdExecutor) ICmdExecutor.super.addTabArguments(tabArgument);
+    }
+
     void register(Plugin plugin, CommandInfo commandInfo);
 
 }

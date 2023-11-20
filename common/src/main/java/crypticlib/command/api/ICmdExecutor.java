@@ -78,6 +78,18 @@ public interface ICmdExecutor {
         return true;
     }
 
+    @NotNull
+    default List<String> tabArguments() {
+        return new ArrayList<>();
+    }
+
+    ICmdExecutor setTabArguments(List<String> tabArguments);
+
+    default ICmdExecutor addTabArguments(String tabArgument) {
+        tabArguments().add(tabArgument);
+        return this;
+    }
+
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
      * @param sender 按下TAB的玩家或者控制台
@@ -85,32 +97,34 @@ public interface ICmdExecutor {
      * @return 返回的tab列表内容
      */
     default List<String> onTabComplete(CommandSender sender, List<String> args) {
-        if (subcommands().isEmpty())
-            return Collections.singletonList("");
-        if (args.size() <= 1) {
-            List<String> tabList = new ArrayList<>();
+        List<String> arguments = new ArrayList<>(tabArguments());
+        if (!subcommands().isEmpty()) {
+            if (args.size() > 1) {
+                ISubcmdExecutor subCommand = subcommands().get(args.get(0));
+                if (subCommand != null) {
+                    if (subCommand.permission() != null) {
+                        if (!sender.hasPermission(subCommand.permission()))
+                            return Collections.singletonList("");
+                    }
+                    return subCommand.onTabComplete(sender, args.subList(1, args.size()));
+                }
+                else
+                    return Collections.singletonList("");
+
+            }
             for (String subCmd : subcommands().keySet()) {
                 ISubcmdExecutor subCommand = subcommands().get(subCmd);
                 if (subCommand.permission() != null) {
                     if (sender.hasPermission(subCommand.permission()))
-                        tabList.add(subCmd);
+                        arguments.add(subCmd);
                 } else {
-                    tabList.add(subCmd);
+                    arguments.add(subCmd);
                 }
             }
-            tabList.removeIf(str -> !str.startsWith(args.get(0)));
-            return tabList;
         }
-        ISubcmdExecutor subCommand = subcommands().get(args.get(0));
-        if (subCommand != null) {
-            if (subCommand.permission() != null) {
-                if (!sender.hasPermission(subCommand.permission()))
-                    return Collections.singletonList("");
-            }
-            return subCommand.onTabComplete(sender, args.subList(1, args.size()));
-        }
-        else
-            return Collections.singletonList("");
+        arguments.removeIf(str -> !str.startsWith(args.get(0)));
+        return arguments;
+
     }
 
 }
