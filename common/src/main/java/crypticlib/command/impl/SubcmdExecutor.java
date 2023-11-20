@@ -1,5 +1,6 @@
 package crypticlib.command.impl;
 
+import crypticlib.command.api.ICmdExecutor;
 import crypticlib.command.api.ISubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,8 @@ public class SubcmdExecutor implements ISubcmdExecutor {
 
     private final String name;
     private String permission;
-    private final List<String> aliases;
+    private List<String> aliases;
+    private List<String> tabArguments;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
     private final Map<String, ISubcmdExecutor> subcommands;
 
@@ -55,6 +57,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
         this.aliases = aliases;
         this.executor = executor;
         this.subcommands = new ConcurrentHashMap<>();
+        this.tabArguments = new ArrayList<>();
     }
 
     @Override
@@ -65,6 +68,17 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     @Override
     public ISubcmdExecutor setExecutor(BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
+        return this;
+    }
+
+    @Override
+    public @NotNull List<String> tabArguments() {
+        return tabArguments;
+    }
+
+    @Override
+    public ISubcmdExecutor setTabArguments(List<String> tabArguments) {
+        this.tabArguments = tabArguments;
         return this;
     }
 
@@ -84,6 +98,18 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     @Override
     public List<String> aliases() {
         return aliases;
+    }
+
+    @Override
+    public ISubcmdExecutor setAliases(List<String> aliases) {
+        this.aliases = aliases;
+        return this;
+    }
+
+    @Override
+    public ISubcmdExecutor addAliases(String alias) {
+        this.aliases.add(alias);
+        return this;
     }
 
     /**
