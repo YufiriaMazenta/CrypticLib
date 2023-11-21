@@ -20,14 +20,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
     private boolean autoSave, autoReload;
 
     /**
-     * 从本插件中释放创建一个配置文件
-     * @param path 相对于插件文件夹的路径
-     */
-    public YamlConfigWrapper(String path) {
-        this(BukkitPlugin.instance(), path);
-    }
-
-    /**
      * 从指定插件中释放并创建一个配置文件
      * @param plugin 创建配置文件的插件
      * @param path 相对插件文件夹的路径
