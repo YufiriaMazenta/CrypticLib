@@ -53,10 +53,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
      */
     public void disable() {}
 
-    public static BukkitPlugin instance() {
-        return INSTANCE;
-    }
-
     private static void checkVersion() {
         int version = CrypticLib.minecraftVersion();
         if (version > highestSupportVersion || version < lowestSupportVersion) {
