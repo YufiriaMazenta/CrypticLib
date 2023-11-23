@@ -1,6 +1,5 @@
-package crypticlib.command.api;
+package crypticlib.command;
 
-import crypticlib.command.impl.SubcmdExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.util.List;

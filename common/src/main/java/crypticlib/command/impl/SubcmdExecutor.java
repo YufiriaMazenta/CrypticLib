@@ -1,7 +1,6 @@
 package crypticlib.command.impl;
 
-import crypticlib.command.api.ICmdExecutor;
-import crypticlib.command.api.ISubcmdExecutor;
+import crypticlib.command.ISubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 

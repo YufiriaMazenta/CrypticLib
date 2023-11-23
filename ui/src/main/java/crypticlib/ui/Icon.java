@@ -14,6 +14,6 @@ public interface Icon {
 
     ItemStack display();
 
-    Icon setDisplay(ItemStack item);
+    Icon setDisplay(ItemStack display);
 
 }

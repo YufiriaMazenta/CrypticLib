@@ -1,7 +1,6 @@
 package crypticlib.config.impl;
 
-import crypticlib.BukkitPlugin;
-import crypticlib.config.api.IConfigWrapper;
+import crypticlib.config.IConfigWrapper;
 import crypticlib.util.FileUtil;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;

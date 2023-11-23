@@ -1,7 +1,5 @@
 package crypticlib.command;
 
-import crypticlib.command.api.CommandInfo;
-import crypticlib.command.impl.RootCmdExecutor;
 import crypticlib.command.impl.SubcmdExecutor;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;

@@ -1,8 +1,7 @@
 package crypticlib;
 
-import crypticlib.command.CommandManager;
-import crypticlib.command.api.BukkitCommand;
-import crypticlib.command.api.CommandInfo;
+import crypticlib.command.BukkitCommand;
+import crypticlib.command.CommandInfo;
 import crypticlib.command.impl.RootCmdExecutor;
 import crypticlib.listener.BukkitListener;
 import crypticlib.util.MsgUtil;

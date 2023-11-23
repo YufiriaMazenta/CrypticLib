@@ -1,4 +1,4 @@
-package crypticlib.command.api;
+package crypticlib.command;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

@@ -1,4 +1,4 @@
-package crypticlib.config.api;
+package crypticlib.config;
 
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
