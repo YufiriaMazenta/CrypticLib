@@ -20,7 +20,7 @@ public class MenuHandler implements Listener {
         InventoryHolder holder = event.getView().getTopInventory().getHolder();
         if (!(holder instanceof Menu))
             return;
-        ((Menu) holder).click(event.getSlot(), event);
+        ((Menu) holder).onClick(event.getSlot(), event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
