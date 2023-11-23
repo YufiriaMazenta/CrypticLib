@@ -1,5 +1,6 @@
 package crypticlib;
 
+import crypticlib.command.CommandManager;
 import crypticlib.command.api.BukkitCommand;
 import crypticlib.command.api.CommandInfo;
 import crypticlib.command.impl.RootCmdExecutor;
@@ -21,13 +22,11 @@ import java.util.jar.JarFile;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
-    private static BukkitPlugin INSTANCE;
-    private static int lowestSupportVersion = 11200;
-    private static int highestSupportVersion = 12002;
+    private int lowestSupportVersion = 11200;
+    private int highestSupportVersion = 12002;
 
     protected BukkitPlugin() {
         super();
-        INSTANCE = this;
     }
 
     @Override
@@ -39,8 +38,9 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void onDisable() {
-        CrypticLib.platform().scheduler().cancelTasks(this);
         disable();
+        CrypticLib.platform().scheduler().cancelTasks(this);
+        CrypticLib.commandManager().unregisterAll();
     }
 
     /**
@@ -53,28 +53,28 @@ public abstract class BukkitPlugin extends JavaPlugin {
      */
     public void disable() {}
 
-    private static void checkVersion() {
+    private void checkVersion() {
         int version = CrypticLib.minecraftVersion();
         if (version > highestSupportVersion || version < lowestSupportVersion) {
             MsgUtil.info("&c&lUnsupported Version");
-            Bukkit.getPluginManager().disablePlugin(BukkitPlugin.INSTANCE);
+            Bukkit.getPluginManager().disablePlugin(this);
         }
     }
 
-    public static int lowestSupportVersion() {
+    public int lowestSupportVersion() {
         return lowestSupportVersion;
     }
 
-    public static void setLowestSupportVersion(int lowestSupportVersion) {
-        BukkitPlugin.lowestSupportVersion = lowestSupportVersion;
+    public void setLowestSupportVersion(int lowestSupportVersion) {
+        this.lowestSupportVersion = lowestSupportVersion;
     }
 
-    public static int highestSupportVersion() {
+    public int highestSupportVersion() {
         return highestSupportVersion;
     }
 
-    public static void setHighestSupportVersion(int highestSupportVersion) {
-        BukkitPlugin.highestSupportVersion = highestSupportVersion;
+    public void setHighestSupportVersion(int highestSupportVersion) {
+        this.highestSupportVersion = highestSupportVersion;
     }
 
     private void scanListenersAndCommands() {

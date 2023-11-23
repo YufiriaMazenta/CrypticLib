@@ -1,7 +1,7 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "0.2.3"
+rootProject.version = "0.2.5"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
 var repositoryUrl = "http://repo.crypticlib.com:8081/repository/"
@@ -25,6 +25,8 @@ repositories {
 dependencies {
     implementation(project(":common"))
     implementation(project(":nms"))
+    //暂未完成UI模块,故不加入
+    compileOnly(project(":ui"))
 }
 
 tasks {
@@ -83,8 +85,12 @@ subprojects {
     publishing {
         publications.create<MavenPublication>("maven") {
             from(components["java"])
-            groupId = "${rootProject.group}${project.path.replace(":", ".")}"
-            artifactId = project.name
+            var path = project.path
+            val lastColonIndex = path.lastIndexOf(":")
+            val name = path.substring(lastColonIndex + 1)
+            path = path.substring(0, lastColonIndex).replace(":", ".")
+            groupId = "${rootProject.group}${path}"
+            artifactId = name
         }
         repositories {
             maven {
