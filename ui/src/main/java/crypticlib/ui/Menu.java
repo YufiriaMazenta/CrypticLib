@@ -1,7 +1,5 @@
 package crypticlib.ui;
 
-import net.minecraft.world.inventory.Slot;
-import org.bukkit.Bukkit;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -11,20 +9,23 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 
+//todo 设计不合理，待重构
 public interface Menu extends InventoryHolder {
 
-    int menuSize();
+    List<String> shape();
 
-    Map<Integer, Icon> iconMap();
+    Map<Character, Icon> iconMap();
 
-    Menu setIconMap(Map<Integer, Slot> iconMap);
+    Map<Integer, Icon> iconSlotMap();
+
+    Menu setIconMap(Map<Integer, Icon> iconMap);
 
     default Icon setIcon(int slot, Icon icon) {
-        return iconMap().put(slot, icon);
+        return iconSlotMap().put(slot, icon);
     }
 
     default Icon removeIcon(int slot) {
-        return iconMap().remove(slot);
+        return iconSlotMap().remove(slot);
     }
 
     List<Panel> panelList();
@@ -42,32 +43,38 @@ public interface Menu extends InventoryHolder {
     }
 
     default Menu draw() {
-        if (panelList() == null)
-            return this;
-        for (Panel panel : panelList()) {
-            panel.draw(this);
-        }
+//        if (panelList() == null)
+//            return this;
+//        for (Panel panel : panelList()) {
+//            panel.draw(this);
+//        }
+        //todo
         return this;
     }
 
     default Icon click(int slot, InventoryClickEvent event) {
-        if (!iconMap().containsKey(slot)) {
+        if (!iconSlotMap().containsKey(slot)) {
             event.setCancelled(true);
             return null;
         }
-        return iconMap().get(slot).click(event);
+        return iconSlotMap().get(slot).click(event);
     }
 
     @NotNull
     @Override
     default Inventory getInventory() {
-        Inventory inventory = Bukkit.createInventory(this, menuSize());
-        iconMap().forEach((slot, icon) -> {
-            inventory.setItem(slot, icon.display());
-        });
-        return inventory;
+//        Inventory inventory = Bukkit.createInventory(this, menuSize());
+//        iconSlotMap().forEach((slot, icon) -> {
+//            inventory.setItem(slot, icon.display());
+//        });
+//        return inventory;
+        return null;
     }
 
-    void onClose(InventoryCloseEvent event);
+    /**
+     * 关闭页面时执行的方法
+     * @param event 关闭页面的事件
+     */
+    default void onClose(InventoryCloseEvent event) {}
 
 }
