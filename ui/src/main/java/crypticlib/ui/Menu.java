@@ -5,30 +5,36 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 public class Menu implements InventoryHolder {
 
-    private List<String> layout;
-    private Map<Character, Icon> layoutIconMap;
-    private Map<Integer, Icon> slotMap;
-    private String title;
+    private MenuDisplay display;
+    private final Map<Integer, Icon> slotMap;
+    private final Player player;
+    private BiConsumer<Menu, InventoryOpenEvent> openAction;
+    private BiConsumer<Menu, InventoryCloseEvent> closeAction;
 
-    public Menu(List<String> layout, Map<Character, Icon> layoutIconMap, String title) {
-        this.layout = layout;
-        this.layoutIconMap = layoutIconMap;
-        this.title = title;
+    public Menu(Player player, MenuDisplay display) {
+        this(player, display, (m, e) -> {}, (m, e) -> {});
+    }
+
+    public Menu(Player player, MenuDisplay display, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+        this.player = player;
+        this.display = display;
         this.slotMap = new ConcurrentHashMap<>();
-        parseLayout();
+        this.openAction = openAction;
+        this.closeAction = closeAction;
     }
 
     public Icon onClick(int slot, InventoryClickEvent event) {
@@ -44,13 +50,25 @@ public class Menu implements InventoryHolder {
         return slotMap.get(slot).onClick(event);
     }
 
-    public Menu onClose(InventoryCloseEvent event) {
+    public void onOpen(InventoryOpenEvent event) {
+        openAction.accept(this, event);
+    }
+
+    public void onClose(InventoryCloseEvent event) {
+        closeAction.accept(this, event);
+    }
+
+
+    public Menu openMenu() {
+        player.openInventory(getInventory());
         return this;
     }
 
-    public Inventory build(Player player) {
-        int size = Math.min(layout.size() * 9, 54);
-        title = TextUtil.color(TextUtil.placeholder(player, title));
+    @Override
+    public @NotNull Inventory getInventory() {
+        parseLayout();
+        int size = Math.min(display.layout().layout().size() * 9, 54);
+        String title = TextUtil.color(TextUtil.placeholder(player, display.title()));
         Inventory inventory = Bukkit.createInventory(this, size, title);
         slotMap.forEach((slot, icon) -> {
             ItemStack display = icon.display().clone();
@@ -71,49 +89,22 @@ public class Menu implements InventoryHolder {
 
     public Menu parseLayout() {
         slotMap.clear();
-        for (int x = 0; x < layout.size(); x++) {
-            String line = layout.get(x);
+        for (int x = 0; x < display.layout().layout().size(); x++) {
+            String line = display.layout().layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
-                char signal = line.charAt(y);
-                if (!layoutIconMap.containsKey(signal)) {
+                char key = line.charAt(y);
+                if (!display.layout().layoutMap().containsKey(key)) {
                     continue;
                 }
                 int slot = x * 9 + y;
-                slotMap.put(slot, layoutMap().get(signal));
+                slotMap.put(slot, display.layout().layoutMap().get(key));
             }
         }
         return this;
     }
 
-    public List<String> layout() {
-        return new ArrayList<>(layout);
-    }
-
-    public Menu setLayout(List<String> layout) {
-        if (layout.size() > 6) {
-            throw new IllegalArgumentException("Layouts with more than six rows are not supported");
-        }
-        this.layout = layout;
-        parseLayout();
-        return this;
-    }
-
-    public Map<Character, Icon> layoutMap() {
-        return new ConcurrentHashMap<>(layoutIconMap);
-    }
-
-    public Menu setLayoutMap(Map<Character, Icon> layoutMap) {
-        this.layoutIconMap = layoutMap;
-        return this;
-    }
-
     public Map<Integer, Icon> slotMap() {
         return slotMap;
-    }
-
-    public Menu setSlotMap(Map<Integer, Icon> slotMap) {
-        this.slotMap = slotMap;
-        return this;
     }
 
     /**
@@ -135,19 +126,35 @@ public class Menu implements InventoryHolder {
         return slotMap.remove(slot);
     }
 
-    public String title() {
-        return title;
+    public Player player() {
+        return player;
     }
 
-    public Menu setTitle(String title) {
-        this.title = title;
+    public MenuDisplay display() {
+        return display;
+    }
+
+    public Menu setDisplay(MenuDisplay display) {
+        this.display = display;
         return this;
     }
 
-    @NotNull
-    @Override
-    public Inventory getInventory() {
-        throw new UnsupportedOperationException("To create a menu, you must specify a player to resolve the placeholders for the menu and icon");
+    public BiConsumer<Menu, InventoryOpenEvent> openAction() {
+        return openAction;
+    }
+
+    public Menu setOpenAction(BiConsumer<Menu, InventoryOpenEvent> openAction) {
+        this.openAction = openAction;
+        return this;
+    }
+
+    public BiConsumer<Menu, InventoryCloseEvent> closeAction() {
+        return closeAction;
+    }
+
+    public Menu setCloseAction(BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+        this.closeAction = closeAction;
+        return this;
     }
 
 }

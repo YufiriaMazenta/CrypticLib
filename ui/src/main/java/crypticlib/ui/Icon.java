@@ -1,5 +1,6 @@
 package crypticlib.ui;
 
+import crypticlib.nms.item.Item;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,6 +13,14 @@ public class Icon {
 
     public Icon(ItemStack display) {
         this(display, event -> event.setCancelled(true));
+    }
+
+    public Icon(Item item) {
+        this(item.buildBukkit());
+    }
+
+    public Icon(Item item, Consumer<InventoryClickEvent> clickConsumer) {
+        this(item.buildBukkit(), clickConsumer);
     }
 
     public Icon(ItemStack display, Consumer<InventoryClickEvent> clickConsumer) {
