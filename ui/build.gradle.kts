@@ -6,4 +6,6 @@ dependencies {
     compileOnly("org.spigotmc:spigot:1.20")
     compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
     compileOnly(project(":common"))
+    compileOnly(project(":nms"))
+    compileOnly(project(":nms:common"))
 }
