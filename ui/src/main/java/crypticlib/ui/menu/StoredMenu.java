@@ -19,18 +19,18 @@ import java.util.function.BiConsumer;
 public class StoredMenu extends Menu {
 
     private final Map<Integer, ItemStack> storedItems;
-    private boolean returnStoredItems;
+    private boolean retrieveStoredItems;
 
     public StoredMenu(Player player, MenuDisplay display) {
         super(player, display);
         storedItems = new ConcurrentHashMap<>();
-        returnStoredItems = true;
+        retrieveStoredItems = true;
     }
 
     public StoredMenu(Player player, MenuDisplay display, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, display, openAction, closeAction);
         storedItems = new ConcurrentHashMap<>();
-        returnStoredItems = true;
+        retrieveStoredItems = true;
     }
 
     @Override
@@ -65,7 +65,12 @@ public class StoredMenu extends Menu {
         return this;
     }
 
-    public StoredMenu returnStoredItems() {
+    /**
+     * 将玩家放入的物品返还
+     */
+    public void retrieveItems() {
+        if (retrieveStoredItems)
+            return;
         ItemStack[] returnItems = new ItemStack[storedItems.size()];
         int i = 0;
         for (Integer slot : storedItems.keySet()) {
@@ -75,12 +80,11 @@ public class StoredMenu extends Menu {
         }
         HashMap<Integer, ItemStack> failedItems = player().getInventory().addItem(returnItems);
         if (failedItems.isEmpty())
-            return this;
+            return;
         for (ItemStack item : failedItems.values()) {
             player().getWorld().dropItem(player().getLocation(), item);
         }
         storedItems.clear();
-        return this;
     }
 
     @Override
@@ -112,20 +116,19 @@ public class StoredMenu extends Menu {
     public void onClose(InventoryCloseEvent event) {
         refreshStoredItems(event.getInventory());
         super.onClose(event);
-        if (returnStoredItems)
-            returnStoredItems();
+        retrieveItems();
     }
 
     public Map<Integer, ItemStack> storedItems() {
         return storedItems;
     }
 
-    public boolean isReturnStoredItems() {
-        return returnStoredItems;
+    public boolean isRetrieveStoredItems() {
+        return retrieveStoredItems;
     }
 
-    public StoredMenu setReturnStoredItems(boolean returnStoredItems) {
-        this.returnStoredItems = returnStoredItems;
+    public StoredMenu setRetrieveStoredItems(boolean retrieveStoredItems) {
+        this.retrieveStoredItems = retrieveStoredItems;
         return this;
     }
 
