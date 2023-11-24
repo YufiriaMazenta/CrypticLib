@@ -9,9 +9,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -19,34 +17,30 @@ import java.util.function.BiConsumer;
 public class StoredMenu extends Menu {
 
     private final Map<Integer, ItemStack> storedItems;
-    private final List<InventoryAction> disallowActions;
     private boolean returnStoredItems;
 
     public StoredMenu(Player player, MenuDisplay display) {
         super(player, display);
         storedItems = new ConcurrentHashMap<>();
-        disallowActions = new ArrayList<>();
-        disallowActions.add(InventoryAction.COLLECT_TO_CURSOR);
         returnStoredItems = true;
     }
 
     public StoredMenu(Player player, MenuDisplay display, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, display, openAction, closeAction);
         storedItems = new ConcurrentHashMap<>();
-        disallowActions = new ArrayList<>();
-        disallowActions.add(InventoryAction.COLLECT_TO_CURSOR);
         returnStoredItems = true;
     }
 
     @Override
     public Icon onClick(int slot, InventoryClickEvent event) {
+        InventoryAction action = event.getAction();
         if (!event.getView().getTopInventory().equals(event.getClickedInventory())) {
-            if (disallowActions.contains(event.getAction()))
+            if (action.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY) || action.equals(InventoryAction.COLLECT_TO_CURSOR))
                 event.setCancelled(true);
             return null;
         }
         if (!slotMap().containsKey(slot)) {
-            if (disallowActions.contains(event.getAction())) {
+            if (action.equals(InventoryAction.COLLECT_TO_CURSOR)) {
                 event.setCancelled(true);
                 return null;
             }
@@ -57,7 +51,7 @@ public class StoredMenu extends Menu {
         return slotMap().get(slot).onClick(event);
     }
 
-    protected StoredMenu refreshStoredItems(Inventory inventory) {
+    public StoredMenu refreshStoredItems(Inventory inventory) {
         storedItems.clear();
         for (int i = 0; i < inventory.getSize(); i++) {
             if (slotMap().containsKey(i))
@@ -69,7 +63,7 @@ public class StoredMenu extends Menu {
         return this;
     }
 
-    protected StoredMenu returnStoredItems() {
+    public StoredMenu returnStoredItems() {
         ItemStack[] returnItems = new ItemStack[storedItems.size()];
         int i = 0;
         for (Integer slot : storedItems.keySet()) {
