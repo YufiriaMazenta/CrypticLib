@@ -1,4 +1,4 @@
-package crypticlib.ui;
+package crypticlib.ui.display;
 
 import java.util.List;
 import java.util.Map;

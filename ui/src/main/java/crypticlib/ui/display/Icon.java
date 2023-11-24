@@ -1,4 +1,4 @@
-package crypticlib.ui;
+package crypticlib.ui.display;
 
 import crypticlib.nms.item.Item;
 import org.bukkit.event.inventory.InventoryClickEvent;
