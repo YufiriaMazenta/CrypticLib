@@ -51,7 +51,7 @@ public class MenuHandler implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         InventoryHolder inventoryHolder = event.getPlayer().getInventory().getHolder();
         if (inventoryHolder instanceof StoredMenu) {
-            ((StoredMenu) inventoryHolder).refreshStoredItems(event.getPlayer().getInventory()).returnStoredItems();
+            ((StoredMenu) inventoryHolder).refreshStoredItems(event.getPlayer().getInventory()).retrieveItems();
         }
     }
 
