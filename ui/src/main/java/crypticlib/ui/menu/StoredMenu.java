@@ -69,7 +69,7 @@ public class StoredMenu extends Menu {
      * 将玩家放入的物品返还
      */
     public void retrieveItems() {
-        if (retrieveStoredItems)
+        if (!retrieveStoredItems)
             return;
         ItemStack[] returnItems = new ItemStack[storedItems.size()];
         int i = 0;
