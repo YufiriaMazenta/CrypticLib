@@ -19,18 +19,18 @@ import java.util.function.BiConsumer;
 public class StoredMenu extends Menu {
 
     private final Map<Integer, ItemStack> storedItems;
-    private boolean retrieveStoredItems;
+    private boolean returnStoredItems;
 
     public StoredMenu(Player player, MenuDisplay display) {
         super(player, display);
         storedItems = new ConcurrentHashMap<>();
-        retrieveStoredItems = true;
+        returnStoredItems = true;
     }
 
     public StoredMenu(Player player, MenuDisplay display, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, display, openAction, closeAction);
         storedItems = new ConcurrentHashMap<>();
-        retrieveStoredItems = true;
+        returnStoredItems = true;
     }
 
     @Override
@@ -68,8 +68,8 @@ public class StoredMenu extends Menu {
     /**
      * 将玩家放入的物品返还
      */
-    public void retrieveItems() {
-        if (!retrieveStoredItems)
+    public void returnItems() {
+        if (!returnStoredItems)
             return;
         ItemStack[] returnItems = new ItemStack[storedItems.size()];
         int i = 0;
@@ -116,19 +116,19 @@ public class StoredMenu extends Menu {
     public void onClose(InventoryCloseEvent event) {
         refreshStoredItems(event.getInventory());
         super.onClose(event);
-        retrieveItems();
+        returnItems();
     }
 
     public Map<Integer, ItemStack> storedItems() {
         return storedItems;
     }
 
-    public boolean isRetrieveStoredItems() {
-        return retrieveStoredItems;
+    public boolean isReturnStoredItems() {
+        return returnStoredItems;
     }
 
-    public StoredMenu setRetrieveStoredItems(boolean retrieveStoredItems) {
-        this.retrieveStoredItems = retrieveStoredItems;
+    public StoredMenu setReturnStoredItems(boolean returnStoredItems) {
+        this.returnStoredItems = returnStoredItems;
         return this;
     }
 
