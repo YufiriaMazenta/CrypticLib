@@ -1,8 +1,8 @@
 package crypticlib.ui.handler;
 
 import crypticlib.listener.BukkitListener;
-import crypticlib.ui.Menu;
-import crypticlib.ui.StoredMenu;
+import crypticlib.ui.menu.Menu;
+import crypticlib.ui.menu.StoredMenu;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;

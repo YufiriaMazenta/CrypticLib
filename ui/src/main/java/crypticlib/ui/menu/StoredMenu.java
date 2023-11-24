@@ -1,5 +1,7 @@
-package crypticlib.ui;
+package crypticlib.ui.menu;
 
+import crypticlib.ui.display.Icon;
+import crypticlib.ui.display.MenuDisplay;
 import crypticlib.util.ItemUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
