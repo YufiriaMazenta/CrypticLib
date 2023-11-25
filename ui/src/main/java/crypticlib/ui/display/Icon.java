@@ -1,8 +1,11 @@
 package crypticlib.ui.display;
 
 import crypticlib.nms.item.Item;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.function.Consumer;
 
@@ -10,6 +13,19 @@ public class Icon {
 
     private ItemStack display;
     private Consumer<InventoryClickEvent> clickConsumer;
+
+    public Icon(Material material, String name) {
+        this(material, name, event -> event.setCancelled(true));
+    }
+
+    public Icon(Material material, String name, Consumer<InventoryClickEvent> clickConsumer) {
+        ItemStack display = new ItemStack(material);
+        ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(material);
+        itemMeta.setDisplayName(name);
+        display.setItemMeta(itemMeta);
+        this.display = display;
+        this.clickConsumer = clickConsumer;
+    }
 
     public Icon(ItemStack display) {
         this(display, event -> event.setCancelled(true));
