@@ -1,6 +1,8 @@
 package crypticlib.nms.entity;
 
 import crypticlib.nms.nbt.NbtTagCompound;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Entity;
 
 /**
@@ -37,5 +39,16 @@ public abstract class ProxyEntity {
     public abstract ProxyEntity saveNbtToEntity();
 
     public abstract void fromNms();
+
+    public HoverEvent toHover() {
+        return new HoverEvent(
+            HoverEvent.Action.SHOW_ENTITY,
+            new net.md_5.bungee.api.chat.hover.content.Entity(
+                bukkit.getType().getKey().toString(),
+                bukkit.getUniqueId().toString(),
+                new TextComponent(TextComponent.fromLegacyText(bukkit.getName()))
+            )
+        );
+    }
 
 }

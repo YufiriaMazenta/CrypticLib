@@ -69,7 +69,7 @@ public abstract class NbtTagByteArray implements INbtTag<byte[]>, INumberNbt {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

@@ -59,7 +59,7 @@ public abstract class NbtTagShort implements INbtTag<Short>, INumberNbt {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

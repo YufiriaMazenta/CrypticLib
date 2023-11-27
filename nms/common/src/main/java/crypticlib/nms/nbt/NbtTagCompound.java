@@ -196,7 +196,7 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

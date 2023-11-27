@@ -69,7 +69,7 @@ public abstract class NbtTagLongArray implements INbtTag<long[]>, INumberNbt {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

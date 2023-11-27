@@ -54,7 +54,7 @@ public abstract class NbtTagString implements INbtTag<String> {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

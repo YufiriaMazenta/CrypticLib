@@ -3,10 +3,14 @@ package crypticlib.nms.item;
 import com.google.gson.JsonObject;
 import crypticlib.nms.nbt.NbtTagCompound;
 import crypticlib.util.JsonUtil;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ItemTag;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class Item {
 
@@ -109,6 +113,16 @@ public abstract class Item {
         jsonObject.add("nbt", nbtTagCompound().toJson());
         jsonObject.addProperty("amount", amount());
         return jsonObject;
+    }
+
+    public HoverEvent toHover() {
+        return new HoverEvent(
+                HoverEvent.Action.SHOW_ITEM,
+                new net.md_5.bungee.api.chat.hover.content.Item(
+                        Objects.requireNonNull(Material.matchMaterial(material)).getKey().toString(),
+                        amount,
+                        ItemTag.ofNbt(nbtTagCompound.toString()))
+        );
     }
 
     @Override
