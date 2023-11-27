@@ -2,11 +2,16 @@ package crypticlib.ui.display;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 public class MenuDisplay {
 
     private String title;
     private MenuLayout layout;
+
+    public MenuDisplay(Supplier<MenuLayout> layoutSupplier) {
+        this(layoutSupplier.get());
+    }
 
     public MenuDisplay(MenuLayout layout) {
         this.layout = layout;
@@ -16,6 +21,10 @@ public class MenuDisplay {
     public MenuDisplay(String title) {
         this.title = title;
         this.layout = new MenuLayout(new ArrayList<>(), new HashMap<>());
+    }
+
+    public MenuDisplay(String title, Supplier<MenuLayout> layoutSupplier) {
+        this(title, layoutSupplier.get());
     }
 
     public MenuDisplay(String title, MenuLayout layout) {

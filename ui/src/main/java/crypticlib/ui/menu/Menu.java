@@ -4,6 +4,7 @@ import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.util.TextUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public class Menu implements InventoryHolder {
 
@@ -26,7 +28,15 @@ public class Menu implements InventoryHolder {
     private final Player player;
     private BiConsumer<Menu, InventoryOpenEvent> openAction;
     private BiConsumer<Menu, InventoryCloseEvent> closeAction;
+    private Inventory openedInventory;
 
+    public Menu(Player player, Supplier<MenuDisplay> displaySupplier) {
+        this(player, displaySupplier.get());
+    }
+
+    public Menu(Player player, Supplier<MenuDisplay> displaySupplier, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+        this(player, displaySupplier.get(), openAction, closeAction);
+    }
     public Menu(Player player, MenuDisplay display) {
         this(player, display, (m, e) -> {}, (m, e) -> {});
     }
@@ -62,16 +72,42 @@ public class Menu implements InventoryHolder {
 
 
     public Menu openMenu() {
-        player.openInventory(getInventory());
+        this.openedInventory = getInventory();
+        player.openInventory(openedInventory);
         return this;
     }
 
     @Override
     public @NotNull Inventory getInventory() {
-        parseLayout();
+        parseDisplay();
         int size = Math.min(display.layout().layout().size() * 9, 54);
         String title = TextUtil.color(TextUtil.placeholder(player, display.title()));
         Inventory inventory = Bukkit.createInventory(this, size, title);
+        draw(inventory);
+        return inventory;
+    }
+
+    protected Menu parseDisplay() {
+        slotMap.clear();
+        for (int x = 0; x < display.layout().layout().size(); x++) {
+            String line = display.layout().layout().get(x);
+            for (int y = 0; y < Math.min(line.length(), 9); y++) {
+                char key = line.charAt(y);
+                if (!display.layout().layoutMap().containsKey(key)) {
+                    continue;
+                }
+                int slot = x * 9 + y;
+                slotMap.put(slot, display.layout().layoutMap().get(key));
+            }
+        }
+        if (openedInventory != null) {
+            openedInventory.clear();
+            draw(openedInventory);
+        }
+        return this;
+    }
+
+    protected void draw(Inventory inventory) {
         slotMap.forEach((slot, icon) -> {
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
@@ -86,26 +122,9 @@ public class Menu implements InventoryHolder {
             }
             inventory.setItem(slot, display);
         });
-        return inventory;
     }
 
-    public Menu parseLayout() {
-        slotMap.clear();
-        for (int x = 0; x < display.layout().layout().size(); x++) {
-            String line = display.layout().layout().get(x);
-            for (int y = 0; y < Math.min(line.length(), 9); y++) {
-                char key = line.charAt(y);
-                if (!display.layout().layoutMap().containsKey(key)) {
-                    continue;
-                }
-                int slot = x * 9 + y;
-                slotMap.put(slot, display.layout().layoutMap().get(key));
-            }
-        }
-        return this;
-    }
-
-    public Map<Integer, Icon> slotMap() {
+    protected Map<Integer, Icon> slotMap() {
         return slotMap;
     }
 
@@ -116,6 +135,8 @@ public class Menu implements InventoryHolder {
      * @return 如果覆盖了某图标将返回被覆盖的图标
      */
     public Icon setIcon(int slot, Icon icon) {
+        if (openedInventory != null)
+            openedInventory.setItem(slot, icon.display());
         return slotMap.put(slot, icon);
     }
 
@@ -125,6 +146,8 @@ public class Menu implements InventoryHolder {
      * @return 被删除的图标
      */
     public Icon removeIcon(int slot) {
+        if (openedInventory != null)
+            openedInventory.setItem(slot, new ItemStack(Material.AIR));
         return slotMap.remove(slot);
     }
 
@@ -138,7 +161,12 @@ public class Menu implements InventoryHolder {
 
     public Menu setDisplay(MenuDisplay display) {
         this.display = display;
+        parseDisplay();
         return this;
+    }
+
+    protected Inventory openedInventory() {
+        return openedInventory;
     }
 
     public BiConsumer<Menu, InventoryOpenEvent> openAction() {
