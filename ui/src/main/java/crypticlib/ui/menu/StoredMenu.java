@@ -15,11 +15,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public class StoredMenu extends Menu {
 
     private final Map<Integer, ItemStack> storedItems;
     private boolean returnStoredItems;
+
+    public StoredMenu(Player player, Supplier<MenuDisplay> displaySupplier) {
+        super(player, displaySupplier);
+        this.storedItems = new ConcurrentHashMap<>();
+        this.returnStoredItems = true;
+    }
+
+    public StoredMenu(Player player, Supplier<MenuDisplay> displaySupplier, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+        super(player, displaySupplier, openAction, closeAction);
+        this.storedItems = new ConcurrentHashMap<>();
+        this.returnStoredItems = true;
+    }
 
     public StoredMenu(Player player, MenuDisplay display) {
         super(player, display);
@@ -93,8 +106,8 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public StoredMenu parseLayout() {
-        return (StoredMenu) super.parseLayout();
+    public StoredMenu parseDisplay() {
+        return (StoredMenu) super.parseDisplay();
     }
 
     @Override
