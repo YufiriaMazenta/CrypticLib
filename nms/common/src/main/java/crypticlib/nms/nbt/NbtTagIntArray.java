@@ -69,7 +69,7 @@ public abstract class NbtTagIntArray implements INbtTag<int[]>, INumberNbt {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

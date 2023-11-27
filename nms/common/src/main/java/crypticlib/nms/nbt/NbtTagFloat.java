@@ -59,7 +59,7 @@ public abstract class NbtTagFloat implements INbtTag<Float>, INumberNbt {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }

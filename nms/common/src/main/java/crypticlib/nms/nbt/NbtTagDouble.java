@@ -59,7 +59,7 @@ public abstract class NbtTagDouble implements INbtTag<Double>, INumberNbt {
 
     @Override
     public String toString() {
-        return JsonUtil.json2Str(toJson());
+        return toNms().toString();
     }
 
 }
