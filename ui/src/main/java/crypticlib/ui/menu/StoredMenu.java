@@ -63,6 +63,7 @@ public class StoredMenu extends Menu {
             return null;
         }
         event.setCancelled(true);
+        refreshStoredItems(event.getClickedInventory());
         return slotMap().get(slot).onClick(event);
     }
 

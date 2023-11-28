@@ -28,15 +28,21 @@ public class MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDragMenu(InventoryDragEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof Menu)) {
+        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        if (!(holder instanceof Menu)) {
             return;
         }
+        if (event.getWhoClicked().getInventory().equals(event.getInventory()))
+            return;
         for (Integer slot : event.getInventorySlots()) {
             ItemStack current = event.getInventory().getItem(slot);
             if (event.getOldCursor().isSimilar(current)) {
                 event.setCancelled(true);
                 return;
             }
+        }
+        if (holder instanceof StoredMenu) {
+            ((StoredMenu) holder).refreshStoredItems(event.getInventory());
         }
     }
 
