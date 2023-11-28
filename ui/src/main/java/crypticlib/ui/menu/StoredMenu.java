@@ -57,9 +57,7 @@ public class StoredMenu extends Menu {
         if (!slotMap().containsKey(slot)) {
             if (action.equals(InventoryAction.COLLECT_TO_CURSOR)) {
                 event.setCancelled(true);
-                return null;
             }
-            refreshStoredItems(event.getClickedInventory());
             return null;
         }
         event.setCancelled(true);
