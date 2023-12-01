@@ -31,6 +31,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     private int lowestSupportVersion = 11200;
     private int highestSupportVersion = 12002;
     private final Map<String, YamlConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    private final String defaultConfigFileName = "config.yml";
 
     protected BukkitPlugin() {
         super();
@@ -61,21 +62,25 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public void disable() {}
 
     @Override
-    @Deprecated
-    public @NotNull FileConfiguration getConfig() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("Deprecated config api");
+    public @NotNull FileConfiguration getConfig() {
+        if (configContainerMap.containsKey(defaultConfigFileName)) {
+            return configContainerMap.get(defaultConfigFileName).configWrapper().config();
+        }
+        throw new UnsupportedOperationException("No default config file");
     }
 
     @Override
-    @Deprecated
-    public void saveConfig() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("Deprecated config api");
+    public void saveConfig() {
+        configContainerMap.forEach((path, configContainer) -> {
+            configContainer.configWrapper().saveConfig();
+        });
     }
 
     @Override
-    @Deprecated
-    public void saveDefaultConfig() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("Deprecated config api");
+    public void saveDefaultConfig() {
+        YamlConfigContainer defConfig = new YamlConfigContainer(this.getClass(), new YamlConfigWrapper(this, defaultConfigFileName));
+        defConfig.reload();
+        configContainerMap.put(defaultConfigFileName, defConfig);
     }
 
     @Override
