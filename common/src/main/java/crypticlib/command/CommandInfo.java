@@ -16,7 +16,7 @@ public class CommandInfo {
     }
 
     public CommandInfo(String name) {
-        this(name, (String) null);
+        this(name, null);
     }
 
     public CommandInfo(String name, String permission) {

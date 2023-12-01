@@ -1,4 +1,4 @@
-package crypticlib.config;
+package crypticlib.config.yaml;
 
 import org.jetbrains.annotations.NotNull;
 

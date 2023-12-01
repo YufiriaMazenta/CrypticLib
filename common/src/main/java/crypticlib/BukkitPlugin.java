@@ -3,9 +3,9 @@ package crypticlib;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
 import crypticlib.command.impl.RootCmdExecutor;
-import crypticlib.config.YamlConfigHandler;
-import crypticlib.config.YamlConfigContainer;
-import crypticlib.config.wrapper.YamlConfigWrapper;
+import crypticlib.config.yaml.YamlConfigHandler;
+import crypticlib.config.yaml.YamlConfigContainer;
+import crypticlib.config.yaml.YamlConfigWrapper;
 import crypticlib.listener.BukkitListener;
 import crypticlib.util.MsgUtil;
 import crypticlib.util.ReflectUtil;
@@ -200,7 +200,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         for (Class<?> configContainerClass : configContainerClasses) {
             YamlConfigHandler yamlConfigHandlerAnnotation = configContainerClass.getAnnotation(YamlConfigHandler.class);
             String path = yamlConfigHandlerAnnotation.path();
-            if (!path.endsWith(".yml"))
+            if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
                 path += ".yml";
             YamlConfigWrapper configWrapper = new YamlConfigWrapper(this, path);
             YamlConfigContainer configContainer = new YamlConfigContainer(configContainerClass, configWrapper);

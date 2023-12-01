@@ -1,4 +1,4 @@
-package crypticlib.config.entry;
+package crypticlib.config.yaml.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 
