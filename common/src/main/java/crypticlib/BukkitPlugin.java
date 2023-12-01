@@ -3,19 +3,26 @@ package crypticlib;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
 import crypticlib.command.impl.RootCmdExecutor;
+import crypticlib.config.YamlConfigHandler;
+import crypticlib.config.YamlConfigContainer;
+import crypticlib.config.wrapper.YamlConfigWrapper;
 import crypticlib.listener.BukkitListener;
 import crypticlib.util.MsgUtil;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -23,6 +30,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     private int lowestSupportVersion = 11200;
     private int highestSupportVersion = 12002;
+    private final Map<String, YamlConfigContainer> configContainerMap = new ConcurrentHashMap<>();
 
     protected BukkitPlugin() {
         super();
@@ -30,8 +38,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void onEnable() {
+        scanClasses();
         enable();
-        scanListenersAndCommands();
         checkVersion();
     }
 
@@ -51,6 +59,31 @@ public abstract class BukkitPlugin extends JavaPlugin {
      * 插件卸载时执行的方法
      */
     public void disable() {}
+
+    @Override
+    @Deprecated
+    public @NotNull FileConfiguration getConfig() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Deprecated config api");
+    }
+
+    @Override
+    @Deprecated
+    public void saveConfig() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Deprecated config api");
+    }
+
+    @Override
+    @Deprecated
+    public void saveDefaultConfig() throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("Deprecated config api");
+    }
+
+    @Override
+    public void reloadConfig() {
+        configContainerMap.forEach((path, container) -> {
+            container.reload();
+        });
+    }
 
     private void checkVersion() {
         int version = CrypticLib.minecraftVersion();
@@ -76,9 +109,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
         this.highestSupportVersion = highestSupportVersion;
     }
 
-    private void scanListenersAndCommands() {
+    private void scanClasses() {
         Set<Class<?>> listenerClasses = new HashSet<>();
         Set<Class<?>> pluginCommandClasses = new HashSet<>();
+        Set<Class<?>> configContainerClasses = new HashSet<>();
         //扫描类
         Enumeration<JarEntry> entries;
         JarFile pluginJar;
@@ -101,6 +135,9 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     if (clazz.isAnnotationPresent(BukkitListener.class)) {
                         listenerClasses.add(clazz);
                     }
+                    if (clazz.isAnnotationPresent(YamlConfigHandler.class)) {
+                        configContainerClasses.add(clazz);
+                    }
                 }
             } catch (ClassNotFoundException | NoClassDefFoundError ignored) {}
         }
@@ -109,6 +146,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
         regListeners(listenerClasses);
         //注册命令
         regCommands(pluginCommandClasses);
+
+        regConfigs(configContainerClasses);
 
         try {
             pluginJar.close();
@@ -149,6 +188,19 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 RootCmdExecutor cmdExecutor = (RootCmdExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
                 CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), cmdExecutor);
             }
+        }
+    }
+
+    private void regConfigs(Set<Class<?>> configContainerClasses) {
+        for (Class<?> configContainerClass : configContainerClasses) {
+            YamlConfigHandler yamlConfigHandlerAnnotation = configContainerClass.getAnnotation(YamlConfigHandler.class);
+            String path = yamlConfigHandlerAnnotation.path();
+            if (!path.endsWith(".yml"))
+                path += ".yml";
+            YamlConfigWrapper configWrapper = new YamlConfigWrapper(this, path);
+            YamlConfigContainer configContainer = new YamlConfigContainer(configContainerClass, configWrapper);
+            configContainerMap.put(path, configContainer);
+            configContainer.reload();
         }
     }
 

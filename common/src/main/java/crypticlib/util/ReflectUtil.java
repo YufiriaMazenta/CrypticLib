@@ -1,9 +1,43 @@
 package crypticlib.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class ReflectUtil {
+
+    public static Field getField(Class<?> clazz, String fieldName) {
+        try {
+            return clazz.getField(fieldName);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Field getDeclaredField(Class<?> clazz, String fieldName) {
+        try {
+            return clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Object getFieldObj(Field field, Object owner) {
+        try {
+            return field.get(owner);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Object getDeclaredFieldObj(Field field, Object owner) {
+        try {
+            field.setAccessible(true);
+            return field.get(owner);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static Method getMethod(Class<?> clazz, String methodName, Class<?>... argClasses) {
         try {
