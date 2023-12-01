@@ -8,7 +8,7 @@ public abstract class ConfigEntry<T> {
     private T value;
     private final T def;
 
-    protected ConfigEntry(String key, T def) {
+    public ConfigEntry(String key, T def) {
         this.key = key;
         this.def = def;
     }
