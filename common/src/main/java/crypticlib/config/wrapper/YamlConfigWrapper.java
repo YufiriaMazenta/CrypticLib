@@ -1,6 +1,5 @@
-package crypticlib.config.impl;
+package crypticlib.config.wrapper;
 
-import crypticlib.config.IConfigWrapper;
 import crypticlib.util.FileUtil;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -16,7 +15,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
     private YamlConfiguration config;
     private final String path;
     private final Plugin plugin;
-    private boolean autoSave, autoReload;
 
     /**
      * 从指定插件中释放并创建一个配置文件
@@ -60,7 +58,7 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      */
     @Override
     public YamlConfiguration config() {
-        if (config == null || autoReload) {
+        if (config == null) {
             reloadConfig();
         }
         return config;
@@ -74,9 +72,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
     @Override
     public void set(String key, Object object) {
         config.set(key, object);
-        if (autoSave) {
-            saveConfig();
-        }
     }
 
     /**
@@ -97,26 +92,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean isAutoSave() {
-        return autoSave;
-    }
-
-    @Override
-    public void setAutoSave(boolean autoSave) {
-        this.autoSave = autoSave;
-    }
-
-    @Override
-    public boolean isAutoReload() {
-        return autoReload;
-    }
-
-    @Override
-    public void setAutoReload(boolean autoReload) {
-        this.autoReload = autoReload;
     }
 
     /**

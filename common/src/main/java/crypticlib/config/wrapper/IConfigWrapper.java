@@ -1,4 +1,4 @@
-package crypticlib.config;
+package crypticlib.config.wrapper;
 
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
@@ -18,14 +18,6 @@ public interface IConfigWrapper<T> {
     void reloadConfig();
 
     void saveConfig();
-
-    boolean isAutoSave();
-
-    void setAutoSave(boolean autoSave);
-
-    boolean isAutoReload();
-
-    void setAutoReload(boolean autoReload);
 
     String filePath();
 
