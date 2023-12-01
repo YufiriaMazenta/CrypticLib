@@ -1,18 +1,18 @@
-package crypticlib.config.entry;
+package crypticlib.config.yaml.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.List;
 
-public class ShortListConfigEntry extends ConfigEntry<List<Short>> {
+public class ByteListConfigEntry extends ConfigEntry<List<Byte>> {
 
-    public ShortListConfigEntry(String key, List<Short> def) {
+    public ByteListConfigEntry(String key, List<Byte> def) {
         super(key, def);
     }
 
     @Override
     public void load(ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getShortList(key()));
+        setValue(config.getByteList(key()));
     }
 }

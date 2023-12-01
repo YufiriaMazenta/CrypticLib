@@ -1,7 +1,6 @@
-package crypticlib.config;
+package crypticlib.config.yaml;
 
-import crypticlib.config.entry.ConfigEntry;
-import crypticlib.config.wrapper.YamlConfigWrapper;
+import crypticlib.config.yaml.entry.ConfigEntry;
 import crypticlib.util.ReflectUtil;
 
 import java.lang.reflect.Field;
