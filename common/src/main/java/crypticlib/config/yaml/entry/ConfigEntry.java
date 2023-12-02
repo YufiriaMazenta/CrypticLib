@@ -15,7 +15,7 @@ public abstract class ConfigEntry<T> {
         this.def = def;
     }
 
-    @Nullable
+    @NotNull
     public T value() {
         return value;
     }
