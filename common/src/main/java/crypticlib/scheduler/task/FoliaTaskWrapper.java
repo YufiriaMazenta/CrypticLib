@@ -2,6 +2,7 @@ package crypticlib.scheduler.task;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 public class FoliaTaskWrapper implements ITaskWrapper {
 
@@ -17,7 +18,7 @@ public class FoliaTaskWrapper implements ITaskWrapper {
     }
 
     @Override
-    public Plugin owner() {
+    public @NotNull Plugin owner() {
         return scheduledTask.getOwningPlugin();
     }
 
@@ -32,7 +33,7 @@ public class FoliaTaskWrapper implements ITaskWrapper {
     }
 
     @Override
-    public ScheduledTask platformTask() {
+    public @NotNull ScheduledTask platformTask() {
         return scheduledTask;
     }
 

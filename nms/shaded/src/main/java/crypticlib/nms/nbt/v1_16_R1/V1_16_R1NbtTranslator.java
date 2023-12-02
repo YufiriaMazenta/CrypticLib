@@ -47,7 +47,7 @@ public enum V1_16_R1NbtTranslator implements INbtTranslator {
         if (object instanceof Byte) {
             return new V1_16_R1NbtTagByte((byte) object);
         } else if (object instanceof byte[]) {
-            return new V1_16_R1NbtTagByteArray((byte[])object);
+            return new V1_16_R1NbtTagByteArray((byte[]) object);
         } else if (object instanceof Map) {
             return new V1_16_R1NbtTagCompound(((Map<String, Object>) object));
         } else if (object instanceof Double) {
@@ -74,5 +74,5 @@ public enum V1_16_R1NbtTranslator implements INbtTranslator {
             return translateNmsNbt(object);
         }
     }
-    
+
 }

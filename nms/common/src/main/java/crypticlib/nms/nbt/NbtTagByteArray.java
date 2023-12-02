@@ -2,7 +2,7 @@ package crypticlib.nms.nbt;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
-import crypticlib.util.JsonUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.StringJoiner;
@@ -20,22 +20,22 @@ public abstract class NbtTagByteArray implements INbtTag<byte[]>, INumberNbt {
     }
 
     @Override
-    public NbtType type() {
+    public @NotNull NbtType type() {
         return NbtType.BYTE_ARRAY;
     }
 
     @Override
-    public byte[] value() {
+    public byte @NotNull [] value() {
         return this.value;
     }
 
     @Override
-    public void setValue(byte[] value) {
+    public void setValue(byte @NotNull [] value) {
         this.value = value;
     }
 
     @Override
-    public JsonArray toJson() {
+    public @NotNull JsonArray toJson() {
         JsonArray jsonArray = new JsonArray();
         for (byte b : value) {
             jsonArray.add(new JsonPrimitive(b));

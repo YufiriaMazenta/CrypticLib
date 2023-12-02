@@ -3,6 +3,7 @@ package crypticlib.nms.nbt.v1_13_R1;
 import crypticlib.nms.nbt.NbtTagString;
 import net.minecraft.server.v1_13_R1.NBTBase;
 import net.minecraft.server.v1_13_R1.NBTTagString;
+import org.jetbrains.annotations.NotNull;
 
 public class V1_13_R1NbtTagString extends NbtTagString {
 
@@ -15,13 +16,13 @@ public class V1_13_R1NbtTagString extends NbtTagString {
     }
 
     @Override
-    public void fromNms(Object nmsNbt) {
+    public void fromNms(@NotNull Object nmsNbt) {
         NBTTagString nbtTagString = (NBTTagString) nmsNbt;
         setValue(nbtTagString.b_());
     }
 
     @Override
-    public NBTBase toNms() {
+    public @NotNull NBTBase toNms() {
         return new NBTTagString(value());
     }
 

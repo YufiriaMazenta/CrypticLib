@@ -10,6 +10,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,25 +24,25 @@ public class StoredMenu extends Menu {
     private final Map<Integer, ItemStack> storedItems;
     private boolean returnStoredItems;
 
-    public StoredMenu(Player player, Supplier<MenuDisplay> displaySupplier) {
+    public StoredMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
         super(player, displaySupplier);
         this.storedItems = new ConcurrentHashMap<>();
         this.returnStoredItems = true;
     }
 
-    public StoredMenu(Player player, Supplier<MenuDisplay> displaySupplier, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+    public StoredMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, displaySupplier, openAction, closeAction);
         this.storedItems = new ConcurrentHashMap<>();
         this.returnStoredItems = true;
     }
 
-    public StoredMenu(Player player, MenuDisplay display) {
+    public StoredMenu(@NotNull Player player, @NotNull MenuDisplay display) {
         super(player, display);
         storedItems = new ConcurrentHashMap<>();
         returnStoredItems = true;
     }
 
-    public StoredMenu(Player player, MenuDisplay display, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+    public StoredMenu(@NotNull Player player, @NotNull MenuDisplay display, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, display, openAction, closeAction);
         storedItems = new ConcurrentHashMap<>();
         returnStoredItems = true;
@@ -65,7 +67,7 @@ public class StoredMenu extends Menu {
         return slotMap().get(slot).onClick(event);
     }
 
-    public StoredMenu refreshStoredItems(Inventory inventory) {
+    public StoredMenu refreshStoredItems(@NotNull Inventory inventory) {
         storedItems.clear();
         for (int i = 0; i < inventory.getSize(); i++) {
             if (slotMap().containsKey(i))
@@ -88,7 +90,7 @@ public class StoredMenu extends Menu {
         for (Integer slot : storedItems.keySet()) {
             ItemStack item = storedItems.get(slot);
             returnItems[i] = item;
-            i ++;
+            i++;
         }
         HashMap<Integer, ItemStack> failedItems = player().getInventory().addItem(returnItems);
         if (failedItems.isEmpty())
@@ -110,12 +112,12 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public StoredMenu setDisplay(MenuDisplay display) {
+    public StoredMenu setDisplay(@NotNull MenuDisplay display) {
         return (StoredMenu) super.setDisplay(display);
     }
 
     @Override
-    public StoredMenu setOpenAction(BiConsumer<Menu, InventoryOpenEvent> openAction) {
+    public StoredMenu setOpenAction(@Nullable BiConsumer<Menu, InventoryOpenEvent> openAction) {
         return (StoredMenu) super.setOpenAction(openAction);
     }
 
@@ -131,6 +133,7 @@ public class StoredMenu extends Menu {
         returnItems();
     }
 
+    @NotNull
     public Map<Integer, ItemStack> storedItems() {
         return storedItems;
     }

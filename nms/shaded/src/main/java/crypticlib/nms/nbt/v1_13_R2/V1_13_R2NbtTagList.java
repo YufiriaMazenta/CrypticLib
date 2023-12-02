@@ -4,6 +4,7 @@ import crypticlib.nms.nbt.INbtTag;
 import crypticlib.nms.nbt.NbtTagList;
 import net.minecraft.server.v1_13_R2.NBTBase;
 import net.minecraft.server.v1_13_R2.NBTTagList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class V1_13_R2NbtTagList extends NbtTagList {
     }
 
     @Override
-    public void fromNms(Object nmsNbt) {
+    public void fromNms(@NotNull Object nmsNbt) {
         NBTTagList nbtTagList = (NBTTagList) nmsNbt;
         for (NBTBase nbtBase : nbtTagList) {
             value().add(nbtTranslator().translateNmsNbt(nbtBase));
@@ -30,7 +31,7 @@ public class V1_13_R2NbtTagList extends NbtTagList {
     }
 
     @Override
-    public NBTTagList toNms() {
+    public @NotNull NBTTagList toNms() {
         NBTTagList nbtTagList = new NBTTagList();
         for (INbtTag<?> nbtTag : value()) {
             nbtTagList.add((NBTBase) nbtTag.toNms());

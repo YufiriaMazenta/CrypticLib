@@ -2,12 +2,13 @@ package crypticlib.scheduler.task;
 
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 
 public class BukkitTaskWrapper implements ITaskWrapper {
 
     private final BukkitTask bukkitTask;
 
-    public BukkitTaskWrapper(BukkitTask bukkitTask) {
+    public BukkitTaskWrapper(@NotNull BukkitTask bukkitTask) {
         this.bukkitTask = bukkitTask;
     }
 
@@ -17,6 +18,7 @@ public class BukkitTaskWrapper implements ITaskWrapper {
     }
 
     @Override
+    @NotNull
     public Plugin owner() {
         return bukkitTask.getOwner();
     }
@@ -32,6 +34,7 @@ public class BukkitTaskWrapper implements ITaskWrapper {
     }
 
     @Override
+    @NotNull
     public BukkitTask platformTask() {
         return bukkitTask;
     }

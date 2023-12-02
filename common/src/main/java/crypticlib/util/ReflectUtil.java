@@ -1,12 +1,18 @@
 package crypticlib.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+/**
+ * 反射相关工具类
+ */
 public class ReflectUtil {
 
-    public static Field getField(Class<?> clazz, String fieldName) {
+    public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
         try {
             return clazz.getField(fieldName);
         } catch (NoSuchFieldException e) {
@@ -14,7 +20,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Field getDeclaredField(Class<?> clazz, String fieldName) {
+    public static Field getDeclaredField(@NotNull Class<?> clazz, @NotNull String fieldName) {
         try {
             return clazz.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
@@ -22,7 +28,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object getFieldObj(Field field, Object owner) {
+    public static Object getFieldObj(@NotNull Field field, @Nullable Object owner) {
         try {
             return field.get(owner);
         } catch (Exception e) {
@@ -30,7 +36,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object getDeclaredFieldObj(Field field, Object owner) {
+    public static Object getDeclaredFieldObj(@NotNull Field field, @Nullable Object owner) {
         try {
             field.setAccessible(true);
             return field.get(owner);
@@ -39,7 +45,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Method getMethod(Class<?> clazz, String methodName, Class<?>... argClasses) {
+    public static Method getMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) {
         try {
             return clazz.getMethod(methodName, argClasses);
         } catch (Exception e) {
@@ -47,7 +53,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Method getDeclaredMethod(Class<?> clazz, String methodName, Class<?>... argClasses) {
+    public static Method getDeclaredMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) {
         try {
             return clazz.getDeclaredMethod(methodName, argClasses);
         } catch (Exception e) {
@@ -55,7 +61,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object invokeMethod(Method method, Object invokeObj, Object... args) {
+    public static Object invokeMethod(@NotNull Method method, @Nullable Object invokeObj, Object... args) {
         try {
             method.setAccessible(true);
             return method.invoke(invokeObj, args);
@@ -64,7 +70,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object invokeDeclaredMethod(Method method, Object invokeObj, Object... args) {
+    public static Object invokeDeclaredMethod(@NotNull Method method, @Nullable Object invokeObj, Object... args) {
         try {
             method.setAccessible(true);
             return method.invoke(invokeObj, args);
@@ -73,7 +79,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... argClasses) {
+    public static Constructor<?> getConstructor(@NotNull Class<?> clazz, Class<?>... argClasses) {
         try {
             return clazz.getConstructor(argClasses);
         } catch (Exception e) {
@@ -81,7 +87,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Constructor<?> getDeclaredConstructor(Class<?> obj, Class<?>... argClasses) {
+    public static Constructor<?> getDeclaredConstructor(@NotNull Class<?> obj, Class<?>... argClasses) {
         try {
             return obj.getDeclaredConstructor(argClasses);
         } catch (Exception e) {
@@ -89,7 +95,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object invokeConstructor(Constructor<?> constructor, Object... args) {
+    public static Object invokeConstructor(@NotNull Constructor<?> constructor, Object... args) {
         try {
             return constructor.newInstance(args);
         } catch (Exception e) {
@@ -97,7 +103,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object invokeDeclaredConstructor(Constructor<?> constructor, Object... args) {
+    public static Object invokeDeclaredConstructor(@NotNull Constructor<?> constructor, Object... args) {
         try {
             constructor.setAccessible(true);
             return constructor.newInstance(args);

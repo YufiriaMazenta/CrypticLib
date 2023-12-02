@@ -1,7 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
-import crypticlib.util.JsonUtil;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
 
@@ -16,22 +16,22 @@ public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
     }
 
     @Override
-    public NbtType type() {
+    public @NotNull NbtType type() {
         return NbtType.BYTE;
     }
 
     @Override
-    public Byte value() {
+    public @NotNull Byte value() {
         return value;
     }
 
     @Override
-    public void setValue(Byte value) {
+    public void setValue(@NotNull Byte value) {
         this.value = value;
     }
 
     @Override
-    public JsonPrimitive toJson() {
+    public @NotNull JsonPrimitive toJson() {
         return new JsonPrimitive(value);
     }
 

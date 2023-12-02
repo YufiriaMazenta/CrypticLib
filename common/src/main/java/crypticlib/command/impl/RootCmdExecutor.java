@@ -8,6 +8,7 @@ import crypticlib.command.ISubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,39 +38,43 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
     }
 
     @Override
-    public @NotNull Map<String, ISubcmdExecutor> subcommands() {
+    @NotNull
+    public Map<String, ISubcmdExecutor> subcommands() {
         return subcommands;
     }
 
     @Override
+    @Nullable
     public BiFunction<CommandSender, List<String>, Boolean> executor() {
         return executor;
     }
 
     @Override
-    public IRootCmdExecutor setExecutor(BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public IRootCmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
         return this;
     }
 
     @Override
-    public IRootCmdExecutor setTabArguments(List<String> tabArguments) {
+    @NotNull
+    public IRootCmdExecutor setTabArguments(@NotNull List<String> tabArguments) {
         this.tabArguments = tabArguments;
         return this;
     }
 
     @Override
-    public IRootCmdExecutor addTabArguments(String tabArgument) {
+    public IRootCmdExecutor addTabArguments(@NotNull String tabArgument) {
         return IRootCmdExecutor.super.addTabArguments(tabArgument);
     }
 
     @Override
-    public @NotNull List<String> tabArguments() {
+    @NotNull
+    public List<String> tabArguments() {
         return this.tabArguments;
     }
 
     @Override
-    public void register(Plugin plugin, CommandInfo commandInfo) {
+    public void register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo) {
         if (registered)
             throw new UnsupportedOperationException("Cannot register a command repeatedly");
         registered = true;

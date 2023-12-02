@@ -12,6 +12,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,10 +27,11 @@ public class TextUtil {
 
     /**
      * 将一个文本的颜色代码进行处理
+     *
      * @param text 需要处理的文本
      * @return 处理完颜色代码的文本
      */
-    public static String color(String text) {
+    public static String color(@NotNull String text) {
         if (CrypticLib.minecraftVersion() >= 16) {
             StringBuilder strBuilder = new StringBuilder(text);
             Matcher matcher = colorPattern.matcher(strBuilder);
@@ -46,11 +48,12 @@ public class TextUtil {
 
     /**
      * 将一条文本的papi变量进行处理，如果没有PlaceholderAPI插件，将会返回源文本
+     *
      * @param player papi变量的玩家
      * @param source 源文本
      * @return 处理完成的文本
      */
-    public static String placeholder(Player player, String source) {
+    public static String placeholder(Player player, @NotNull String source) {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
             source = PlaceholderAPI.setPlaceholders(player, source);
         return source;
@@ -58,47 +61,52 @@ public class TextUtil {
 
     /**
      * 将文本转化为Bungee聊天组件
+     *
      * @param text 原始文本
      * @return 转化完毕的Bungee聊天组件
      */
-    public static BaseComponent toComponent(String text) {
+    public static BaseComponent toComponent(@NotNull String text) {
         BaseComponent[] baseComponents = TextComponent.fromLegacyText(text);
         return new TextComponent(baseComponents);
     }
 
     /**
      * 获取实体类型对应的Bungee翻译聊天组件
+     *
      * @param entityType 实体类型
      * @return 对应的Bungee翻译聊天组件
      */
-    public static TranslatableComponent toTranslatableComponent(EntityType entityType) {
+    public static TranslatableComponent toTranslatableComponent(@NotNull EntityType entityType) {
         return new TranslatableComponent(entityType.getTranslationKey());
     }
 
     /**
      * 获取实体对应的Bungee翻译聊天组件
+     *
      * @param entity 传入的实体
      * @return 对应的Bungee翻译聊天组件
      */
-    public static TranslatableComponent toTranslatableComponent(Entity entity) {
+    public static TranslatableComponent toTranslatableComponent(@NotNull Entity entity) {
         return toTranslatableComponent(entity.getType());
     }
 
     /**
      * 获取物品类型对应的Bungee翻译聊天组件
+     *
      * @param material 传入的物品类型
      * @return 对应的Bungee翻译聊天组件
      */
-    public static TranslatableComponent toTranslatableComponent(Material material) {
+    public static TranslatableComponent toTranslatableComponent(@NotNull Material material) {
         return new TranslatableComponent(material.getTranslationKey());
     }
 
     /**
      * 获取物品的Bungee翻译聊天组件
+     *
      * @param itemStack 传入的物品
      * @return 对应的Bungee翻译聊天组件
      */
-    public static TranslatableComponent toTranslatableComponent(ItemStack itemStack) {
+    public static TranslatableComponent toTranslatableComponent(@NotNull ItemStack itemStack) {
         return new TranslatableComponent(itemStack.getTranslationKey());
     }
 

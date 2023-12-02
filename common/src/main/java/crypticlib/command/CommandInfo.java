@@ -5,33 +5,42 @@ import org.jetbrains.annotations.Nullable;
 
 public class CommandInfo {
 
+    @NotNull
     private String name;
+    @Nullable
     private String permission;
+    @NotNull
     private String[] aliases;
+    @NotNull
     private String description;
+    @NotNull
     private String usage;
 
-    public CommandInfo(BukkitCommand commandAnnotation) {
-        this(commandAnnotation.name(), commandAnnotation.permission().isEmpty() ? null : commandAnnotation.permission(), commandAnnotation.aliases(), commandAnnotation.description(), commandAnnotation.usage());
+    public CommandInfo(@NotNull BukkitCommand commandAnnotation) {
+        this(commandAnnotation.name(), commandAnnotation.permission() == null || commandAnnotation.permission().isEmpty() ? null : commandAnnotation.permission(), commandAnnotation.aliases(), commandAnnotation.description(), commandAnnotation.usage());
     }
 
-    public CommandInfo(String name) {
-        this(name, null);
+    public CommandInfo(@NotNull String name) {
+        this(name, (String) null);
     }
 
-    public CommandInfo(String name, String permission) {
+    public CommandInfo(@NotNull String name, @Nullable String permission) {
         this(name, permission, new String[0]);
     }
 
-    public CommandInfo(String name, String permission, String[] aliases) {
+    public CommandInfo(@NotNull String name, @NotNull String[] aliases) {
+        this(name, null, aliases);
+    }
+
+    public CommandInfo(@NotNull String name, @Nullable String permission, @NotNull String[] aliases) {
         this(name, permission, aliases, "");
     }
 
-    public CommandInfo(String name, String permission, String[] aliases, String description) {
+    public CommandInfo(@NotNull String name, @Nullable String permission, @NotNull String[] aliases, @NotNull String description) {
         this(name, permission, aliases, description, "");
     }
 
-    public CommandInfo(String name, String permission, String[] aliases, String description, String usage) {
+    public CommandInfo(@NotNull String name, @Nullable String permission, @NotNull String[] aliases, @NotNull String description, @NotNull String usage) {
         this.name = name;
         this.permission = permission;
         this.aliases = aliases;
@@ -44,7 +53,7 @@ public class CommandInfo {
         return name;
     }
 
-    public CommandInfo setName(String name) {
+    public CommandInfo setName(@NotNull String name) {
         this.name = name;
         return this;
     }
@@ -54,7 +63,7 @@ public class CommandInfo {
         return permission;
     }
 
-    public CommandInfo setPermission(String permission) {
+    public CommandInfo setPermission(@Nullable String permission) {
         this.permission = permission;
         return this;
     }
@@ -64,7 +73,7 @@ public class CommandInfo {
         return aliases;
     }
 
-    public CommandInfo setAliases(String[] aliases) {
+    public CommandInfo setAliases(@NotNull String[] aliases) {
         this.aliases = aliases;
         return this;
     }
@@ -74,7 +83,7 @@ public class CommandInfo {
         return description;
     }
 
-    public CommandInfo setDescription(String description) {
+    public CommandInfo setDescription(@NotNull String description) {
         this.description = description;
         return this;
     }
@@ -84,7 +93,7 @@ public class CommandInfo {
         return usage;
     }
 
-    public CommandInfo setUsage(String usage) {
+    public CommandInfo setUsage(@NotNull String usage) {
         this.usage = usage;
         return this;
     }

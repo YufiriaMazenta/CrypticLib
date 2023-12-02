@@ -2,6 +2,7 @@ package crypticlib.nms.nbt.v1_19_R3;
 
 import crypticlib.nms.nbt.NbtTagFloat;
 import net.minecraft.nbt.NBTTagFloat;
+import org.jetbrains.annotations.NotNull;
 
 public class V1_19_R3NbtTagFloat extends NbtTagFloat {
 
@@ -14,13 +15,13 @@ public class V1_19_R3NbtTagFloat extends NbtTagFloat {
     }
 
     @Override
-    public void fromNms(Object nmsNbt) {
+    public void fromNms(@NotNull Object nmsNbt) {
         NBTTagFloat nbtTagFloat = (NBTTagFloat) nmsNbt;
         setValue(nbtTagFloat.k());
     }
 
     @Override
-    public NBTTagFloat toNms() {
+    public @NotNull NBTTagFloat toNms() {
         return NBTTagFloat.a(value());
     }
 

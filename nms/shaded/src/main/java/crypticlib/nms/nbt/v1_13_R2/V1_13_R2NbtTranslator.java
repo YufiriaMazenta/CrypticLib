@@ -47,7 +47,7 @@ public enum V1_13_R2NbtTranslator implements INbtTranslator {
         if (object instanceof Byte) {
             return new V1_13_R2NbtTagByte((byte) object);
         } else if (object instanceof byte[]) {
-            return new V1_13_R2NbtTagByteArray((byte[])object);
+            return new V1_13_R2NbtTagByteArray((byte[]) object);
         } else if (object instanceof Map) {
             return new V1_13_R2NbtTagCompound(((Map<String, Object>) object));
         } else if (object instanceof Double) {

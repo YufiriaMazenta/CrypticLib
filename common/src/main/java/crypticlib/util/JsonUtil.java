@@ -9,12 +9,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Json相关工具类
+ */
 public class JsonUtil {
 
     private static final Gson gson = new Gson();
 
     /**
      * 将json对象转化为字符串
+     *
      * @param json json对象
      * @return 转化的字符串
      */
@@ -24,6 +28,7 @@ public class JsonUtil {
 
     /**
      * 将字符串解析为Json对象
+     *
      * @param str 原始字符串
      * @return 解析完毕的Json对象
      */
@@ -33,6 +38,7 @@ public class JsonUtil {
 
     /**
      * 将字符串解析为Json数组
+     *
      * @param str 原始字符串
      * @return 解析完毕的Json数组
      */
@@ -43,6 +49,7 @@ public class JsonUtil {
     /**
      * 将yaml config转化为json对象
      * 需要注意,yaml config本身对于数字类型的保存有误差
+     *
      * @param configurationSection yaml的config section
      * @return 转化完毕的json对象
      */
@@ -52,6 +59,7 @@ public class JsonUtil {
 
     /**
      * 将yaml config中读取到的list转化为json数组
+     *
      * @param list 原始数组
      * @return 转化完毕的json数组
      */
@@ -61,6 +69,7 @@ public class JsonUtil {
 
     /**
      * 将json转化为map
+     *
      * @param jsonObject 原始json对象
      * @return 转化完毕的map
      */
@@ -70,6 +79,7 @@ public class JsonUtil {
 
     /**
      * 将json字符串转化为map
+     *
      * @param jsonStr 原始json字符串
      * @return 转化完毕的map
      */
@@ -79,6 +89,7 @@ public class JsonUtil {
 
     /**
      * 获取Gson对象
+     *
      * @return gson对象
      */
     public static Gson getGson() {

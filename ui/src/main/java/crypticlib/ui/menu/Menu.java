@@ -14,6 +14,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -23,25 +24,26 @@ import java.util.function.Supplier;
 
 public class Menu implements InventoryHolder {
 
-    private MenuDisplay display;
     private final Map<Integer, Icon> slotMap;
     private final Player player;
+    private MenuDisplay display;
     private BiConsumer<Menu, InventoryOpenEvent> openAction;
     private BiConsumer<Menu, InventoryCloseEvent> closeAction;
     private Inventory openedInventory;
 
-    public Menu(Player player, Supplier<MenuDisplay> displaySupplier) {
+    public Menu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
         this(player, displaySupplier.get());
     }
 
-    public Menu(Player player, Supplier<MenuDisplay> displaySupplier, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+    public Menu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         this(player, displaySupplier.get(), openAction, closeAction);
     }
-    public Menu(Player player, MenuDisplay display) {
+
+    public Menu(@NotNull Player player, @NotNull MenuDisplay display) {
         this(player, display, (m, e) -> {}, (m, e) -> {});
     }
 
-    public Menu(Player player, MenuDisplay display, BiConsumer<Menu, InventoryOpenEvent> openAction, BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+    public Menu(@NotNull Player player, @NotNull MenuDisplay display, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         this.player = player;
         this.display = display;
         this.slotMap = new ConcurrentHashMap<>();
@@ -63,11 +65,13 @@ public class Menu implements InventoryHolder {
     }
 
     public void onOpen(InventoryOpenEvent event) {
-        openAction.accept(this, event);
+        if (openAction != null)
+            openAction.accept(this, event);
     }
 
     public void onClose(InventoryCloseEvent event) {
-        closeAction.accept(this, event);
+        if (closeAction != null)
+            closeAction.accept(this, event);
     }
 
 
@@ -78,7 +82,8 @@ public class Menu implements InventoryHolder {
     }
 
     @Override
-    public @NotNull Inventory getInventory() {
+    @NotNull
+    public Inventory getInventory() {
         parseDisplay();
         int size = Math.min(display.layout().layout().size() * 9, 54);
         String title = TextUtil.color(TextUtil.placeholder(player, display.title()));
@@ -130,6 +135,7 @@ public class Menu implements InventoryHolder {
 
     /**
      * 设置一个位置的图标
+     *
      * @param slot 设置的位置
      * @param icon 设置的图标
      * @return 如果覆盖了某图标将返回被覆盖的图标
@@ -142,6 +148,7 @@ public class Menu implements InventoryHolder {
 
     /**
      * 删除一个位置的图标
+     *
      * @param slot 删除的位置
      * @return 被删除的图标
      */
@@ -151,38 +158,43 @@ public class Menu implements InventoryHolder {
         return slotMap.remove(slot);
     }
 
+    @NotNull
     public Player player() {
         return player;
     }
 
+    @NotNull
     public MenuDisplay display() {
         return display;
     }
 
-    public Menu setDisplay(MenuDisplay display) {
+    public Menu setDisplay(@NotNull MenuDisplay display) {
         this.display = display;
         parseDisplay();
         return this;
     }
 
+    @Nullable
     protected Inventory openedInventory() {
         return openedInventory;
     }
 
+    @Nullable
     public BiConsumer<Menu, InventoryOpenEvent> openAction() {
         return openAction;
     }
 
-    public Menu setOpenAction(BiConsumer<Menu, InventoryOpenEvent> openAction) {
+    public Menu setOpenAction(@Nullable BiConsumer<Menu, InventoryOpenEvent> openAction) {
         this.openAction = openAction;
         return this;
     }
 
+    @Nullable
     public BiConsumer<Menu, InventoryCloseEvent> closeAction() {
         return closeAction;
     }
 
-    public Menu setCloseAction(BiConsumer<Menu, InventoryCloseEvent> closeAction) {
+    public Menu setCloseAction(@Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         this.closeAction = closeAction;
         return this;
     }

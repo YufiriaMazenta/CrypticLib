@@ -3,8 +3,8 @@ package crypticlib;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
 import crypticlib.command.impl.RootCmdExecutor;
-import crypticlib.config.yaml.YamlConfigHandler;
 import crypticlib.config.yaml.YamlConfigContainer;
+import crypticlib.config.yaml.YamlConfigHandler;
 import crypticlib.config.yaml.YamlConfigWrapper;
 import crypticlib.listener.BukkitListener;
 import crypticlib.util.MsgUtil;
@@ -28,10 +28,10 @@ import java.util.jar.JarFile;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
-    private int lowestSupportVersion = 11200;
-    private int highestSupportVersion = 12002;
     private final Map<String, YamlConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     private final String defaultConfigFileName = "config.yml";
+    private int lowestSupportVersion = 11200;
+    private int highestSupportVersion = 12002;
 
     protected BukkitPlugin() {
         super();
@@ -54,12 +54,14 @@ public abstract class BukkitPlugin extends JavaPlugin {
     /**
      * 插件开始加载执行的方法
      */
-    public void enable() {}
+    public void enable() {
+    }
 
     /**
      * 插件卸载时执行的方法
      */
-    public void disable() {}
+    public void disable() {
+    }
 
     @Override
     public @NotNull FileConfiguration getConfig() {
@@ -71,9 +73,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public void saveConfig() {
-        configContainerMap.forEach((path, configContainer) -> {
-            configContainer.configWrapper().saveConfig();
-        });
+        configContainerMap.forEach((path, configContainer) -> configContainer.configWrapper().saveConfig());
     }
 
     @Override
@@ -85,9 +85,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public void reloadConfig() {
-        configContainerMap.forEach((path, container) -> {
-            container.reload();
-        });
+        configContainerMap.forEach((path, container) -> container.reload());
     }
 
     private void checkVersion() {
@@ -144,7 +142,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                         configContainerClasses.add(clazz);
                     }
                 }
-            } catch (ClassNotFoundException | NoClassDefFoundError ignored) {}
+            } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
+            }
         }
 
         //注册监听器
@@ -174,7 +173,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     Listener listener = (Listener) listenerConstructor.newInstance();
                     Bukkit.getPluginManager().registerEvents(listener, this);
                 }
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                     IllegalAccessException e) {
                 e.printStackTrace();
             }
         }

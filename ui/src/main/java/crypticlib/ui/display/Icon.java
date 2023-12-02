@@ -6,6 +6,8 @@ import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
@@ -14,11 +16,11 @@ public class Icon {
     private ItemStack display;
     private Consumer<InventoryClickEvent> clickConsumer;
 
-    public Icon(Material material, String name) {
+    public Icon(@NotNull Material material, @NotNull String name) {
         this(material, name, event -> event.setCancelled(true));
     }
 
-    public Icon(Material material, String name, Consumer<InventoryClickEvent> clickConsumer) {
+    public Icon(@NotNull Material material, @NotNull String name, @Nullable Consumer<InventoryClickEvent> clickConsumer) {
         ItemStack display = new ItemStack(material);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(material);
         itemMeta.setDisplayName(name);
@@ -27,25 +29,26 @@ public class Icon {
         this.clickConsumer = clickConsumer;
     }
 
-    public Icon(ItemStack display) {
+    public Icon(@NotNull ItemStack display) {
         this(display, event -> event.setCancelled(true));
     }
 
-    public Icon(Item item) {
+    public Icon(@NotNull Item item) {
         this(item.buildBukkit());
     }
 
-    public Icon(Item item, Consumer<InventoryClickEvent> clickConsumer) {
+    public Icon(@NotNull Item item, Consumer<InventoryClickEvent> clickConsumer) {
         this(item.buildBukkit(), clickConsumer);
     }
 
-    public Icon(ItemStack display, Consumer<InventoryClickEvent> clickConsumer) {
+    public Icon(@NotNull ItemStack display, Consumer<InventoryClickEvent> clickConsumer) {
         this.display = display;
         this.clickConsumer = clickConsumer;
     }
 
     /**
      * 执行此图标对应的操作
+     *
      * @param event 传入的点击事件
      * @return 图标本身
      */
@@ -60,6 +63,7 @@ public class Icon {
 
     /**
      * 图标的展示物品
+     *
      * @return 图标的展示物品
      */
     public ItemStack display() {
@@ -68,18 +72,20 @@ public class Icon {
 
     /**
      * 设置图标的展示物品
+     *
      * @param display 设置的展示物品
      */
-    public Icon setDisplay(ItemStack display) {
+    public Icon setDisplay(@NotNull ItemStack display) {
         this.display = display;
         return this;
     }
 
+    @Nullable
     public Consumer<InventoryClickEvent> clickConsumer() {
         return clickConsumer;
     }
 
-    public Icon setClickConsumer(Consumer<InventoryClickEvent> clickConsumer) {
+    public Icon setClickConsumer(@Nullable Consumer<InventoryClickEvent> clickConsumer) {
         this.clickConsumer = clickConsumer;
         return this;
     }

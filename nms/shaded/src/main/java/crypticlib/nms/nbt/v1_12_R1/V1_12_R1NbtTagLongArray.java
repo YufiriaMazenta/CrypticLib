@@ -2,6 +2,7 @@ package crypticlib.nms.nbt.v1_12_R1;
 
 import crypticlib.nms.nbt.NbtTagLongArray;
 import net.minecraft.server.v1_12_R1.NBTTagLongArray;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 
@@ -16,7 +17,7 @@ public class V1_12_R1NbtTagLongArray extends NbtTagLongArray {
     }
 
     @Override
-    public void fromNms(Object nmsNbt) {
+    public void fromNms(@NotNull Object nmsNbt) {
         NBTTagLongArray nbtTagLongArray = (NBTTagLongArray) nmsNbt;
         try {
             Field valueField = nbtTagLongArray.getClass().getField("b");
@@ -29,7 +30,7 @@ public class V1_12_R1NbtTagLongArray extends NbtTagLongArray {
     }
 
     @Override
-    public NBTTagLongArray toNms() {
+    public @NotNull NBTTagLongArray toNms() {
         return new NBTTagLongArray(value());
     }
 }

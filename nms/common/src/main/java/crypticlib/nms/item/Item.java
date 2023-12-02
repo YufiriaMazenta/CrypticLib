@@ -7,6 +7,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.ItemTag;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,11 +19,11 @@ public abstract class Item {
     private NbtTagCompound nbtTagCompound;
     private Integer amount;
 
-    public Item(String material, NbtTagCompound nbtTagCompound) {
+    public Item(@NotNull String material, @NotNull NbtTagCompound nbtTagCompound) {
         this(material, nbtTagCompound, 1);
     }
 
-    public Item(String material, NbtTagCompound nbtTagCompound, Integer amount) {
+    public Item(@NotNull String material, @NotNull NbtTagCompound nbtTagCompound, @NotNull Integer amount) {
         this.material = material;
         this.nbtTagCompound = nbtTagCompound;
         this.amount = amount;
@@ -30,40 +31,47 @@ public abstract class Item {
 
     /**
      * 获取物品的类型
+     *
      * @return 物品的类型
      */
+    @NotNull
     public String material() {
         return material;
     }
 
     /**
      * 设置物品的类型
+     *
      * @param material 物品的类型
      */
-    public Item setMaterial(String material) {
+    public Item setMaterial(@NotNull String material) {
         this.material = material;
         return this;
     }
 
     /**
      * 获取物品的Nbt,可以直接修改
+     *
      * @return 物品的nbt
      */
+    @NotNull
     public NbtTagCompound nbtTagCompound() {
         return nbtTagCompound;
     }
 
     /**
      * 设置物品的nbt,会覆盖原有的nbt
+     *
      * @param nbtCompound 需要设置过来的nbt
      */
-    public Item setNbtTagCompound(NbtTagCompound nbtCompound) {
+    public Item setNbtTagCompound(@NotNull NbtTagCompound nbtCompound) {
         this.nbtTagCompound = nbtCompound;
         return this;
     }
 
     /**
      * 获取物品的数量
+     *
      * @return 物品的数量
      */
     public Integer amount() {
@@ -72,6 +80,7 @@ public abstract class Item {
 
     /**
      * 设置物品的数量
+     *
      * @param amount 设置的数量
      */
     public Item setAmount(Integer amount) {
@@ -81,20 +90,26 @@ public abstract class Item {
 
     /**
      * 构建一个Bukkit物品
+     *
      * @return 构建的bukkit物品
      */
+    @NotNull
     public abstract ItemStack buildBukkit();
 
     /**
      * 构建一个NMS的物品
+     *
      * @return 构建的nms物品
      */
+    @NotNull
     public abstract Object buildNMS();
 
     /**
      * 将物品序列化为map
+     *
      * @return 序列化的map
      */
+    @NotNull
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("material", material());
@@ -105,8 +120,10 @@ public abstract class Item {
 
     /**
      * 将物品序列化为json
+     *
      * @return 序列化的json
      */
+    @NotNull
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("material", material());
@@ -115,13 +132,14 @@ public abstract class Item {
         return jsonObject;
     }
 
+    @NotNull
     public HoverEvent toHover() {
         return new HoverEvent(
-                HoverEvent.Action.SHOW_ITEM,
-                new net.md_5.bungee.api.chat.hover.content.Item(
-                        Objects.requireNonNull(Material.matchMaterial(material)).getKey().toString(),
-                        amount,
-                        ItemTag.ofNbt(nbtTagCompound.toString()))
+            HoverEvent.Action.SHOW_ITEM,
+            new net.md_5.bungee.api.chat.hover.content.Item(
+                Objects.requireNonNull(Material.matchMaterial(material)).getKey().toString(),
+                amount,
+                ItemTag.ofNbt(nbtTagCompound.toString()))
         );
     }
 
