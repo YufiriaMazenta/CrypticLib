@@ -1,42 +1,45 @@
 package crypticlib.command;
 
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.BiFunction;
 
 public interface ISubcmdExecutor extends ICmdExecutor {
 
-    String name();
+    @NotNull String name();
 
-    List<String> aliases();
+    @NotNull List<String> aliases();
 
-    ISubcmdExecutor setAliases(List<String> aliases);
+    ISubcmdExecutor setAliases(@NotNull List<String> aliases);
 
-    ISubcmdExecutor addAliases(String alias);
-
-    @Override
-    ISubcmdExecutor setTabArguments(List<String> tabArguments);
+    ISubcmdExecutor addAliases(@NotNull String alias);
 
     @Override
-    default ISubcmdExecutor addTabArguments(String tabArgument) {
+    @NotNull
+    ISubcmdExecutor setTabArguments(@NotNull List<String> tabArguments);
+
+    @Override
+    default ISubcmdExecutor addTabArguments(@NotNull String tabArgument) {
         return (ISubcmdExecutor) ICmdExecutor.super.addTabArguments(tabArgument);
     }
 
-    String permission();
+    @Nullable String permission();
 
-    ISubcmdExecutor setPermission(String permission);
+    ISubcmdExecutor setPermission(@Nullable String permission);
 
     @Override
     ISubcmdExecutor setExecutor(BiFunction<CommandSender, List<String>, Boolean> executor);
 
     @Override
-    default ISubcmdExecutor regSub(ISubcmdExecutor subcmdExecutor) {
+    default ISubcmdExecutor regSub(@NotNull ISubcmdExecutor subcmdExecutor) {
         return (ISubcmdExecutor) ICmdExecutor.super.regSub(subcmdExecutor);
     }
 
     @Override
-    default ISubcmdExecutor regSub(String name, BiFunction<CommandSender, List<String>, Boolean> executor) {
+    default ISubcmdExecutor regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
         return (ISubcmdExecutor) ICmdExecutor.super.regSub(name, executor);
     }
 

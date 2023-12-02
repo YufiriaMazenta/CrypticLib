@@ -7,6 +7,7 @@ import net.minecraft.server.v1_14_R1.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class V1_14_R1Item extends Item {
 
@@ -23,12 +24,12 @@ public class V1_14_R1Item extends Item {
     }
 
     @Override
-    public ItemStack buildBukkit() {
+    public @NotNull ItemStack buildBukkit() {
         return CraftItemStack.asBukkitCopy(buildNMS());
     }
 
     @Override
-    public net.minecraft.server.v1_14_R1.ItemStack buildNMS() {
+    public net.minecraft.server.v1_14_R1.@NotNull ItemStack buildNMS() {
         Material type = Material.matchMaterial(material());
         if (type == null) {
             throw new IllegalArgumentException(material() + " is an undefined item");

@@ -50,6 +50,7 @@ public class EntityProxy {
 
     /**
      * 获取一个代理实体对象,用于直接修改NBT
+     *
      * @param entity 需要代理的实体
      * @return 代理实体对象
      */

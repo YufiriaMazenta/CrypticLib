@@ -1,5 +1,8 @@
 package crypticlib.command;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.*;
 
 /**
@@ -12,32 +15,38 @@ public @interface BukkitCommand {
 
     /**
      * 命令的名字
-     * @return 命令的名字,不能为空
+     *
+     * @return 命令的名字, 不能为空
      */
-    String name();
+    @NotNull String name();
 
     /**
      * 命令所需的权限
+     *
      * @return 命令所需的权限
      */
-    String permission() default "";
+    @Nullable String permission() default "";
 
-    /**1
+    /**
+     * 1
      * 命令的别名,空即为无别名
+     *
      * @return 命令的别名
      */
-    String[] aliases() default {};
+    @NotNull String[] aliases() default {};
 
     /**
      * 命令的介绍
+     *
      * @return 命令的介绍
      */
-    String description() default "";
+    @NotNull String description() default "";
 
     /**
      * 命令的提示文本
+     *
      * @return 命令的提示文本
      */
-    String usage() default "";
+    @NotNull String usage() default "";
 
 }

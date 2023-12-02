@@ -1,7 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonPrimitive;
-import crypticlib.util.JsonUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -18,22 +18,22 @@ public abstract class NbtTagLong implements INbtTag<Long>, INumberNbt {
     }
 
     @Override
-    public NbtType type() {
+    public @NotNull NbtType type() {
         return NbtType.LONG;
     }
 
     @Override
-    public Long value() {
+    public @NotNull Long value() {
         return value;
     }
 
     @Override
-    public void setValue(Long value) {
+    public void setValue(@NotNull Long value) {
         this.value = value;
     }
 
     @Override
-    public JsonPrimitive toJson() {
+    public @NotNull JsonPrimitive toJson() {
         return new JsonPrimitive(value);
     }
 

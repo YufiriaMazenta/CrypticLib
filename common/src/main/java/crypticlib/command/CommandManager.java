@@ -8,6 +8,7 @@ import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -30,7 +31,11 @@ public enum CommandManager {
         registeredCommands = new CopyOnWriteArrayList<>();
     }
 
-    public CommandManager register(Plugin plugin, CommandInfo commandInfo, TabExecutor commandExecutor) {
+    public static SubcmdExecutor subcommand(@NotNull String name) {
+        return new SubcmdExecutor(name);
+    }
+
+    public CommandManager register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
         PluginCommand pluginCommand = (PluginCommand) ReflectUtil.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
         pluginCommand.setAliases(Arrays.asList(commandInfo.aliases()));
         pluginCommand.setDescription(commandInfo.description());
@@ -42,17 +47,13 @@ public enum CommandManager {
         registeredCommands.add(pluginCommand);
         return this;
     }
-    
+
     public CommandManager unregisterAll() {
         for (Command registeredCommand : registeredCommands) {
             registeredCommand.unregister(serverCommandMap);
         }
         registeredCommands.clear();
         return this;
-    }
-
-    public static SubcmdExecutor subcommand(String name) {
-        return new SubcmdExecutor(name);
     }
 
 }

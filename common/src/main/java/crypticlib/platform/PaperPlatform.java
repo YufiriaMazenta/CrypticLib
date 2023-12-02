@@ -5,6 +5,7 @@ import crypticlib.scheduler.IScheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Paper平台的一些方法集成
@@ -14,22 +15,24 @@ public enum PaperPlatform implements IPlatform {
     INSTANCE;
 
     @Override
+    @NotNull
     public Platform platform() {
         return Platform.PAPER;
     }
 
     @Override
+    @NotNull
     public IScheduler scheduler() {
         return BukkitScheduler.INSTANCE;
     }
 
     @Override
-    public void teleportEntity(Entity entity, Location location, PlayerTeleportEvent.TeleportCause cause) {
+    public void teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
         BukkitPlatform.INSTANCE.teleportEntity(entity, location, cause);
     }
 
     @Override
-    public void teleportEntity(Entity entity, Location location) {
+    public void teleportEntity(@NotNull Entity entity, @NotNull Location location) {
         BukkitPlatform.INSTANCE.teleportEntity(entity, location);
     }
 

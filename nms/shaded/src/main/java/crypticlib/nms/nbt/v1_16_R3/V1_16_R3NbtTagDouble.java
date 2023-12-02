@@ -2,6 +2,7 @@ package crypticlib.nms.nbt.v1_16_R3;
 
 import crypticlib.nms.nbt.NbtTagDouble;
 import net.minecraft.server.v1_16_R3.NBTTagDouble;
+import org.jetbrains.annotations.NotNull;
 
 public class V1_16_R3NbtTagDouble extends NbtTagDouble {
 
@@ -14,13 +15,13 @@ public class V1_16_R3NbtTagDouble extends NbtTagDouble {
     }
 
     @Override
-    public void fromNms(Object nmsNbt) {
+    public void fromNms(@NotNull Object nmsNbt) {
         NBTTagDouble nbtTagDouble = (NBTTagDouble) nmsNbt;
         setValue(nbtTagDouble.asDouble());
     }
 
     @Override
-    public NBTTagDouble toNms() {
+    public @NotNull NBTTagDouble toNms() {
         return NBTTagDouble.a(value());
     }
 

@@ -1,41 +1,46 @@
 package crypticlib.config.yaml.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class ConfigEntry<T> {
 
     private final String key;
-    private T value;
     private final T def;
+    private T value;
 
-    public ConfigEntry(String key, T def) {
+    public ConfigEntry(@NotNull String key, @NotNull T def) {
         this.key = key;
         this.def = def;
     }
 
+    @Nullable
     public T value() {
         return value;
     }
 
-    public ConfigEntry<T> setValue(T value) {
+    public ConfigEntry<T> setValue(@NotNull T value) {
         this.value = value;
         return this;
     }
 
+    @NotNull
     protected T def() {
         return def;
     }
 
+    @NotNull
     protected String key() {
         return key;
     }
 
-    public void saveDef(ConfigurationSection config) {
+    public void saveDef(@NotNull ConfigurationSection config) {
         if (config.contains(key))
             return;
         config.set(key, def);
     }
 
-    public abstract void load(ConfigurationSection config);
+    public abstract void load(@NotNull ConfigurationSection config);
 
 }

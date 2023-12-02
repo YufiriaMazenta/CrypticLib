@@ -1,7 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonArray;
-import crypticlib.util.JsonUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,6 +177,7 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
 
     /**
      * 将另外一个NbtTagList的内容全部添加到此NbtTagList
+     *
      * @param nbtTagList 另外一个NbtTagList
      */
     public NbtTagList addAll(NbtTagList nbtTagList) {
@@ -185,17 +186,17 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
     }
 
     @Override
-    public NbtType type() {
+    public @NotNull NbtType type() {
         return NbtType.LIST;
     }
 
     @Override
-    public List<INbtTag<?>> value() {
+    public @NotNull List<INbtTag<?>> value() {
         return nbtList;
     }
 
     @Override
-    public void setValue(List<INbtTag<?>> value) {
+    public void setValue(@NotNull List<INbtTag<?>> value) {
         this.nbtList = value;
     }
 
@@ -209,7 +210,7 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
     }
 
     @Override
-    public JsonArray toJson() {
+    public @NotNull JsonArray toJson() {
         JsonArray jsonArray = new JsonArray();
         for (INbtTag<?> nbtTag : value()) {
             jsonArray.add(nbtTag.toJson());
@@ -222,7 +223,7 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
         for (INbtTag<?> nbtTag : value()) {
             if (nbtTag instanceof NbtTagCompound) {
                 list.add(((NbtTagCompound) nbtTag).unwarppedMap());
-            } else if(nbtTag instanceof NbtTagList) {
+            } else if (nbtTag instanceof NbtTagList) {
                 list.add(((NbtTagList) nbtTag).unwrappedList());
             } else if (nbtTag instanceof INumberNbt) {
                 list.add(((INumberNbt) nbtTag).format());

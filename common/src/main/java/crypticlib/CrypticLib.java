@@ -6,14 +6,15 @@ import crypticlib.platform.FoliaPlatform;
 import crypticlib.platform.IPlatform;
 import crypticlib.platform.PaperPlatform;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 public class CrypticLib {
 
 
+    private static final CommandManager commandManager;
     private static IPlatform platform;
     private static int minecraftVersion;
     private static String nmsVersion;
-    private static final CommandManager commandManager;
 
     static {
         loadPlatform();
@@ -23,8 +24,10 @@ public class CrypticLib {
 
     /**
      * 获取当前运行的平台实例
+     *
      * @return 当前运行的平台实例
      */
+    @NotNull
     public static IPlatform platform() {
         return platform;
     }
@@ -33,6 +36,7 @@ public class CrypticLib {
      * 获取当前运行的Minecraft版本
      * 示例:当前版本为1.20.2时,返回12002
      * 当前版本为1.7.10时,返回10710(虽然CrypticLib并不支持这个版本)
+     *
      * @return 当前运行的Minecraft版本
      */
     public static int minecraftVersion() {
@@ -41,6 +45,7 @@ public class CrypticLib {
 
     /**
      * 获取当前运行的NMS版本
+     *
      * @return 当前运行的NMS版本
      */
     public static String nmsVersion() {
@@ -74,7 +79,7 @@ public class CrypticLib {
         nmsVersion = Bukkit.getServer().getClass().getPackage().getName().substring(Bukkit.getServer().getClass().getPackage().getName().lastIndexOf('.') + 1);
     }
 
-
+    @NotNull
     public static CommandManager commandManager() {
         return commandManager;
     }

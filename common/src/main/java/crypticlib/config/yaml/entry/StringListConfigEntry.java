@@ -1,17 +1,19 @@
 package crypticlib.config.yaml.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class StringListConfigEntry extends ConfigEntry<List<String>> {
 
-    public StringListConfigEntry(String key, List<String> def) {
+    public StringListConfigEntry(@NotNull String key, @NotNull List<String> def) {
         super(key, def);
     }
 
     @Override
-    public void load(ConfigurationSection config) {
+    public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
+        setValue(config.getStringList(key()));
     }
 }

@@ -1,6 +1,7 @@
 package crypticlib.config;
 
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -11,17 +12,17 @@ public interface IConfigWrapper<T> {
      */
     void createDefaultConfig();
 
-    T config();
+    @NotNull T config();
 
-    void set(String key, Object object);
+    void set(@NotNull String key, @Nullable Object object);
 
     void reloadConfig();
 
     void saveConfig();
 
-    String filePath();
+    @NotNull String filePath();
 
-    File configFile();
+    @NotNull File configFile();
 
     @Nullable Plugin plugin();
 

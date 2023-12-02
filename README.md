@@ -11,6 +11,7 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
 参考 https://github.com/YufiriaMazenta/CrypticLibExample
 
 #### pom.xml
+
 ```xml
 <repositories>
 	<repository>
@@ -19,6 +20,7 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
 	</repository>
 </repositories>
 ```
+
 ```xml
 <dependencies>
     <dependency>
@@ -30,6 +32,7 @@ CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便�
 ```
 
 #### build.gradle.kts
+
 ```kotlin
 repositories {
     maven("http://repo.crypticlib.com:8081/repository/maven-public/") {
@@ -37,6 +40,7 @@ repositories {
     }
 }
 ```
+
 ```kotlin
 dependencies {
     implementation("com.crypticlib:CrypticLib:${version}")
@@ -44,6 +48,7 @@ dependencies {
 ```
 
 #### build.gradle
+
 ```groovy
 repositories {
     maven {
@@ -52,6 +57,7 @@ repositories {
     }
 }
 ```
+
 ```groovy
 dependencies {
     implementation 'com.crypticlib:CrypticLib:${version}'

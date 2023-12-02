@@ -3,6 +3,7 @@ package crypticlib.nms.nbt.v1_16_R2;
 import crypticlib.nms.nbt.NbtTagCompound;
 import net.minecraft.server.v1_16_R2.NBTBase;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public class V1_16_R2NbtTagCompound extends NbtTagCompound {
     }
 
     @Override
-    public void fromNms(Object nmsNbt) {
+    public void fromNms(@NotNull Object nmsNbt) {
         NBTTagCompound nms = (NBTTagCompound) nmsNbt;
         for (String key : nms.getKeys()) {
             value().put(key, nbtTranslator().translateNmsNbt(nms.get(key)));
@@ -29,7 +30,7 @@ public class V1_16_R2NbtTagCompound extends NbtTagCompound {
     }
 
     @Override
-    public NBTTagCompound toNms() {
+    public @NotNull NBTTagCompound toNms() {
         NBTTagCompound nbtTagCompound = new NBTTagCompound();
         for (String key : value().keySet()) {
             nbtTagCompound.set(key, (NBTBase) get(key).toNms());

@@ -1,7 +1,7 @@
 package crypticlib.nms.nbt;
 
 import com.google.gson.JsonObject;
-import crypticlib.util.JsonUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,23 +28,21 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
     public NbtTagCompound(Map<String, Object> nbtMap, INbtTranslator nbtTranslator) {
         this.nbtMap = new ConcurrentHashMap<>();
         this.nbtTranslator = nbtTranslator;
-        nbtMap.forEach((key, val) -> {
-            this.nbtMap.put(key, nbtTranslator.translateObject(val));
-        });
+        nbtMap.forEach((key, val) -> this.nbtMap.put(key, nbtTranslator.translateObject(val)));
     }
 
     @Override
-    public NbtType type() {
+    public @NotNull NbtType type() {
         return NbtType.COMPOUND;
     }
 
     @Override
-    public Map<String, INbtTag<?>> value() {
+    public @NotNull Map<String, INbtTag<?>> value() {
         return nbtMap;
     }
 
     @Override
-    public void setValue(Map<String, INbtTag<?>> value) {
+    public void setValue(@NotNull Map<String, INbtTag<?>> value) {
         this.nbtMap = value;
     }
 
@@ -125,7 +123,8 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
 
     /**
      * 与另外一个NbtTagCompound合并
-     * @param other 另外一个NbtTagCompound
+     *
+     * @param other   另外一个NbtTagCompound
      * @param rewrite 当出现相同的key时，是否让另外一个重写本身的nbt
      * @return 自身（合并完毕的NbtTagCompound）
      */
@@ -155,11 +154,9 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
     }
 
     @Override
-    public JsonObject toJson() {
+    public @NotNull JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        value().forEach((key, val) -> {
-            jsonObject.add(key, val.toJson());
-        });
+        value().forEach((key, val) -> jsonObject.add(key, val.toJson()));
         return jsonObject;
     }
 
@@ -168,9 +165,9 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
         nbtMap.forEach((key, nbtTag) -> {
             if (nbtTag instanceof NbtTagCompound) {
                 map.put(key, ((NbtTagCompound) nbtTag).unwarppedMap());
-            } else if(nbtTag instanceof NbtTagList) {
+            } else if (nbtTag instanceof NbtTagList) {
                 map.put(key, ((NbtTagList) nbtTag).unwrappedList());
-            }  else if (nbtTag instanceof INumberNbt) {
+            } else if (nbtTag instanceof INumberNbt) {
                 map.put(key, ((INumberNbt) nbtTag).format());
             } else {
                 map.put(key, nbtTag.value());
