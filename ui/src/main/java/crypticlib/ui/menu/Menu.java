@@ -16,8 +16,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -29,6 +28,7 @@ public class Menu implements InventoryHolder {
     private MenuDisplay display;
     private BiConsumer<Menu, InventoryOpenEvent> openAction;
     private BiConsumer<Menu, InventoryCloseEvent> closeAction;
+    private final Map<Character, List<Integer>> layoutSlotMap;
     private Inventory openedInventory;
 
     public Menu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
@@ -49,6 +49,7 @@ public class Menu implements InventoryHolder {
         this.slotMap = new ConcurrentHashMap<>();
         this.openAction = openAction;
         this.closeAction = closeAction;
+        this.layoutSlotMap = new ConcurrentHashMap<>();
     }
 
     public Icon onClick(int slot, InventoryClickEvent event) {
@@ -94,6 +95,7 @@ public class Menu implements InventoryHolder {
 
     protected Menu parseDisplay() {
         slotMap.clear();
+        layoutSlotMap.clear();
         for (int x = 0; x < display.layout().layout().size(); x++) {
             String line = display.layout().layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
@@ -102,6 +104,11 @@ public class Menu implements InventoryHolder {
                     continue;
                 }
                 int slot = x * 9 + y;
+                if (layoutSlotMap.get(key) == null) {
+                    layoutSlotMap.put(key, new ArrayList<>(Collections.singletonList(slot)));
+                } else {
+                    layoutSlotMap.get(key).add(slot);
+                }
                 slotMap.put(slot, display.layout().layoutMap().get(key));
             }
         }
@@ -129,8 +136,26 @@ public class Menu implements InventoryHolder {
         });
     }
 
-    protected Map<Integer, Icon> slotMap() {
+    protected @NotNull Map<Integer, Icon> slotMap() {
         return slotMap;
+    }
+
+    /**
+     * 获取此字符在页面上的所有位置
+     * @param key 需要获取的字符
+     * @return 返回的位置列表
+     */
+    public @Nullable List<Integer> getSlots(Character key) {
+        return layoutSlotMap.get(key);
+    }
+
+    /**
+     * 获取一个位置的图标
+     * @param slot 位置
+     * @return 图标
+     */
+    public @Nullable Icon getIcon(int slot) {
+        return slotMap.get(slot);
     }
 
     /**
@@ -140,7 +165,7 @@ public class Menu implements InventoryHolder {
      * @param icon 设置的图标
      * @return 如果覆盖了某图标将返回被覆盖的图标
      */
-    public Icon setIcon(int slot, Icon icon) {
+    public @Nullable Icon setIcon(int slot, Icon icon) {
         if (openedInventory != null)
             openedInventory.setItem(slot, icon.display());
         return slotMap.put(slot, icon);
@@ -152,7 +177,7 @@ public class Menu implements InventoryHolder {
      * @param slot 删除的位置
      * @return 被删除的图标
      */
-    public Icon removeIcon(int slot) {
+    public @Nullable Icon removeIcon(int slot) {
         if (openedInventory != null)
             openedInventory.setItem(slot, new ItemStack(Material.AIR));
         return slotMap.remove(slot);

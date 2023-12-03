@@ -17,7 +17,13 @@ public class CommandInfo {
     private String usage;
 
     public CommandInfo(@NotNull BukkitCommand commandAnnotation) {
-        this(commandAnnotation.name(), commandAnnotation.permission() == null || commandAnnotation.permission().isEmpty() ? null : commandAnnotation.permission(), commandAnnotation.aliases(), commandAnnotation.description(), commandAnnotation.usage());
+        this(
+            commandAnnotation.name(),
+            commandAnnotation.permission() == null || commandAnnotation.permission().isEmpty() ? null : commandAnnotation.permission(),
+            commandAnnotation.aliases(),
+            commandAnnotation.description(),
+            commandAnnotation.usage()
+        );
     }
 
     public CommandInfo(@NotNull String name) {

@@ -20,6 +20,33 @@ public class FileUtil {
     public static final Pattern YAML_AND_JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(json)$");
 
     /**
+     * 获取文件夹下所有的json文件
+     * @param folder 遍历的文件夹
+     * @return 文件夹下的json文件
+     */
+    public static List<File> allJsonFiles(@NotNull File folder) {
+        return allFiles(folder, JSON_FILE_PATTERN);
+    }
+
+    /**
+     * 获取文件夹下所有的Yaml文件
+     * @param folder 遍历的文件夹
+     * @return 文件夹下的Yaml文件
+     */
+    public static List<File> allYamlFiles(@NotNull File folder) {
+        return allFiles(folder, YAML_FILE_PATTERN);
+    }
+
+    /**
+     * 获取文件夹下所有文件
+     * @param folder 遍历的文件夹
+     * @return 文件夹下的文件
+     */
+    public static List<File> allFiles(@NotNull File folder) {
+        return allFiles(folder, null);
+    }
+
+    /**
      * 获取一个文件夹下的所有文件名符合条件的文件
      *
      * @param folder          遍历的文件夹
