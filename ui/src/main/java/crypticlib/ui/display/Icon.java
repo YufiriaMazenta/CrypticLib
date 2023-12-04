@@ -1,6 +1,6 @@
 package crypticlib.ui.display;
 
-import crypticlib.nms.item.Item;
+import crypticlib.nms.item.NbtItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -33,12 +33,12 @@ public class Icon {
         this(display, event -> event.setCancelled(true));
     }
 
-    public Icon(@NotNull Item item) {
-        this(item.buildBukkit());
+    public Icon(@NotNull NbtItem item) {
+        this(item.saveNbtToBukkit());
     }
 
-    public Icon(@NotNull Item item, Consumer<InventoryClickEvent> clickConsumer) {
-        this(item.buildBukkit(), clickConsumer);
+    public Icon(@NotNull NbtItem item, Consumer<InventoryClickEvent> clickConsumer) {
+        this(item.saveNbtToBukkit(), clickConsumer);
     }
 
     public Icon(@NotNull ItemStack display, Consumer<InventoryClickEvent> clickConsumer) {
