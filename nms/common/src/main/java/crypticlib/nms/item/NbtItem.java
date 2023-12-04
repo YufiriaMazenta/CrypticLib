@@ -1,15 +1,18 @@
 package crypticlib.nms.item;
 
+import com.google.gson.JsonObject;
 import crypticlib.nms.nbt.NbtTagCompound;
 import crypticlib.util.ItemUtil;
-import crypticlib.util.ReflectUtil;
-import org.bukkit.Bukkit;
+import crypticlib.util.JsonUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ItemTag;
 
-import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public abstract class NbtItem {
 
@@ -62,6 +65,45 @@ public abstract class NbtItem {
     public NbtItem setNbtTagCompound(NbtTagCompound nbtTagCompound) {
         this.nbtTagCompound = nbtTagCompound;
         return this;
+    }
+
+    @NotNull
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("material", material());
+        map.put("nbt", nbtTagCompound().unwarppedMap());
+        map.put("amount", amount());
+        return map;
+    }
+
+    /**
+     * 将物品序列化为json
+     *
+     * @return 序列化的json
+     */
+    @NotNull
+    public JsonObject toJson() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("material", bukkit.getType().toString());
+        jsonObject.add("nbt", nbtTagCompound().toJson());
+        jsonObject.addProperty("amount", bukkit.getAmount());
+        return jsonObject;
+    }
+
+    @NotNull
+    public HoverEvent toHover() {
+        return new HoverEvent(
+            HoverEvent.Action.SHOW_ITEM,
+            new net.md_5.bungee.api.chat.hover.content.Item(
+                bukkit.getType().getKey().toString(),
+                bukkit.getAmount(),
+                ItemTag.ofNbt(nbtTagCompound.toString()))
+        );
+    }
+
+    @Override
+    public String toString() {
+        return JsonUtil.json2Str(toJson());
     }
 
     public abstract void loadNbtFromBukkit();
