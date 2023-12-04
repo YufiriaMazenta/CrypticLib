@@ -109,8 +109,8 @@ public abstract class NbtItem {
     public abstract void loadNbtFromBukkit();
 
     /**
-     * 将NBT保存到物品上,同时返回一个物品的克隆
-     * @return 物品的克隆
+     * 将NBT保存到物品上,同时返回修改完成的物品
+     * @return 修改完成的物品
      */
     public abstract ItemStack saveNbtToBukkit();
 
