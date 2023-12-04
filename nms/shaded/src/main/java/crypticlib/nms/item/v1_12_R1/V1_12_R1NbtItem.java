@@ -13,8 +13,6 @@ import java.lang.reflect.Constructor;
 
 public class V1_12_R1NbtItem extends NbtItem {
 
-    private Constructor<?> craftItemMetaConstructor;
-
     public V1_12_R1NbtItem(ItemStack itemStack) {
         super(itemStack);
     }
