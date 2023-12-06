@@ -29,7 +29,7 @@ public class YamlConfigContainer {
 
     public void reload() {
         configWrapper.reloadConfig();
-        for (Field field : containerClass.getFields()) {
+        for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
             Object obj = ReflectUtil.getFieldObj(field, null);
