@@ -191,7 +191,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             } else {
                 Constructor<?> commandConstructor = ReflectUtil.getDeclaredConstructor(commandClass);
-                TabExecutor cmdExecutor = (RootCmdExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
+                TabExecutor cmdExecutor = (TabExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
                 CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), cmdExecutor);
             }
         }
