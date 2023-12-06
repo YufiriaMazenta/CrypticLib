@@ -10,6 +10,7 @@ import crypticlib.listener.BukkitListener;
 import crypticlib.util.MsgUtil;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -190,7 +191,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             } else {
                 Constructor<?> commandConstructor = ReflectUtil.getDeclaredConstructor(commandClass);
-                RootCmdExecutor cmdExecutor = (RootCmdExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
+                TabExecutor cmdExecutor = (RootCmdExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
                 CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), cmdExecutor);
             }
         }
