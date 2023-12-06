@@ -32,7 +32,7 @@ public class YamlConfigContainer {
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
-            Object obj = ReflectUtil.getFieldObj(field, null);
+            Object obj = ReflectUtil.getDeclaredFieldObj(field, null);
             if (obj instanceof ConfigEntry) {
                 ((ConfigEntry<?>) obj).load(configWrapper.config());
             }
