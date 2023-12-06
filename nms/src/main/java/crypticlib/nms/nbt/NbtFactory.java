@@ -18,6 +18,7 @@ import crypticlib.nms.nbt.v1_19_R2.V1_19_R2NbtTagCompound;
 import crypticlib.nms.nbt.v1_19_R3.V1_19_R3NbtTagCompound;
 import crypticlib.nms.nbt.v1_20_R1.V1_20_R1NbtTagCompound;
 import crypticlib.nms.nbt.v1_20_R2.V1_20_R2NbtTagCompound;
+import crypticlib.nms.nbt.v1_20_R3.V1_20_R3NbtTagCompound;
 import crypticlib.util.JsonUtil;
 import crypticlib.util.YamlConfigUtil;
 import org.bukkit.configuration.ConfigurationSection;
@@ -56,6 +57,7 @@ public class NbtFactory {
         regNbtTagCompoundProvider("v1_19_R3", V1_19_R3NbtTagCompound::new, V1_19_R3NbtTagCompound::new);
         regNbtTagCompoundProvider("v1_20_R1", V1_20_R1NbtTagCompound::new, V1_20_R1NbtTagCompound::new);
         regNbtTagCompoundProvider("v1_20_R2", V1_20_R2NbtTagCompound::new, V1_20_R2NbtTagCompound::new);
+        regNbtTagCompoundProvider("v1_20_R3", V1_20_R3NbtTagCompound::new, V1_20_R3NbtTagCompound::new);
     }
 
     public static NbtTagCompound map2NbtTagCompound(Map<String, Object> map) {

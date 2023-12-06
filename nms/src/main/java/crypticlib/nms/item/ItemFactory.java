@@ -18,6 +18,7 @@ import crypticlib.nms.item.v1_19_R2.V1_19_R2NbtItem;
 import crypticlib.nms.item.v1_19_R3.V1_19_R3NbtItem;
 import crypticlib.nms.item.v1_20_R1.V1_20_R1NbtItem;
 import crypticlib.nms.item.v1_20_R2.V1_20_R2NbtItem;
+import crypticlib.nms.item.v1_20_R3.V1_20_R3NbtItem;
 import crypticlib.nms.nbt.NbtFactory;
 import crypticlib.nms.nbt.NbtTagCompound;
 import org.bukkit.Material;
@@ -59,6 +60,7 @@ public class ItemFactory {
         regProxyItemStackProvider("v1_19_R3", V1_19_R3NbtItem::new, V1_19_R3NbtItem::new, V1_19_R3NbtItem::new);
         regProxyItemStackProvider("v1_20_R1", V1_20_R1NbtItem::new, V1_20_R1NbtItem::new, V1_20_R1NbtItem::new);
         regProxyItemStackProvider("v1_20_R2", V1_20_R2NbtItem::new, V1_20_R2NbtItem::new, V1_20_R2NbtItem::new);
+        regProxyItemStackProvider("v1_20_R3", V1_20_R3NbtItem::new, V1_20_R3NbtItem::new, V1_20_R3NbtItem::new);
     }
 
     public static NbtItem item(ItemStack itemStack) {
