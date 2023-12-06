@@ -17,6 +17,7 @@ import crypticlib.nms.entity.v1_19_R2.V1_19_R2NbtEntity;
 import crypticlib.nms.entity.v1_19_R3.V1_19_R3NbtEntity;
 import crypticlib.nms.entity.v1_20_R1.V1_20_R1NbtEntity;
 import crypticlib.nms.entity.v1_20_R2.V1_20_R2NbtEntity;
+import crypticlib.nms.entity.v1_20_R3.V1_20_R3NbtEntity;
 import org.bukkit.entity.Entity;
 
 import java.util.Map;
@@ -46,6 +47,7 @@ public class EntityFactory {
         regProvider("v1_19_R3", V1_19_R3NbtEntity::new);
         regProvider("v1_20_R1", V1_20_R1NbtEntity::new);
         regProvider("v1_20_R2", V1_20_R2NbtEntity::new);
+        regProvider("v1_20_R3", V1_20_R3NbtEntity::new);
     }
 
     /**
