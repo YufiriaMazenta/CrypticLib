@@ -147,12 +147,11 @@ public abstract class BukkitPlugin extends JavaPlugin {
             }
         }
 
+        regConfigs(configContainerClasses);
         //注册监听器
         regListeners(listenerClasses);
         //注册命令
         regCommands(pluginCommandClasses);
-
-        regConfigs(configContainerClasses);
 
         try {
             pluginJar.close();
