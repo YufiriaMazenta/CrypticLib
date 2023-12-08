@@ -32,7 +32,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     private final Map<String, YamlConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     private final String defaultConfigFileName = "config.yml";
     private int lowestSupportVersion = 11200;
-    private int highestSupportVersion = 12002;
+    private int highestSupportVersion = 12004;
 
     protected BukkitPlugin() {
         super();
@@ -92,7 +92,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     private void checkVersion() {
         int version = CrypticLib.minecraftVersion();
         if (version > highestSupportVersion || version < lowestSupportVersion) {
-            MsgUtil.info("&c&lUnsupported Version");
+            MsgUtil.info(this.getName() + " &c&lUnsupported Version");
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }
