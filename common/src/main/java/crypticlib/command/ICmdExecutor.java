@@ -133,7 +133,7 @@ public interface ICmdExecutor {
                 }
             }
         }
-        arguments.removeIf(str -> !str.startsWith(args.get(0)));
+        arguments.removeIf(str -> !str.contains(args.get(0)));
         return arguments;
 
     }
