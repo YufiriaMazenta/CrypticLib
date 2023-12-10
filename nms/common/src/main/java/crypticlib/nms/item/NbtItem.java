@@ -4,15 +4,14 @@ import com.google.gson.JsonObject;
 import crypticlib.nms.nbt.NbtTagCompound;
 import crypticlib.util.ItemUtil;
 import crypticlib.util.JsonUtil;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.ItemTag;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.ItemTag;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public abstract class NbtItem {
 

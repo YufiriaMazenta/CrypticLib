@@ -79,7 +79,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Constructor<?> getConstructor(@NotNull Class<?> clazz, Class<?>... argClasses) {
+    public static <T> Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?>... argClasses) {
         try {
             return clazz.getConstructor(argClasses);
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Constructor<?> getDeclaredConstructor(@NotNull Class<?> obj, Class<?>... argClasses) {
+    public static <T> Constructor<T> getDeclaredConstructor(@NotNull Class<T> obj, Class<?>... argClasses) {
         try {
             return obj.getDeclaredConstructor(argClasses);
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class ReflectUtil {
         }
     }
 
-    public static Object invokeConstructor(@NotNull Constructor<?> constructor, Object... args) {
+    public static <T> T invokeConstructor(@NotNull Constructor<T> constructor, Object... args) {
         try {
             return constructor.newInstance(args);
         } catch (Exception e) {
@@ -103,13 +103,31 @@ public class ReflectUtil {
         }
     }
 
-    public static Object invokeDeclaredConstructor(@NotNull Constructor<?> constructor, Object... args) {
+    public static <T> T invokeDeclaredConstructor(@NotNull Constructor<T> constructor, Object... args) {
         try {
             constructor.setAccessible(true);
             return constructor.newInstance(args);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static <T> T newInstance(Class<T> clazz, Object... args) {
+        Class<?>[] argClasses = new Class[args.length];
+        for (int i = 0; i < args.length; i++) {
+            argClasses[i] = args[i].getClass();
+        }
+        Constructor<T> constructor = getConstructor(clazz, argClasses);
+        return invokeConstructor(constructor, args);
+    }
+
+    public static <T> T newDeclaredInstance(Class<T> clazz, Object... args) {
+        Class<?>[] argClasses = new Class[args.length];
+        for (int i = 0; i < args.length; i++) {
+            argClasses[i] = args[i].getClass();
+        }
+        Constructor<T> constructor = getDeclaredConstructor(clazz, argClasses);
+        return invokeDeclaredConstructor(constructor, args);
     }
 
 }
