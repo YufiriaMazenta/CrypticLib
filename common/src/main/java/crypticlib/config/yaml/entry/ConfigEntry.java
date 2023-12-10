@@ -2,7 +2,6 @@ package crypticlib.config.yaml.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class ConfigEntry<T> {
 

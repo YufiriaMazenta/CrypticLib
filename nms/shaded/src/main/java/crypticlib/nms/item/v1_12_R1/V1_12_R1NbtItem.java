@@ -9,8 +9,6 @@ import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
-
 public class V1_12_R1NbtItem extends NbtItem {
 
     public V1_12_R1NbtItem(ItemStack itemStack) {

@@ -1,7 +1,9 @@
 package crypticlib;
 
+import crypticlib.annotation.AnnotationProcessor;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
+import crypticlib.command.CommandManager;
 import crypticlib.command.impl.RootCmdExecutor;
 import crypticlib.config.yaml.YamlConfigContainer;
 import crypticlib.config.yaml.YamlConfigHandler;
@@ -39,8 +41,40 @@ public abstract class BukkitPlugin extends JavaPlugin {
     }
 
     @Override
+    public final void onLoad() {
+        AnnotationProcessor annotationProcessor = AnnotationProcessor.INSTANCE;
+        annotationProcessor
+            .regClassAnnotationProcessor(
+                BukkitListener.class,
+                (annotation, clazz) -> {
+                    Listener listener = (Listener) annotationProcessor.getClassInstance(clazz);
+                    Bukkit.getPluginManager().registerEvents(listener, this);
+                })
+            .regClassAnnotationProcessor(
+                BukkitCommand.class,
+                (annotation, clazz) -> {
+                    TabExecutor tabExecutor = (TabExecutor) annotationProcessor.getClassInstance(clazz);
+                    BukkitCommand bukkitCommand = (BukkitCommand) annotation;
+                    CommandManager.INSTANCE.register(this, new CommandInfo(bukkitCommand), tabExecutor);
+                })
+            .regClassAnnotationProcessor(
+                YamlConfigHandler.class,
+                (annotation, clazz) -> {
+                    YamlConfigHandler yamlConfigHandler = (YamlConfigHandler) annotation;
+                    String path = yamlConfigHandler.path();
+                    if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
+                        path += ".yml";
+                    YamlConfigWrapper configWrapper = new YamlConfigWrapper(this, path);
+                    YamlConfigContainer configContainer = new YamlConfigContainer(clazz, configWrapper);
+                    configContainerMap.put(path, configContainer);
+                    configContainer.reload();
+                }, AnnotationProcessor.ProcessPriority.LOWEST);
+        load();
+    }
+
+    @Override
     public final void onEnable() {
-        scanClasses();
+        AnnotationProcessor.INSTANCE.scanJar(getFile());
         enable();
         checkVersion();
     }
@@ -53,7 +87,14 @@ public abstract class BukkitPlugin extends JavaPlugin {
     }
 
     /**
-     * 插件开始加载执行的方法
+     * 插件开始加载时执行的方法
+     */
+    public void load() {
+
+    }
+
+    /**
+     * 插件开始启用时执行的方法
      */
     public void enable() {
     }
@@ -111,102 +152,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     public void setHighestSupportVersion(int highestSupportVersion) {
         this.highestSupportVersion = highestSupportVersion;
-    }
-
-    private void scanClasses() {
-        Set<Class<?>> listenerClasses = new HashSet<>();
-        Set<Class<?>> pluginCommandClasses = new HashSet<>();
-        Set<Class<?>> configContainerClasses = new HashSet<>();
-        //扫描类
-        Enumeration<JarEntry> entries;
-        JarFile pluginJar;
-        try {
-            pluginJar = new JarFile(getFile());
-            entries = pluginJar.entries();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        while (entries.hasMoreElements()) {
-            try {
-                JarEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    String className = entry.getName().replace('/', '.').substring(0, entry.getName().length() - 6);
-                    Class<?> clazz = getClassLoader().loadClass(className);
-                    if (clazz.isAnnotationPresent(BukkitCommand.class)) {
-                        pluginCommandClasses.add(clazz);
-                    }
-                    if (clazz.isAnnotationPresent(BukkitListener.class)) {
-                        listenerClasses.add(clazz);
-                    }
-                    if (clazz.isAnnotationPresent(YamlConfigHandler.class)) {
-                        configContainerClasses.add(clazz);
-                    }
-                }
-            } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
-            }
-        }
-
-        regConfigs(configContainerClasses);
-        //注册监听器
-        regListeners(listenerClasses);
-        //注册命令
-        regCommands(pluginCommandClasses);
-
-        try {
-            pluginJar.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void regListeners(Set<Class<?>> listenerClasses) {
-        for (Class<?> listenerClass : listenerClasses) {
-            try {
-                if (listenerClass.isEnum()) {
-                    for (Object listenerEnum : listenerClass.getEnumConstants()) {
-                        Bukkit.getPluginManager().registerEvents((Listener) listenerEnum, this);
-                    }
-                } else {
-                    Constructor<?> listenerConstructor = listenerClass.getDeclaredConstructor();
-                    listenerConstructor.setAccessible(true);
-                    Listener listener = (Listener) listenerConstructor.newInstance();
-                    Bukkit.getPluginManager().registerEvents(listener, this);
-                }
-            } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
-                     IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    private void regCommands(Set<Class<?>> pluginCommandClasses) {
-        for (Class<?> commandClass : pluginCommandClasses) {
-            BukkitCommand commandAnnotation = commandClass.getAnnotation(BukkitCommand.class);
-            if (commandClass.isEnum()) {
-                for (Object cmdExecutorEnum : commandClass.getEnumConstants()) {
-                    CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), (RootCmdExecutor) cmdExecutorEnum);
-                }
-            } else {
-                Constructor<?> commandConstructor = ReflectUtil.getDeclaredConstructor(commandClass);
-                TabExecutor cmdExecutor = (TabExecutor) ReflectUtil.invokeDeclaredConstructor(commandConstructor);
-                CrypticLib.commandManager().register(this, new CommandInfo(commandAnnotation), cmdExecutor);
-            }
-        }
-    }
-
-    private void regConfigs(Set<Class<?>> configContainerClasses) {
-        for (Class<?> configContainerClass : configContainerClasses) {
-            YamlConfigHandler yamlConfigHandlerAnnotation = configContainerClass.getAnnotation(YamlConfigHandler.class);
-            String path = yamlConfigHandlerAnnotation.path();
-            if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
-                path += ".yml";
-            YamlConfigWrapper configWrapper = new YamlConfigWrapper(this, path);
-            YamlConfigContainer configContainer = new YamlConfigContainer(configContainerClass, configWrapper);
-            configContainerMap.put(path, configContainer);
-            configContainer.reload();
-        }
     }
 
 }
