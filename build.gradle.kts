@@ -1,7 +1,7 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "0.6.0"
+rootProject.version = "0.7.0"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
 var repositoryUrl = "http://repo.crypticlib.com:8081/repository/"
@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":nms"))
     //暂未完成UI模块,故不加入
     implementation(project(":ui"))
+    implementation(project(":conversation"))
 }
 
 tasks {

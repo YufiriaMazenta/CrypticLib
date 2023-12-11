@@ -1,0 +1,123 @@
+package crypticlib.conversation;
+
+import crypticlib.CrypticLib;
+import crypticlib.conversation.handler.ConversationHandler;
+import crypticlib.util.MsgUtil;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class Conversation {
+
+    private final Player who;
+    private final Plugin plugin;
+    private Prompt prompt;
+    private String cancelInput;
+    private final Map<Object, Object> data;
+    private Runnable endTask;
+
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt) {
+        this.plugin = plugin;
+        this.who = who;
+        this.prompt = firstPrompt;
+        this.data = new ConcurrentHashMap<>();
+        this.cancelInput = "cancel";
+        this.endTask = null;
+    }
+
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, Runnable endTask) {
+        this.plugin = plugin;
+        this.who = who;
+        this.prompt = firstPrompt;
+        this.data = new ConcurrentHashMap<>();
+        this.cancelInput = "cancel";
+        this.endTask = endTask;
+    }
+
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, @NotNull String cancelInput) {
+        this.plugin = plugin;
+        this.who = who;
+        this.prompt = firstPrompt;
+        this.data = new ConcurrentHashMap<>();
+        this.cancelInput = cancelInput;
+        this.endTask = null;
+    }
+
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, @NotNull String cancelInput, Runnable endTask) {
+        this.plugin = plugin;
+        this.who = who;
+        this.prompt = firstPrompt;
+        this.data = new ConcurrentHashMap<>();
+        this.cancelInput = cancelInput;
+        this.endTask = endTask;
+    }
+
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, Prompt firstPrompt, Map<Object, Object> data, String cancelInput) {
+        this.plugin = plugin;
+        this.who = who;
+        this.prompt = firstPrompt;
+        this.data = data;
+        this.cancelInput = cancelInput;
+        this.endTask = null;
+    }
+
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, Prompt firstPrompt, Map<Object, Object> data, String cancelInput, Runnable endTask) {
+        this.plugin = plugin;
+        this.who = who;
+        this.prompt = firstPrompt;
+        this.data = data;
+        this.cancelInput = cancelInput;
+        this.endTask = endTask;
+    }
+
+    public void start() {
+        ConversationHandler.INSTANCE.startChat(who, this);
+        MsgUtil.sendMsg(who, prompt.promptText(data));
+    }
+
+    public void end() {
+        ConversationHandler.INSTANCE.endChat(who);
+        if (endTask != null)
+            endTask.run();
+    }
+
+    public void handleInput(String input) {
+        CrypticLib.platform().scheduler().runTask(plugin, () -> {
+            if (input.equalsIgnoreCase(cancelInput)) {
+                end();
+                return;
+            }
+            prompt = prompt.acceptInput(data, input);
+            if (prompt == null) {
+                end();
+                return;
+            }
+            MsgUtil.sendMsg(who, prompt.promptText(data));
+        });
+    }
+
+    public String cancelInput() {
+        return cancelInput;
+    }
+
+    public Conversation setCancelInput(String cancelInput) {
+        this.cancelInput = cancelInput;
+        return this;
+    }
+
+    public Plugin plugin() {
+        return plugin;
+    }
+
+    public Map<Object, Object> data() {
+        return data;
+    }
+
+    public Player who() {
+        return who;
+    }
+
+}

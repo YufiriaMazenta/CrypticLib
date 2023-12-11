@@ -14,7 +14,9 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 @BukkitListener
-public class MenuHandler implements Listener {
+public enum MenuHandler implements Listener {
+
+    INSTANCE;
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClickMenu(InventoryClickEvent event) {
