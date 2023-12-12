@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class Conversation {
 
@@ -17,7 +18,7 @@ public class Conversation {
     private Prompt prompt;
     private String cancelInput;
     private final Map<Object, Object> data;
-    private Runnable endTask;
+    private Consumer<Map<Object, Object>> endTask;
 
     public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt) {
         this.plugin = plugin;
@@ -28,7 +29,7 @@ public class Conversation {
         this.endTask = null;
     }
 
-    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, Runnable endTask) {
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, Consumer<Map<Object, Object>> endTask) {
         this.plugin = plugin;
         this.who = who;
         this.prompt = firstPrompt;
@@ -46,7 +47,7 @@ public class Conversation {
         this.endTask = null;
     }
 
-    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, @NotNull String cancelInput, Runnable endTask) {
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt, @NotNull String cancelInput, Consumer<Map<Object, Object>> endTask) {
         this.plugin = plugin;
         this.who = who;
         this.prompt = firstPrompt;
@@ -64,7 +65,7 @@ public class Conversation {
         this.endTask = null;
     }
 
-    public Conversation(@NotNull Plugin plugin, @NotNull Player who, Prompt firstPrompt, Map<Object, Object> data, String cancelInput, Runnable endTask) {
+    public Conversation(@NotNull Plugin plugin, @NotNull Player who, Prompt firstPrompt, Map<Object, Object> data, String cancelInput, Consumer<Map<Object, Object>> endTask) {
         this.plugin = plugin;
         this.who = who;
         this.prompt = firstPrompt;
@@ -81,7 +82,7 @@ public class Conversation {
     public void end() {
         ConversationHandler.INSTANCE.endChat(who);
         if (endTask != null)
-            endTask.run();
+            endTask.accept(data);
     }
 
     public void handleInput(String input) {
@@ -97,6 +98,15 @@ public class Conversation {
             }
             MsgUtil.sendMsg(who, prompt.promptText(data));
         });
+    }
+
+    public Consumer<Map<Object, Object>> endTask() {
+        return endTask;
+    }
+
+    public Conversation setEndTask(Consumer<Map<Object, Object>> endTask) {
+        this.endTask = endTask;
+        return this;
     }
 
     public String cancelInput() {
