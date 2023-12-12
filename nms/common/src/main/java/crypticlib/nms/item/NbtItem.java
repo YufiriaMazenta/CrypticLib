@@ -69,7 +69,7 @@ public abstract class NbtItem {
     @NotNull
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
-        map.put("material", bukkit.getType().name());
+        map.put("material", bukkit.getType().getKey().toString());
         map.put("nbt", nbtTagCompound().unwarppedMap());
         map.put("amount", bukkit.getAmount());
         return map;
@@ -83,7 +83,7 @@ public abstract class NbtItem {
     @NotNull
     public JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("material", bukkit.getType().name());
+        jsonObject.addProperty("material", bukkit.getType().getKey().toString());
         jsonObject.add("nbt", nbtTagCompound().toJson());
         jsonObject.addProperty("amount", bukkit.getAmount());
         return jsonObject;
