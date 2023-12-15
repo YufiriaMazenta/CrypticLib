@@ -1,18 +1,18 @@
-package crypticlib.config.yaml;
+package crypticlib.config;
 
-import crypticlib.config.yaml.entry.ConfigEntry;
+import crypticlib.config.entry.ConfigEntry;
 import crypticlib.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-public class YamlConfigContainer {
+public class ConfigContainer {
 
     private final Class<?> containerClass;
-    private final YamlConfigWrapper configWrapper;
+    private final ConfigWrapper configWrapper;
 
-    public YamlConfigContainer(@NotNull Class<?> containerClass, @NotNull YamlConfigWrapper configWrapper) {
+    public ConfigContainer(@NotNull Class<?> containerClass, @NotNull ConfigWrapper configWrapper) {
         this.containerClass = containerClass;
         this.configWrapper = configWrapper;
     }
@@ -23,7 +23,7 @@ public class YamlConfigContainer {
     }
 
     @NotNull
-    public YamlConfigWrapper configWrapper() {
+    public ConfigWrapper configWrapper() {
         return configWrapper;
     }
 
@@ -32,9 +32,9 @@ public class YamlConfigContainer {
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
-            Object obj = ReflectUtil.getDeclaredFieldObj(field, null);
-            if (obj instanceof ConfigEntry) {
-                ((ConfigEntry<?>) obj).load(configWrapper.config());
+            Object configEntry = ReflectUtil.getDeclaredFieldObj(field, null);
+            if (configEntry instanceof ConfigEntry) {
+                ((ConfigEntry<?>) configEntry).load(configWrapper.config());
             }
         }
         configWrapper.saveConfig();

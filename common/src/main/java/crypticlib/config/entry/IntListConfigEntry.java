@@ -1,20 +1,20 @@
-package crypticlib.config.yaml.entry;
+package crypticlib.config.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class CharacterListConfigEntry extends ConfigEntry<List<Character>> {
+public class IntListConfigEntry extends ConfigEntry<List<Integer>> {
 
-    public CharacterListConfigEntry(@NotNull String key, @NotNull List<Character> def) {
+    public IntListConfigEntry(@NotNull String key, @NotNull List<Integer> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getCharacterList(key()));
+        setValue(config.getIntegerList(key()));
     }
 
 }

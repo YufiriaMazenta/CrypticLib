@@ -1,4 +1,4 @@
-package crypticlib.util;
+package crypticlib.chat;
 
 import crypticlib.CrypticLib;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * 文本相关的工具类
  */
 @SuppressWarnings("removal")
-public class TextUtil {
+public class TextProcessor {
 
     private static final Pattern colorPattern = Pattern.compile("&#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})");
 

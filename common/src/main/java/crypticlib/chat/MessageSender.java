@@ -1,4 +1,4 @@
-package crypticlib.util;
+package crypticlib.chat;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -15,7 +15,7 @@ import java.util.Map;
  * 聊天相关的工具类
  */
 @SuppressWarnings("deprecation")
-public class MsgUtil {
+public class MessageSender {
 
     /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量
@@ -39,8 +39,8 @@ public class MsgUtil {
             msg = msg.replace(formatStr, replaceMap.get(formatStr));
         }
         if (receiver instanceof Player)
-            msg = TextUtil.placeholder((Player) receiver, msg);
-        sendMsg(receiver, TextUtil.toComponent(TextUtil.color(msg)));
+            msg = TextProcessor.placeholder((Player) receiver, msg);
+        sendMsg(receiver, TextProcessor.toComponent(TextProcessor.color(msg)));
     }
 
     /**
@@ -82,8 +82,8 @@ public class MsgUtil {
         if (subTitle == null) {
             subTitle = "";
         }
-        title = TextUtil.color(TextUtil.placeholder(player, title));
-        subTitle = TextUtil.color(TextUtil.placeholder(player, subTitle));
+        title = TextProcessor.color(TextProcessor.placeholder(player, title));
+        subTitle = TextProcessor.color(TextProcessor.placeholder(player, subTitle));
         player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
     }
 
@@ -121,8 +121,8 @@ public class MsgUtil {
      * @param text   发送的ActionBar文本
      */
     public static void sendActionBar(Player player, String text) {
-        text = TextUtil.color(TextUtil.placeholder(player, text));
-        sendActionBar(player, TextUtil.toComponent(text));
+        text = TextProcessor.color(TextProcessor.placeholder(player, text));
+        sendActionBar(player, TextProcessor.toComponent(text));
     }
 
     /**

@@ -1,18 +1,17 @@
-package crypticlib.config.yaml.entry;
+package crypticlib.config.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public class StringConfigEntry extends ConfigEntry<String> {
+public class LongConfigEntry extends ConfigEntry<Long> {
 
-    public StringConfigEntry(@NotNull String key, @NotNull String def) {
+    public LongConfigEntry(@NotNull String key, @NotNull Long def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getString(key(), def()));
+        setValue(config.getLong(key()));
     }
-
 }

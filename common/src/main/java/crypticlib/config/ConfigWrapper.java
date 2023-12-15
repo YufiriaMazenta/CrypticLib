@@ -1,6 +1,5 @@
-package crypticlib.config.yaml;
+package crypticlib.config;
 
-import crypticlib.config.IConfigWrapper;
 import crypticlib.util.FileUtil;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -13,7 +12,7 @@ import java.io.IOException;
 /**
  * 对Yaml类型的配置文件的封装
  */
-public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
+public class ConfigWrapper {
     private final File configFile;
     private final String path;
     private final Plugin plugin;
@@ -25,7 +24,7 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      * @param plugin 创建配置文件的插件
      * @param path   相对插件文件夹的路径
      */
-    public YamlConfigWrapper(@NotNull Plugin plugin, @NotNull String path) {
+    public ConfigWrapper(@NotNull Plugin plugin, @NotNull String path) {
         this.path = path;
         File dataFolder = plugin.getDataFolder();
         configFile = new File(dataFolder, path);
@@ -38,14 +37,13 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      *
      * @param file 创建的配置文件
      */
-    public YamlConfigWrapper(@NotNull File file) {
+    public ConfigWrapper(@NotNull File file) {
         this.configFile = file;
         this.path = file.getPath();
         this.config = YamlConfiguration.loadConfiguration(file);
         this.plugin = null;
     }
 
-    @Override
     public void createDefaultConfig() {
         if (!configFile.exists()) {
             try {
@@ -62,7 +60,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      *
      * @return 配置文件实例
      */
-    @Override
     @NotNull
     public YamlConfiguration config() {
         if (config == null) {
@@ -77,7 +74,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      * @param key    配置的路径
      * @param object 值
      */
-    @Override
     public void set(@NotNull String key, @Nullable Object object) {
         config.set(key, object);
     }
@@ -85,7 +81,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
     /**
      * 重载配置文件
      */
-    @Override
     public void reloadConfig() {
         config = YamlConfiguration.loadConfiguration(configFile);
     }
@@ -93,7 +88,6 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
     /**
      * 保存配置文件
      */
-    @Override
     public synchronized void saveConfig() {
         try {
             config().save(configFile);
@@ -107,19 +101,16 @@ public class YamlConfigWrapper implements IConfigWrapper<YamlConfiguration> {
      *
      * @return 配置文件的路径
      */
-    @Override
     @NotNull
     public String filePath() {
         return path;
     }
 
-    @Override
     @NotNull
     public File configFile() {
         return configFile;
     }
 
-    @Override
     @Nullable
     public Plugin plugin() {
         return plugin;
