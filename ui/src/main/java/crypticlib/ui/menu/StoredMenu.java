@@ -21,31 +21,31 @@ import java.util.function.Supplier;
 
 public class StoredMenu extends Menu {
 
-    private final Map<Integer, ItemStack> storedItems;
-    private boolean returnStoredItems;
+    private final Map<Integer, ItemStack> storedItems = new ConcurrentHashMap<>();
+    private boolean returnStoredItems = true;
+
+    public StoredMenu(@NotNull Player player) {
+        super(player);
+    }
+
+    public StoredMenu(@NotNull Player player, @NotNull String title) {
+        super(player, title);
+    }
 
     public StoredMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
         super(player, displaySupplier);
-        this.storedItems = new ConcurrentHashMap<>();
-        this.returnStoredItems = true;
     }
 
     public StoredMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, displaySupplier, openAction, closeAction);
-        this.storedItems = new ConcurrentHashMap<>();
-        this.returnStoredItems = true;
     }
 
     public StoredMenu(@NotNull Player player, @NotNull MenuDisplay display) {
         super(player, display);
-        storedItems = new ConcurrentHashMap<>();
-        returnStoredItems = true;
     }
 
     public StoredMenu(@NotNull Player player, @NotNull MenuDisplay display, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         super(player, display, openAction, closeAction);
-        storedItems = new ConcurrentHashMap<>();
-        returnStoredItems = true;
     }
 
     @Override

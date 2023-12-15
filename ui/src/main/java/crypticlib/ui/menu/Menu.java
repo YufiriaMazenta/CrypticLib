@@ -34,6 +34,14 @@ public class Menu implements InventoryHolder {
     private final Map<Character, List<Integer>> layoutSlotMap;
     private Inventory openedInventory;
 
+    public Menu(@NotNull Player player) {
+        this(player, new MenuDisplay());
+    }
+
+    public Menu(@NotNull Player player, String title) {
+        this(player, new MenuDisplay(title));
+    }
+
     public Menu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
         this(player, displaySupplier.get());
     }
@@ -89,8 +97,16 @@ public class Menu implements InventoryHolder {
     @NotNull
     public Inventory getInventory() {
         parseDisplay();
-        int size = Math.min(display.layout().layout().size() * 9, 54);
-        String title = TextUtil.color(TextUtil.placeholder(player, display.title()));
+        int size;
+        String title;
+        if (display != null) {
+            size = Math.min(display.layout().layout().size() * 9, 54);
+            title = TextUtil.color(TextUtil.placeholder(player, display.title()));
+        } else {
+            size = 27;
+            title = "";
+        }
+
         Inventory inventory = Bukkit.createInventory(this, size, title);
         draw(inventory);
         return inventory;
@@ -99,6 +115,8 @@ public class Menu implements InventoryHolder {
     protected Menu parseDisplay() {
         slotMap.clear();
         layoutSlotMap.clear();
+        if (display == null)
+            return this;
         for (int x = 0; x < display.layout().layout().size(); x++) {
             String line = display.layout().layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
