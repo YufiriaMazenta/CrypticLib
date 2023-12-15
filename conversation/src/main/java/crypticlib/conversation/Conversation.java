@@ -2,7 +2,7 @@ package crypticlib.conversation;
 
 import crypticlib.CrypticLib;
 import crypticlib.conversation.handler.ConversationHandler;
-import crypticlib.util.MsgUtil;
+import crypticlib.chat.MessageSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -76,7 +76,7 @@ public class Conversation {
 
     public void start() {
         ConversationHandler.INSTANCE.startChat(who, this);
-        MsgUtil.sendMsg(who, prompt.promptText(data));
+        MessageSender.sendMsg(who, prompt.promptText(data));
     }
 
     public void end() {
@@ -96,7 +96,7 @@ public class Conversation {
                 end();
                 return;
             }
-            MsgUtil.sendMsg(who, prompt.promptText(data));
+            MessageSender.sendMsg(who, prompt.promptText(data));
         });
     }
 

@@ -1,16 +1,16 @@
 package crypticlib;
 
 import crypticlib.annotation.AnnotationProcessor;
+import crypticlib.chat.LangConfigContainer;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
 import crypticlib.command.CommandManager;
-import crypticlib.command.impl.RootCmdExecutor;
-import crypticlib.config.yaml.YamlConfigContainer;
-import crypticlib.config.yaml.YamlConfigHandler;
-import crypticlib.config.yaml.YamlConfigWrapper;
+import crypticlib.config.ConfigContainer;
+import crypticlib.config.ConfigHandler;
+import crypticlib.config.ConfigWrapper;
+import crypticlib.chat.LangConfigHandler;
 import crypticlib.listener.BukkitListener;
-import crypticlib.util.MsgUtil;
-import crypticlib.util.ReflectUtil;
+import crypticlib.chat.MessageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,20 +18,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
-    private final Map<String, YamlConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    private final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    private LangConfigContainer langConfigContainer;
     private final String defaultConfigFileName = "config.yml";
     private int lowestSupportVersion = 11200;
     private int highestSupportVersion = 12004;
@@ -58,17 +52,37 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     CommandManager.INSTANCE.register(this, new CommandInfo(bukkitCommand), tabExecutor);
                 })
             .regClassAnnotationProcessor(
-                YamlConfigHandler.class,
+                ConfigHandler.class,
                 (annotation, clazz) -> {
-                    YamlConfigHandler yamlConfigHandler = (YamlConfigHandler) annotation;
-                    String path = yamlConfigHandler.path();
+                    ConfigHandler configHandler = (ConfigHandler) annotation;
+                    String path = configHandler.path();
                     if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
                         path += ".yml";
-                    YamlConfigWrapper configWrapper = new YamlConfigWrapper(this, path);
-                    YamlConfigContainer configContainer = new YamlConfigContainer(clazz, configWrapper);
+                    ConfigWrapper configWrapper = new ConfigWrapper(this, path);
+                    ConfigContainer configContainer = new ConfigContainer(clazz, configWrapper);
                     configContainerMap.put(path, configContainer);
                     configContainer.reload();
-                }, AnnotationProcessor.ProcessPriority.LOWEST);
+                }, AnnotationProcessor.ProcessPriority.LOWEST)
+            .regClassAnnotationProcessor(
+                LangConfigHandler.class,
+                ((annotation, clazz) -> {
+                    LangConfigHandler langConfigHandler = (LangConfigHandler) annotation;
+                    File languageFolder = new File(getDataFolder(), langConfigHandler.langFileFolder());
+                    if (!languageFolder.exists())
+                        languageFolder.mkdirs();
+                    Map<String, ConfigWrapper> langConfigMap = new HashMap<>();
+                    File[] langFiles = languageFolder.listFiles();
+                    if (langFiles != null) {
+                        for (File langFile : langFiles) {
+                            String fileName = langFile.getName();
+                            fileName = fileName.substring(0, fileName.lastIndexOf("."));
+                            langConfigMap.put(fileName, new ConfigWrapper(langFile));
+                        }
+                    }
+                    langConfigContainer = new LangConfigContainer(clazz, langConfigMap);
+                    langConfigContainer.reload();
+                })
+            );
         load();
     }
 
@@ -120,20 +134,22 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public void saveDefaultConfig() {
-        YamlConfigContainer defConfig = new YamlConfigContainer(this.getClass(), new YamlConfigWrapper(this, defaultConfigFileName));
+        ConfigContainer defConfig = new ConfigContainer(this.getClass(), new ConfigWrapper(this, defaultConfigFileName));
         defConfig.reload();
         configContainerMap.put(defaultConfigFileName, defConfig);
     }
 
     @Override
     public void reloadConfig() {
+        if (langConfigContainer != null)
+            langConfigContainer.reload();
         configContainerMap.forEach((path, container) -> container.reload());
     }
 
     private void checkVersion() {
         int version = CrypticLib.minecraftVersion();
         if (version > highestSupportVersion || version < lowestSupportVersion) {
-            MsgUtil.info(this.getName() + " &c&lUnsupported Version");
+            MessageSender.info(this.getName() + " &c&lUnsupported Version");
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }

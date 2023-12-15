@@ -1,20 +1,21 @@
-package crypticlib.config.yaml.entry;
+package crypticlib.config.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class DoubleListConfigEntry extends ConfigEntry<List<Double>> {
+public class FloatListConfigEntry extends ConfigEntry<List<Float>> {
 
-    public DoubleListConfigEntry(@NotNull String key, @NotNull List<Double> def) {
+    public FloatListConfigEntry(@NotNull String key, @NotNull List<Float> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getDoubleList(key()));
+        setValue(config.getFloatList(key()));
     }
+
 
 }

@@ -1,20 +1,19 @@
-package crypticlib.config.yaml.entry;
+package crypticlib.config.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class IntListConfigEntry extends ConfigEntry<List<Integer>> {
+public class ByteListConfigEntry extends ConfigEntry<List<Byte>> {
 
-    public IntListConfigEntry(@NotNull String key, @NotNull List<Integer> def) {
+    public ByteListConfigEntry(@NotNull String key, @NotNull List<Byte> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getIntegerList(key()));
+        setValue(config.getByteList(key()));
     }
-
 }

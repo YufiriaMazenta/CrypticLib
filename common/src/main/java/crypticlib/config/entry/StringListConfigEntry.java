@@ -1,4 +1,4 @@
-package crypticlib.config.yaml.entry;
+package crypticlib.config.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;

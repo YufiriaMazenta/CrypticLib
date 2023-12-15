@@ -1,19 +1,20 @@
-package crypticlib.config.yaml.entry;
+package crypticlib.config.entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class ByteListConfigEntry extends ConfigEntry<List<Byte>> {
+public class BooleanListConfigEntry extends ConfigEntry<List<Boolean>> {
 
-    public ByteListConfigEntry(@NotNull String key, @NotNull List<Byte> def) {
+    public BooleanListConfigEntry(@NotNull String key, @NotNull List<Boolean> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getByteList(key()));
+        setValue(config.getBooleanList(key()));
     }
+
 }

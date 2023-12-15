@@ -2,7 +2,7 @@ package crypticlib.ui.menu;
 
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
-import crypticlib.util.TextUtil;
+import crypticlib.chat.TextProcessor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -101,7 +101,7 @@ public class Menu implements InventoryHolder {
         String title;
         if (display != null) {
             size = Math.min(display.layout().layout().size() * 9, 54);
-            title = TextUtil.color(TextUtil.placeholder(player, display.title()));
+            title = TextProcessor.color(TextProcessor.placeholder(player, display.title()));
         } else {
             size = 27;
             title = "";
@@ -145,10 +145,10 @@ public class Menu implements InventoryHolder {
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
-                meta.setDisplayName(TextUtil.color(TextUtil.placeholder(player, meta.getDisplayName())));
+                meta.setDisplayName(TextProcessor.color(TextProcessor.placeholder(player, meta.getDisplayName())));
                 List<String> lore = meta.getLore();
                 if (lore != null) {
-                    lore.replaceAll(source -> TextUtil.color(TextUtil.placeholder(player, source)));
+                    lore.replaceAll(source -> TextProcessor.color(TextProcessor.placeholder(player, source)));
                 }
                 meta.setLore(lore);
                 display.setItemMeta(meta);
