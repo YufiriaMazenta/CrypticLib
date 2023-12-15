@@ -11,18 +11,23 @@ public class MenuDisplay {
     private String title;
     private MenuLayout layout;
 
+    public MenuDisplay() {
+        this.title = "";
+        this.layout = new MenuLayout();
+    }
+
     public MenuDisplay(@NotNull Supplier<MenuLayout> layoutSupplier) {
         this(layoutSupplier.get());
     }
 
     public MenuDisplay(@NotNull MenuLayout layout) {
         this.layout = layout;
-        this.title = null;
+        this.title = "";
     }
 
     public MenuDisplay(@NotNull String title) {
         this.title = title;
-        this.layout = new MenuLayout(new ArrayList<>(), new HashMap<>());
+        this.layout = new MenuLayout();
     }
 
     public MenuDisplay(@NotNull String title, @NotNull Supplier<MenuLayout> layoutSupplier) {
