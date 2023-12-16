@@ -1,5 +1,6 @@
-package crypticlib.chat;
+package crypticlib.chat.entry;
 
+import crypticlib.chat.LangConfigContainer;
 import crypticlib.config.ConfigWrapper;
 import crypticlib.util.LocaleUtil;
 import org.jetbrains.annotations.NotNull;
@@ -10,48 +11,48 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class LangConfigEntry {
+public abstract class LangConfigEntry<T> {
 
-    private final Map<String, String> langTextMap;
+    private final Map<String, T> langTextMap;
     private final String key;
-    private final String defText;
+    private final T def;
 
-    public LangConfigEntry(@NotNull String key, String defText) {
-        this(key, defText, new ConcurrentHashMap<>());
+    public LangConfigEntry(@NotNull String key, T def) {
+        this(key, def, new ConcurrentHashMap<>());
     }
 
-    public LangConfigEntry(@NotNull String key, String defText, @NotNull Supplier<Map<String, String>> defLangTextMapSupplier) {
-        this(key, defText, defLangTextMapSupplier.get());
+    public LangConfigEntry(@NotNull String key, T def, @NotNull Supplier<Map<String, T>> defLangTextMapSupplier) {
+        this(key, def, defLangTextMapSupplier.get());
     }
 
-    public LangConfigEntry(@NotNull String key, String defText, @NotNull Map<String, String> defLangTextMap) {
+    public LangConfigEntry(@NotNull String key, T def, @NotNull Map<String, T> defLangTextMap) {
         this.key = key;
         this.langTextMap = new ConcurrentHashMap<>();
-        this.defText = defText;
+        this.def = def;
         this.langTextMap.putAll(defLangTextMap);
     }
 
-    public LangConfigEntry setValue(@NotNull Locale locale, @NotNull String value) {
+    public LangConfigEntry<T> setValue(@NotNull Locale locale, @NotNull T value) {
         return setValue(LocaleUtil.localToLang(locale), value);
     }
 
-    public LangConfigEntry setValue(@NotNull String lang, @NotNull String value) {
+    public LangConfigEntry<T> setValue(@NotNull String lang, @NotNull T value) {
         langTextMap.put(lang.toLowerCase(), value);
         return this;
     }
 
-    public @NotNull String value(@NotNull Locale locale) {
+    public T value(@NotNull Locale locale) {
         return value(LocaleUtil.localToLang(locale));
     }
 
-    public @NotNull String value(@NotNull String lang) {
+    public T value(@NotNull String lang) {
         lang = lang.toLowerCase();
         if (!langTextMap.containsKey(lang))
-            return defText;
+            return def;
         return langTextMap.get(lang);
     }
 
-    public @NotNull String value() {
+    public T value() {
         return value(Locale.getDefault());
     }
 
@@ -59,14 +60,14 @@ public class LangConfigEntry {
         return key;
     }
 
-    public String def() {
-        return defText;
+    public T def() {
+        return def;
     }
 
-    public LangConfigEntry load(LangConfigContainer configContainer) {
+    public LangConfigEntry<T> load(LangConfigContainer configContainer) {
         saveDef(configContainer);
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
-            langTextMap.put(lang, configWrapper.config().getString(key));
+            langTextMap.put(lang, (T) configWrapper.config().get(key));
         });
         return this;
     }
