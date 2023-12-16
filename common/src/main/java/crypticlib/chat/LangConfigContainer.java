@@ -29,10 +29,11 @@ public class LangConfigContainer {
         this.langFileFolder = langFileFolder;
         this.containerClass = containerClass;
         this.defLang = defLang;
-        loadLangConfigWrapper();
+        saveDefLangFiles();
+        loadLangFiles();
     }
 
-    private void loadLangConfigWrapper() {
+    private void saveDefLangFiles() {
         for (Locale locale : Locale.getAvailableLocales()) {
             String lang = LocaleUtil.localToLang(locale);
             String langFileName = langFileFolder + "/" + lang + ".yml";
@@ -41,16 +42,6 @@ public class LangConfigContainer {
             File file = new File(plugin.getDataFolder(), langFileName);
             if (!file.exists())
                 plugin.saveResource(langFileName, false);
-        }
-        File folder = new File(plugin.getDataFolder(), langFileFolder);
-
-        File[] langFiles = folder.listFiles();
-        if (langFiles != null) {
-            for (File langFile : langFiles) {
-                String fileName = langFile.getName();
-                String lang = fileName.substring(0, fileName.lastIndexOf("."));
-                langConfigWrapperMap.put(lang, new ConfigWrapper(langFile));
-            }
         }
     }
 
@@ -67,6 +58,7 @@ public class LangConfigContainer {
     }
 
     public void reload() {
+        loadLangFiles();
         langConfigWrapperMap.forEach((lang, configWrapper) -> {
             configWrapper.reloadConfig();
         });
@@ -85,6 +77,19 @@ public class LangConfigContainer {
         langConfigWrapperMap.forEach((lang, configWrapper) -> {
             configWrapper.saveConfig();
         });
+    }
+
+    protected void loadLangFiles() {
+        langConfigWrapperMap.clear();
+        File folder = new File(plugin.getDataFolder(), langFileFolder);
+        File[] langFiles = folder.listFiles();
+        if (langFiles != null) {
+            for (File langFile : langFiles) {
+                String fileName = langFile.getName();
+                String lang = fileName.substring(0, fileName.lastIndexOf("."));
+                langConfigWrapperMap.put(lang, new ConfigWrapper(langFile));
+            }
+        }
     }
 
     public boolean containsLang(String lang) {
