@@ -1,6 +1,7 @@
 package crypticlib.chat;
 
 import crypticlib.config.ConfigWrapper;
+import crypticlib.util.LocaleUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -31,7 +32,7 @@ public class LangConfigEntry {
     }
 
     public LangConfigEntry setValue(@NotNull Locale locale, @NotNull String value) {
-        return setValue(localToLang(locale), value);
+        return setValue(LocaleUtil.localToLang(locale), value);
     }
 
     public LangConfigEntry setValue(@NotNull String lang, @NotNull String value) {
@@ -40,7 +41,7 @@ public class LangConfigEntry {
     }
 
     public @NotNull String value(@NotNull Locale locale) {
-        return value(localToLang(locale));
+        return value(LocaleUtil.localToLang(locale));
     }
 
     public @NotNull String value(@NotNull String lang) {
@@ -84,10 +85,6 @@ public class LangConfigEntry {
                 }
             }
         });
-    }
-
-    private String localToLang(Locale locale) {
-        return locale.toLanguageTag().replace("-", "_");
     }
 
 }
