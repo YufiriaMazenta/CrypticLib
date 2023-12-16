@@ -70,16 +70,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     File languageFolder = new File(getDataFolder(), langConfigHandler.langFileFolder());
                     if (!languageFolder.exists())
                         languageFolder.mkdirs();
-                    Map<String, ConfigWrapper> langConfigMap = new HashMap<>();
-                    File[] langFiles = languageFolder.listFiles();
-                    if (langFiles != null) {
-                        for (File langFile : langFiles) {
-                            String fileName = langFile.getName();
-                            fileName = fileName.substring(0, fileName.lastIndexOf("."));
-                            langConfigMap.put(fileName, new ConfigWrapper(langFile));
-                        }
-                    }
-                    langConfigContainer = new LangConfigContainer(clazz, langConfigMap);
+                    langConfigContainer = new LangConfigContainer(clazz, languageFolder);
                     langConfigContainer.reload();
                 })
             );
