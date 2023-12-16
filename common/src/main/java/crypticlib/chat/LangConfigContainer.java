@@ -30,7 +30,6 @@ public class LangConfigContainer {
         this.containerClass = containerClass;
         this.defLang = defLang;
         saveDefLangFiles();
-        loadLangFiles();
     }
 
     private void saveDefLangFiles() {
