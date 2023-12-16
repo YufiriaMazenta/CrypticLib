@@ -1,14 +1,16 @@
 package crypticlib.chat;
 
 import crypticlib.config.ConfigWrapper;
+import crypticlib.util.LocaleUtil;
 import crypticlib.util.ReflectUtil;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,9 +18,11 @@ public class LangConfigContainer {
 
     private final Class<?> containerClass;
     private final Map<String, ConfigWrapper> langConfigWrapperMap;
-    private final File langFileFolder;
+    private final String langFileFolder;
+    private final Plugin plugin;
 
-    public LangConfigContainer(@NotNull Class<?> containerClass, File langFileFolder) {
+    public LangConfigContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder) {
+        this.plugin = plugin;
         this.langConfigWrapperMap = new ConcurrentHashMap<>();
         this.langFileFolder = langFileFolder;
         this.containerClass = containerClass;
@@ -26,12 +30,21 @@ public class LangConfigContainer {
     }
 
     private void loadLangConfigWrapper() {
-        File[] langFiles = langFileFolder.listFiles();
+        for (Locale locale : Locale.getAvailableLocales()) {
+            String lang = LocaleUtil.localToLang(locale);
+            String langFileName = langFileFolder + "/" + lang + ".yml";
+            if (plugin.getResource(langFileName) != null) {
+                plugin.saveResource(langFileName, false);
+            }
+        }
+        File folder = new File(plugin.getDataFolder(), langFileFolder);
+
+        File[] langFiles = folder.listFiles();
         if (langFiles != null) {
             for (File langFile : langFiles) {
                 String fileName = langFile.getName();
-                fileName = fileName.substring(0, fileName.lastIndexOf("."));
-                langConfigWrapperMap.put(fileName, new ConfigWrapper(langFile));
+                String lang = fileName.substring(0, fileName.lastIndexOf("."));
+                langConfigWrapperMap.put(lang, new ConfigWrapper(langFile));
             }
         }
     }
@@ -44,7 +57,7 @@ public class LangConfigContainer {
         return langConfigWrapperMap;
     }
 
-    public File langFileFolder() {
+    public String langFileFolder() {
         return langFileFolder;
     }
 
@@ -76,10 +89,13 @@ public class LangConfigContainer {
 
     public @NotNull ConfigWrapper createNewLang(String lang) {
         String fileName = lang + ".yml";
-        File langFile = new File(langFileFolder, fileName);
-        ConfigWrapper langConfigWrapper = new ConfigWrapper(langFile);
+        ConfigWrapper langConfigWrapper = new ConfigWrapper(plugin, langFileFolder + "/" + fileName);
         langConfigWrapperMap.put(lang, langConfigWrapper);
         return langConfigWrapper;
+    }
+
+    public Plugin plugin() {
+        return plugin;
     }
 
 }

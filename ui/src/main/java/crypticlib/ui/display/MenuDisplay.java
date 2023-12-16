@@ -2,8 +2,6 @@ package crypticlib.ui.display;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.function.Supplier;
 
 public class MenuDisplay {

@@ -1,8 +1,8 @@
 package crypticlib.ui.menu;
 
+import crypticlib.chat.TextProcessor;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
-import crypticlib.chat.TextProcessor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

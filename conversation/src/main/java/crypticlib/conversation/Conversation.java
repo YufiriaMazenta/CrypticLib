@@ -1,8 +1,8 @@
 package crypticlib.conversation;
 
 import crypticlib.CrypticLib;
-import crypticlib.conversation.handler.ConversationHandler;
 import crypticlib.chat.MessageSender;
+import crypticlib.conversation.handler.ConversationHandler;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;

@@ -2,15 +2,15 @@ package crypticlib;
 
 import crypticlib.annotation.AnnotationProcessor;
 import crypticlib.chat.LangConfigContainer;
+import crypticlib.chat.LangConfigHandler;
+import crypticlib.chat.MessageSender;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
 import crypticlib.command.CommandManager;
 import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
-import crypticlib.chat.LangConfigHandler;
 import crypticlib.listener.BukkitListener;
-import crypticlib.chat.MessageSender;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,8 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.util.*;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BukkitPlugin extends JavaPlugin {
@@ -67,9 +66,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 LangConfigHandler.class,
                 (annotation, clazz) -> {
                     LangConfigHandler langConfigHandler = (LangConfigHandler) annotation;
-                    File languageFolder = new File(getDataFolder(), langConfigHandler.langFileFolder());
-                    languageFolder.mkdirs();
-                    langConfigContainer = new LangConfigContainer(clazz, languageFolder);
+                    langConfigContainer = new LangConfigContainer(this, clazz, langConfigHandler.langFileFolder());
                     langConfigContainer.reload();
                 }, AnnotationProcessor.ProcessPriority.LOWEST);
         load();
