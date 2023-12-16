@@ -3,6 +3,7 @@ package crypticlib.chat.entry;
 import crypticlib.chat.LangConfigContainer;
 import crypticlib.config.ConfigWrapper;
 import crypticlib.util.LocaleUtil;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -40,6 +41,10 @@ public abstract class LangConfigEntry<T> {
     public LangConfigEntry<T> setValue(@NotNull String lang, @NotNull T value) {
         langMap.put(lang.toLowerCase(), value);
         return this;
+    }
+
+    public T value(@NotNull Player player) {
+        return value(player.getLocale());
     }
 
     public T value(@NotNull Locale locale) {
