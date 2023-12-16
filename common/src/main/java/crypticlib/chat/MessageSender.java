@@ -45,7 +45,7 @@ public class MessageSender {
      */
     public static void sendMsg(@NotNull CommandSender receiver, StringLangConfigEntry msg, Map<String, String> replaceMap) {
         if (receiver instanceof Player) {
-            sendMsg(receiver, msg.value(((Player) receiver).getLocale()), replaceMap);
+            sendMsg(receiver, msg.value((Player) receiver), replaceMap);
         } else {
             sendMsg(receiver, msg.value(), replaceMap);
         }
@@ -90,16 +90,15 @@ public class MessageSender {
     }
 
     public static void sendTitle(Player player, String title, StringLangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {
-        sendTitle(player, title, subTitle.value(player.getLocale()), fadeIn, stay, fadeOut);
+        sendTitle(player, title, subTitle.value(player), fadeIn, stay, fadeOut);
     }
 
     public static void sendTitle(Player player, StringLangConfigEntry title, String subTitle, int fadeIn, int stay, int fadeOut) {
-        sendTitle(player, title.value(player.getLocale()), subTitle, fadeIn, stay, fadeOut);
+        sendTitle(player, title.value(player), subTitle, fadeIn, stay, fadeOut);
     }
 
-    public static void sendTitle(Player player, StringLangConfigEntry title, StringLangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {
-        String local = player.getLocale();
-        sendTitle(player, title.value(local), subTitle.value(local), fadeIn, stay, fadeOut);
+    public static void sendTitle(Player player, StringLangConfigEntry title, StringLangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {;
+        sendTitle(player, title.value(player), subTitle.value(player), fadeIn, stay, fadeOut);
     }
 
     /**
@@ -127,16 +126,15 @@ public class MessageSender {
     }
 
     public static void sendTitle(Player player, String title, StringLangConfigEntry subTitle) {
-        sendTitle(player, title, subTitle.value(player.getLocale()));
+        sendTitle(player, title, subTitle.value(player));
     }
 
     public static void sendTitle(Player player, StringLangConfigEntry title, String subTitle) {
-        sendTitle(player, title.value(player.getLocale()), subTitle);
+        sendTitle(player, title.value(player), subTitle);
     }
 
     public static void sendTitle(Player player, StringLangConfigEntry title, StringLangConfigEntry subTitle) {
-        String locale = player.getLocale();
-        sendTitle(player, title.value(locale), subTitle.value(locale));
+        sendTitle(player, title.value(player), subTitle.value(player));
     }
 
     /**
@@ -167,7 +165,7 @@ public class MessageSender {
     }
 
     public static void sendActionBar(Player player, StringLangConfigEntry text) {
-        sendActionBar(player, text.value(player.getLocale()));
+        sendActionBar(player, text.value(player));
     }
 
     /**
