@@ -18,6 +18,15 @@ import java.util.Map;
 public class MessageSender {
 
     /**
+     * 发送语言文本给一个对象，此文本会处理颜色代码与papi变量
+     * @param receiver 发送到的对象
+     * @param msg 发送的语言
+     */
+    public static void sendMsg(@NotNull CommandSender receiver, LangConfigEntry msg) {
+        sendMsg(receiver, msg, new HashMap<>());
+    }
+
+    /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量
      *
      * @param receiver 发送到的对象
@@ -28,6 +37,20 @@ public class MessageSender {
     }
 
     /**
+     * 发送语言文本给一个对象，此文本会处理颜色代码与papi变量
+     * @param receiver 发送到的对象
+     * @param msg 发送的语言
+     * @param replaceMap 需要替换的文本
+     */
+    public static void sendMsg(@NotNull CommandSender receiver, LangConfigEntry msg, Map<String, String> replaceMap) {
+        if (receiver instanceof Player) {
+            sendMsg(receiver, msg.value(((Player) receiver).getLocale()), replaceMap);
+        } else {
+            sendMsg(receiver, msg.value(), replaceMap);
+        }
+    }
+
+    /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量，并根据replaceMap的内容替换源文本
      *
      * @param receiver   发送到的对象
@@ -35,6 +58,8 @@ public class MessageSender {
      * @param replaceMap 需要替换的文本
      */
     public static void sendMsg(@NotNull CommandSender receiver, String msg, @NotNull Map<String, String> replaceMap) {
+        if (msg == null)
+            return;
         for (String formatStr : replaceMap.keySet()) {
             msg = msg.replace(formatStr, replaceMap.get(formatStr));
         }
@@ -63,6 +88,19 @@ public class MessageSender {
         receiver.spigot().sendMessage(baseComponent);
     }
 
+    public static void sendTitle(Player player, String title, LangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {
+        sendTitle(player, title, subTitle.value(player.getLocale()), fadeIn, stay, fadeOut);
+    }
+
+    public static void sendTitle(Player player, LangConfigEntry title, String subTitle, int fadeIn, int stay, int fadeOut) {
+        sendTitle(player, title.value(player.getLocale()), subTitle, fadeIn, stay, fadeOut);
+    }
+
+    public static void sendTitle(Player player, LangConfigEntry title, LangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {
+        String local = player.getLocale();
+        sendTitle(player, title.value(local), subTitle.value(local), fadeIn, stay, fadeOut);
+    }
+
     /**
      * 给玩家发送Title
      *
@@ -85,6 +123,19 @@ public class MessageSender {
         title = TextProcessor.color(TextProcessor.placeholder(player, title));
         subTitle = TextProcessor.color(TextProcessor.placeholder(player, subTitle));
         player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
+    }
+
+    public static void sendTitle(Player player, String title, LangConfigEntry subTitle) {
+        sendTitle(player, title, subTitle.value(player.getLocale()));
+    }
+
+    public static void sendTitle(Player player, LangConfigEntry title, String subTitle) {
+        sendTitle(player, title.value(player.getLocale()), subTitle);
+    }
+
+    public static void sendTitle(Player player, LangConfigEntry title, LangConfigEntry subTitle) {
+        String locale = player.getLocale();
+        sendTitle(player, title.value(locale), subTitle.value(locale));
     }
 
     /**
@@ -114,6 +165,10 @@ public class MessageSender {
         sendActionBar(player, new TextComponent(components));
     }
 
+    public static void sendActionBar(Player player, LangConfigEntry text) {
+        sendActionBar(player, text.value(player.getLocale()));
+    }
+
     /**
      * 给玩家发送Action Bar消息
      *
@@ -123,6 +178,13 @@ public class MessageSender {
     public static void sendActionBar(Player player, String text) {
         text = TextProcessor.color(TextProcessor.placeholder(player, text));
         sendActionBar(player, TextProcessor.toComponent(text));
+    }
+
+    public static void broadcast(LangConfigEntry msg) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendMsg(player, msg);
+        }
+        info(msg);
     }
 
     /**
@@ -137,6 +199,12 @@ public class MessageSender {
         info(msg);
     }
 
+    public static void broadcastActionBar(LangConfigEntry msg) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendActionBar(player, msg);
+        }
+    }
+
     /**
      * 给所有玩家发送一条ActionBar位置的消息
      *
@@ -145,6 +213,24 @@ public class MessageSender {
     public static void broadcastActionbar(String msg) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendActionBar(player, msg);
+        }
+    }
+
+    public static void broadcastTitle(String title, LangConfigEntry subtitle, int fadeIn, int stay, int fadeOut) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+
+    public static void broadcastTitle(LangConfigEntry title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
+        }
+    }
+
+    public static void broadcastTitle(LangConfigEntry title, LangConfigEntry subtitle, int fadeIn, int stay, int fadeOut) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
@@ -163,6 +249,24 @@ public class MessageSender {
         }
     }
 
+    public static void broadcastTitle(String title, LangConfigEntry subtitle) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle);
+        }
+    }
+
+    public static void broadcastTitle(LangConfigEntry title, String subtitle) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle);
+        }
+    }
+
+    public static void broadcastTitle(LangConfigEntry title, LangConfigEntry subtitle) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            sendTitle(player, title, subtitle);
+        }
+    }
+
     /**
      * 给所有玩家发送一条title
      *
@@ -175,6 +279,10 @@ public class MessageSender {
         }
     }
 
+    public static void info(LangConfigEntry msg) {
+        sendMsg(Bukkit.getConsoleSender(), msg);
+    }
+
     /**
      * 给控制台发送一条文本，此文本会处理颜色代码
      *
@@ -182,6 +290,10 @@ public class MessageSender {
      */
     public static void info(String msg) {
         sendMsg(Bukkit.getConsoleSender(), msg);
+    }
+
+    public static void info(LangConfigEntry msg, Map<String, String> replaceMap) {
+        info(msg.value(), replaceMap);
     }
 
     /**

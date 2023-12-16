@@ -1,5 +1,6 @@
 package crypticlib.conversation;
 
+import crypticlib.chat.LangConfigEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +10,6 @@ public interface Prompt {
 
     @Nullable Prompt acceptInput(Map<Object, Object> conversationData, String input);
 
-    @NotNull String promptText(Map<Object, Object> conversationData);
+    @NotNull LangConfigEntry promptText(Map<Object, Object> conversationData);
 
 }

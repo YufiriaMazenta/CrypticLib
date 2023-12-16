@@ -40,6 +40,9 @@ public class ConfigWrapper {
     public ConfigWrapper(@NotNull File file) {
         this.configFile = file;
         this.path = file.getPath();
+        if (!file.exists()) {
+            FileUtil.createNewFile(file);
+        }
         this.config = YamlConfiguration.loadConfiguration(file);
         this.plugin = null;
     }
@@ -66,6 +69,10 @@ public class ConfigWrapper {
             reloadConfig();
         }
         return config;
+    }
+
+    public boolean contains(String key) {
+        return config.contains(key);
     }
 
     /**
