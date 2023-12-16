@@ -8,6 +8,10 @@ import java.util.function.Supplier;
 
 public class StringLangConfigEntry extends LangConfigEntry<String> {
 
+    public StringLangConfigEntry(@NotNull String key) {
+        this(key, key);
+    }
+
     public StringLangConfigEntry(@NotNull String key, String def) {
         super(key, def);
     }
@@ -25,10 +29,10 @@ public class StringLangConfigEntry extends LangConfigEntry<String> {
         save(configContainer);
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
             if (configWrapper.config().contains(key())) {
-                langTextMap.put(lang, configWrapper.config().getString(key()));
+                langMap.put(lang, configWrapper.config().getString(key()));
             } else {
                 configWrapper.set(key(), def());
-                langTextMap.put(lang, def());
+                langMap.put(lang, def());
             }
         });
         return this;
