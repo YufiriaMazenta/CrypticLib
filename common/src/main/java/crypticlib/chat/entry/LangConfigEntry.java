@@ -15,20 +15,21 @@ public abstract class LangConfigEntry<T> {
 
     protected final Map<String, T> langTextMap;
     private final String key;
-    private final T def;
+    private final T defValue;
+    private String defLang = "en_us";
 
-    public LangConfigEntry(@NotNull String key, T def) {
-        this(key, def, new ConcurrentHashMap<>());
+    public LangConfigEntry(@NotNull String key, T defValue) {
+        this(key, defValue, new ConcurrentHashMap<>());
     }
 
-    public LangConfigEntry(@NotNull String key, T def, @NotNull Supplier<Map<String, T>> defLangTextMapSupplier) {
-        this(key, def, defLangTextMapSupplier.get());
+    public LangConfigEntry(@NotNull String key, T defValue, @NotNull Supplier<Map<String, T>> defLangTextMapSupplier) {
+        this(key, defValue, defLangTextMapSupplier.get());
     }
 
-    public LangConfigEntry(@NotNull String key, T def, @NotNull Map<String, T> defLangTextMap) {
+    public LangConfigEntry(@NotNull String key, T defValue, @NotNull Map<String, T> defLangTextMap) {
         this.key = key;
         this.langTextMap = new ConcurrentHashMap<>();
-        this.def = def;
+        this.defValue = defValue;
         this.langTextMap.putAll(defLangTextMap);
     }
 
@@ -47,9 +48,11 @@ public abstract class LangConfigEntry<T> {
 
     public T value(@NotNull String lang) {
         lang = lang.toLowerCase();
-        if (!langTextMap.containsKey(lang))
-            return def;
-        return langTextMap.get(lang);
+        if (langTextMap.containsKey(lang))
+            return langTextMap.get(lang);
+        if (langTextMap.containsKey(defLang))
+            return langTextMap.get(defLang);
+        return defValue;
     }
 
     public T value() {
@@ -61,12 +64,12 @@ public abstract class LangConfigEntry<T> {
     }
 
     public T def() {
-        return def;
+        return defValue;
     }
 
     public abstract LangConfigEntry<T> load(LangConfigContainer configContainer);
 
-    public void saveDef(LangConfigContainer configContainer) {
+    public void save(LangConfigContainer configContainer) {
         langTextMap.forEach((lang, text) -> {
             ConfigWrapper configWrapper;
             if (!configContainer.containsLang(lang)) {
@@ -80,6 +83,15 @@ public abstract class LangConfigEntry<T> {
                 }
             }
         });
+    }
+
+    public String defLang() {
+        return defLang;
+    }
+
+    public LangConfigEntry<T> setDefLang(String defLang) {
+        this.defLang = defLang;
+        return this;
     }
 
 }
