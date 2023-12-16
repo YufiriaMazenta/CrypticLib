@@ -40,7 +40,7 @@ public class ConfigWrapper {
     public ConfigWrapper(@NotNull File file) {
         this.configFile = file;
         this.path = file.getPath();
-        if (!file.exists()) {
+        if (!configFile.exists()) {
             FileUtil.createNewFile(file);
         }
         this.config = YamlConfiguration.loadConfiguration(file);

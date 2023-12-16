@@ -65,15 +65,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }, AnnotationProcessor.ProcessPriority.LOWEST)
             .regClassAnnotationProcessor(
                 LangConfigHandler.class,
-                ((annotation, clazz) -> {
+                (annotation, clazz) -> {
                     LangConfigHandler langConfigHandler = (LangConfigHandler) annotation;
                     File languageFolder = new File(getDataFolder(), langConfigHandler.langFileFolder());
-                    if (!languageFolder.exists())
-                        languageFolder.mkdirs();
+                    languageFolder.mkdirs();
                     langConfigContainer = new LangConfigContainer(clazz, languageFolder);
                     langConfigContainer.reload();
-                })
-            );
+                }, AnnotationProcessor.ProcessPriority.LOWEST);
         load();
     }
 

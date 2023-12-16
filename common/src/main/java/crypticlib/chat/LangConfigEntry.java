@@ -1,7 +1,6 @@
 package crypticlib.chat;
 
 import crypticlib.config.ConfigWrapper;
-import jdk.internal.util.Preconditions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
@@ -31,9 +30,17 @@ public class LangConfigEntry {
         this.langTextMap.putAll(defLangTextMap);
     }
 
+    public LangConfigEntry setValue(@NotNull Locale locale, @NotNull String value) {
+        return setValue(localToLang(locale), value);
+    }
+
     public LangConfigEntry setValue(@NotNull String lang, @NotNull String value) {
-        langTextMap.put(lang, value);
+        langTextMap.put(lang.toLowerCase(), value);
         return this;
+    }
+
+    public @NotNull String value(@NotNull Locale locale) {
+        return value(localToLang(locale));
     }
 
     public @NotNull String value(@NotNull String lang) {
@@ -44,12 +51,7 @@ public class LangConfigEntry {
     }
 
     public @NotNull String value() {
-        Locale locale = Locale.getDefault();
-        String language = locale.getLanguage();
-        String region = locale.getCountry();
-        if (!region.isEmpty())
-            language = language + "_" + region;
-        return value(language);
+        return value(Locale.getDefault());
     }
 
     public String key() {
@@ -61,6 +63,14 @@ public class LangConfigEntry {
     }
 
     public LangConfigEntry load(LangConfigContainer configContainer) {
+        saveDef(configContainer);
+        configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
+            langTextMap.put(lang, configWrapper.config().getString(key));
+        });
+        return this;
+    }
+
+    public void saveDef(LangConfigContainer configContainer) {
         langTextMap.forEach((lang, text) -> {
             ConfigWrapper configWrapper;
             if (!configContainer.containsLang(lang)) {
@@ -71,12 +81,13 @@ public class LangConfigEntry {
                 Objects.requireNonNull(configWrapper);
                 if (!configWrapper.contains(key)) {
                     configWrapper.set(key, text);
-                } else {
-                    langTextMap.put(lang, text);
                 }
             }
         });
-        return this;
+    }
+
+    private String localToLang(Locale locale) {
+        return locale.toLanguageTag().replace("-", "_");
     }
 
 }
