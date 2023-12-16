@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public abstract class LangConfigEntry<T> {
 
-    protected final Map<String, T> langTextMap;
+    protected final Map<String, T> langMap;
     private final String key;
     private final T defValue;
     private String defLang = "en_us";
@@ -28,9 +28,9 @@ public abstract class LangConfigEntry<T> {
 
     public LangConfigEntry(@NotNull String key, T defValue, @NotNull Map<String, T> defLangTextMap) {
         this.key = key;
-        this.langTextMap = new ConcurrentHashMap<>();
+        this.langMap = new ConcurrentHashMap<>();
         this.defValue = defValue;
-        this.langTextMap.putAll(defLangTextMap);
+        this.langMap.putAll(defLangTextMap);
     }
 
     public LangConfigEntry<T> setValue(@NotNull Locale locale, @NotNull T value) {
@@ -38,7 +38,7 @@ public abstract class LangConfigEntry<T> {
     }
 
     public LangConfigEntry<T> setValue(@NotNull String lang, @NotNull T value) {
-        langTextMap.put(lang.toLowerCase(), value);
+        langMap.put(lang.toLowerCase(), value);
         return this;
     }
 
@@ -48,10 +48,10 @@ public abstract class LangConfigEntry<T> {
 
     public T value(@NotNull String lang) {
         lang = lang.toLowerCase();
-        if (langTextMap.containsKey(lang))
-            return langTextMap.get(lang);
-        if (langTextMap.containsKey(defLang))
-            return langTextMap.get(defLang);
+        if (langMap.containsKey(lang))
+            return langMap.get(lang);
+        if (langMap.containsKey(defLang))
+            return langMap.get(defLang);
         return defValue;
     }
 
@@ -70,7 +70,7 @@ public abstract class LangConfigEntry<T> {
     public abstract LangConfigEntry<T> load(LangConfigContainer configContainer);
 
     public void save(LangConfigContainer configContainer) {
-        langTextMap.forEach((lang, text) -> {
+        langMap.forEach((lang, text) -> {
             ConfigWrapper configWrapper;
             if (!configContainer.containsLang(lang)) {
                 configWrapper = configContainer.createNewLang(lang);

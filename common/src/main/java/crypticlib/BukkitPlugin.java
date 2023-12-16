@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class BukkitPlugin extends JavaPlugin {
 
     private final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    private LangConfigContainer langConfigContainer;
+    private final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
     private final String defaultConfigFileName = "config.yml";
     private int lowestSupportVersion = 11200;
     private int highestSupportVersion = 12004;
@@ -66,7 +66,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 LangConfigHandler.class,
                 (annotation, clazz) -> {
                     LangConfigHandler langConfigHandler = (LangConfigHandler) annotation;
-                    langConfigContainer = new LangConfigContainer(this, clazz, langConfigHandler.langFileFolder());
+                    String langFileFolder = langConfigHandler.langFileFolder();
+                    String defLang = langConfigHandler.defLang();
+                    LangConfigContainer langConfigContainer = new LangConfigContainer(this, clazz, langFileFolder, defLang);
+                    langConfigContainerMap.put(langFileFolder, langConfigContainer);
                     langConfigContainer.reload();
                 }, AnnotationProcessor.ProcessPriority.LOWEST);
         load();
@@ -127,9 +130,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public void reloadConfig() {
-        if (langConfigContainer != null)
-            langConfigContainer.reload();
         configContainerMap.forEach((path, container) -> container.reload());
+        langConfigContainerMap.forEach((langFolder, container) -> container.reload());
     }
 
     private void checkVersion() {
