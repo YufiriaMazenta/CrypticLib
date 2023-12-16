@@ -34,9 +34,11 @@ public class LangConfigContainer {
         for (Locale locale : Locale.getAvailableLocales()) {
             String lang = LocaleUtil.localToLang(locale);
             String langFileName = langFileFolder + "/" + lang + ".yml";
-            if (plugin.getResource(langFileName) != null) {
+            if (plugin.getResource(langFileName) == null)
+                continue;
+            File file = new File(plugin.getDataFolder(), langFileName);
+            if (!file.exists())
                 plugin.saveResource(langFileName, false);
-            }
         }
         File folder = new File(plugin.getDataFolder(), langFileFolder);
 

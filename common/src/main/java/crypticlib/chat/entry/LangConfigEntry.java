@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public abstract class LangConfigEntry<T> {
 
-    private final Map<String, T> langTextMap;
+    protected final Map<String, T> langTextMap;
     private final String key;
     private final T def;
 
@@ -64,13 +64,7 @@ public abstract class LangConfigEntry<T> {
         return def;
     }
 
-    public LangConfigEntry<T> load(LangConfigContainer configContainer) {
-        saveDef(configContainer);
-        configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
-            langTextMap.put(lang, (T) configWrapper.config().get(key));
-        });
-        return this;
-    }
+    public abstract LangConfigEntry<T> load(LangConfigContainer configContainer);
 
     public void saveDef(LangConfigContainer configContainer) {
         langTextMap.forEach((lang, text) -> {
