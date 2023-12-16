@@ -23,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
-    private final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    private final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
+    protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
     private final String defaultConfigFileName = "config.yml";
     private int lowestSupportVersion = 11200;
     private int highestSupportVersion = 12004;

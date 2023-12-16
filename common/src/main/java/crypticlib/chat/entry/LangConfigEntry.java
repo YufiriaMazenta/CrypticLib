@@ -15,23 +15,24 @@ import java.util.function.Supplier;
 public abstract class LangConfigEntry<T> {
 
     protected final Map<String, T> langMap;
-    private final String key;
-    private final T defValue;
-    private String defLang = "en_us";
+    protected final Map<String, T> defLangMap;
+    protected final String key;
+    protected final T defValue;
+    protected String defLang = "en_us";
 
     public LangConfigEntry(@NotNull String key, T defValue) {
         this(key, defValue, new ConcurrentHashMap<>());
     }
 
-    public LangConfigEntry(@NotNull String key, T defValue, @NotNull Supplier<Map<String, T>> defLangTextMapSupplier) {
-        this(key, defValue, defLangTextMapSupplier.get());
+    public LangConfigEntry(@NotNull String key, T defValue, @NotNull Supplier<Map<String, T>> defLangMapSupplier) {
+        this(key, defValue, defLangMapSupplier.get());
     }
 
-    public LangConfigEntry(@NotNull String key, T defValue, @NotNull Map<String, T> defLangTextMap) {
+    public LangConfigEntry(@NotNull String key, T defValue, @NotNull Map<String, T> defLangMap) {
         this.key = key;
         this.langMap = new ConcurrentHashMap<>();
         this.defValue = defValue;
-        this.langMap.putAll(defLangTextMap);
+        this.defLangMap = defLangMap;
     }
 
     public LangConfigEntry<T> setValue(@NotNull Locale locale, @NotNull T value) {
@@ -74,8 +75,8 @@ public abstract class LangConfigEntry<T> {
 
     public abstract LangConfigEntry<T> load(LangConfigContainer configContainer);
 
-    public void save(LangConfigContainer configContainer) {
-        langMap.forEach((lang, text) -> {
+    public void saveDef(LangConfigContainer configContainer) {
+        defLangMap.forEach((lang, text) -> {
             ConfigWrapper configWrapper;
             if (!configContainer.containsLang(lang)) {
                 configWrapper = configContainer.createNewLang(lang);
