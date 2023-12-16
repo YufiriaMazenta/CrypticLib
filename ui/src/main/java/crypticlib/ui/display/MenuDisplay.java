@@ -37,8 +37,7 @@ public class MenuDisplay {
         this.layout = layout;
     }
 
-    @NotNull
-    public String title() {
+    public @NotNull String title() {
         return title;
     }
 

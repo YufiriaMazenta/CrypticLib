@@ -31,7 +31,7 @@ public class TextProcessor {
      * @param text 需要处理的文本
      * @return 处理完颜色代码的文本
      */
-    public static String color(@NotNull String text) {
+    public static String color(String text) {
         if (CrypticLib.minecraftVersion() >= 16) {
             StringBuilder strBuilder = new StringBuilder(text);
             Matcher matcher = colorPattern.matcher(strBuilder);
@@ -53,7 +53,7 @@ public class TextProcessor {
      * @param source 源文本
      * @return 处理完成的文本
      */
-    public static String placeholder(Player player, @NotNull String source) {
+    public static String placeholder(Player player, String source) {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
             source = PlaceholderAPI.setPlaceholders(player, source);
         return source;
@@ -65,7 +65,7 @@ public class TextProcessor {
      * @param text 原始文本
      * @return 转化完毕的Bungee聊天组件
      */
-    public static BaseComponent toComponent(@NotNull String text) {
+    public static BaseComponent toComponent(String text) {
         BaseComponent[] baseComponents = TextComponent.fromLegacyText(text);
         return new TextComponent(baseComponents);
     }

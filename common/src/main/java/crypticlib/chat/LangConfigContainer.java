@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import crypticlib.chat.entry.LangConfigEntry;
 import crypticlib.config.ConfigWrapper;
 import crypticlib.util.LocaleUtil;
 import crypticlib.util.ReflectUtil;
@@ -71,7 +72,7 @@ public class LangConfigContainer {
             Object object = ReflectUtil.getDeclaredFieldObj(field, null);
             if (!(object instanceof LangConfigEntry))
                 continue;
-            LangConfigEntry langConfigEntry = (LangConfigEntry) object;
+            LangConfigEntry<?> langConfigEntry = (LangConfigEntry<?>) object;
             langConfigEntry.load(this);
         }
         langConfigWrapperMap.forEach((lang, configWrapper) -> {
