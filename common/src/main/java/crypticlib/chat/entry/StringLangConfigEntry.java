@@ -22,7 +22,7 @@ public class StringLangConfigEntry extends LangConfigEntry<String> {
 
     @Override
     public StringLangConfigEntry load(LangConfigContainer configContainer) {
-        saveDef(configContainer);
+        save(configContainer);
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
             if (configWrapper.config().contains(key())) {
                 langTextMap.put(lang, configWrapper.config().getString(key()));

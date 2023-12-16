@@ -21,12 +21,14 @@ public class LangConfigContainer {
     private final Map<String, ConfigWrapper> langConfigWrapperMap;
     private final String langFileFolder;
     private final Plugin plugin;
+    private String defLang;
 
-    public LangConfigContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder) {
+    public LangConfigContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
         this.plugin = plugin;
         this.langConfigWrapperMap = new ConcurrentHashMap<>();
         this.langFileFolder = langFileFolder;
         this.containerClass = containerClass;
+        this.defLang = defLang;
         loadLangConfigWrapper();
     }
 
@@ -75,6 +77,9 @@ public class LangConfigContainer {
             if (!(object instanceof LangConfigEntry))
                 continue;
             LangConfigEntry<?> langConfigEntry = (LangConfigEntry<?>) object;
+            if (!langConfigEntry.defLang().equals(defLang)) {
+                langConfigEntry.setDefLang(defLang);
+            }
             langConfigEntry.load(this);
         }
         langConfigWrapperMap.forEach((lang, configWrapper) -> {

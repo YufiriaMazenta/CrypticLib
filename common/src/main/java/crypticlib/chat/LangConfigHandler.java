@@ -9,4 +9,6 @@ public @interface LangConfigHandler {
 
     String langFileFolder();
 
+    String defLang() default "en_us";
+
 }
