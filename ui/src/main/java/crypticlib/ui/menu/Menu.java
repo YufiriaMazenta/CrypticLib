@@ -3,6 +3,7 @@ package crypticlib.ui.menu;
 import crypticlib.chat.TextProcessor;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
+import crypticlib.ui.display.MenuLayout;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,13 +27,13 @@ import java.util.function.Supplier;
 
 public class Menu implements InventoryHolder {
 
-    private final Map<Integer, Icon> slotMap;
-    private final Player player;
-    private MenuDisplay display;
-    private BiConsumer<Menu, InventoryOpenEvent> openAction;
-    private BiConsumer<Menu, InventoryCloseEvent> closeAction;
-    private final Map<Character, List<Integer>> layoutSlotMap;
-    private Inventory openedInventory;
+    protected final Map<Integer, Icon> slotMap;
+    protected final Player player;
+    protected MenuDisplay display;
+    protected BiConsumer<Menu, InventoryOpenEvent> openAction;
+    protected BiConsumer<Menu, InventoryCloseEvent> closeAction;
+    protected final Map<Character, List<Integer>> layoutSlotMap;
+    protected Inventory openedInventory;
 
     public Menu(@NotNull Player player) {
         this(player, new MenuDisplay());
@@ -46,20 +47,10 @@ public class Menu implements InventoryHolder {
         this(player, displaySupplier.get());
     }
 
-    public Menu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
-        this(player, displaySupplier.get(), openAction, closeAction);
-    }
-
     public Menu(@NotNull Player player, @NotNull MenuDisplay display) {
-        this(player, display, (m, e) -> {}, (m, e) -> {});
-    }
-
-    public Menu(@NotNull Player player, @NotNull MenuDisplay display, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         this.player = player;
         this.display = display;
         this.slotMap = new ConcurrentHashMap<>();
-        this.openAction = openAction;
-        this.closeAction = closeAction;
         this.layoutSlotMap = new ConcurrentHashMap<>();
     }
 
@@ -88,7 +79,8 @@ public class Menu implements InventoryHolder {
 
 
     public Menu openMenu() {
-        this.openedInventory = getInventory();
+        if (openedInventory == null)
+            this.openedInventory = getInventory();
         player.openInventory(openedInventory);
         return this;
     }
@@ -96,7 +88,7 @@ public class Menu implements InventoryHolder {
     @Override
     @NotNull
     public Inventory getInventory() {
-        parseDisplay();
+        parseLayout();
         int size;
         String title;
         if (display != null) {
@@ -112,16 +104,17 @@ public class Menu implements InventoryHolder {
         return inventory;
     }
 
-    protected Menu parseDisplay() {
+    protected Menu parseLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
         if (display == null)
             return this;
-        for (int x = 0; x < display.layout().layout().size(); x++) {
-            String line = display.layout().layout().get(x);
+        MenuLayout layout = display.layout();
+        for (int x = 0; x < layout.layout().size(); x++) {
+            String line = layout.layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
                 char key = line.charAt(y);
-                if (!display.layout().layoutMap().containsKey(key)) {
+                if (!layout.layoutMap().containsKey(key)) {
                     continue;
                 }
                 int slot = x * 9 + y;
@@ -130,7 +123,7 @@ public class Menu implements InventoryHolder {
                 } else {
                     layoutSlotMap.get(key).add(slot);
                 }
-                slotMap.put(slot, display.layout().layoutMap().get(key));
+                slotMap.put(slot, layout.layoutMap().get(key));
             }
         }
         if (openedInventory != null) {
@@ -216,7 +209,7 @@ public class Menu implements InventoryHolder {
 
     public Menu setDisplay(@NotNull MenuDisplay display) {
         this.display = display;
-        parseDisplay();
+        parseLayout();
         return this;
     }
 
