@@ -99,11 +99,6 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public StoredMenu parseLayout() {
-        return (StoredMenu) super.parseLayout();
-    }
-
-    @Override
     public StoredMenu setDisplay(@NotNull MenuDisplay display) {
         return (StoredMenu) super.setDisplay(display);
     }
