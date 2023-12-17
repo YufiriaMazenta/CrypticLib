@@ -2,6 +2,7 @@ package crypticlib.chat;
 
 import crypticlib.chat.entry.LangConfigEntry;
 import crypticlib.config.ConfigWrapper;
+import crypticlib.util.FileUtil;
 import crypticlib.util.LocaleUtil;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.plugin.Plugin;
@@ -33,6 +34,9 @@ public class LangConfigContainer {
     }
 
     private void saveDefLangFiles() {
+        File folder = new File(plugin.getDataFolder(), langFileFolder);
+        if (!FileUtil.allYamlFiles(folder).isEmpty())
+            return;
         for (Locale locale : Locale.getAvailableLocales()) {
             String lang = LocaleUtil.localToLang(locale);
             String langFileName = langFileFolder + "/" + lang + ".yml";
