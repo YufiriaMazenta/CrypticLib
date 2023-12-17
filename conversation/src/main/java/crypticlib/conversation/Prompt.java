@@ -10,6 +10,6 @@ public interface Prompt {
 
     @Nullable Prompt acceptInput(Map<Object, Object> conversationData, String input);
 
-    @NotNull StringLangConfigEntry promptText(Map<Object, Object> conversationData);
+    @NotNull String promptText(Map<Object, Object> conversationData);
 
 }
