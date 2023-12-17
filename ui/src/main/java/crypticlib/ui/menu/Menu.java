@@ -104,11 +104,11 @@ public class Menu implements InventoryHolder {
         return inventory;
     }
 
-    protected Menu parseLayout() {
+    protected void parseLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
         if (display == null)
-            return this;
+            return;
         MenuLayout layout = display.layout();
         for (int x = 0; x < layout.layout().size(); x++) {
             String line = layout.layout().get(x);
@@ -126,11 +126,15 @@ public class Menu implements InventoryHolder {
                 slotMap.put(slot, layout.layoutMap().get(key));
             }
         }
+
+        refreshOpenedInventory();
+    }
+
+    protected void refreshOpenedInventory() {
         if (openedInventory != null) {
             openedInventory.clear();
             draw(openedInventory);
         }
-        return this;
     }
 
     protected void draw(Inventory inventory) {
@@ -150,7 +154,7 @@ public class Menu implements InventoryHolder {
         });
     }
 
-    protected @NotNull Map<Integer, Icon> slotMap() {
+    public @NotNull Map<Integer, Icon> slotMap() {
         return slotMap;
     }
 
@@ -214,7 +218,7 @@ public class Menu implements InventoryHolder {
     }
 
     @Nullable
-    protected Inventory openedInventory() {
+    public Inventory openedInventory() {
         return openedInventory;
     }
 
