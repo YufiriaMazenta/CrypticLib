@@ -21,8 +21,8 @@ import java.util.function.Supplier;
 
 public class StoredMenu extends Menu {
 
-    private final Map<Integer, ItemStack> storedItems = new ConcurrentHashMap<>();
-    private boolean returnStoredItems = true;
+    protected final Map<Integer, ItemStack> storedItems = new ConcurrentHashMap<>();
+    protected boolean returnStoredItems = true;
 
     public StoredMenu(@NotNull Player player) {
         super(player);
@@ -36,16 +36,8 @@ public class StoredMenu extends Menu {
         super(player, displaySupplier);
     }
 
-    public StoredMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
-        super(player, displaySupplier, openAction, closeAction);
-    }
-
     public StoredMenu(@NotNull Player player, @NotNull MenuDisplay display) {
         super(player, display);
-    }
-
-    public StoredMenu(@NotNull Player player, @NotNull MenuDisplay display, @Nullable BiConsumer<Menu, InventoryOpenEvent> openAction, @Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
-        super(player, display, openAction, closeAction);
     }
 
     @Override
@@ -56,7 +48,7 @@ public class StoredMenu extends Menu {
                 event.setCancelled(true);
             return null;
         }
-        if (!slotMap().containsKey(slot)) {
+        if (!slotMap.containsKey(slot)) {
             if (action.equals(InventoryAction.COLLECT_TO_CURSOR)) {
                 event.setCancelled(true);
             }
@@ -64,13 +56,13 @@ public class StoredMenu extends Menu {
         }
         event.setCancelled(true);
         refreshStoredItems(event.getClickedInventory());
-        return slotMap().get(slot).onClick(event);
+        return slotMap.get(slot).onClick(event);
     }
 
     public StoredMenu refreshStoredItems(@NotNull Inventory inventory) {
         storedItems.clear();
         for (int i = 0; i < inventory.getSize(); i++) {
-            if (slotMap().containsKey(i))
+            if (slotMap.containsKey(i))
                 continue;
             if (ItemUtil.isAir(inventory.getItem(i)))
                 continue;
@@ -92,7 +84,7 @@ public class StoredMenu extends Menu {
             returnItems[i] = item;
             i++;
         }
-        HashMap<Integer, ItemStack> failedItems = player().getInventory().addItem(returnItems);
+        HashMap<Integer, ItemStack> failedItems = player.getInventory().addItem(returnItems);
         if (failedItems.isEmpty())
             return;
         for (ItemStack item : failedItems.values()) {
@@ -107,8 +99,8 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public StoredMenu parseDisplay() {
-        return (StoredMenu) super.parseDisplay();
+    public StoredMenu parseLayout() {
+        return (StoredMenu) super.parseLayout();
     }
 
     @Override
