@@ -76,6 +76,13 @@ public abstract class LangConfigEntry<T> {
     public abstract LangConfigEntry<T> load(LangConfigContainer configContainer);
 
     public void saveDef(LangConfigContainer configContainer) {
+        if (defLangMap.isEmpty()) {
+            configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
+                if (!configWrapper.contains(key))
+                    configWrapper.set(key, defValue);
+            });
+            return;
+        }
         defLangMap.forEach((lang, text) -> {
             ConfigWrapper configWrapper;
             if (!configContainer.containsLang(lang)) {
