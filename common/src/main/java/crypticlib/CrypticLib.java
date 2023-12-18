@@ -13,7 +13,7 @@ public class CrypticLib {
 
     private static final CommandManager commandManager;
     private static IPlatform platform;
-    private static int minecraftVersion;
+    private static Integer minecraftVersion;
     private static String nmsVersion;
 
     static {
@@ -39,7 +39,7 @@ public class CrypticLib {
      *
      * @return 当前运行的Minecraft版本
      */
-    public static int minecraftVersion() {
+    public static Integer minecraftVersion() {
         return minecraftVersion;
     }
 

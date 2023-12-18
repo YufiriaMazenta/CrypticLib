@@ -7,7 +7,7 @@ public class StringUtil {
 
     private static final NumberFormat numberFormat = NumberFormat.getInstance();
 
-    public static boolean isNumber(String text) {
+    public static Boolean isNumber(String text) {
         try {
             numberFormat.parse(text);
             return true;

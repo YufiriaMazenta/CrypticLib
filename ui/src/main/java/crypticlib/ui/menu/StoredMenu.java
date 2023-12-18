@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 public class StoredMenu extends Menu {
 
     protected final Map<Integer, ItemStack> storedItems = new ConcurrentHashMap<>();
-    protected boolean returnStoredItems = true;
+    protected Boolean returnStoredItems = true;
 
     public StoredMenu(@NotNull Player player) {
         super(player);
@@ -125,11 +125,11 @@ public class StoredMenu extends Menu {
         return storedItems;
     }
 
-    public boolean isReturnStoredItems() {
+    public Boolean isReturnStoredItems() {
         return returnStoredItems;
     }
 
-    public StoredMenu setReturnStoredItems(boolean returnStoredItems) {
+    public StoredMenu setReturnStoredItems(Boolean returnStoredItems) {
         this.returnStoredItems = returnStoredItems;
         return this;
     }

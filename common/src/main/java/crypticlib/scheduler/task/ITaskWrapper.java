@@ -23,14 +23,14 @@ public interface ITaskWrapper {
      *
      * @return 此任务的Task id
      */
-    int taskId();
+    Integer taskId();
 
     /**
      * 获取此任务是否被取消
      *
      * @return 此任务是否被取消
      */
-    boolean isCancelled();
+    Boolean isCancelled();
 
     /**
      * 返回对应平台的原始Task类型

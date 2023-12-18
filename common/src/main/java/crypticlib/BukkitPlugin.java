@@ -26,8 +26,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
     protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     protected final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
     private final String defaultConfigFileName = "config.yml";
-    private int lowestSupportVersion = 11200;
-    private int highestSupportVersion = 12004;
+    private Integer lowestSupportVersion = 11200;
+    private Integer highestSupportVersion = 12004;
 
     protected BukkitPlugin() {
         super();
@@ -142,19 +142,19 @@ public abstract class BukkitPlugin extends JavaPlugin {
         }
     }
 
-    public int lowestSupportVersion() {
+    public Integer lowestSupportVersion() {
         return lowestSupportVersion;
     }
 
-    public void setLowestSupportVersion(int lowestSupportVersion) {
+    public void setLowestSupportVersion(Integer lowestSupportVersion) {
         this.lowestSupportVersion = lowestSupportVersion;
     }
 
-    public int highestSupportVersion() {
+    public Integer highestSupportVersion() {
         return highestSupportVersion;
     }
 
-    public void setHighestSupportVersion(int highestSupportVersion) {
+    public void setHighestSupportVersion(Integer highestSupportVersion) {
         this.highestSupportVersion = highestSupportVersion;
     }
 

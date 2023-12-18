@@ -24,7 +24,7 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
     private final Map<String, ISubcmdExecutor> subcommands;
     private List<String> tabArguments;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
-    private boolean registered;
+    private Boolean registered;
 
     public RootCmdExecutor() {
         this(null);
