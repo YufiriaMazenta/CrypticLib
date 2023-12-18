@@ -121,6 +121,14 @@ public class MultipageMenu extends Menu {
         return new ArrayList<>(elements);
     }
 
+    public MultipageMenu setElements(List<Icon> elements) {
+        this.elements.clear();
+        this.elements.addAll(elements);
+        parseElements();
+        refreshOpenedInventory();
+        return this;
+    }
+
     @Override
     public MultipageMenu openMenu() {
         return (MultipageMenu) super.openMenu();
