@@ -8,7 +8,7 @@ import java.util.Map;
 public interface PlayerPrompt extends ValidatingPrompt {
 
     @Override
-    default boolean isInputInvalid(String input) {
+    default Boolean isInputInvalid(String input) {
         return Bukkit.getPlayer(input) != null;
     }
 

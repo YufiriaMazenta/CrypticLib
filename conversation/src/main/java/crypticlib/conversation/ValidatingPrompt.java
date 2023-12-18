@@ -13,7 +13,7 @@ public interface ValidatingPrompt extends Prompt {
         }
     }
 
-    boolean isInputInvalid(String input);
+    Boolean isInputInvalid(String input);
 
     Prompt acceptValidatedInput(Map<Object, Object> conversationData, String input);
 

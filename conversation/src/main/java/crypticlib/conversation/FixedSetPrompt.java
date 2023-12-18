@@ -5,7 +5,7 @@ import java.util.Set;
 public interface FixedSetPrompt extends ValidatingPrompt {
 
     @Override
-    default boolean isInputInvalid(String input) {
+    default Boolean isInputInvalid(String input) {
         return fixedSet().contains(input.toLowerCase());
     }
 

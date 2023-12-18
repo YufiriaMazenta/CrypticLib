@@ -22,7 +22,7 @@ public class LangConfigContainer {
     private final Map<String, ConfigWrapper> langConfigWrapperMap;
     private final String langFileFolder;
     private final Plugin plugin;
-    private String defLang;
+    private final String defLang;
 
     public LangConfigContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
         this.plugin = plugin;
@@ -62,9 +62,7 @@ public class LangConfigContainer {
 
     public void reload() {
         loadLangFiles();
-        langConfigWrapperMap.forEach((lang, configWrapper) -> {
-            configWrapper.reloadConfig();
-        });
+        langConfigWrapperMap.forEach((lang, configWrapper) -> configWrapper.reloadConfig());
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
@@ -77,9 +75,7 @@ public class LangConfigContainer {
             }
             langConfigEntry.load(this);
         }
-        langConfigWrapperMap.forEach((lang, configWrapper) -> {
-            configWrapper.saveConfig();
-        });
+        langConfigWrapperMap.forEach((lang, configWrapper) -> configWrapper.saveConfig());
     }
 
     protected void loadLangFiles() {

@@ -23,12 +23,12 @@ public class FoliaTaskWrapper implements ITaskWrapper {
     }
 
     @Override
-    public int taskId() {
+    public Integer taskId() {
         throw new UnsupportedOperationException("Folia task can not get task id");
     }
 
     @Override
-    public boolean isCancelled() {
+    public Boolean isCancelled() {
         return scheduledTask.isCancelled();
     }
 

@@ -19,17 +19,25 @@ import java.util.function.Supplier;
 public class MultipageMenu extends Menu {
 
     protected List<Icon> elements = new CopyOnWriteArrayList<>();
-    protected int page = 0;
-    protected int maxPage;
-    protected int maxElementNum;
-    protected char elementKey;
+    protected Integer page = 0;
+    protected Integer maxPage;
+    protected Integer maxElementNumPerPage;
+    protected Character elementKey;
     protected List<Integer> elementSlots = new ArrayList<>();
 
-    public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, char elementKey, List<Icon> elements) {
+    public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, Character elementKey, Supplier<List<Icon>> elementsSupplier) {
+        this(player, displaySupplier.get(), elementKey, elementsSupplier.get());
+    }
+
+    public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, Character elementKey, List<Icon> elements) {
         this(player, displaySupplier.get(), elementKey, elements);
     }
 
-    public MultipageMenu(@NotNull Player player, @NotNull MenuDisplay display, char elementKey, List<Icon> elements) {
+    public MultipageMenu(@NotNull Player player, @NotNull MenuDisplay display, Character elementKey, Supplier<List<Icon>> elementsSupplier) {
+        this(player, display, elementKey, elementsSupplier.get());
+    }
+    
+    public MultipageMenu(@NotNull Player player, @NotNull MenuDisplay display, Character elementKey, List<Icon> elements) {
         super(player, display);
         this.elementKey = elementKey;
         this.elements.addAll(elements);
@@ -42,13 +50,13 @@ public class MultipageMenu extends Menu {
 
         if (display == null)
             return;
-
+        
         //绘制除了自动生成图标以外的所有图标
         MenuLayout layout = display.layout();
         for (int x = 0; x < layout.layout().size(); x++) {
             String line = layout.layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
-                char key = line.charAt(y);
+                Character key = line.charAt(y);
                 int slot = x * 9 + y;
                 if (key == elementKey) {
                     elementSlots.add(slot);
@@ -73,11 +81,11 @@ public class MultipageMenu extends Menu {
     }
 
     protected void refreshMaxPage() {
-        maxElementNum = elementSlots.size();
-        if (elements.size() % maxElementNum == 0)
-            maxPage = elements.size() / maxElementNum;
+        maxElementNumPerPage = elementSlots.size();
+        if (elements.size() % maxElementNumPerPage == 0)
+            maxPage = elements.size() / maxElementNumPerPage;
         else
-            maxPage = elements.size() / maxElementNum + 1;
+            maxPage = elements.size() / maxElementNumPerPage + 1;
     }
 
     protected void parseElements() {
@@ -85,8 +93,8 @@ public class MultipageMenu extends Menu {
         for (Integer slot : elementSlots) {
             slotMap.remove(slot);
         }
-        int start = page * maxElementNum;
-        List<Icon> pageElements = elements.subList(start, Math.min(elements.size(), start + maxElementNum));
+        int start = page * maxElementNumPerPage;
+        List<Icon> pageElements = elements.subList(start, Math.min(elements.size(), start + maxElementNumPerPage));
         for (int i = 0; i < elementSlots.size() && i < pageElements.size(); i++) {
             int slot = elementSlots.get(i);
             slotMap.put(slot, pageElements.get(i));
@@ -105,7 +113,7 @@ public class MultipageMenu extends Menu {
         return page;
     }
 
-    public void setPage(int page) {
+    public void setPage(Integer page) {
         if (page < 0 || page >= maxPage)
             return;
         this.page = page;

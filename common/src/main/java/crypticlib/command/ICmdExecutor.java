@@ -54,7 +54,7 @@ public interface ICmdExecutor {
      * @param sender 执行者
      * @param args   参数
      */
-    default boolean execute(CommandSender sender, List<String> args) {
+    default Boolean execute(CommandSender sender, List<String> args) {
         if (executor() != null)
             return executor().apply(sender, args);
         return true;
@@ -72,7 +72,7 @@ public interface ICmdExecutor {
      * @param args   发送时的参数
      * @return 执行结果
      */
-    default boolean onCommand(CommandSender sender, List<String> args) {
+    default Boolean onCommand(CommandSender sender, List<String> args) {
         if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
             return execute(sender, args);
         }

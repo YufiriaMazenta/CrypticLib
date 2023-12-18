@@ -24,12 +24,12 @@ public class BukkitTaskWrapper implements ITaskWrapper {
     }
 
     @Override
-    public int taskId() {
+    public Integer taskId() {
         return bukkitTask.getTaskId();
     }
 
     @Override
-    public boolean isCancelled() {
+    public Boolean isCancelled() {
         return bukkitTask.isCancelled();
     }
 
