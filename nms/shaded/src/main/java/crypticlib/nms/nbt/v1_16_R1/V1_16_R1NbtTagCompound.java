@@ -25,14 +25,14 @@ public class V1_16_R1NbtTagCompound extends NbtTagCompound {
     public void fromNms(@NotNull Object nmsNbt) {
         NBTTagCompound nms = (NBTTagCompound) nmsNbt;
         for (String key : nms.getKeys()) {
-            value().put(key, nbtTranslator().translateNmsNbt(nms.get(key)));
+            nbtMap.put(key, nbtTranslator().translateNmsNbt(nms.get(key)));
         }
     }
 
     @Override
     public @NotNull NBTTagCompound toNms() {
         NBTTagCompound nbtTagCompound = new NBTTagCompound();
-        for (String key : value().keySet()) {
+        for (String key : nbtMap.keySet()) {
             nbtTagCompound.set(key, (NBTBase) get(key).toNms());
         }
         return nbtTagCompound;

@@ -22,6 +22,6 @@ public class V1_18_R1NbtTagLongArray extends NbtTagLongArray {
 
     @Override
     public @NotNull NBTTagLongArray toNms() {
-        return new NBTTagLongArray(value());
+        return new NBTTagLongArray(value);
     }
 }

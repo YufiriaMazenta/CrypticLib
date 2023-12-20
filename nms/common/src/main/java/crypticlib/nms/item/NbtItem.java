@@ -15,15 +15,15 @@ import java.util.Map;
 
 public abstract class NbtItem {
 
-    private final ItemStack bukkit;
-    private NbtTagCompound nbtTagCompound;
+    protected final ItemStack bukkit;
+    protected NbtTagCompound nbtTagCompound;
 
     public NbtItem(@NotNull ItemStack itemStack) {
         if (ItemUtil.isAir(itemStack)) {
             throw new IllegalArgumentException("Can not create an air item");
         }
         this.bukkit = itemStack;
-        loadNbtFromBukkit();
+        fromBukkit();
     }
 
     public NbtItem(@NotNull Material material, @NotNull NbtTagCompound nbtTagCompound) {
@@ -105,12 +105,12 @@ public abstract class NbtItem {
         return JsonUtil.json2Str(toJson());
     }
 
-    public abstract void loadNbtFromBukkit();
+    public abstract void fromBukkit();
 
     /**
      * 将NBT保存到物品上,同时返回修改完成的物品
      * @return 修改完成的物品
      */
-    public abstract ItemStack saveNbtToBukkit();
+    public abstract ItemStack saveNbtToItem();
 
 }

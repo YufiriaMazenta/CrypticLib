@@ -22,7 +22,7 @@ public class V1_13_R1NbtTagLong extends NbtTagLong {
 
     @Override
     public @NotNull NBTTagLong toNms() {
-        return new NBTTagLong(value());
+        return new NBTTagLong(value);
     }
 
 }

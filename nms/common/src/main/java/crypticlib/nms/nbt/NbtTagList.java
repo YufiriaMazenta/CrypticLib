@@ -9,8 +9,8 @@ import java.util.Map;
 
 public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
 
-    private List<INbtTag<?>> nbtList;
-    private INbtTranslator nbtTranslator;
+    protected List<INbtTag<?>> nbtList;
+    protected INbtTranslator nbtTranslator;
 
     public NbtTagList(List<Object> nbtList, INbtTranslator nbtTranslator) {
         this.nbtList = new ArrayList<>();
@@ -181,7 +181,7 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
      * @param nbtTagList 另外一个NbtTagList
      */
     public NbtTagList addAll(NbtTagList nbtTagList) {
-        this.value().addAll(nbtTagList.value());
+        this.nbtList.addAll(nbtTagList.nbtList);
         return this;
     }
 
@@ -212,7 +212,7 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
     @Override
     public @NotNull JsonArray toJson() {
         JsonArray jsonArray = new JsonArray();
-        for (INbtTag<?> nbtTag : value()) {
+        for (INbtTag<?> nbtTag : nbtList) {
             jsonArray.add(nbtTag.toJson());
         }
         return jsonArray;
@@ -220,7 +220,7 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
 
     public List<Object> unwrappedList() {
         List<Object> list = new ArrayList<>();
-        for (INbtTag<?> nbtTag : value()) {
+        for (INbtTag<?> nbtTag : nbtList) {
             if (nbtTag instanceof NbtTagCompound) {
                 list.add(((NbtTagCompound) nbtTag).unwarppedMap());
             } else if (nbtTag instanceof NbtTagList) {

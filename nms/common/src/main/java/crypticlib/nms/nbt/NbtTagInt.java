@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public abstract class NbtTagInt implements INbtTag<Integer>, INumberNbt {
 
-    private Integer value;
+    protected Integer value;
 
     public NbtTagInt(int value) {
         this.value = value;

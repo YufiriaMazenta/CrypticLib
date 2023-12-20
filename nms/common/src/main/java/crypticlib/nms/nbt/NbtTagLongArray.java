@@ -9,7 +9,7 @@ import java.util.StringJoiner;
 
 public abstract class NbtTagLongArray implements INbtTag<long[]>, INumberNbt {
 
-    private long[] value;
+    protected long[] value;
 
     public NbtTagLongArray(long[] value) {
         this.value = value;

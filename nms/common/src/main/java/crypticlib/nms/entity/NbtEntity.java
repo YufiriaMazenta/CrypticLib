@@ -10,12 +10,12 @@ import org.bukkit.entity.Entity;
  */
 public abstract class NbtEntity {
 
-    private NbtTagCompound nbtTagCompound;
-    private Entity bukkit;
+    protected NbtTagCompound nbtTagCompound;
+    protected Entity bukkit;
 
     protected NbtEntity(Entity entity) {
         this.bukkit = entity;
-        loadFromBukkit();
+        fromBukkit();
     }
 
     public NbtTagCompound nbtTagCompound() {
@@ -27,7 +27,7 @@ public abstract class NbtEntity {
         return this;
     }
 
-    public Entity bukkitEntity() {
+    public Entity bukkit() {
         return bukkit;
     }
 
@@ -38,7 +38,7 @@ public abstract class NbtEntity {
 
     public abstract NbtEntity saveNbtToEntity();
 
-    public abstract void loadFromBukkit();
+    public abstract void fromBukkit();
 
     public HoverEvent toHover() {
         return new HoverEvent(

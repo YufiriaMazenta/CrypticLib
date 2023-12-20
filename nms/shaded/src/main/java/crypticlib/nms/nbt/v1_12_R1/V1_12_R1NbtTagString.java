@@ -23,7 +23,7 @@ public class V1_12_R1NbtTagString extends NbtTagString {
 
     @Override
     public @NotNull NBTBase toNms() {
-        return new NBTTagString(value());
+        return new NBTTagString(value);
     }
 
 }

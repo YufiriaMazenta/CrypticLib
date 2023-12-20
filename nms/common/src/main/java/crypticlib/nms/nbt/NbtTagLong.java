@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public abstract class NbtTagLong implements INbtTag<Long>, INumberNbt {
 
-    private Long value;
+    protected Long value;
 
     public NbtTagLong(long value) {
         this.value = value;

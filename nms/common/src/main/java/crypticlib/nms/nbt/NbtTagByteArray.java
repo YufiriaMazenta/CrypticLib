@@ -9,7 +9,7 @@ import java.util.StringJoiner;
 
 public abstract class NbtTagByteArray implements INbtTag<byte[]>, INumberNbt {
 
-    private byte[] value;
+    protected byte[] value;
 
     public NbtTagByteArray(byte[] value) {
         this.value = value;

@@ -22,7 +22,7 @@ public class V1_20_R3NbtTagFloat extends NbtTagFloat {
 
     @Override
     public @NotNull NBTTagFloat toNms() {
-        return NBTTagFloat.a(value());
+        return NBTTagFloat.a(value);
     }
 
 }

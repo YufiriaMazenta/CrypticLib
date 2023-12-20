@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
 
-    private Byte value;
+    protected Byte value;
 
     public NbtTagByte(byte value) {
         this.value = value;

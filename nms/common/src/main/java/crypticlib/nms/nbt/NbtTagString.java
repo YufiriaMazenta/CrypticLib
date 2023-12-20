@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public abstract class NbtTagString implements INbtTag<String> {
 
-    private String value;
+    protected String value;
 
     public NbtTagString(String value) {
         this.value = value;

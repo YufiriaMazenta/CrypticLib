@@ -22,6 +22,6 @@ public class V1_16_R2NbtTagInt extends NbtTagInt {
 
     @Override
     public @NotNull NBTTagInt toNms() {
-        return NBTTagInt.a(value());
+        return NBTTagInt.a(value);
     }
 }
