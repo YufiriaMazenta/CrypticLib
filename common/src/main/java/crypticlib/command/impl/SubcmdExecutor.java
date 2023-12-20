@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 
 /**
@@ -20,7 +21,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     private final Map<String, ISubcmdExecutor> subcommands;
     private String permission;
     private List<String> aliases;
-    private List<String> tabArguments;
+    private final List<String> tabArguments;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
 
     public SubcmdExecutor(@NotNull String name) {
@@ -57,7 +58,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
         this.aliases = aliases;
         this.executor = executor;
         this.subcommands = new ConcurrentHashMap<>();
-        this.tabArguments = new ArrayList<>();
+        this.tabArguments = new CopyOnWriteArrayList<>();
     }
 
     @Override
@@ -81,7 +82,8 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     @Override
     @NotNull
     public ISubcmdExecutor setTabArguments(@NotNull List<String> tabArguments) {
-        this.tabArguments = tabArguments;
+        this.tabArguments.clear();
+        this.tabArguments.addAll(tabArguments);
         return this;
     }
 
