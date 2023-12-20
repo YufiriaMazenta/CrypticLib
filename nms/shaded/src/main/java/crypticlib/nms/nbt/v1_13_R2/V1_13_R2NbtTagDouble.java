@@ -22,7 +22,7 @@ public class V1_13_R2NbtTagDouble extends NbtTagDouble {
 
     @Override
     public @NotNull NBTTagDouble toNms() {
-        return new NBTTagDouble(value());
+        return new NBTTagDouble(value);
     }
 
 }

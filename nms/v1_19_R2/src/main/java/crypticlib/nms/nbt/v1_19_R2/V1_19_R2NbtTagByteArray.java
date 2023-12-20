@@ -22,7 +22,7 @@ public class V1_19_R2NbtTagByteArray extends NbtTagByteArray {
 
     @Override
     public @NotNull NBTTagByteArray toNms() {
-        return new NBTTagByteArray(value());
+        return new NBTTagByteArray(value);
     }
 
 }

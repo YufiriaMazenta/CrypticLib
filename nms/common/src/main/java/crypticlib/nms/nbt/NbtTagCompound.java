@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>> {
 
-    private INbtTranslator nbtTranslator;
-    private Map<String, INbtTag<?>> nbtMap;
+    protected INbtTranslator nbtTranslator;
+    protected Map<String, INbtTag<?>> nbtMap;
 
     public NbtTagCompound(INbtTranslator nbtTranslator) {
         this.nbtTranslator = nbtTranslator;
@@ -129,16 +129,16 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
      * @return 自身（合并完毕的NbtTagCompound）
      */
     public NbtTagCompound merge(NbtTagCompound other, boolean rewrite) {
-        other.value().forEach((key, nbt) -> {
-            if (value().containsKey(key)) {
-                if (value().get(key) instanceof NbtTagCompound && nbt instanceof NbtTagCompound) {
-                    ((NbtTagCompound) value().get(key)).merge((NbtTagCompound) nbt, rewrite);
+        other.nbtMap.forEach((key, nbt) -> {
+            if (nbtMap.containsKey(key)) {
+                if (nbtMap.get(key) instanceof NbtTagCompound && nbt instanceof NbtTagCompound) {
+                    ((NbtTagCompound) nbtMap.get(key)).merge((NbtTagCompound) nbt, rewrite);
                     return;
                 }
                 if (rewrite)
-                    value().put(key, nbt);
+                    nbtMap.put(key, nbt);
             } else {
-                value().put(key, nbt);
+                nbtMap.put(key, nbt);
             }
         });
         return this;
@@ -164,7 +164,7 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
     @Override
     public @NotNull JsonObject toJson() {
         JsonObject jsonObject = new JsonObject();
-        value().forEach((key, val) -> jsonObject.add(key, val.toJson()));
+        nbtMap.forEach((key, val) -> jsonObject.add(key, val.toJson()));
         return jsonObject;
     }
 

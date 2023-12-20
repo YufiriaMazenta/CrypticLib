@@ -34,11 +34,11 @@ public class Icon {
     }
 
     public Icon(@NotNull NbtItem item) {
-        this(item.saveNbtToBukkit());
+        this(item.saveNbtToItem());
     }
 
     public Icon(@NotNull NbtItem item, Consumer<InventoryClickEvent> clickConsumer) {
-        this(item.saveNbtToBukkit(), clickConsumer);
+        this(item.saveNbtToItem(), clickConsumer);
     }
 
     public Icon(@NotNull ItemStack display, Consumer<InventoryClickEvent> clickConsumer) {

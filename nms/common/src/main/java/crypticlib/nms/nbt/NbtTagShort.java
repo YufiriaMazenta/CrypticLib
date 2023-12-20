@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public abstract class NbtTagShort implements INbtTag<Short>, INumberNbt {
 
-    private Short value;
+    protected Short value;
 
     public NbtTagShort(short value) {
         this.value = value;

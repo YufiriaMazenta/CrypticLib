@@ -26,14 +26,14 @@ public class V1_12_R1NbtTagList extends NbtTagList {
     public void fromNms(@NotNull Object nmsNbt) {
         NBTTagList nbtTagList = (NBTTagList) nmsNbt;
         for (int i = 0; i < nbtTagList.size(); i++) {
-            value().add(nbtTranslator().translateNmsNbt(nbtTagList.i(i)));
+            nbtList.add(nbtTranslator().translateNmsNbt(nbtTagList.i(i)));
         }
     }
 
     @Override
     public @NotNull NBTTagList toNms() {
         NBTTagList nbtTagList = new NBTTagList();
-        for (INbtTag<?> nbtTag : value()) {
+        for (INbtTag<?> nbtTag : nbtList) {
             nbtTagList.add((NBTBase) nbtTag.toNms());
         }
         return nbtTagList;

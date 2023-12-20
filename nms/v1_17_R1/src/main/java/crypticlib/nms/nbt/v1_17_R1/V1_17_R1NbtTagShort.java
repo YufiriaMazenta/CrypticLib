@@ -22,6 +22,6 @@ public class V1_17_R1NbtTagShort extends NbtTagShort {
 
     @Override
     public @NotNull NBTTagShort toNms() {
-        return NBTTagShort.a(value());
+        return NBTTagShort.a(value);
     }
 }

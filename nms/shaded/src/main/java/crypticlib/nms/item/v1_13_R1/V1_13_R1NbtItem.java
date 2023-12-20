@@ -24,18 +24,18 @@ public class V1_13_R1NbtItem extends NbtItem {
     }
 
     @Override
-    public void loadNbtFromBukkit() {
-        setNbtTagCompound(new V1_13_R1NbtTagCompound(CraftItemStack.asNMSCopy(bukkit()).getOrCreateTag()));
+    public void fromBukkit() {
+        setNbtTagCompound(new V1_13_R1NbtTagCompound(CraftItemStack.asNMSCopy(bukkit).getOrCreateTag()));
     }
 
     @Override
-    public ItemStack saveNbtToBukkit() {
-        NBTTagCompound nbtTagCompound = (NBTTagCompound) nbtTagCompound().toNms();
-        ItemStack tmpItem = new ItemStack(bukkit().getType());
+    public ItemStack saveNbtToItem() {
+        NBTTagCompound nms = (NBTTagCompound) nbtTagCompound.toNms();
+        ItemStack tmpItem = new ItemStack(bukkit.getType());
         net.minecraft.server.v1_13_R1.ItemStack nmsCopy = CraftItemStack.asNMSCopy(tmpItem);
-        nmsCopy.setTag(nbtTagCompound);
-        bukkit().setItemMeta(CraftItemStack.getItemMeta(nmsCopy));
-        return bukkit();
+        nmsCopy.setTag(nms);
+        bukkit.setItemMeta(CraftItemStack.getItemMeta(nmsCopy));
+        return bukkit;
     }
 
 }

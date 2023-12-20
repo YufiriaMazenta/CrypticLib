@@ -22,7 +22,7 @@ public class V1_12_R1NbtTagByte extends NbtTagByte {
 
     @Override
     public @NotNull NBTTagByte toNms() {
-        return new NBTTagByte(value());
+        return new NBTTagByte(value);
     }
 
 }

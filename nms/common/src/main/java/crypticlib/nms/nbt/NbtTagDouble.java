@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public abstract class NbtTagDouble implements INbtTag<Double>, INumberNbt {
 
-    private Double value;
+    protected Double value;
 
     public NbtTagDouble(double value) {
         this.value = value;

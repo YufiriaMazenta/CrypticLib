@@ -14,14 +14,14 @@ public class V1_17_R1NbtEntity extends NbtEntity {
 
     @Override
     public NbtEntity saveNbtToEntity() {
-        net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) bukkitEntity()).getHandle();
-        nmsEntity.load((NBTTagCompound) nbtTagCompound().toNms());
+        net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) bukkit).getHandle();
+        nmsEntity.load((NBTTagCompound) nbtTagCompound.toNms());
         return this;
     }
 
     @Override
-    public void loadFromBukkit() {
-        net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) bukkitEntity()).getHandle();
+    public void fromBukkit() {
+        net.minecraft.world.entity.Entity nmsEntity = ((CraftEntity) bukkit).getHandle();
         NBTTagCompound nmsNbt = new NBTTagCompound();
         this.setNbtTagCompound(new V1_17_R1NbtTagCompound(nmsEntity.save(nmsNbt)));
     }
