@@ -10,12 +10,11 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * CrypticLib提供的插件基础命令接口
@@ -23,7 +22,7 @@ import java.util.function.BiFunction;
 public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
 
     private final Map<String, ISubcmdExecutor> subcommands;
-    private final List<String> tabArguments;
+    private Supplier<List<String>> tabArgsSupplier;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
     private Boolean registered;
 
@@ -35,7 +34,6 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
         this.subcommands = new ConcurrentHashMap<>();
         this.executor = executor;
         this.registered = false;
-        this.tabArguments = new CopyOnWriteArrayList<>();
     }
 
     @Override
@@ -56,23 +54,17 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
         return this;
     }
 
+
+    @Override
+    public Supplier<List<String>> tabArgsSupplier() {
+        return tabArgsSupplier;
+    }
+
     @Override
     @NotNull
-    public IRootCmdExecutor setTabArguments(@NotNull List<String> tabArguments) {
-        this.tabArguments.clear();
-        this.tabArguments.addAll(tabArguments);
+    public IRootCmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArgsSupplier) {
+        this.tabArgsSupplier = tabArgsSupplier;
         return this;
-    }
-
-    @Override
-    public IRootCmdExecutor addTabArguments(@NotNull String tabArgument) {
-        return IRootCmdExecutor.super.addTabArguments(tabArgument);
-    }
-
-    @Override
-    @NotNull
-    public List<String> tabArguments() {
-        return this.tabArguments;
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 public interface ISubcmdExecutor extends ICmdExecutor {
 
@@ -19,12 +20,7 @@ public interface ISubcmdExecutor extends ICmdExecutor {
 
     @Override
     @NotNull
-    ISubcmdExecutor setTabArguments(@NotNull List<String> tabArguments);
-
-    @Override
-    default ISubcmdExecutor addTabArguments(@NotNull String tabArgument) {
-        return (ISubcmdExecutor) ICmdExecutor.super.addTabArguments(tabArgument);
-    }
+    ISubcmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArguments);
 
     @Nullable String permission();
 

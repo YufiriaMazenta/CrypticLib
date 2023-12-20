@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * CrypticLib提供的子命令接口
@@ -21,7 +21,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     private final Map<String, ISubcmdExecutor> subcommands;
     private String permission;
     private List<String> aliases;
-    private final List<String> tabArguments;
+    private Supplier<List<String>> tabArgsSupplier;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
 
     public SubcmdExecutor(@NotNull String name) {
@@ -58,7 +58,6 @@ public class SubcmdExecutor implements ISubcmdExecutor {
         this.aliases = aliases;
         this.executor = executor;
         this.subcommands = new ConcurrentHashMap<>();
-        this.tabArguments = new CopyOnWriteArrayList<>();
     }
 
     @Override
@@ -74,17 +73,22 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     }
 
     @Override
-    @NotNull
-    public List<String> tabArguments() {
-        return tabArguments;
+    public @NotNull List<String> tabArgs() {
+        if (tabArgsSupplier == null)
+            return new ArrayList<>();
+        return tabArgsSupplier.get();
     }
 
     @Override
     @NotNull
-    public ISubcmdExecutor setTabArguments(@NotNull List<String> tabArguments) {
-        this.tabArguments.clear();
-        this.tabArguments.addAll(tabArguments);
+    public ISubcmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArgumentsSupplier) {
+        this.tabArgsSupplier = tabArgumentsSupplier;
         return this;
+    }
+
+    @Override
+    public Supplier<List<String>> tabArgsSupplier() {
+        return tabArgsSupplier;
     }
 
     /**
