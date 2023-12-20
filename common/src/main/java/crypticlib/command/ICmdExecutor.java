@@ -132,6 +132,8 @@ public interface ICmdExecutor {
                 }
             }
         }
+        if (arguments.isEmpty())
+            return null;
         arguments.removeIf(str -> !str.contains(args.get(0)));
         return arguments;
 
