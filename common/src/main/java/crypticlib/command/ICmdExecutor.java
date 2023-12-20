@@ -114,12 +114,11 @@ public interface ICmdExecutor {
                 if (subCommand != null) {
                     String permission = subCommand.permission();
                     if (permission != null) {
-                        if (!sender.hasPermission(permission))
-                            return Collections.singletonList("");
+                        if (sender.hasPermission(permission))
+                            return subCommand.onTabComplete(sender, args.subList(1, args.size()));
                     }
-                    return subCommand.onTabComplete(sender, args.subList(1, args.size()));
-                } else
-                    return Collections.singletonList("");
+                }
+                return Collections.singletonList("");
 
             }
             for (String subCmd : subcommands().keySet()) {
