@@ -131,6 +131,10 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
     public NbtTagCompound merge(NbtTagCompound other, boolean rewrite) {
         other.value().forEach((key, nbt) -> {
             if (value().containsKey(key)) {
+                if (value().get(key) instanceof NbtTagCompound && nbt instanceof NbtTagCompound) {
+                    ((NbtTagCompound) value().get(key)).merge((NbtTagCompound) nbt, rewrite);
+                    return;
+                }
                 if (rewrite)
                     value().put(key, nbt);
             } else {
@@ -138,6 +142,10 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
             }
         });
         return this;
+    }
+
+    public Boolean contains(String key) {
+        return nbtMap.containsKey(key);
     }
 
     public INbtTag<?> get(String key) {
