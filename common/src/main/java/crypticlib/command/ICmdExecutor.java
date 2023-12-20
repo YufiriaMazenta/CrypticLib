@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * CrypticLib提供的命令接口，简便了对于Tab返回的编写
@@ -60,9 +61,17 @@ public interface ICmdExecutor {
         return true;
     }
 
+    /**
+     * 获取此命令的执行器
+     * @return 此命令的执行器
+     */
     @Nullable
     BiFunction<CommandSender, List<String>, Boolean> executor();
 
+    /**
+     * 设置此命令的执行器
+     * @param executor 命令执行器
+     */
     ICmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor);
 
     /**
@@ -86,18 +95,28 @@ public interface ICmdExecutor {
         return true;
     }
 
-    @NotNull
-    default List<String> tabArguments() {
-        return new ArrayList<>();
+    /**
+     * 此命令的默认返回参数
+     * @return 此命令的默认返回参数
+     */
+    default @NotNull List<String> tabArgs() {
+        if (tabArgsSupplier() == null)
+            return new ArrayList<>();
+        return this.tabArgsSupplier().get();
     }
 
-    @NotNull
-    ICmdExecutor setTabArguments(@NotNull List<String> tabArguments);
+    /**
+     * 获得此命令的默认返回参数提供者
+     * @return 此命令的默认返回参数提供者
+     */
+    @Nullable Supplier<List<String>> tabArgsSupplier();
 
-    default ICmdExecutor addTabArguments(@NotNull String tabArgument) {
-        tabArguments().add(tabArgument);
-        return this;
-    }
+    /**
+     * 设置此命令的默认返回参数提供者
+     * @param tabArguments 此命令的默认返回参数提供者
+     */
+    @NotNull
+    ICmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArguments);
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
@@ -107,7 +126,7 @@ public interface ICmdExecutor {
      * @return 返回的tab列表内容
      */
     default List<String> onTabComplete(CommandSender sender, List<String> args) {
-        List<String> arguments = new ArrayList<>(tabArguments());
+        List<String> arguments = new ArrayList<>(tabArgs());
         if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
                 ISubcmdExecutor subCommand = subcommands().get(args.get(0));
@@ -132,8 +151,6 @@ public interface ICmdExecutor {
                 }
             }
         }
-        if (arguments.isEmpty())
-            return null;
         arguments.removeIf(str -> !str.contains(args.get(0)));
         return arguments;
 

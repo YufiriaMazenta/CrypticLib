@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 public interface IRootCmdExecutor extends TabExecutor, ICmdExecutor {
 
@@ -37,12 +38,7 @@ public interface IRootCmdExecutor extends TabExecutor, ICmdExecutor {
 
     @Override
     @NotNull
-    IRootCmdExecutor setTabArguments(@NotNull List<String> tabArguments);
-
-    @Override
-    default IRootCmdExecutor addTabArguments(@NotNull String tabArgument) {
-        return (IRootCmdExecutor) ICmdExecutor.super.addTabArguments(tabArgument);
-    }
+    IRootCmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArguments);
 
     void register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo);
 
