@@ -21,7 +21,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     private final Map<String, ISubcmdExecutor> subcommands;
     private String permission;
     private List<String> aliases;
-    private Supplier<List<String>> tabArgsSupplier;
+    private Supplier<List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
 
     public SubcmdExecutor(@NotNull String name) {
@@ -74,21 +74,21 @@ public class SubcmdExecutor implements ISubcmdExecutor {
 
     @Override
     public @NotNull List<String> tabArgs() {
-        if (tabArgsSupplier == null)
+        if (tabCompleter == null)
             return new ArrayList<>();
-        return tabArgsSupplier.get();
+        return tabCompleter.get();
     }
 
     @Override
     @NotNull
-    public ISubcmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArgumentsSupplier) {
-        this.tabArgsSupplier = tabArgumentsSupplier;
+    public ISubcmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
+        this.tabCompleter = tabCompleter;
         return this;
     }
 
     @Override
-    public Supplier<List<String>> tabArgsSupplier() {
-        return tabArgsSupplier;
+    public Supplier<List<String>> tabCompleter() {
+        return tabCompleter;
     }
 
     /**

@@ -20,7 +20,7 @@ public interface ISubcmdExecutor extends ICmdExecutor {
 
     @Override
     @NotNull
-    ISubcmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArguments);
+    ISubcmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter);
 
     @Nullable String permission();
 
