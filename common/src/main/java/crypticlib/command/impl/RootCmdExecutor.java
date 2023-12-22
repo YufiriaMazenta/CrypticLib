@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
 
     private final Map<String, ISubcmdExecutor> subcommands;
-    private Supplier<List<String>> tabArgsSupplier;
+    private Supplier<List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
     private Boolean registered;
 
@@ -56,14 +56,14 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
 
 
     @Override
-    public Supplier<List<String>> tabArgsSupplier() {
-        return tabArgsSupplier;
+    public Supplier<List<String>> tabCompleter() {
+        return tabCompleter;
     }
 
     @Override
     @NotNull
-    public IRootCmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArgsSupplier) {
-        this.tabArgsSupplier = tabArgsSupplier;
+    public IRootCmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
+        this.tabCompleter = tabCompleter;
         return this;
     }
 

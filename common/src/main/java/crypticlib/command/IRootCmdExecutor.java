@@ -38,7 +38,7 @@ public interface IRootCmdExecutor extends TabExecutor, ICmdExecutor {
 
     @Override
     @NotNull
-    IRootCmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArguments);
+    IRootCmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter);
 
     void register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo);
 

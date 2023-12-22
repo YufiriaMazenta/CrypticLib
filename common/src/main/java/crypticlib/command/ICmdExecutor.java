@@ -100,23 +100,24 @@ public interface ICmdExecutor {
      * @return 此命令的默认返回参数
      */
     default @NotNull List<String> tabArgs() {
-        if (tabArgsSupplier() == null)
+        Supplier<List<String>> tabCompleter = tabCompleter();
+        if (tabCompleter == null)
             return new ArrayList<>();
-        return this.tabArgsSupplier().get();
+        return tabCompleter.get();
     }
 
     /**
      * 获得此命令的默认返回参数提供者
      * @return 此命令的默认返回参数提供者
      */
-    @Nullable Supplier<List<String>> tabArgsSupplier();
+    @Nullable Supplier<List<String>> tabCompleter();
 
     /**
      * 设置此命令的默认返回参数提供者
-     * @param tabArguments 此命令的默认返回参数提供者
+     * @param tabCompleter 此命令的默认返回参数提供者
      */
     @NotNull
-    ICmdExecutor setTabArgsSupplier(@NotNull Supplier<List<String>> tabArguments);
+    ICmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter);
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容

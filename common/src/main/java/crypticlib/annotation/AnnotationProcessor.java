@@ -41,9 +41,9 @@ public enum AnnotationProcessor {
     public void scanJar(JarFile jarFile) {
         Enumeration<JarEntry> entries = jarFile.entries();
         ClassLoader classLoader = getClass().getClassLoader();
-        try {
-            Map<ProcessPriority, List<Runnable>> processTaskCache = new HashMap<>();
-            while (entries.hasMoreElements()) {
+        Map<ProcessPriority, List<Runnable>> processTaskCache = new HashMap<>();
+        while (entries.hasMoreElements()) {
+            try {
                 JarEntry entry = entries.nextElement();
                 if (!entry.getName().endsWith(".class")) {
                     continue;
@@ -68,24 +68,25 @@ public enum AnnotationProcessor {
                         processTaskCache.put(priority, runnableList);
                     }
                 }
+            } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
             }
+        }
 
-            for (ProcessPriority priority : ProcessPriority.values()) {
-                List<Runnable> tasks = processTaskCache.get(priority);
-                if (tasks == null)
-                    continue;
-                for (Runnable task : tasks) {
-                    task.run();
-                }
+        for (ProcessPriority priority : ProcessPriority.values()) {
+            List<Runnable> tasks = processTaskCache.get(priority);
+            if (tasks == null)
+                continue;
+            for (Runnable task : tasks) {
+                task.run();
             }
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
-                jarFile.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        }
+
+        try {
+            jarFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
