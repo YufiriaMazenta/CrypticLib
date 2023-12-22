@@ -26,28 +26,28 @@ import java.util.function.Function;
 
 public class EntityFactory {
 
-    private static final Map<String, Function<Entity, NbtEntity>> entityProviderMap;
+    private static final Map<String, Function<Entity, NbtEntity>> nbtEntityProviderMap;
 
     static {
-        entityProviderMap = new ConcurrentHashMap<>();
+        nbtEntityProviderMap = new ConcurrentHashMap<>();
 
-        regProvider("v1_12_R1", V1_12_R1NbtEntity::new);
-        regProvider("v1_13_R1", V1_13_R1NbtEntity::new);
-        regProvider("v1_13_R2", V1_13_R2NbtEntity::new);
-        regProvider("v1_14_R1", V1_14_R1NbtEntity::new);
-        regProvider("v1_15_R1", V1_15_R1NbtEntity::new);
-        regProvider("v1_16_R1", V1_16_R1NbtEntity::new);
-        regProvider("v1_16_R2", V1_16_R2NbtEntity::new);
-        regProvider("v1_16_R3", V1_16_R3NbtEntity::new);
-        regProvider("v1_17_R1", V1_17_R1NbtEntity::new);
-        regProvider("v1_18_R1", V1_18_R1NbtEntity::new);
-        regProvider("v1_18_R2", V1_18_R2NbtEntity::new);
-        regProvider("v1_19_R1", V1_19_R1NbtEntity::new);
-        regProvider("v1_19_R2", V1_19_R2NbtEntity::new);
-        regProvider("v1_19_R3", V1_19_R3NbtEntity::new);
-        regProvider("v1_20_R1", V1_20_R1NbtEntity::new);
-        regProvider("v1_20_R2", V1_20_R2NbtEntity::new);
-        regProvider("v1_20_R3", V1_20_R3NbtEntity::new);
+        regNbtEntityProvider("v1_12_R1", V1_12_R1NbtEntity::new);
+        regNbtEntityProvider("v1_13_R1", V1_13_R1NbtEntity::new);
+        regNbtEntityProvider("v1_13_R2", V1_13_R2NbtEntity::new);
+        regNbtEntityProvider("v1_14_R1", V1_14_R1NbtEntity::new);
+        regNbtEntityProvider("v1_15_R1", V1_15_R1NbtEntity::new);
+        regNbtEntityProvider("v1_16_R1", V1_16_R1NbtEntity::new);
+        regNbtEntityProvider("v1_16_R2", V1_16_R2NbtEntity::new);
+        regNbtEntityProvider("v1_16_R3", V1_16_R3NbtEntity::new);
+        regNbtEntityProvider("v1_17_R1", V1_17_R1NbtEntity::new);
+        regNbtEntityProvider("v1_18_R1", V1_18_R1NbtEntity::new);
+        regNbtEntityProvider("v1_18_R2", V1_18_R2NbtEntity::new);
+        regNbtEntityProvider("v1_19_R1", V1_19_R1NbtEntity::new);
+        regNbtEntityProvider("v1_19_R2", V1_19_R2NbtEntity::new);
+        regNbtEntityProvider("v1_19_R3", V1_19_R3NbtEntity::new);
+        regNbtEntityProvider("v1_20_R1", V1_20_R1NbtEntity::new);
+        regNbtEntityProvider("v1_20_R2", V1_20_R2NbtEntity::new);
+        regNbtEntityProvider("v1_20_R3", V1_20_R3NbtEntity::new);
     }
 
     /**
@@ -57,13 +57,13 @@ public class EntityFactory {
      * @return 代理实体对象
      */
     public static NbtEntity entity(Entity entity) {
-        return entityProviderMap.getOrDefault(CrypticLib.nmsVersion(), i -> {
+        return nbtEntityProviderMap.getOrDefault(CrypticLib.nmsVersion(), i -> {
             throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
         }).apply(entity);
     }
 
-    public static void regProvider(String nmsVersion, Function<Entity, NbtEntity> proxyEntityFunction) {
-        entityProviderMap.put(nmsVersion, proxyEntityFunction);
+    public static void regNbtEntityProvider(String nmsVersion, Function<Entity, NbtEntity> proxyEntityFunction) {
+        nbtEntityProviderMap.put(nmsVersion, proxyEntityFunction);
     }
 
 }
