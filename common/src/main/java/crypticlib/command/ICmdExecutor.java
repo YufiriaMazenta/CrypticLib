@@ -1,6 +1,5 @@
 package crypticlib.command;
 
-import crypticlib.command.impl.SubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +18,7 @@ public interface ICmdExecutor {
      *
      * @return 命令的子命令表
      */
-    @NotNull
-    default Map<String, ISubcmdExecutor> subcommands() {
+    default @NotNull Map<String, SubcmdExecutor> subcommands() {
         return new HashMap<>();
     }
 
@@ -29,7 +27,7 @@ public interface ICmdExecutor {
      *
      * @param subcmdExecutor 注册的命令
      */
-    default ICmdExecutor regSub(@NotNull ISubcmdExecutor subcmdExecutor) {
+    default ICmdExecutor regSub(@NotNull SubcmdExecutor subcmdExecutor) {
         subcommands().put(subcmdExecutor.name(), subcmdExecutor);
         for (String alias : subcmdExecutor.aliases()) {
             subcommands().put(alias, subcmdExecutor);
@@ -85,7 +83,7 @@ public interface ICmdExecutor {
         if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
             return execute(sender, args);
         }
-        ISubcmdExecutor subCommand = subcommands().get(args.get(0));
+        SubcmdExecutor subCommand = subcommands().get(args.get(0));
         if (subCommand != null) {
             String perm = subCommand.permission();
             if (perm == null || sender.hasPermission(perm)) {
@@ -130,7 +128,7 @@ public interface ICmdExecutor {
         List<String> arguments = new ArrayList<>(tabArgs());
         if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
-                ISubcmdExecutor subCommand = subcommands().get(args.get(0));
+                SubcmdExecutor subCommand = subcommands().get(args.get(0));
                 if (subCommand != null) {
                     String permission = subCommand.permission();
                     if (permission != null) {
@@ -142,7 +140,7 @@ public interface ICmdExecutor {
 
             }
             for (String subCmd : subcommands().keySet()) {
-                ISubcmdExecutor subCommand = subcommands().get(subCmd);
+                SubcmdExecutor subCommand = subcommands().get(subCmd);
                 String permission = subCommand.permission();
                 if (permission != null) {
                     if (sender.hasPermission(permission))

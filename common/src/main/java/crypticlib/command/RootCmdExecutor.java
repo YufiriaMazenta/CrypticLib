@@ -1,15 +1,14 @@
-package crypticlib.command.impl;
+package crypticlib.command;
 
 import crypticlib.CrypticLib;
-import crypticlib.command.CommandInfo;
-import crypticlib.command.ICmdExecutor;
-import crypticlib.command.IRootCmdExecutor;
-import crypticlib.command.ISubcmdExecutor;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,11 +16,11 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * CrypticLib提供的插件基础命令接口
+ * CrypticLib提供的插件命令接口
  */
-public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
+public class RootCmdExecutor implements ICmdExecutor, TabExecutor {
 
-    private final Map<String, ISubcmdExecutor> subcommands;
+    private final Map<String, SubcmdExecutor> subcommands;
     private Supplier<List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
     private Boolean registered;
@@ -37,8 +36,27 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
     }
 
     @Override
-    @NotNull
-    public Map<String, ISubcmdExecutor> subcommands() {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        return onTabComplete(sender, Arrays.asList(args));
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        return onCommand(sender, Arrays.asList(args));
+    }
+
+    @Override
+    public RootCmdExecutor regSub(@NotNull SubcmdExecutor subcmdExecutor) {
+        return (RootCmdExecutor) ICmdExecutor.super.regSub(subcmdExecutor);
+    }
+
+    @Override
+    public RootCmdExecutor regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        return (RootCmdExecutor) ICmdExecutor.super.regSub(name, executor);
+    }
+
+    @Override
+    public @NotNull Map<String, SubcmdExecutor> subcommands() {
         return subcommands;
     }
 
@@ -49,11 +67,10 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
     }
 
     @Override
-    public IRootCmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public RootCmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
         return this;
     }
-
 
     @Override
     public Supplier<List<String>> tabCompleter() {
@@ -62,12 +79,11 @@ public class RootCmdExecutor implements ICmdExecutor, IRootCmdExecutor {
 
     @Override
     @NotNull
-    public IRootCmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
+    public RootCmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
         this.tabCompleter = tabCompleter;
         return this;
     }
-
-    @Override
+    
     public void register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo) {
         if (registered)
             throw new UnsupportedOperationException("Cannot register a command repeatedly");
