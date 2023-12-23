@@ -1,6 +1,5 @@
-package crypticlib.command.impl;
+package crypticlib.command;
 
-import crypticlib.command.ISubcmdExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,10 +14,10 @@ import java.util.function.Supplier;
 /**
  * CrypticLib提供的子命令接口
  */
-public class SubcmdExecutor implements ISubcmdExecutor {
+public class SubcmdExecutor implements ICmdExecutor {
 
     private final String name;
-    private final Map<String, ISubcmdExecutor> subcommands;
+    private final Map<String, SubcmdExecutor> subcommands;
     private String permission;
     private List<String> aliases;
     private Supplier<List<String>> tabCompleter;
@@ -67,7 +66,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
     }
 
     @Override
-    public ISubcmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
         return this;
     }
@@ -81,7 +80,7 @@ public class SubcmdExecutor implements ISubcmdExecutor {
 
     @Override
     @NotNull
-    public ISubcmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
+    public SubcmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
         this.tabCompleter = tabCompleter;
         return this;
     }
@@ -96,7 +95,6 @@ public class SubcmdExecutor implements ISubcmdExecutor {
      *
      * @return 子命令的名字
      */
-    @Override
     @NotNull
     public String name() {
         return name;
@@ -107,20 +105,17 @@ public class SubcmdExecutor implements ISubcmdExecutor {
      *
      * @return 子命令的别名
      */
-    @Override
     @NotNull
     public List<String> aliases() {
         return aliases;
     }
 
-    @Override
-    public ISubcmdExecutor setAliases(@NotNull List<String> aliases) {
+    public SubcmdExecutor setAliases(@NotNull List<String> aliases) {
         this.aliases = aliases;
         return this;
     }
 
-    @Override
-    public ISubcmdExecutor addAliases(@NotNull String alias) {
+    public SubcmdExecutor addAliases(@NotNull String alias) {
         this.aliases.add(alias);
         return this;
     }
@@ -130,22 +125,29 @@ public class SubcmdExecutor implements ISubcmdExecutor {
      *
      * @return 子命令所需权限
      */
-    @Override
     @Nullable
     public String permission() {
         return permission;
     }
 
-    @Override
-    public ISubcmdExecutor setPermission(@Nullable String permission) {
+    public SubcmdExecutor setPermission(@Nullable String permission) {
         this.permission = permission;
         return this;
     }
 
     @Override
-    @NotNull
-    public Map<String, ISubcmdExecutor> subcommands() {
+    public @NotNull Map<String, SubcmdExecutor> subcommands() {
         return subcommands;
     }
 
+    @Override
+    public SubcmdExecutor regSub(@NotNull SubcmdExecutor subcmdExecutor) {
+        return (SubcmdExecutor) ICmdExecutor.super.regSub(subcmdExecutor);
+    }
+
+    @Override
+    public SubcmdExecutor regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        return (SubcmdExecutor) ICmdExecutor.super.regSub(name, executor);
+    }
+    
 }
