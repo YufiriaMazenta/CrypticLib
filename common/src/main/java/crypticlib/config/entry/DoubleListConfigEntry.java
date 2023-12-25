@@ -14,7 +14,7 @@ public class DoubleListConfigEntry extends ConfigEntry<List<Double>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getDoubleList(key()));
+        setValue(config.getDoubleList(key));
     }
 
 }

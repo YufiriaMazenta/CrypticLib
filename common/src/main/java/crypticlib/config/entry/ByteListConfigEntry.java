@@ -14,6 +14,6 @@ public class ByteListConfigEntry extends ConfigEntry<List<Byte>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getByteList(key()));
+        setValue(config.getByteList(key));
     }
 }

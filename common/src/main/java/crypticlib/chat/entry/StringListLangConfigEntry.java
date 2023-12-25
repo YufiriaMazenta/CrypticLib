@@ -5,8 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 public class StringListLangConfigEntry extends LangConfigEntry<List<String>> {
 
@@ -18,24 +16,15 @@ public class StringListLangConfigEntry extends LangConfigEntry<List<String>> {
         super(key, def);
     }
 
-    public StringListLangConfigEntry(@NotNull String key, List<String> def, @NotNull Supplier<Map<String, List<String>>> defLangTextMapSupplier) {
-        super(key, def, defLangTextMapSupplier);
-    }
-
-    public StringListLangConfigEntry(@NotNull String key, List<String> def, @NotNull Map<String, List<String>> defLangTextMap) {
-        super(key, def, defLangTextMap);
-    }
-
     @Override
     public StringListLangConfigEntry load(LangConfigContainer configContainer) {
-        saveDef(configContainer);
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
-            if (configWrapper.config().contains(key())) {
-                langMap.put(lang, configWrapper.config().getStringList(key()));
+            if (configWrapper.contains(key)) {
+                langMap.put(lang, configWrapper.config().getStringList(key));
             } else {
-                configWrapper.set(key(), def());
-                langMap.put(lang, def());
+                configWrapper.set(key, defValue);
+                langMap.put(lang, defValue);
             }
         });
         return this;

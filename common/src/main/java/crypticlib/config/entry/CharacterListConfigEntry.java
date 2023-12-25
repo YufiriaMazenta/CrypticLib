@@ -14,7 +14,7 @@ public class CharacterListConfigEntry extends ConfigEntry<List<Character>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getCharacterList(key()));
+        setValue(config.getCharacterList(key));
     }
 
 }

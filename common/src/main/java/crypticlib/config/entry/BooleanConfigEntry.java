@@ -12,7 +12,7 @@ public class BooleanConfigEntry extends ConfigEntry<Boolean> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getBoolean(key()));
+        setValue(config.getBoolean(key));
     }
 
 }

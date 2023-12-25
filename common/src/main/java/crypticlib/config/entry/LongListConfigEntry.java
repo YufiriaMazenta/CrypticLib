@@ -14,6 +14,6 @@ public class LongListConfigEntry extends ConfigEntry<List<Long>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getLongList(key()));
+        setValue(config.getLongList(key));
     }
 }
