@@ -7,7 +7,7 @@ import java.util.Map;
 public interface NumberPrompt extends ValidatingPrompt {
 
     @Override
-    default Boolean isInputInvalid(String input) {
+    default boolean isInputInvalid(String input) {
         return StringUtil.isNumber(input);
     }
 

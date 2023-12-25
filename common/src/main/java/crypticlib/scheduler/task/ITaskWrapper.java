@@ -30,7 +30,7 @@ public interface ITaskWrapper {
      *
      * @return 此任务是否被取消
      */
-    Boolean isCancelled();
+    boolean isCancelled();
 
     /**
      * 返回对应平台的原始Task类型

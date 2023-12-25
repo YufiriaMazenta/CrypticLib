@@ -29,7 +29,7 @@ public class BukkitTaskWrapper implements ITaskWrapper {
     }
 
     @Override
-    public Boolean isCancelled() {
+    public boolean isCancelled() {
         return bukkitTask.isCancelled();
     }
 

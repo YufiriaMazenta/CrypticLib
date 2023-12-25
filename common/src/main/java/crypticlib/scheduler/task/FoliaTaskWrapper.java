@@ -28,7 +28,7 @@ public class FoliaTaskWrapper implements ITaskWrapper {
     }
 
     @Override
-    public Boolean isCancelled() {
+    public boolean isCancelled() {
         return scheduledTask.isCancelled();
     }
 
