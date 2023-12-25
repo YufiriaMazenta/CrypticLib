@@ -142,7 +142,7 @@ public class Menu implements InventoryHolder {
             if (icon == null) {
                 return;
             }
-            ItemStack display = icon.display().clone();
+            ItemStack display = icon.display();
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
                 meta.setDisplayName(TextProcessor.color(TextProcessor.placeholder(player, meta.getDisplayName())));
