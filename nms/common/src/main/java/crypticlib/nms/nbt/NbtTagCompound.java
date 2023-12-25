@@ -144,7 +144,7 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
         return this;
     }
 
-    public Boolean contains(String key) {
+    public boolean contains(String key) {
         return nbtMap.containsKey(key);
     }
 
