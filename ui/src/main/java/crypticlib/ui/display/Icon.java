@@ -9,6 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 public class Icon {
@@ -20,10 +21,19 @@ public class Icon {
         this(material, name, event -> event.setCancelled(true));
     }
 
+    public Icon(@NotNull Material material, @NotNull String name, @Nullable List<String> lore) {
+        this(material, name, lore, event -> event.setCancelled(true));
+    }
+
     public Icon(@NotNull Material material, @NotNull String name, @Nullable Consumer<InventoryClickEvent> clickConsumer) {
+        this(material, name, null, clickConsumer);
+    }
+
+    public Icon(@NotNull Material material, @NotNull String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickConsumer) {
         ItemStack display = new ItemStack(material);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(material);
         itemMeta.setDisplayName(name);
+        itemMeta.setLore(lore);
         display.setItemMeta(itemMeta);
         this.display = display;
         this.clickConsumer = clickConsumer;
