@@ -139,6 +139,9 @@ public class Menu implements InventoryHolder {
 
     protected void draw(Inventory inventory) {
         slotMap.forEach((slot, icon) -> {
+            if (icon == null) {
+                return;
+            }
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
