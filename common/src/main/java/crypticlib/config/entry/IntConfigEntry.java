@@ -12,6 +12,6 @@ public class IntConfigEntry extends ConfigEntry<Integer> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getInt(key()));
+        setValue(config.getInt(key));
     }
 }

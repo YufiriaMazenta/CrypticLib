@@ -11,6 +11,6 @@ public class DoubleConfigEntry extends ConfigEntry<Double> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getDouble(key()));
+        setValue(config.getDouble(key));
     }
 }

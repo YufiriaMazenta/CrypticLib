@@ -5,11 +5,15 @@ import crypticlib.config.ConfigWrapper;
 import crypticlib.util.FileUtil;
 import crypticlib.util.LocaleUtil;
 import crypticlib.util.ReflectUtil;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Locale;
@@ -89,6 +93,23 @@ public class LangConfigContainer {
                 langConfigWrapperMap.put(lang, new ConfigWrapper(langFile));
             }
         }
+        updateLangFiles();
+    }
+
+    private void updateLangFiles() {
+        langConfigWrapperMap.forEach(
+            (lang, configWrapper) -> {
+                YamlConfiguration defLangConfig = getDefLangConfig(lang);
+                if (defLangConfig == null)
+                    return;
+                for (String key : defLangConfig.getKeys(true)) {
+                    if (configWrapper.contains(key))
+                        continue;
+                    configWrapper.set(key, defLangConfig.get(key));
+                }
+                configWrapper.saveConfig();
+            }
+        );
     }
 
     public boolean containsLang(String lang) {
@@ -109,5 +130,18 @@ public class LangConfigContainer {
     public Plugin plugin() {
         return plugin;
     }
+
+
+    public YamlConfiguration getDefLangConfig(String lang) {
+        String langFileName = langFileFolder + "/" + lang + ".yml";
+        try(InputStream langFileInputStream = plugin.getResource(langFileName)) {
+            if (langFileInputStream == null)
+                return null;
+            return YamlConfiguration.loadConfiguration(new InputStreamReader(langFileInputStream));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
 
 }

@@ -14,6 +14,6 @@ public class ShortListConfigEntry extends ConfigEntry<List<Short>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getShortList(key()));
+        setValue(config.getShortList(key));
     }
 }

@@ -5,9 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class ConfigEntry<T> {
 
-    private final String key;
-    private final T def;
-    private T value;
+    protected final String key;
+    protected final T def;
+    protected T value;
 
     public ConfigEntry(@NotNull String key, @NotNull T def) {
         this.key = key;
@@ -25,12 +25,12 @@ public abstract class ConfigEntry<T> {
     }
 
     @NotNull
-    protected T def() {
+    public T def() {
         return def;
     }
 
     @NotNull
-    protected String key() {
+    public String key() {
         return key;
     }
 

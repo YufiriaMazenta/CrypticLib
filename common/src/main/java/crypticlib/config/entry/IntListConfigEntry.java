@@ -14,7 +14,7 @@ public class IntListConfigEntry extends ConfigEntry<List<Integer>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getIntegerList(key()));
+        setValue(config.getIntegerList(key));
     }
 
 }

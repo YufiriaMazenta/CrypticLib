@@ -12,7 +12,7 @@ public class StringConfigEntry extends ConfigEntry<String> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getString(key(), def()));
+        setValue(config.getString(key, def));
     }
 
 }

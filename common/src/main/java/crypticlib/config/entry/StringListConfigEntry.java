@@ -14,6 +14,6 @@ public class StringListConfigEntry extends ConfigEntry<List<String>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getStringList(key()));
+        setValue(config.getStringList(key));
     }
 }

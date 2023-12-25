@@ -14,7 +14,7 @@ public class BooleanListConfigEntry extends ConfigEntry<List<Boolean>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getBooleanList(key()));
+        setValue(config.getBooleanList(key));
     }
 
 }

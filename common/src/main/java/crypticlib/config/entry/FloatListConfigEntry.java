@@ -14,7 +14,7 @@ public class FloatListConfigEntry extends ConfigEntry<List<Float>> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getFloatList(key()));
+        setValue(config.getFloatList(key));
     }
 
 

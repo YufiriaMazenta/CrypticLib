@@ -12,6 +12,6 @@ public class LongConfigEntry extends ConfigEntry<Long> {
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getLong(key()));
+        setValue(config.getLong(key));
     }
 }
