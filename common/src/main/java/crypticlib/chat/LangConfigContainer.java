@@ -79,7 +79,6 @@ public class LangConfigContainer {
             }
             langConfigEntry.load(this);
         }
-        langConfigWrapperMap.forEach((lang, configWrapper) -> configWrapper.saveConfig());
     }
 
     protected void loadLangFiles() {
