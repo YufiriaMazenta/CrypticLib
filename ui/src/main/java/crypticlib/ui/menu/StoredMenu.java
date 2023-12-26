@@ -28,10 +28,6 @@ public class StoredMenu extends Menu {
         super(player);
     }
 
-    public StoredMenu(@NotNull Player player, @NotNull String title) {
-        super(player, title);
-    }
-
     public StoredMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
         super(player, displaySupplier);
     }
