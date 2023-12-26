@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public class Icon {
 
     private ItemStack display;
-    private Consumer<InventoryClickEvent> clickConsumer;
+    private Consumer<InventoryClickEvent> clickAction;
 
     public Icon(@NotNull Material material, @NotNull String name) {
         this(material, name, event -> event.setCancelled(true));
@@ -25,18 +25,18 @@ public class Icon {
         this(material, name, lore, event -> event.setCancelled(true));
     }
 
-    public Icon(@NotNull Material material, @NotNull String name, @Nullable Consumer<InventoryClickEvent> clickConsumer) {
-        this(material, name, null, clickConsumer);
+    public Icon(@NotNull Material material, @NotNull String name, @Nullable Consumer<InventoryClickEvent> clickAction) {
+        this(material, name, null, clickAction);
     }
 
-    public Icon(@NotNull Material material, @NotNull String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickConsumer) {
+    public Icon(@NotNull Material material, @NotNull String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickAction) {
         ItemStack display = new ItemStack(material);
         ItemMeta itemMeta = Bukkit.getItemFactory().getItemMeta(material);
         itemMeta.setDisplayName(name);
         itemMeta.setLore(lore);
         display.setItemMeta(itemMeta);
         this.display = display;
-        this.clickConsumer = clickConsumer;
+        this.clickAction = clickAction;
     }
 
     public Icon(@NotNull ItemStack display) {
@@ -47,13 +47,13 @@ public class Icon {
         this(item.saveNbtToItem());
     }
 
-    public Icon(@NotNull NbtItem item, Consumer<InventoryClickEvent> clickConsumer) {
-        this(item.saveNbtToItem(), clickConsumer);
+    public Icon(@NotNull NbtItem item, Consumer<InventoryClickEvent> clickAction) {
+        this(item.saveNbtToItem(), clickAction);
     }
 
-    public Icon(@NotNull ItemStack display, Consumer<InventoryClickEvent> clickConsumer) {
+    public Icon(@NotNull ItemStack display, Consumer<InventoryClickEvent> clickAction) {
         this.display = display;
-        this.clickConsumer = clickConsumer;
+        this.clickAction = clickAction;
     }
 
     /**
@@ -63,11 +63,11 @@ public class Icon {
      * @return 图标本身
      */
     public Icon onClick(InventoryClickEvent event) {
-        if (clickConsumer == null) {
+        if (clickAction == null) {
             event.setCancelled(true);
             return this;
         }
-        clickConsumer.accept(event);
+        clickAction.accept(event);
         return this;
     }
 
@@ -91,12 +91,12 @@ public class Icon {
     }
 
     @Nullable
-    public Consumer<InventoryClickEvent> clickConsumer() {
-        return clickConsumer;
+    public Consumer<InventoryClickEvent> clickAction() {
+        return clickAction;
     }
 
-    public Icon setClickConsumer(@Nullable Consumer<InventoryClickEvent> clickConsumer) {
-        this.clickConsumer = clickConsumer;
+    public Icon setClickAction(@Nullable Consumer<InventoryClickEvent> clickAction) {
+        this.clickAction = clickAction;
         return this;
     }
 
