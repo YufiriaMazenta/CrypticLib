@@ -147,6 +147,15 @@ public class MultipageMenu extends Menu {
         return this;
     }
 
+    public Character elementKey() {
+        return elementKey;
+    }
+
+    public MultipageMenu setElementKey(Character elementKey) {
+        this.elementKey = elementKey;
+        return this;
+    }
+
     @Override
     public MultipageMenu openMenu() {
         return (MultipageMenu) super.openMenu();
