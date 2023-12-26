@@ -25,12 +25,20 @@ public class MultipageMenu extends Menu {
     protected Character elementKey;
     protected List<Integer> elementSlots = new ArrayList<>();
 
+    public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
+        this(player, displaySupplier.get(), null, new ArrayList<>());
+    }
+
     public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, Character elementKey, Supplier<List<Icon>> elementsSupplier) {
         this(player, displaySupplier.get(), elementKey, elementsSupplier.get());
     }
 
     public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier, Character elementKey, List<Icon> elements) {
         this(player, displaySupplier.get(), elementKey, elements);
+    }
+
+    public MultipageMenu(@NotNull Player player, @NotNull MenuDisplay menuDisplay) {
+        this(player, menuDisplay, null, new ArrayList<>());
     }
 
     public MultipageMenu(@NotNull Player player, @NotNull MenuDisplay display, Character elementKey, Supplier<List<Icon>> elementsSupplier) {
@@ -40,7 +48,8 @@ public class MultipageMenu extends Menu {
     public MultipageMenu(@NotNull Player player, @NotNull MenuDisplay display, Character elementKey, List<Icon> elements) {
         super(player, display);
         this.elementKey = elementKey;
-        this.elements.addAll(elements);
+        if (elements != null)
+            this.elements.addAll(elements);
     }
 
     @Override
@@ -58,7 +67,7 @@ public class MultipageMenu extends Menu {
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
                 Character key = line.charAt(y);
                 int slot = x * 9 + y;
-                if (key == elementKey) {
+                if (key.equals(elementKey)) {
                     elementSlots.add(slot);
                     continue;
                 }
