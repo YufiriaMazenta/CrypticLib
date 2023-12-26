@@ -38,4 +38,12 @@ public class V1_17_R1NbtItem extends NbtItem {
         return bukkit;
     }
 
+    @Override
+    public NbtItem clone() {
+        NbtItem clone = new V1_17_R1NbtItem(this.bukkit.clone());
+        clone.setNbtTagCompound(nbtTagCompound.clone());
+        return clone;
+    }
+
+
 }

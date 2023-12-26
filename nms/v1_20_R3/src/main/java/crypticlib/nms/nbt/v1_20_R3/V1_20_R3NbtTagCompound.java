@@ -1,6 +1,8 @@
 package crypticlib.nms.nbt.v1_20_R3;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import crypticlib.nms.nbt.NbtTagCompound;
+import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +23,10 @@ public class V1_20_R3NbtTagCompound extends NbtTagCompound {
         super(nbtValueMap, V1_20_R3NbtTranslator.INSTANCE);
     }
 
+    public V1_20_R3NbtTagCompound(String mojangson) {
+        super(mojangson, V1_20_R3NbtTranslator.INSTANCE);
+    }
+
     @Override
     public void fromNms(@NotNull Object nmsNbt) {
         NBTTagCompound nms = (NBTTagCompound) nmsNbt;
@@ -36,6 +42,20 @@ public class V1_20_R3NbtTagCompound extends NbtTagCompound {
             nbtTagCompound.a(key, (NBTBase) get(key).toNms());
         }
         return nbtTagCompound;
+    }
+
+    @Override
+    public void fromMojangson(String mojangson) {
+        try {
+            fromNms(MojangsonParser.a(mojangson));
+        } catch (CommandSyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public NbtTagCompound clone() {
+        return new V1_20_R3NbtTagCompound(toString());
     }
 
 }

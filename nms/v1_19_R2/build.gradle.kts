@@ -5,6 +5,7 @@ dependencies {
     compileOnly("com.google.code.gson:gson:2.10.1")
     compileOnly("org.spigotmc:spigot:1.19.3")
     compileOnly("it.unimi.dsi:fastutil:8.2.1")
+    compileOnly("com.mojang:brigadier:1.0.18")
     compileOnly(project(":common"))
     compileOnly(project(":nms:common"))
 }

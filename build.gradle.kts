@@ -1,7 +1,7 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "0.10.13"
+rootProject.version = "0.10.14"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
 var repositoryUrl = "http://repo.crypticlib.com:8081/repository/"
@@ -75,6 +75,7 @@ subprojects {
         maven("https://nexus.phoenixdevt.fr/repository/maven-public/")
         maven("https://r.irepo.space/maven/")
         maven("https://repo.codemc.io/repository/nms/")
+        maven("https://libraries.minecraft.net")
         maven("http://repo.crypticlib.com:8081/repository/maven-public/") {
             isAllowInsecureProtocol = true
         }

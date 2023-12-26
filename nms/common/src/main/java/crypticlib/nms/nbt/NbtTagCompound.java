@@ -9,24 +9,26 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>> {
+public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>, Cloneable {
 
     protected INbtTranslator nbtTranslator;
-    protected Map<String, INbtTag<?>> nbtMap;
+    protected Map<String, INbtTag<?>> nbtMap = new ConcurrentHashMap<>();
 
     public NbtTagCompound(INbtTranslator nbtTranslator) {
         this.nbtTranslator = nbtTranslator;
-        this.nbtMap = new ConcurrentHashMap<>();
     }
 
     public NbtTagCompound(Object nmsNbtCompound, INbtTranslator nbtTranslator) {
         this.nbtTranslator = nbtTranslator;
-        this.nbtMap = new ConcurrentHashMap<>();
         fromNms(nmsNbtCompound);
     }
 
+    public NbtTagCompound(String mojangson, INbtTranslator nbtTranslator) {
+        this.nbtTranslator = nbtTranslator;
+        fromMojangson(mojangson);
+    }
+
     public NbtTagCompound(Map<String, Object> nbtMap, INbtTranslator nbtTranslator) {
-        this.nbtMap = new ConcurrentHashMap<>();
         this.nbtTranslator = nbtTranslator;
         nbtMap.forEach((key, val) -> this.nbtMap.put(key, nbtTranslator.translateObject(val)));
     }
@@ -43,7 +45,8 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
 
     @Override
     public void setValue(@NotNull Map<String, INbtTag<?>> value) {
-        this.nbtMap = value;
+        this.nbtMap.clear();
+        this.nbtMap.putAll(value);
     }
 
     public NbtTagCompound set(String key, INbtTag<?> nbt) {
@@ -203,5 +206,10 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
     public String toString() {
         return toNms().toString();
     }
+
+    public abstract void fromMojangson(String mojangson);
+
+    @Override
+    public abstract NbtTagCompound clone();
 
 }

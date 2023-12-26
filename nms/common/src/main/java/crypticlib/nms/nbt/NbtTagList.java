@@ -6,14 +6,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
 
-    protected List<INbtTag<?>> nbtList;
+    protected List<INbtTag<?>> nbtList = new CopyOnWriteArrayList<>();
     protected INbtTranslator nbtTranslator;
 
     public NbtTagList(List<Object> nbtList, INbtTranslator nbtTranslator) {
-        this.nbtList = new ArrayList<>();
         this.nbtTranslator = nbtTranslator;
         for (Object object : nbtList) {
             this.nbtList.add(nbtTranslator().translateObject(object));
@@ -21,13 +21,11 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
     }
 
     public NbtTagList(Object nmsNbtList, INbtTranslator nbtTranslator) {
-        this.nbtList = new ArrayList<>();
         this.nbtTranslator = nbtTranslator;
         fromNms(nmsNbtList);
     }
 
     public NbtTagList(INbtTranslator nbtTranslator) {
-        this.nbtList = new ArrayList<>();
         this.nbtTranslator = nbtTranslator;
     }
 
@@ -197,7 +195,8 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
 
     @Override
     public void setValue(@NotNull List<INbtTag<?>> value) {
-        this.nbtList = value;
+        this.nbtList.clear();
+        this.nbtList.addAll(value);
     }
 
     public INbtTranslator nbtTranslator() {
