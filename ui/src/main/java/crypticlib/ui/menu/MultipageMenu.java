@@ -25,6 +25,10 @@ public class MultipageMenu extends Menu {
     protected Character elementKey;
     protected List<Integer> elementSlots = new ArrayList<>();
 
+    public MultipageMenu(@NotNull Player player) {
+        this(player, new MenuDisplay());
+    }
+
     public MultipageMenu(@NotNull Player player, @NotNull Supplier<MenuDisplay> displaySupplier) {
         this(player, displaySupplier.get(), null, new ArrayList<>());
     }
@@ -56,9 +60,6 @@ public class MultipageMenu extends Menu {
     protected void parseLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
-
-        if (display == null)
-            return;
         
         //绘制除了自动生成图标以外的所有图标
         MenuLayout layout = display.layout();
