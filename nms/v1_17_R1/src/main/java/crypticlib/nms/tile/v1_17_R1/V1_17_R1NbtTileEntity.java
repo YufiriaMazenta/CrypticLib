@@ -6,7 +6,6 @@ import crypticlib.util.ReflectUtil;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.level.block.entity.TileEntity;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.TileState;
 import org.bukkit.craftbukkit.v1_17_R1.block.CraftBlockEntityState;
 
 import java.lang.reflect.Method;

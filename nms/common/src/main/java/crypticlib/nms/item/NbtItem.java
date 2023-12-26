@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class NbtItem {
+public abstract class NbtItem implements Cloneable {
 
     protected final ItemStack bukkit;
     protected NbtTagCompound nbtTagCompound;
@@ -112,5 +112,8 @@ public abstract class NbtItem {
      * @return 修改完成的物品
      */
     public abstract ItemStack saveNbtToItem();
+
+    @Override
+    public abstract NbtItem clone();
 
 }
