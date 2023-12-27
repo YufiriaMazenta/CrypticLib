@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,9 +39,6 @@ public class LangConfigContainer {
     }
 
     private void saveDefLangFiles() {
-        File folder = new File(plugin.getDataFolder(), langFileFolder);
-        if (!FileUtil.allYamlFiles(folder).isEmpty())
-            return;
         for (Locale locale : Locale.getAvailableLocales()) {
             String lang = LocaleUtil.localToLang(locale);
             String langFileName = langFileFolder + "/" + lang + ".yml";
@@ -84,13 +82,17 @@ public class LangConfigContainer {
     protected void loadLangFiles() {
         langConfigWrapperMap.clear();
         File folder = new File(plugin.getDataFolder(), langFileFolder);
-        File[] langFiles = folder.listFiles();
-        if (langFiles != null) {
-            for (File langFile : langFiles) {
-                String fileName = langFile.getName();
-                String lang = fileName.substring(0, fileName.lastIndexOf("."));
-                langConfigWrapperMap.put(lang, new ConfigWrapper(langFile));
-            }
+        //如果语言文件夹为空，防止出现NullPointerException，需要生成默认语言文件
+        List<File> yamlFiles = FileUtil.allYamlFiles(folder);
+        if (yamlFiles.isEmpty()) {
+            saveDefLangFiles();
+            yamlFiles = FileUtil.allYamlFiles(folder);
+        }
+
+        for (File langFile : yamlFiles) {
+            String fileName = langFile.getName();
+            String lang = fileName.substring(0, fileName.lastIndexOf("."));
+            langConfigWrapperMap.put(lang, new ConfigWrapper(langFile));
         }
         updateLangFiles();
     }
