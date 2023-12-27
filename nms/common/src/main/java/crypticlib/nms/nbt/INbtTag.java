@@ -27,7 +27,7 @@ public interface INbtTag<T> {
      *
      * @param value 设置的值
      */
-    void setValue(@NotNull T value);
+    INbtTag<?> setValue(@NotNull T value);
 
     /**
      * 从nms的nbt对象中加载到此nbt对象

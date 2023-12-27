@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
+public abstract class NbtTagList implements INbtTag<List<Object>> {
 
     protected List<INbtTag<?>> nbtList = new CopyOnWriteArrayList<>();
     protected INbtTranslator nbtTranslator;
@@ -188,15 +188,35 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
         return NbtType.LIST;
     }
 
-    @Override
-    public @NotNull List<INbtTag<?>> value() {
+
+    public @NotNull List<INbtTag<?>> nbtList() {
         return nbtList;
     }
 
-    @Override
-    public void setValue(@NotNull List<INbtTag<?>> value) {
+    public NbtTagList setNbtList(@NotNull List<INbtTag<?>> value) {
         this.nbtList.clear();
         this.nbtList.addAll(value);
+        return this;
+    }
+
+    @Override
+    public @NotNull List<Object> value() {
+        List<Object> list = new ArrayList<>();
+        for (INbtTag<?> nbtTag : nbtList) {
+            if (nbtTag instanceof INumberNbt) {
+                list.add(((INumberNbt) nbtTag).formatValue());
+            } else {
+                list.add(nbtTag.value());
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public NbtTagList setValue(@NotNull List<Object> value) {
+        this.nbtList.clear();
+        value.forEach(val -> this.nbtList.add(nbtTranslator.translateObject(val)));
+        return this;
     }
 
     public INbtTranslator nbtTranslator() {
@@ -215,22 +235,6 @@ public abstract class NbtTagList implements INbtTag<List<INbtTag<?>>> {
             jsonArray.add(nbtTag.toJson());
         }
         return jsonArray;
-    }
-
-    public List<Object> unwrappedList() {
-        List<Object> list = new ArrayList<>();
-        for (INbtTag<?> nbtTag : nbtList) {
-            if (nbtTag instanceof NbtTagCompound) {
-                list.add(((NbtTagCompound) nbtTag).unwarppedMap());
-            } else if (nbtTag instanceof NbtTagList) {
-                list.add(((NbtTagList) nbtTag).unwrappedList());
-            } else if (nbtTag instanceof INumberNbt) {
-                list.add(((INumberNbt) nbtTag).format());
-            } else {
-                list.add(nbtTag.value());
-            }
-        }
-        return list;
     }
 
     @Override

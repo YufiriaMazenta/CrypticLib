@@ -13,7 +13,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * CrypticLib的注解处理器，暂时只支持处理类注释
+ * CrypticLib的注解处理器，暂时只支持处理类注解
  */
 public enum AnnotationProcessor {
 

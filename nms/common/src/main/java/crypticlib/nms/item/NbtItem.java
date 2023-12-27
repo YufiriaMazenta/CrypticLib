@@ -70,7 +70,7 @@ public abstract class NbtItem implements Cloneable {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("material", bukkit.getType().getKey().toString());
-        map.put("nbt", nbtTagCompound().unwarppedMap());
+        map.put("nbt", nbtTagCompound().value());
         map.put("amount", bukkit.getAmount());
         return map;
     }

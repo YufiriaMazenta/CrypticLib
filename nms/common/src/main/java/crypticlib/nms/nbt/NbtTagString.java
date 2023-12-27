@@ -28,8 +28,9 @@ public abstract class NbtTagString implements INbtTag<String> {
     }
 
     @Override
-    public void setValue(@NotNull String value) {
+    public NbtTagString setValue(@NotNull String value) {
         this.value = value;
+        return this;
     }
 
     @Override

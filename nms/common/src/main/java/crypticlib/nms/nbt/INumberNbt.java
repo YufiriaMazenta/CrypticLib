@@ -10,6 +10,6 @@ public interface INumberNbt {
      *
      * @return 转化的字符串
      */
-    String format();
+    String formatValue();
 
 }

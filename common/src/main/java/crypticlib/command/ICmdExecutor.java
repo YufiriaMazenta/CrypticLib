@@ -134,6 +134,10 @@ public interface ICmdExecutor {
                     if (permission != null) {
                         if (sender.hasPermission(permission))
                             return subCommand.onTabComplete(sender, args.subList(1, args.size()));
+                        else
+                            return Collections.singletonList("");
+                    } else {
+                        return subCommand.onTabComplete(sender, args.subList(1, args.size()));
                     }
                 }
                 return Collections.singletonList("");

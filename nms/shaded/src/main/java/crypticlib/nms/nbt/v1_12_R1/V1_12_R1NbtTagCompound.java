@@ -1,7 +1,6 @@
 package crypticlib.nms.nbt.v1_12_R1;
 
 import crypticlib.nms.nbt.NbtTagCompound;
-import net.minecraft.server.v1_12_R1.MojangsonParseException;
 import net.minecraft.server.v1_12_R1.MojangsonParser;
 import net.minecraft.server.v1_12_R1.NBTBase;
 import net.minecraft.server.v1_12_R1.NBTTagCompound;
@@ -49,7 +48,7 @@ public class V1_12_R1NbtTagCompound extends NbtTagCompound {
     public void fromMojangson(String mojangson) {
         try {
             fromNms(MojangsonParser.parse(mojangson));
-        } catch (MojangsonParseException e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }

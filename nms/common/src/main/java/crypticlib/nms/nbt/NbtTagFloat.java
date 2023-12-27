@@ -28,8 +28,9 @@ public abstract class NbtTagFloat implements INbtTag<Float>, INumberNbt {
     }
 
     @Override
-    public void setValue(@NotNull Float value) {
+    public NbtTagFloat setValue(@NotNull Float value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -38,7 +39,7 @@ public abstract class NbtTagFloat implements INbtTag<Float>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         return "FLOAT@" + value;
     }
 

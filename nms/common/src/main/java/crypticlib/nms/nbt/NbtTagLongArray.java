@@ -30,8 +30,9 @@ public abstract class NbtTagLongArray implements INbtTag<long[]>, INumberNbt {
     }
 
     @Override
-    public void setValue(long @NotNull [] value) {
+    public NbtTagLongArray setValue(long @NotNull [] value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -44,7 +45,7 @@ public abstract class NbtTagLongArray implements INbtTag<long[]>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         StringJoiner str = new StringJoiner(",", "LONG$[", "]");
         for (long l : value) {
             str.add(l + "");

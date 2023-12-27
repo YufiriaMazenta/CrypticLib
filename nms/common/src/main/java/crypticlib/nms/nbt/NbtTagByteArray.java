@@ -30,8 +30,9 @@ public abstract class NbtTagByteArray implements INbtTag<byte[]>, INumberNbt {
     }
 
     @Override
-    public void setValue(byte @NotNull [] value) {
+    public NbtTagByteArray setValue(byte @NotNull [] value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -44,7 +45,7 @@ public abstract class NbtTagByteArray implements INbtTag<byte[]>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         StringJoiner str = new StringJoiner(",", "BYTE$[", "]");
         for (byte b : value) {
             str.add(b + "");

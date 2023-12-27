@@ -28,8 +28,9 @@ public abstract class NbtTagLong implements INbtTag<Long>, INumberNbt {
     }
 
     @Override
-    public void setValue(@NotNull Long value) {
+    public NbtTagLong setValue(@NotNull Long value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -38,7 +39,7 @@ public abstract class NbtTagLong implements INbtTag<Long>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         return "LONG@" + value;
     }
 

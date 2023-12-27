@@ -95,7 +95,7 @@ public class ItemFactory {
         NbtTagCompound nbtCompound = NbtFactory.emptyNbtCompound();
         int amount = config.getInt("amount", 1);
         if (config.isConfigurationSection("nbt")) {
-            nbtCompound = NbtFactory.config2NbtTagCompound(config.getConfigurationSection("nbt"));
+            nbtCompound = NbtFactory.parseConfig(config.getConfigurationSection("nbt"));
         }
         return item(material, nbtCompound, amount);
     }
