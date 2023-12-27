@@ -60,6 +60,7 @@ public class MultipageMenu extends Menu {
     protected void parseLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
+        elementSlots.clear();
         
         //绘制除了自动生成图标以外的所有图标
         MenuLayout layout = display.layout();
