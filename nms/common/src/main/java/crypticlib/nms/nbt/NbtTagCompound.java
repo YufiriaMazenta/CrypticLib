@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>, Cloneable {
+public abstract class NbtTagCompound implements INbtTag<Map<String, Object>>, Cloneable {
 
     protected INbtTranslator nbtTranslator;
     protected Map<String, INbtTag<?>> nbtMap = new ConcurrentHashMap<>();
@@ -38,15 +38,33 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
         return NbtType.COMPOUND;
     }
 
-    @Override
-    public @NotNull Map<String, INbtTag<?>> value() {
+    public @NotNull Map<String, INbtTag<?>> nbtMap() {
         return nbtMap;
     }
 
+    public NbtTagCompound setNbtMap(Map<String, INbtTag<?>> nbtMap) {
+        this.nbtMap = nbtMap;
+        return this;
+    }
+
     @Override
-    public void setValue(@NotNull Map<String, INbtTag<?>> value) {
+    public @NotNull Map<String, Object> value() {
+        Map<String, Object> map = new HashMap<>();
+        nbtMap.forEach((key, nbtTag) -> {
+            if (nbtTag instanceof INumberNbt) {
+                map.put(key, ((INumberNbt) nbtTag).formatValue());
+            } else {
+                map.put(key, nbtTag.value());
+            }
+        });
+        return map;
+    }
+
+    @Override
+    public NbtTagCompound setValue(@NotNull Map<String, Object> value) {
         this.nbtMap.clear();
-        this.nbtMap.putAll(value);
+        value.forEach((key, val) -> this.nbtMap.put(key, nbtTranslator.translateObject(val)));
+        return this;
     }
 
     public NbtTagCompound set(String key, INbtTag<?> nbt) {
@@ -169,22 +187,6 @@ public abstract class NbtTagCompound implements INbtTag<Map<String, INbtTag<?>>>
         JsonObject jsonObject = new JsonObject();
         nbtMap.forEach((key, val) -> jsonObject.add(key, val.toJson()));
         return jsonObject;
-    }
-
-    public Map<String, Object> unwarppedMap() {
-        Map<String, Object> map = new HashMap<>();
-        nbtMap.forEach((key, nbtTag) -> {
-            if (nbtTag instanceof NbtTagCompound) {
-                map.put(key, ((NbtTagCompound) nbtTag).unwarppedMap());
-            } else if (nbtTag instanceof NbtTagList) {
-                map.put(key, ((NbtTagList) nbtTag).unwrappedList());
-            } else if (nbtTag instanceof INumberNbt) {
-                map.put(key, ((INumberNbt) nbtTag).format());
-            } else {
-                map.put(key, nbtTag.value());
-            }
-        });
-        return map;
     }
 
     @Override

@@ -62,22 +62,22 @@ public class NbtFactory {
         regNbtTagCompoundProvider("v1_20_R3", V1_20_R3NbtTagCompound::new, V1_20_R3NbtTagCompound::new, V1_20_R3NbtTagCompound::new);
     }
 
-    public static NbtTagCompound map2NbtTagCompound(Map<String, Object> map) {
+    public static NbtTagCompound parseMap(Map<String, Object> map) {
         processMap(map);
         return nbtTagCompoundProviderMap.getOrDefault(CrypticLib.nmsVersion(), (map1) -> {
             throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
         }).apply(map);
     }
 
-    public static NbtTagCompound config2NbtTagCompound(ConfigurationSection config) {
-        return map2NbtTagCompound(YamlConfigUtil.configSection2Map(config));
+    public static NbtTagCompound parseConfig(ConfigurationSection config) {
+        return parseMap(YamlConfigUtil.configSection2Map(config));
     }
 
-    public static NbtTagCompound json2NbtTagCompound(JsonObject jsonObject) {
-        return map2NbtTagCompound(JsonUtil.json2Map(jsonObject));
+    public static NbtTagCompound parseJson(JsonObject jsonObject) {
+        return parseMap(JsonUtil.json2Map(jsonObject));
     }
 
-    public static NbtTagCompound mojangson2NbtTagCompound(String mojangson) {
+    public static NbtTagCompound parseMojangson(String mojangson) {
         return mojangsonToNbtCompoundProviderMap.getOrDefault(CrypticLib.nmsVersion(), (str) -> {
             throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
         }).apply(mojangson);

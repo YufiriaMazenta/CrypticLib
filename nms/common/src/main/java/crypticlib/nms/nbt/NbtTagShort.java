@@ -28,8 +28,9 @@ public abstract class NbtTagShort implements INbtTag<Short>, INumberNbt {
     }
 
     @Override
-    public void setValue(@NotNull Short value) {
+    public NbtTagShort setValue(@NotNull Short value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -38,7 +39,7 @@ public abstract class NbtTagShort implements INbtTag<Short>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         return "SHORT@" + value;
     }
 

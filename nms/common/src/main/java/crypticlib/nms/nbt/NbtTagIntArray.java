@@ -30,8 +30,9 @@ public abstract class NbtTagIntArray implements INbtTag<int[]>, INumberNbt {
     }
 
     @Override
-    public void setValue(int @NotNull [] value) {
+    public NbtTagIntArray setValue(int @NotNull [] value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -44,7 +45,7 @@ public abstract class NbtTagIntArray implements INbtTag<int[]>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         StringJoiner str = new StringJoiner(",", "INT$[", "]");
         for (int i : value) {
             str.add(i + "");

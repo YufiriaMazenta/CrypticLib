@@ -1,6 +1,5 @@
 package crypticlib.nms.nbt.v1_18_R1;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import crypticlib.nms.nbt.NbtTagCompound;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTBase;
@@ -48,7 +47,7 @@ public class V1_18_R1NbtTagCompound extends NbtTagCompound {
     public void fromMojangson(String mojangson) {
         try {
             fromNms(MojangsonParser.a(mojangson));
-        } catch (CommandSyntaxException e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }

@@ -28,8 +28,9 @@ public abstract class NbtTagDouble implements INbtTag<Double>, INumberNbt {
     }
 
     @Override
-    public void setValue(@NotNull Double value) {
+    public NbtTagDouble setValue(@NotNull Double value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -38,7 +39,7 @@ public abstract class NbtTagDouble implements INbtTag<Double>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         return "DOUBLE@" + value;
     }
 

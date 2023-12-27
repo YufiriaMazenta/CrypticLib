@@ -26,8 +26,9 @@ public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
     }
 
     @Override
-    public void setValue(@NotNull Byte value) {
+    public NbtTagByte setValue(@NotNull Byte value) {
         this.value = value;
+        return this;
     }
 
     @Override
@@ -36,7 +37,7 @@ public abstract class NbtTagByte implements INbtTag<Byte>, INumberNbt {
     }
 
     @Override
-    public String format() {
+    public String formatValue() {
         return "BYTE@" + value;
     }
 
