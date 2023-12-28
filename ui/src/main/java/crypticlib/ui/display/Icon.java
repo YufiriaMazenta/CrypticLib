@@ -138,4 +138,14 @@ public class Icon {
         return this;
     }
 
+    public Icon setName(String name) {
+        ItemUtil.setDisplayName(display, name);
+        return this;
+    }
+
+    public Icon setLore(List<String> lore) {
+        ItemUtil.setLore(display, lore);
+        return this;
+    }
+
 }
