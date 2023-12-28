@@ -93,6 +93,10 @@ public class MultipageMenu extends Menu {
 
     protected void refreshMaxPage() {
         maxElementNumPerPage = elementSlots.size();
+        if (maxElementNumPerPage == 0) {
+            maxPage = 1;
+            return;
+        }
         if (elements.size() % maxElementNumPerPage == 0)
             maxPage = elements.size() / maxElementNumPerPage;
         else
