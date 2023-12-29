@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import com.google.common.base.Charsets;
 import crypticlib.chat.entry.LangConfigEntry;
 import crypticlib.config.ConfigWrapper;
 import crypticlib.util.FileUtil;
@@ -138,7 +139,7 @@ public class LangConfigContainer {
         try(InputStream langFileInputStream = plugin.getResource(langFileName)) {
             if (langFileInputStream == null)
                 return null;
-            return YamlConfiguration.loadConfiguration(new InputStreamReader(langFileInputStream));
+            return YamlConfiguration.loadConfiguration(new InputStreamReader(langFileInputStream, Charsets.UTF_8));
         } catch (IOException e) {
             return null;
         }
