@@ -14,10 +14,12 @@ import crypticlib.listener.BukkitListener;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +42,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
             .regClassAnnotationProcessor(
                 BukkitListener.class,
                 (annotation, clazz) -> {
+                    boolean reg = true;
+                    try {
+                        clazz.getDeclaredMethods();
+                    } catch (NoClassDefFoundError ignored) {
+                        reg = false;
+                    }
+
+                    if (!reg)
+                        return;
                     Listener listener = (Listener) annotationProcessor.getClassInstance(clazz);
                     Bukkit.getPluginManager().registerEvents(listener, this);
                 })
