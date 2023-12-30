@@ -4,10 +4,7 @@ import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.util.ItemUtil;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -107,6 +104,20 @@ public class StoredMenu extends Menu {
     @Override
     public StoredMenu setCloseAction(BiConsumer<Menu, InventoryCloseEvent> closeAction) {
         return (StoredMenu) super.setCloseAction(closeAction);
+    }
+
+    @Override
+    public void onDrag(InventoryDragEvent event) {
+        if (event.getWhoClicked().getInventory().equals(event.getInventory()))
+            return;
+        for (Integer slot : event.getInventorySlots()) {
+            ItemStack current = event.getInventory().getItem(slot);
+            if (event.getOldCursor().isSimilar(current)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+        refreshStoredItems(event.getInventory());
     }
 
     @Override

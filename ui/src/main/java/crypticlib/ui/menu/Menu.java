@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -63,6 +64,8 @@ public class Menu implements InventoryHolder {
         return slotMap.get(slot).onClick(event);
     }
 
+    public void onDrag(InventoryDragEvent event) {}
+
     public void onOpen(InventoryOpenEvent event) {
         if (openAction != null)
             openAction.accept(this, event);
@@ -72,7 +75,6 @@ public class Menu implements InventoryHolder {
         if (closeAction != null)
             closeAction.accept(this, event);
     }
-
 
     public Menu openMenu() {
         if (openedInventory == null)

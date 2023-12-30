@@ -31,22 +31,9 @@ public enum MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDragMenu(InventoryDragEvent event) {
-        InventoryHolder holder = event.getView().getTopInventory().getHolder();
-        if (!(holder instanceof Menu)) {
+        if (!(event.getView().getTopInventory().getHolder() instanceof Menu))
             return;
-        }
-        if (event.getWhoClicked().getInventory().equals(event.getInventory()))
-            return;
-        for (Integer slot : event.getInventorySlots()) {
-            ItemStack current = event.getInventory().getItem(slot);
-            if (event.getOldCursor().isSimilar(current)) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-        if (holder instanceof StoredMenu) {
-            ((StoredMenu) holder).refreshStoredItems(event.getInventory());
-        }
+        ((Menu) event.getView().getTopInventory().getHolder()).onDrag(event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
