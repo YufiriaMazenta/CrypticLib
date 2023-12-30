@@ -51,7 +51,9 @@ public enum MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onOpenMenu(InventoryOpenEvent event) {
-
+        if (!(event.getView().getTopInventory().getHolder() instanceof Menu))
+            return;
+        ((Menu) event.getView().getTopInventory().getHolder()).onOpen(event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
