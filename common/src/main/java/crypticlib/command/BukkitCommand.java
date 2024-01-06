@@ -31,7 +31,7 @@ public @interface BukkitCommand {
      * 命令权限的默认值
      * @return 命令权限的默认值，将会影响玩家是否默认拥有此权限
      */
-    PermDef permDef() default PermDef.FALSE;
+    PermDef permDef() default PermDef.OP;
 
     /**
      * 命令的别名,空即为无别名
