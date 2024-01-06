@@ -1,6 +1,7 @@
 package crypticlib;
 
 import crypticlib.command.CommandManager;
+import crypticlib.perm.PermissionManager;
 import crypticlib.platform.BukkitPlatform;
 import crypticlib.platform.FoliaPlatform;
 import crypticlib.platform.IPlatform;
@@ -12,6 +13,7 @@ public class CrypticLib {
 
 
     private static final CommandManager commandManager;
+    private static final PermissionManager permissionManager;
     private static IPlatform platform;
     private static Integer minecraftVersion;
     private static String nmsVersion;
@@ -20,6 +22,7 @@ public class CrypticLib {
         loadPlatform();
         loadVersion();
         commandManager = CommandManager.INSTANCE;
+        permissionManager = PermissionManager.INSTANCE;
     }
 
     /**
@@ -82,6 +85,11 @@ public class CrypticLib {
     @NotNull
     public static CommandManager commandManager() {
         return commandManager;
+    }
+
+    @NotNull
+    public static PermissionManager permissionManager() {
+        return permissionManager;
     }
 
 }

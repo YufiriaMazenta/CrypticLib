@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.perm.PermDef;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,7 @@ public class SubcmdExecutor implements ICmdExecutor {
     private final String name;
     private final Map<String, SubcmdExecutor> subcommands;
     private String permission;
+    private PermDef permDef = PermDef.FALSE;
     private List<String> aliases;
     private Supplier<List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
@@ -149,5 +151,14 @@ public class SubcmdExecutor implements ICmdExecutor {
     public SubcmdExecutor regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
         return (SubcmdExecutor) ICmdExecutor.super.regSub(name, executor);
     }
-    
+
+    public @NotNull PermDef permDef() {
+        return permDef;
+    }
+
+    public SubcmdExecutor setPermDef(@NotNull PermDef permDef) {
+        this.permDef = permDef;
+        return this;
+    }
+
 }
