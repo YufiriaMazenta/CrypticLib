@@ -20,7 +20,7 @@ public class SubcmdExecutor implements ICmdExecutor {
     private final String name;
     private final Map<String, SubcmdExecutor> subcommands;
     private String permission;
-    private PermDef permDef = PermDef.FALSE;
+    private PermDef permDef = PermDef.OP;
     private List<String> aliases;
     private Supplier<List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;

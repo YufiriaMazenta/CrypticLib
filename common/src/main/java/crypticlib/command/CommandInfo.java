@@ -10,7 +10,7 @@ public class CommandInfo {
     private String name;
     @Nullable
     private String permission;
-    private PermDef permDef = PermDef.FALSE;
+    private PermDef permDef = PermDef.OP;
     @NotNull
     private String[] aliases;
     @NotNull
