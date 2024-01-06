@@ -11,15 +11,16 @@ import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
 import crypticlib.listener.BukkitListener;
+import crypticlib.perm.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,7 +60,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 (annotation, clazz) -> {
                     TabExecutor tabExecutor = (TabExecutor) annotationProcessor.getClassInstance(clazz);
                     BukkitCommand bukkitCommand = (BukkitCommand) annotation;
-                    CommandManager.INSTANCE.register(this, new CommandInfo(bukkitCommand), tabExecutor);
+                    CrypticLib.commandManager().register(this, new CommandInfo(bukkitCommand), tabExecutor);
                 })
             .regClassAnnotationProcessor(
                 ConfigHandler.class,

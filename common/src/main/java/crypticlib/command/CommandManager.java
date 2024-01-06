@@ -1,5 +1,7 @@
 package crypticlib.command;
 
+import crypticlib.CrypticLib;
+import crypticlib.perm.PermissionManager;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -44,6 +46,7 @@ public enum CommandManager {
         pluginCommand.setTabCompleter(commandExecutor);
         serverCommandMap.register(plugin.getName(), pluginCommand);
         registeredCommands.add(pluginCommand);
+        CrypticLib.permissionManager().regPerm(commandInfo.permission(), commandInfo.permDef());
         return this;
     }
 

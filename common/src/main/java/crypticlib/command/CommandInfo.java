@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.perm.PermDef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +10,7 @@ public class CommandInfo {
     private String name;
     @Nullable
     private String permission;
+    private PermDef permDef = PermDef.FALSE;
     @NotNull
     private String[] aliases;
     @NotNull
@@ -24,6 +26,7 @@ public class CommandInfo {
             commandAnnotation.description(),
             commandAnnotation.usage()
         );
+        this.permDef = commandAnnotation.permDef();
     }
 
     public CommandInfo(@NotNull String name) {
@@ -103,4 +106,14 @@ public class CommandInfo {
         this.usage = usage;
         return this;
     }
+
+    public PermDef permDef() {
+        return permDef;
+    }
+
+    public CommandInfo setPermDef(PermDef permDef) {
+        this.permDef = permDef;
+        return this;
+    }
+
 }

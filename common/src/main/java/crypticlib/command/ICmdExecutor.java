@@ -1,6 +1,11 @@
 package crypticlib.command;
 
+import crypticlib.CrypticLib;
+import crypticlib.perm.PermissionManager;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +37,7 @@ public interface ICmdExecutor {
         for (String alias : subcmdExecutor.aliases()) {
             subcommands().put(alias, subcmdExecutor);
         }
+        CrypticLib.permissionManager().regPerm(subcmdExecutor.permission(), subcmdExecutor.permDef());
         return this;
     }
 
