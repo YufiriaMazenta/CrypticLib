@@ -23,6 +23,8 @@ import crypticlib.util.JsonUtil;
 import crypticlib.util.YamlConfigUtil;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,10 +65,10 @@ public class NbtFactory {
     }
 
     public static NbtTagCompound parseMap(Map<String, Object> map) {
-        processMap(map);
+        Map<String, Object> parsedMap = preparseMap(map);
         return nbtTagCompoundProviderMap.getOrDefault(CrypticLib.nmsVersion(), (map1) -> {
             throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
-        }).apply(map);
+        }).apply(parsedMap);
     }
 
     public static NbtTagCompound parseConfig(ConfigurationSection config) {
@@ -100,32 +102,36 @@ public class NbtFactory {
         mojangsonToNbtCompoundProviderMap.put(nmsVersion, mojangsonToNbtTagCompoundProvider);
     }
 
-    private static void processMap(Map<String, Object> originMap) {
+    private static Map<String, Object> preparseMap(Map<String, Object> originMap) {
+        Map<String, Object> parsedMap = new HashMap<>();
         originMap.forEach((key, value) -> {
             if (value instanceof String) {
-                originMap.put(key, processStr((String) value));
+                parsedMap.put(key, preparseStr(value.toString()));
             } else if (value instanceof Map) {
-                processMap((Map<String, Object>) value);
+                parsedMap.put(key, preparseMap((Map<String, Object>) value));
             } else if (value instanceof List) {
-                processList((List<Object>) value);
+                parsedMap.put(key, preparseList((List<Object>) value));
             }
         });
+        return parsedMap;
     }
 
-    private static void processList(List<Object> originList) {
+    private static List<Object> preparseList(List<Object> originList) {
+        List<Object> parsedList = new ArrayList<>(originList.size());
         for (int i = 0; i < originList.size(); i++) {
-            Object o = originList.get(i);
-            if (o instanceof String) {
-                originList.set(i, processStr(o.toString()));
-            } else if (o instanceof Map) {
-                processMap((Map<String, Object>) o);
-            } else if (o instanceof List) {
-                processList((List<Object>) o);
+            Object object = originList.get(i);
+            if (object instanceof String) {
+                parsedList.add(preparseStr(object.toString()));
+            } else if (object instanceof Map) {
+                parsedList.add(preparseMap((Map<String, Object>) object));
+            } else if (object instanceof List) {
+                parsedList.add(preparseList((List<Object>) object));
             }
         }
+        return parsedList;
     }
 
-    private static Object processStr(String originStr) {
+    private static Object preparseStr(String originStr) {
         if (originStr.contains("@"))
             return parseNumber(originStr);
         else if (originStr.contains("$"))
