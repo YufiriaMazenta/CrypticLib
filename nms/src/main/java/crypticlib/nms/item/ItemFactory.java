@@ -21,6 +21,7 @@ import crypticlib.nms.item.v1_20_R2.V1_20_R2NbtItem;
 import crypticlib.nms.item.v1_20_R3.V1_20_R3NbtItem;
 import crypticlib.nms.nbt.NbtFactory;
 import crypticlib.nms.nbt.NbtTagCompound;
+import crypticlib.util.MaterialUtil;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -91,7 +92,7 @@ public class ItemFactory {
 
     public static NbtItem item(ConfigurationSection config) {
         String materialStr = config.getString("material", "air");
-        Material material = Material.matchMaterial(materialStr);
+        Material material = MaterialUtil.matchMaterial(materialStr);
         NbtTagCompound nbtCompound = NbtFactory.emptyNbtCompound();
         int amount = config.getInt("amount", 1);
         if (config.isConfigurationSection("nbt")) {
