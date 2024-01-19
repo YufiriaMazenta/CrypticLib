@@ -111,6 +111,8 @@ public class NbtFactory {
                 parsedMap.put(key, preparseMap((Map<String, Object>) value));
             } else if (value instanceof List) {
                 parsedMap.put(key, preparseList((List<Object>) value));
+            } else {
+                parsedMap.put(key, value);
             }
         });
         return parsedMap;
@@ -118,14 +120,15 @@ public class NbtFactory {
 
     private static List<Object> preparseList(List<Object> originList) {
         List<Object> parsedList = new ArrayList<>(originList.size());
-        for (int i = 0; i < originList.size(); i++) {
-            Object object = originList.get(i);
+        for (Object object : originList) {
             if (object instanceof String) {
                 parsedList.add(preparseStr(object.toString()));
             } else if (object instanceof Map) {
                 parsedList.add(preparseMap((Map<String, Object>) object));
             } else if (object instanceof List) {
                 parsedList.add(preparseList((List<Object>) object));
+            } else {
+                parsedList.add(object);
             }
         }
         return parsedList;
