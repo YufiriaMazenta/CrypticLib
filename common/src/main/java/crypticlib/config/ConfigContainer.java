@@ -32,9 +32,12 @@ public class ConfigContainer {
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
-            Object configEntry = ReflectUtil.getDeclaredFieldObj(field, null);
-            if (configEntry instanceof ConfigEntry) {
-                ((ConfigEntry<?>) configEntry).load(configWrapper.config());
+            Object obj = ReflectUtil.getDeclaredFieldObj(field, null);
+            if (obj instanceof ConfigEntry) {
+                ConfigEntry<?> configEntry = (ConfigEntry<?>) obj;
+                if (configEntry.configContainer() == null)
+                    configEntry.setConfigContainer(this);
+                configEntry.load(configWrapper.config());
             }
         }
         configWrapper.saveConfig();
