@@ -59,14 +59,18 @@ public class Icon {
     }
 
     public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickAction) {
-        ItemStack displayClone = display.clone();
-        ItemMeta itemMeta = displayClone.getItemMeta();
-        if (name != null)
-            itemMeta.setDisplayName(name);
-        if (lore != null)
-            itemMeta.setLore(lore);
-        displayClone.setItemMeta(itemMeta);
-        this.display = displayClone;
+        if (!ItemUtil.isAir(display)) {
+            ItemStack displayClone = display.clone();
+            ItemMeta itemMeta = displayClone.getItemMeta();
+            if (name != null)
+                itemMeta.setDisplayName(name);
+            if (lore != null)
+                itemMeta.setLore(lore);
+            displayClone.setItemMeta(itemMeta);
+            this.display = displayClone;
+        } else {
+            this.display = display;
+        }
         this.clickAction = clickAction;
     }
 
