@@ -95,7 +95,7 @@ public class Menu implements InventoryHolder {
         return inventory;
     }
 
-    protected void parseLayout() {
+    public void parseLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
 
@@ -120,7 +120,7 @@ public class Menu implements InventoryHolder {
         refreshOpenedInventory();
     }
 
-    protected void refreshOpenedInventory() {
+    public void refreshOpenedInventory() {
         if (openedInventory != null) {
             openedInventory.clear();
             draw(openedInventory);

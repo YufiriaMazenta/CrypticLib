@@ -57,7 +57,7 @@ public class MultipageMenu extends Menu {
     }
 
     @Override
-    protected void parseLayout() {
+    public void parseLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
         elementSlots.clear();
