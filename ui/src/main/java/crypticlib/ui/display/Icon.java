@@ -74,30 +74,6 @@ public class Icon {
         this.clickAction = clickAction;
     }
 
-    public Icon(@NotNull NbtItem item) {
-        this(item.saveNbtToItem());
-    }
-
-    public Icon(@NotNull NbtItem item, Consumer<InventoryClickEvent> clickAction) {
-        this(item.saveNbtToItem(), clickAction);
-    }
-
-    public Icon(@NotNull NbtItem item, @Nullable String name) {
-        this(item.saveNbtToItem(), name);
-    }
-
-    public Icon(@NotNull NbtItem item, @Nullable String name, @Nullable Consumer<InventoryClickEvent> clickAction) {
-        this(item.saveNbtToItem(), name, clickAction);
-    }
-
-    public Icon(@NotNull NbtItem item, @Nullable String name, @Nullable List<String> lore) {
-        this(item.saveNbtToItem(), name, lore);
-    }
-
-    public Icon(@NotNull NbtItem item, @Nullable String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickAction) {
-        this(item.saveNbtToItem(), name, lore, clickAction);
-    }
-
     /**
      * 执行此图标对应的操作
      *
