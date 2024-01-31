@@ -103,25 +103,25 @@ public interface ICmdExecutor {
      * 此命令的默认返回参数
      * @return 此命令的默认返回参数
      */
-    default @NotNull List<String> tabArgs() {
-        Supplier<List<String>> tabCompleter = tabCompleter();
+    default @NotNull List<String> tabArgs(CommandSender sender, List<String> args) {
+        BiFunction<CommandSender, List<String>, List<String>> tabCompleter = tabCompleter();
         if (tabCompleter == null)
             return new ArrayList<>();
-        return tabCompleter.get();
+        return tabCompleter.apply(sender, args);
     }
 
     /**
      * 获得此命令的默认返回参数提供者
      * @return 此命令的默认返回参数提供者
      */
-    @Nullable Supplier<List<String>> tabCompleter();
+    @Nullable BiFunction<CommandSender, List<String>, List<String>> tabCompleter();
 
     /**
      * 设置此命令的默认返回参数提供者
      * @param tabCompleter 此命令的默认返回参数提供者
      */
     @NotNull
-    ICmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter);
+    ICmdExecutor setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter);
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
@@ -131,7 +131,7 @@ public interface ICmdExecutor {
      * @return 返回的tab列表内容
      */
     default List<String> onTabComplete(CommandSender sender, List<String> args) {
-        List<String> arguments = new ArrayList<>(tabArgs());
+        List<String> arguments = new ArrayList<>(tabArgs(sender, args));
         if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
                 SubcmdExecutor subCommand = subcommands().get(args.get(0));
