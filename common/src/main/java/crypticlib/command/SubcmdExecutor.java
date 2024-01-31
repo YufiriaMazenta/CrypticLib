@@ -22,7 +22,7 @@ public class SubcmdExecutor implements ICmdExecutor {
     private String permission;
     private PermDef permDef = PermDef.OP;
     private List<String> aliases;
-    private Supplier<List<String>> tabCompleter;
+    private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
 
     public SubcmdExecutor(@NotNull String name) {
@@ -74,21 +74,14 @@ public class SubcmdExecutor implements ICmdExecutor {
     }
 
     @Override
-    public @NotNull List<String> tabArgs() {
-        if (tabCompleter == null)
-            return new ArrayList<>();
-        return tabCompleter.get();
-    }
-
-    @Override
     @NotNull
-    public SubcmdExecutor setTabCompleter(@NotNull Supplier<List<String>> tabCompleter) {
+    public SubcmdExecutor setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
         this.tabCompleter = tabCompleter;
         return this;
     }
 
     @Override
-    public Supplier<List<String>> tabCompleter() {
+    public @NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter() {
         return tabCompleter;
     }
 
