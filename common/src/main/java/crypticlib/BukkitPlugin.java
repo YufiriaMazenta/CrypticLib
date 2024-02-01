@@ -6,28 +6,29 @@ import crypticlib.chat.LangConfigHandler;
 import crypticlib.chat.MessageSender;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.CommandInfo;
-import crypticlib.command.CommandManager;
 import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
+import crypticlib.lifecycle.AutoDisable;
+import crypticlib.lifecycle.Disableable;
 import crypticlib.listener.BukkitListener;
-import crypticlib.perm.PermissionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     protected final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
+    protected final List<Disableable> disableableList = new CopyOnWriteArrayList<>();
     private final String defaultConfigFileName = "config.yml";
     private Integer lowestSupportVersion = 11200;
     private Integer highestSupportVersion = 12004;
@@ -83,7 +84,14 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     LangConfigContainer langConfigContainer = new LangConfigContainer(this, clazz, langFileFolder, defLang);
                     langConfigContainerMap.put(langFileFolder, langConfigContainer);
                     langConfigContainer.reload();
-                }, AnnotationProcessor.ProcessPriority.LOWEST);
+                }, AnnotationProcessor.ProcessPriority.LOWEST)
+            .regClassAnnotationProcessor(
+                AutoDisable.class,
+                (annotation, clazz) -> {
+                    Disableable disableable = (Disableable) annotationProcessor.getClassInstance(clazz);
+                    disableableList.add(disableable);
+                }
+            );
         load();
     }
 
@@ -97,6 +105,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public final void onDisable() {
         disable();
+        disableableList.forEach(Disableable::disable);
+        disableableList.clear();
+        configContainerMap.clear();
+        langConfigContainerMap.clear();
         CrypticLib.platform().scheduler().cancelTasks(this);
         CrypticLib.commandManager().unregisterAll();
     }

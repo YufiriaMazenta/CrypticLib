@@ -1,6 +1,5 @@
 package crypticlib.conversation;
 
-import crypticlib.chat.entry.StringLangConfigEntry;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

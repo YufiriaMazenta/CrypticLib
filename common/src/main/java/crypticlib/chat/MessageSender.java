@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 聊天相关的工具类
+ * 聊天信息发送器
  */
 @SuppressWarnings("deprecation")
 public class MessageSender {

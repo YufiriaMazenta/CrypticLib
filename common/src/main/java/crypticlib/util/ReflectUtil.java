@@ -6,26 +6,62 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 反射相关工具类
  */
 public class ReflectUtil {
 
+    private final static Map<String, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
+
     public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
+        Field cacheField = getFieldCache(clazz, fieldName);
+        if (cacheField != null)
+            return cacheField;
         try {
-            return clazz.getField(fieldName);
+            Field field = clazz.getField(fieldName);
+            putFieldCache(clazz, fieldName, field);
+            return field;
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }
 
     public static Field getDeclaredField(@NotNull Class<?> clazz, @NotNull String fieldName) {
+        Field cacheField = getFieldCache(clazz, fieldName);
+        if (cacheField != null)
+            return cacheField;
         try {
-            return clazz.getDeclaredField(fieldName);
+            Field field = clazz.getDeclaredField(fieldName);
+            putFieldCache(clazz, fieldName, field);
+            return field;
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Field getFieldCache(Class<?> clazz, String fieldName) {
+        String className = clazz.getName();
+        if (fieldCaches.containsKey(className)) {
+            Map<String, Field> classFieldCache = fieldCaches.get(className);
+            if (classFieldCache.containsKey(fieldName)) {
+                return classFieldCache.get(fieldName);
+            }
+        }
+        return null;
+    }
+
+    private static void putFieldCache(Class<?> clazz, String fieldName, Field field) {
+        String className = clazz.getName();
+        if (fieldCaches.containsKey(className)) {
+            fieldCaches.get(className).put(fieldName, field);
+            return;
+        }
+        Map<String, Field> classFieldCache = new ConcurrentHashMap<>();
+        classFieldCache.put(fieldName, field);
+        fieldCaches.put(className, classFieldCache);
     }
 
     public static Object getFieldObj(@NotNull Field field, @Nullable Object owner) {

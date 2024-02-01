@@ -67,7 +67,7 @@ public class StoredMenu extends Menu {
     /**
      * 将玩家放入的物品返还
      */
-    public void returnItems() {
+    public void returnStoredItems() {
         if (!returnStoredItems)
             return;
         ItemStack[] returnItems = new ItemStack[storedItems.size()];
@@ -124,7 +124,7 @@ public class StoredMenu extends Menu {
     public void onClose(InventoryCloseEvent event) {
         refreshStoredItems(event.getInventory());
         super.onClose(event);
-        returnItems();
+        returnStoredItems();
     }
 
     @NotNull

@@ -1,8 +1,6 @@
 package crypticlib.ui.display;
 
-import crypticlib.nms.item.NbtItem;
 import crypticlib.util.ItemUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
