@@ -12,7 +12,6 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 
 @BukkitListener
 public enum MenuHandler implements Listener {
@@ -54,7 +53,7 @@ public enum MenuHandler implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         InventoryHolder inventoryHolder = event.getPlayer().getInventory().getHolder();
         if (inventoryHolder instanceof StoredMenu) {
-            ((StoredMenu) inventoryHolder).refreshStoredItems(event.getPlayer().getInventory()).returnItems();
+            ((StoredMenu) inventoryHolder).refreshStoredItems(event.getPlayer().getInventory()).returnStoredItems();
         }
     }
 

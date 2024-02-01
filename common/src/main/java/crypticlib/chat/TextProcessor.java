@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 文本相关的工具类
+ * 文本处理器
  */
 @SuppressWarnings("removal")
 public class TextProcessor {

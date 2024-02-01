@@ -1,17 +1,12 @@
 package crypticlib.command;
 
 import crypticlib.CrypticLib;
-import crypticlib.perm.PermissionManager;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionDefault;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 /**
  * CrypticLib提供的命令接口，简便了对于Tab返回的编写
