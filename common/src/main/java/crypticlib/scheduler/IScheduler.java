@@ -2,6 +2,8 @@ package crypticlib.scheduler;
 
 import crypticlib.scheduler.task.ITaskWrapper;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -81,5 +83,75 @@ public interface IScheduler {
     }
 
     void cancelTasks(@NotNull Plugin plugin);
+
+    /**
+     * 在指定实体的调度器上执行任务
+     * 当平台为非Folia时，效果等同于runTask
+     *
+     * @param plugin      执行的插件
+     * @param entity      执行载体
+     * @param task        执行的任务
+     * @param retriedTask 执行任务失败时, 重新尝试的任务
+     */
+    ITaskWrapper runTaskOnEntity(Plugin plugin, Entity entity, Runnable task, Runnable retriedTask);
+
+    /**
+     * 在指定实体的调度器上延迟执行任务
+     * 当平台为非Folia时，效果等同于runTaskLater
+     *
+     * @param plugin      执行的插件
+     * @param entity      执行载体
+     * @param task        执行的任务
+     * @param retriedTask 执行任务失败时, 重新尝试的任务
+     * @param delayTicks  延迟执行的时间
+     */
+    ITaskWrapper runTaskOnEntityLater(Plugin plugin, Entity entity, Runnable task, Runnable retriedTask, long delayTicks);
+
+    /**
+     * 在指定实体的调度器上延迟一段时间后重复执行任务
+     * 当平台为非Folia时，效果等同于runTaskTimer
+     *
+     * @param plugin      执行的插件
+     * @param entity      执行载体
+     * @param task        执行的任务
+     * @param retriedTask 执行任务失败时, 重新尝试的任务
+     * @param delayTicks  延迟执行的时间
+     * @param periodTicks 重复执行的间隔
+     */
+    ITaskWrapper runTaskOnEntityTimer(Plugin plugin, Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks);
+
+    /**
+     * 在指定坐标的调度器上执行任务
+     * 当平台为非Folia时，效果等同于runTask
+     *
+     * @param plugin      执行的插件
+     * @param location    执行载体
+     * @param task        执行的任务
+     */
+    ITaskWrapper runTaskOnLocation(Plugin plugin, Location location, Runnable task);
+
+
+    /**
+     * 在指定实体的调度器上延迟执行任务
+     * 当平台为非Folia时，效果等同于runTaskLater
+     *
+     * @param plugin      执行的插件
+     * @param location    执行载体
+     * @param task        执行的任务
+     * @param delayTicks  延迟执行的时间
+     */
+    ITaskWrapper runTaskOnLocationLater(Plugin plugin, Location location, Runnable task, long delayTicks);
+
+    /**
+     * 在指定实体的调度器上延迟一段时间后重复执行任务
+     * 当平台为非Folia时，效果等同于runTaskTimer
+     *
+     * @param plugin      执行的插件
+     * @param location    执行载体
+     * @param task        执行的任务
+     * @param delayTicks  延迟执行的时间
+     * @param periodTicks 重复执行的间隔
+     */
+    ITaskWrapper runTaskOnLocationTimer(Plugin plugin, Location location, Runnable task, long delayTicks, long periodTicks);
 
 }
