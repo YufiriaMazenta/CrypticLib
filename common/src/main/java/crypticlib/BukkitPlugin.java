@@ -9,8 +9,6 @@ import crypticlib.command.CommandInfo;
 import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
-import crypticlib.lifecycle.AutoDisable;
-import crypticlib.lifecycle.Disableable;
 import crypticlib.listener.BukkitListener;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
@@ -29,6 +27,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     protected final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
     protected final List<Disableable> disableableList = new CopyOnWriteArrayList<>();
+    protected final List<Reloadable> reloadableList = new CopyOnWriteArrayList<>();
     private final String defaultConfigFileName = "config.yml";
     private Integer lowestSupportVersion = 11200;
     private Integer highestSupportVersion = 12004;
@@ -91,6 +90,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     Disableable disableable = (Disableable) annotationProcessor.getClassInstance(clazz);
                     disableableList.add(disableable);
                 }
+            )
+            .regClassAnnotationProcessor(
+                AutoReload.class,
+                (annotation, clazz) -> {
+                    Reloadable reloadable = (Reloadable) annotationProcessor.getClassInstance(clazz);
+                    reloadableList.add(reloadable);
+                }
             );
         load();
     }
@@ -105,6 +111,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public final void onDisable() {
         disable();
+        reloadableList.clear();
         disableableList.forEach(Disableable::disable);
         disableableList.clear();
         configContainerMap.clear();
@@ -156,6 +163,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
         langConfigContainerMap.forEach((langFolder, container) -> container.reload());
+        reloadableList.forEach(Reloadable::reload);
     }
 
     private void checkVersion() {
