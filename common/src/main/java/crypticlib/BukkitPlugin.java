@@ -112,7 +112,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public final void onDisable() {
         disable();
         reloadableList.clear();
-        disableableList.forEach(Disableable::disable);
+        disableableList.forEach(it -> {
+            try {
+                it.disable();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
         disableableList.clear();
         configContainerMap.clear();
         langConfigContainerMap.clear();
@@ -163,7 +169,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
         langConfigContainerMap.forEach((langFolder, container) -> container.reload());
-        reloadableList.forEach(Reloadable::reload);
+        reloadableList.forEach(it -> {
+            try {
+                it.reload();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
     }
 
     private void checkVersion() {
