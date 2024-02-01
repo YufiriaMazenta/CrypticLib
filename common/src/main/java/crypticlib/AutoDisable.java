@@ -1,4 +1,4 @@
-package crypticlib.lifecycle;
+package crypticlib;
 
 import java.lang.annotation.*;
 

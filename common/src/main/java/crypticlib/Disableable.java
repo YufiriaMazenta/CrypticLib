@@ -1,4 +1,4 @@
-package crypticlib.lifecycle;
+package crypticlib;
 
 /**
  * 当插件disable时，调用有注解AutoDisable的接口实现类的disable方法
