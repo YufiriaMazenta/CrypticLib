@@ -4,6 +4,6 @@ dependencies {
     compileOnly("net.kyori:adventure-api:4.14.0")
     compileOnly("me.clip:placeholderapi:2.11.1")
     compileOnly("org.spigotmc:spigot:1.20")
-    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly(project(":common"))
 }

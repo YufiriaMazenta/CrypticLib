@@ -124,7 +124,7 @@ public enum AnnotationProcessor {
      * @return 类对应的实例
      * @param <T> 类的类型
      */
-    public <T> T getClassInstance(Class<T> clazz) {
+    public <T> T getClassInstance(Class<T> clazz, Object...objects) {
         if (singletonObjectMap.containsKey(clazz)) {
             return (T) singletonObjectMap.get(clazz);
         } else {
@@ -132,7 +132,7 @@ public enum AnnotationProcessor {
             if (clazz.isEnum()) {
                 t = clazz.getEnumConstants()[0];
             } else {
-                t = ReflectUtil.newDeclaredInstance(clazz);
+                t = ReflectUtil.newDeclaredInstance(clazz, objects);
             }
             singletonObjectMap.put(clazz, t);
             return t;

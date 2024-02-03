@@ -4,19 +4,22 @@ import crypticlib.annotation.AnnotationProcessor;
 import crypticlib.chat.LangConfigContainer;
 import crypticlib.chat.LangConfigHandler;
 import crypticlib.chat.MessageSender;
-import crypticlib.command.BukkitCommand;
-import crypticlib.command.CommandInfo;
+import crypticlib.command.CommandTreeNode;
+import crypticlib.command.CommandTreeRoot;
+import crypticlib.command.annotation.CommandNode;
+import crypticlib.command.annotation.CommandTree;
 import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
 import crypticlib.listener.BukkitListener;
+import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,11 +59,18 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     Bukkit.getPluginManager().registerEvents(listener, this);
                 })
             .regClassAnnotationProcessor(
-                BukkitCommand.class,
+                CommandTree.class,
                 (annotation, clazz) -> {
-                    TabExecutor tabExecutor = (TabExecutor) annotationProcessor.getClassInstance(clazz);
-                    BukkitCommand bukkitCommand = (BukkitCommand) annotation;
-                    CrypticLib.commandManager().register(this, new CommandInfo(bukkitCommand), tabExecutor);
+                    CommandTreeRoot commandTreeRoot = (CommandTreeRoot) annotationProcessor.getClassInstance(clazz);
+                    for (Field field : commandTreeRoot.getClass().getDeclaredFields()) {
+                        if (!field.isAnnotationPresent(CommandNode.class))
+                            continue;
+                        if (field.getType().equals(CommandTreeNode.class)) {
+                            CommandTreeNode commandTreeNode = (CommandTreeNode) ReflectUtil.getDeclaredFieldObj(field, commandTreeRoot);
+                            commandTreeRoot.regNode(commandTreeNode);
+                        }
+                    }
+                    commandTreeRoot.register(this);
                 })
             .regClassAnnotationProcessor(
                 ConfigHandler.class,

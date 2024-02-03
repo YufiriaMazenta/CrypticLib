@@ -1,6 +1,6 @@
 package crypticlib.command;
 
-import crypticlib.CrypticLib;
+import crypticlib.perm.PermInfo;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,30 +9,29 @@ import java.util.*;
 import java.util.function.BiFunction;
 
 /**
- * CrypticLib提供的命令接口，简便了对于Tab返回的编写
+ * CrypticLib提供的底层命令节点接口
  */
-public interface ICmdExecutor {
+public interface ICommandNode {
 
     /**
-     * 获得子命令表
+     * 命令的子命令表
      *
      * @return 命令的子命令表
      */
-    default @NotNull Map<String, SubcmdExecutor> subcommands() {
+    default @NotNull Map<String, CommandTreeNode> nodes() {
         return new HashMap<>();
     }
 
     /**
      * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
      *
-     * @param subcmdExecutor 注册的命令
+     * @param commandTreeNode 注册的命令
      */
-    default ICmdExecutor regSub(@NotNull SubcmdExecutor subcmdExecutor) {
-        subcommands().put(subcmdExecutor.name(), subcmdExecutor);
-        for (String alias : subcmdExecutor.aliases()) {
-            subcommands().put(alias, subcmdExecutor);
+    default ICommandNode regNode(@NotNull CommandTreeNode commandTreeNode) {
+        nodes().put(commandTreeNode.name(), commandTreeNode);
+        for (String alias : commandTreeNode.aliases()) {
+            nodes().put(alias, commandTreeNode);
         }
-        CrypticLib.permissionManager().regPerm(subcmdExecutor.permission(), subcmdExecutor.permDef());
         return this;
     }
 
@@ -42,9 +41,9 @@ public interface ICmdExecutor {
      * @param name     子命令的名字
      * @param executor 子命令的执行方法
      */
-    default ICmdExecutor regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        SubcmdExecutor subcmdExecutor = new SubcmdExecutor(name, executor);
-        regSub(subcmdExecutor);
+    default ICommandNode regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        CommandTreeNode commandTreeNode = new CommandTreeNode(name, executor);
+        regNode(commandTreeNode);
         return this;
     }
 
@@ -61,7 +60,7 @@ public interface ICmdExecutor {
     }
 
     /**
-     * 获取此命令的执行器
+     * 命令的执行器
      * @return 此命令的执行器
      */
     @Nullable
@@ -71,31 +70,39 @@ public interface ICmdExecutor {
      * 设置此命令的执行器
      * @param executor 命令执行器
      */
-    ICmdExecutor setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor);
+    ICommandNode setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor);
 
     /**
-     * 执行此子命令
+     * 执行此命令
      *
      * @param sender 发送此命令的人
      * @param args   发送时的参数
      * @return 执行结果
      */
     default boolean onCommand(CommandSender sender, List<String> args) {
-        if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
+        //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
+        if (args.isEmpty() || nodes().isEmpty() || !nodes().containsKey(args.get(0))) {
             return execute(sender, args);
         }
-        SubcmdExecutor subCommand = subcommands().get(args.get(0));
-        if (subCommand != null) {
-            String perm = subCommand.permission();
-            if (perm == null || sender.hasPermission(perm)) {
-                return subCommand.onCommand(sender, args.subList(1, args.size()));
+        //执行对应的子命令
+        CommandTreeNode node = nodes().get(args.get(0));
+        if (node != null) {
+            PermInfo perm = node.permission();
+            if (perm == null || sender.hasPermission(perm.permission())) {
+                return node.onCommand(sender, args.subList(1, args.size()));
             }
         }
         return true;
     }
 
     /**
-     * 此命令的默认返回参数
+     * 命令的命令补全器
+     * @return 此命令的默认返回参数提供者
+     */
+    @Nullable BiFunction<CommandSender, List<String>, List<String>> tabCompleter();
+
+    /**
+     * 命令的补全内容
      * @return 此命令的默认返回参数
      */
     default @NotNull List<String> tabArgs(CommandSender sender, List<String> args) {
@@ -106,17 +113,11 @@ public interface ICmdExecutor {
     }
 
     /**
-     * 获得此命令的默认返回参数提供者
-     * @return 此命令的默认返回参数提供者
-     */
-    @Nullable BiFunction<CommandSender, List<String>, List<String>> tabCompleter();
-
-    /**
-     * 设置此命令的默认返回参数提供者
+     * 设置此命令的命令补全器
      * @param tabCompleter 此命令的默认返回参数提供者
      */
     @NotNull
-    ICmdExecutor setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter);
+    ICommandNode setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter);
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
@@ -127,37 +128,36 @@ public interface ICmdExecutor {
      */
     default List<String> onTabComplete(CommandSender sender, List<String> args) {
         List<String> arguments = new ArrayList<>(tabArgs(sender, args));
-        if (!subcommands().isEmpty()) {
+        //尝试获取子命令的补全内容
+        if (!nodes().isEmpty()) {
             if (args.size() > 1) {
-                SubcmdExecutor subCommand = subcommands().get(args.get(0));
-                if (subCommand != null) {
-                    String permission = subCommand.permission();
-                    if (permission != null) {
-                        if (sender.hasPermission(permission))
-                            return subCommand.onTabComplete(sender, args.subList(1, args.size()));
+                CommandTreeNode node = nodes().get(args.get(0));
+                if (node != null) {
+                    PermInfo perm = node.permission();
+                    if (perm != null) {
+                        if (sender.hasPermission(perm.permission()))
+                            return node.onTabComplete(sender, args.subList(1, args.size()));
                         else
                             return Collections.singletonList("");
                     } else {
-                        return subCommand.onTabComplete(sender, args.subList(1, args.size()));
+                        return node.onTabComplete(sender, args.subList(1, args.size()));
                     }
                 }
                 return Collections.singletonList("");
-
             }
-            for (String subCmd : subcommands().keySet()) {
-                SubcmdExecutor subCommand = subcommands().get(subCmd);
-                String permission = subCommand.permission();
-                if (permission != null) {
-                    if (sender.hasPermission(permission))
-                        arguments.add(subCmd);
+            for (String arg : nodes().keySet()) {
+                CommandTreeNode node = nodes().get(arg);
+                PermInfo perm = node.permission();
+                if (perm != null) {
+                    if (sender.hasPermission(perm.permission()))
+                        arguments.add(arg);
                 } else {
-                    arguments.add(subCmd);
+                    arguments.add(arg);
                 }
             }
         }
         arguments.removeIf(str -> !str.contains(args.get(0)));
         return arguments;
-
     }
 
 }

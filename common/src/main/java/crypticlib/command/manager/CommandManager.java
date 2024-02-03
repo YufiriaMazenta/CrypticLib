@@ -1,6 +1,8 @@
-package crypticlib.command;
+package crypticlib.command.manager;
 
-import crypticlib.CrypticLib;
+import crypticlib.command.CommandTreeInfo;
+import crypticlib.command.CommandTreeNode;
+import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -31,25 +33,26 @@ public enum CommandManager {
         pluginCommandConstructor = ReflectUtil.getDeclaredConstructor(PluginCommand.class, String.class, Plugin.class);
     }
 
-    public Command register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
-        PluginCommand pluginCommand = (PluginCommand) ReflectUtil.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
-        pluginCommand.setAliases(Arrays.asList(commandInfo.aliases()));
-        pluginCommand.setDescription(commandInfo.description());
-        pluginCommand.setPermission(commandInfo.permission());
-        pluginCommand.setUsage(commandInfo.usage());
+    public Command register(@NotNull Plugin plugin, @NotNull CommandTreeInfo commandTreeInfo, @NotNull TabExecutor commandExecutor) {
+        PluginCommand pluginCommand = (PluginCommand) ReflectUtil.invokeDeclaredConstructor(pluginCommandConstructor, commandTreeInfo.name(), plugin);
+        pluginCommand.setAliases(Arrays.asList(commandTreeInfo.aliases()));
+        pluginCommand.setDescription(commandTreeInfo.description());
+        PermInfo permInfo = commandTreeInfo.permission();
+        if (permInfo != null)
+            pluginCommand.setPermission(permInfo.permission());
+        pluginCommand.setUsage(commandTreeInfo.usage());
         pluginCommand.setExecutor(commandExecutor);
         pluginCommand.setTabCompleter(commandExecutor);
         String pluginName = plugin.getName();
         serverCommandMap.register(pluginName, pluginCommand);
         if (registeredCommands.containsKey(pluginName)) {
             Map<String, Command> commandMap = registeredCommands.get(pluginName);
-            commandMap.put(commandInfo.name(), pluginCommand);
+            commandMap.put(commandTreeInfo.name(), pluginCommand);
         } else {
             Map<String, Command> commandMap = new ConcurrentHashMap<>();
-            commandMap.put(commandInfo.name(), pluginCommand);
+            commandMap.put(commandTreeInfo.name(), pluginCommand);
             registeredCommands.put(pluginName, commandMap);
         }
-        CrypticLib.permissionManager().regPerm(commandInfo.permission(), commandInfo.permDef());
         return pluginCommand;
     }
 
@@ -94,8 +97,8 @@ public enum CommandManager {
         return registeredCommands;
     }
 
-    public static SubcmdExecutor subcommand(@NotNull String name) {
-        return new SubcmdExecutor(name);
+    public static CommandTreeNode subcommand(@NotNull String name) {
+        return new CommandTreeNode(name);
     }
 
 }
