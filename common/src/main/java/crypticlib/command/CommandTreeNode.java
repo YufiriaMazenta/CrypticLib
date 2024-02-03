@@ -17,7 +17,7 @@ import java.util.function.BiFunction;
  */
 public class CommandTreeNode implements ICommandNode {
 
-    private final Map<String, CommandTreeNode> subcommands = new ConcurrentHashMap<>();
+    private final Map<String, CommandTreeNode> nodes = new ConcurrentHashMap<>();
     private final NodeInfo nodeInfo;
     private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
@@ -135,7 +135,7 @@ public class CommandTreeNode implements ICommandNode {
 
     @Override
     public @NotNull Map<String, CommandTreeNode> nodes() {
-        return subcommands;
+        return nodes;
     }
 
     @Override
