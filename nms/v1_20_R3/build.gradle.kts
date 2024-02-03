@@ -1,5 +1,5 @@
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.20.3-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
     compileOnly("net.kyori:adventure-api:4.14.0")
     compileOnly("org.jetbrains:annotations:24.0.1")
     compileOnly("com.google.code.gson:gson:2.10.1")
