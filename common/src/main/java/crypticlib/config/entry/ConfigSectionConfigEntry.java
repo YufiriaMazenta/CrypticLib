@@ -4,20 +4,33 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
+
 public class ConfigSectionConfigEntry extends ConfigEntry<ConfigurationSection> {
 
-    public ConfigSectionConfigEntry(@NotNull String key, @Nullable ConfigurationSection def) {
-        super(key, def);
+    private final Map<String, Object> default_;
+
+    public ConfigSectionConfigEntry(@NotNull String key) {
+        this(key, null);
+    }
+
+    public ConfigSectionConfigEntry(@NotNull String key, @Nullable Map<String, Object> default_) {
+        super(key, null);
+        this.default_ = default_;
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         ConfigurationSection configSection;
-        if (config.contains(key))
+        if (config.contains(key)) {
             configSection = config.getConfigurationSection(key);
-        else
-            configSection = config.createSection(key);
-        saveDef(config);
+        } else {
+            if (default_ != null)
+                configSection = config.createSection(key, default_);
+            else
+                configSection = config.createSection(key);
+        }
         setValue(configSection);
     }
+
 }
