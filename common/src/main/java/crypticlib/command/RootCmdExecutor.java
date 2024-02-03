@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
 public class RootCmdExecutor implements ICmdExecutor, TabExecutor {
 
     private final Map<String, SubcmdExecutor> subcommands;
-    private @NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
+    private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
     private Boolean registered;
 
