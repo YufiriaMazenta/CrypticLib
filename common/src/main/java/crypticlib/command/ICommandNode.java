@@ -1,10 +1,13 @@
 package crypticlib.command;
 
+import crypticlib.command.annotation.CommandNode;
 import crypticlib.perm.PermInfo;
+import crypticlib.util.ReflectUtil;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -158,6 +161,26 @@ public interface ICommandNode {
         }
         arguments.removeIf(str -> !str.contains(args.get(0)));
         return arguments;
+    }
+
+    default void registerPerms() {
+        for (CommandTreeNode commandTreeNode : nodes().values()) {
+            commandTreeNode.registerPerms();
+        }
+    }
+
+    default void scanNodes() {
+        for (CommandTreeNode node : nodes().values()) {
+            for (Field field : node.getClass().getDeclaredFields()) {
+                if (!field.isAnnotationPresent(CommandNode.class))
+                    continue;
+                if (field.getType().equals(CommandTreeNode.class)) {
+                    CommandTreeNode commandTreeNode = (CommandTreeNode) ReflectUtil.getDeclaredFieldObj(field, node);
+                    node.regNode(commandTreeNode);
+                }
+            }
+            node.scanNodes();
+        }
     }
 
 }

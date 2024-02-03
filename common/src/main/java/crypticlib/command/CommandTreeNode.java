@@ -148,10 +148,8 @@ public class CommandTreeNode implements ICommandNode {
         return (CommandTreeNode) ICommandNode.super.regNode(name, executor);
     }
 
-    public void registerPerm() {
-        for (CommandTreeNode commandTreeNode : nodes().values()) {
-            commandTreeNode.registerPerm();
-        }
+    public void registerPerms() {
+        ICommandNode.super.registerPerms();
         PermInfo permission = permission();
         if (permission != null)
             permission.register();

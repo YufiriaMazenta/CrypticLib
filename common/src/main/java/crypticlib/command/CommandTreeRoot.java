@@ -92,13 +92,17 @@ public class CommandTreeRoot implements ICommandNode, TabExecutor {
         if (registered)
             throw new UnsupportedOperationException("Cannot register a command repeatedly");
         registered = true;
-        for (CommandTreeNode commandTreeNode : nodes.values()) {
-            commandTreeNode.registerPerm();
-        }
+        scanNodes();
+        registerPerms();
+        CrypticLib.commandManager().register(plugin, commandTreeInfo, this);
+    }
+
+    @Override
+    public void registerPerms() {
+        ICommandNode.super.registerPerms();
         PermInfo permission = commandTreeInfo.permission();
         if (permission != null)
             permission.register();
-        CrypticLib.commandManager().register(plugin, commandTreeInfo, this);
     }
 
 }
