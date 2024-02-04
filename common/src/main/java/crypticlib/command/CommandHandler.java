@@ -18,16 +18,16 @@ import java.util.function.BiFunction;
 /**
  * CrypticLib提供的命令树根类，用于注册插件命令
  */
-public class CommandTreeRoot implements ICommandNode, TabExecutor {
+public class CommandHandler implements ICommandNode, TabExecutor {
 
-    private final Map<String, CommandTreeNode> nodes = new ConcurrentHashMap<>();
-    private CommandTreeInfo commandTreeInfo;
+    private final Map<String, SubcommandHandler> nodes = new ConcurrentHashMap<>();
+    private CommandInfo commandInfo;
     private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
     private Boolean registered = false;
 
-    public CommandTreeRoot(CommandTreeInfo commandTreeInfo) {
-        this.commandTreeInfo = commandTreeInfo;
+    public CommandHandler(CommandInfo commandInfo) {
+        this.commandInfo = commandInfo;
     }
 
     @Override
@@ -40,27 +40,27 @@ public class CommandTreeRoot implements ICommandNode, TabExecutor {
         return onCommand(sender, Arrays.asList(args));
     }
 
-    public CommandTreeRoot setRootCommandInfo(CommandTreeInfo commandTreeInfo) {
-        this.commandTreeInfo = commandTreeInfo;
+    public CommandHandler setRootCommandInfo(CommandInfo commandInfo) {
+        this.commandInfo = commandInfo;
         return this;
     }
 
     @Override
-    public CommandTreeRoot regNode(@NotNull CommandTreeNode commandTreeNode) {
-        return (CommandTreeRoot) ICommandNode.super.regNode(commandTreeNode);
+    public CommandHandler regNode(@NotNull SubcommandHandler commandTreeNode) {
+        return (CommandHandler) ICommandNode.super.regNode(commandTreeNode);
     }
 
     @Override
-    public CommandTreeRoot regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (CommandTreeRoot) ICommandNode.super.regNode(name, executor);
+    public CommandHandler regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        return (CommandHandler) ICommandNode.super.regNode(name, executor);
     }
 
-    public CommandTreeInfo rootCommandInfo() {
-        return commandTreeInfo;
+    public CommandInfo rootCommandInfo() {
+        return commandInfo;
     }
 
     @Override
-    public @NotNull Map<String, CommandTreeNode> nodes() {
+    public @NotNull Map<String, SubcommandHandler> nodes() {
         return nodes;
     }
 
@@ -71,7 +71,7 @@ public class CommandTreeRoot implements ICommandNode, TabExecutor {
     }
 
     @Override
-    public CommandTreeRoot setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public CommandHandler setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
         return this;
     }
@@ -83,7 +83,7 @@ public class CommandTreeRoot implements ICommandNode, TabExecutor {
 
     @Override
     @NotNull
-    public CommandTreeRoot setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
+    public CommandHandler setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
         this.tabCompleter = tabCompleter;
         return this;
     }
@@ -94,13 +94,13 @@ public class CommandTreeRoot implements ICommandNode, TabExecutor {
         registered = true;
         scanNodes();
         registerPerms();
-        CrypticLib.commandManager().register(plugin, commandTreeInfo, this);
+        CrypticLib.commandManager().register(plugin, commandInfo, this);
     }
 
     @Override
     public void registerPerms() {
         ICommandNode.super.registerPerms();
-        PermInfo permission = commandTreeInfo.permission();
+        PermInfo permission = commandInfo.permission();
         if (permission != null)
             permission.register();
     }

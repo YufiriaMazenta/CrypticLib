@@ -1,6 +1,6 @@
 package crypticlib.command;
 
-import crypticlib.command.annotation.CommandNode;
+import crypticlib.command.annotation.Subcommand;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.command.CommandSender;
@@ -21,7 +21,7 @@ public interface ICommandNode {
      *
      * @return 命令的子命令表
      */
-    default @NotNull Map<String, CommandTreeNode> nodes() {
+    default @NotNull Map<String, SubcommandHandler> nodes() {
         return new HashMap<>();
     }
 
@@ -30,7 +30,7 @@ public interface ICommandNode {
      *
      * @param commandTreeNode 注册的命令
      */
-    default ICommandNode regNode(@NotNull CommandTreeNode commandTreeNode) {
+    default ICommandNode regNode(@NotNull SubcommandHandler commandTreeNode) {
         nodes().put(commandTreeNode.name(), commandTreeNode);
         for (String alias : commandTreeNode.aliases()) {
             nodes().put(alias, commandTreeNode);
@@ -45,7 +45,7 @@ public interface ICommandNode {
      * @param executor 子命令的执行方法
      */
     default ICommandNode regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        CommandTreeNode commandTreeNode = new CommandTreeNode(name, executor);
+        SubcommandHandler commandTreeNode = new SubcommandHandler(name, executor);
         regNode(commandTreeNode);
         return this;
     }
@@ -88,7 +88,7 @@ public interface ICommandNode {
             return execute(sender, args);
         }
         //执行对应的子命令
-        CommandTreeNode node = nodes().get(args.get(0));
+        SubcommandHandler node = nodes().get(args.get(0));
         if (node != null) {
             PermInfo perm = node.permission();
             if (perm == null || sender.hasPermission(perm.permission())) {
@@ -134,7 +134,7 @@ public interface ICommandNode {
         //尝试获取子命令的补全内容
         if (!nodes().isEmpty()) {
             if (args.size() > 1) {
-                CommandTreeNode node = nodes().get(args.get(0));
+                SubcommandHandler node = nodes().get(args.get(0));
                 if (node != null) {
                     PermInfo perm = node.permission();
                     if (perm != null) {
@@ -149,7 +149,7 @@ public interface ICommandNode {
                 return Collections.singletonList("");
             }
             for (String arg : nodes().keySet()) {
-                CommandTreeNode node = nodes().get(arg);
+                SubcommandHandler node = nodes().get(arg);
                 PermInfo perm = node.permission();
                 if (perm != null) {
                     if (sender.hasPermission(perm.permission()))
@@ -164,18 +164,18 @@ public interface ICommandNode {
     }
 
     default void registerPerms() {
-        for (CommandTreeNode commandTreeNode : nodes().values()) {
+        for (SubcommandHandler commandTreeNode : nodes().values()) {
             commandTreeNode.registerPerms();
         }
     }
 
     default void scanNodes() {
-        for (CommandTreeNode node : nodes().values()) {
+        for (SubcommandHandler node : nodes().values()) {
             for (Field field : node.getClass().getDeclaredFields()) {
-                if (!field.isAnnotationPresent(CommandNode.class))
+                if (!field.isAnnotationPresent(Subcommand.class))
                     continue;
-                if (field.getType().equals(CommandTreeNode.class)) {
-                    CommandTreeNode commandTreeNode = (CommandTreeNode) ReflectUtil.getDeclaredFieldObj(field, node);
+                if (field.getType().equals(SubcommandHandler.class)) {
+                    SubcommandHandler commandTreeNode = (SubcommandHandler) ReflectUtil.getDeclaredFieldObj(field, node);
                     node.regNode(commandTreeNode);
                 }
             }

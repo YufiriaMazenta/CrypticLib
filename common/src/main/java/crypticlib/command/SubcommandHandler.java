@@ -15,51 +15,51 @@ import java.util.function.BiFunction;
 /**
  * CrypticLib提供的命令树节点类，即子命令
  */
-public class CommandTreeNode implements ICommandNode {
+public class SubcommandHandler implements ICommandNode {
 
-    private final Map<String, CommandTreeNode> nodes = new ConcurrentHashMap<>();
+    private final Map<String, SubcommandHandler> nodes = new ConcurrentHashMap<>();
     private final NodeInfo nodeInfo;
     private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
 
-    public CommandTreeNode(@NotNull CommandTreeNode.NodeInfo nodeInfo) {
+    public SubcommandHandler(@NotNull SubcommandHandler.NodeInfo nodeInfo) {
         this(nodeInfo, null);
     }
 
-    public CommandTreeNode(@NotNull CommandTreeNode.NodeInfo nodeInfo, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcommandHandler(@NotNull SubcommandHandler.NodeInfo nodeInfo, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.nodeInfo = nodeInfo;
         this.executor = executor;
     }
 
-    public CommandTreeNode(@NotNull String name) {
+    public SubcommandHandler(@NotNull String name) {
         this(name, null, new ArrayList<>());
     }
 
-    public CommandTreeNode(@NotNull String name, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcommandHandler(@NotNull String name, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this(name, null, new ArrayList<>(), executor);
     }
 
-    public CommandTreeNode(@NotNull String name, @NotNull List<String> aliases) {
+    public SubcommandHandler(@NotNull String name, @NotNull List<String> aliases) {
         this(name, null, aliases, null);
     }
 
-    public CommandTreeNode(@NotNull String name, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcommandHandler(@NotNull String name, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this(name, null, aliases, executor);
     }
 
-    public CommandTreeNode(@NotNull String name, @Nullable PermInfo permission) {
+    public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission) {
         this(name, permission, new ArrayList<>(), null);
     }
 
-    public CommandTreeNode(@NotNull String name, @Nullable PermInfo permission, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this(name, permission, new ArrayList<>(), executor);
     }
 
-    public CommandTreeNode(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
+    public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
         this(name, permission, aliases, null);
     }
 
-    public CommandTreeNode(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.nodeInfo = new NodeInfo(name, permission, aliases);
         this.executor = executor;
     }
@@ -71,14 +71,14 @@ public class CommandTreeNode implements ICommandNode {
     }
 
     @Override
-    public CommandTreeNode setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+    public SubcommandHandler setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.executor = executor;
         return this;
     }
 
     @Override
     @NotNull
-    public CommandTreeNode setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
+    public SubcommandHandler setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
         this.tabCompleter = tabCompleter;
         return this;
     }
@@ -98,7 +98,7 @@ public class CommandTreeNode implements ICommandNode {
         return nodeInfo.name();
     }
 
-    public CommandTreeNode setName(String name) {
+    public SubcommandHandler setName(String name) {
         this.nodeInfo.setName(name);
         return this;
     }
@@ -108,7 +108,7 @@ public class CommandTreeNode implements ICommandNode {
         return nodeInfo.permission();
     }
 
-    public CommandTreeNode setPermission(PermInfo permission) {
+    public SubcommandHandler setPermission(PermInfo permission) {
         this.nodeInfo.setPermission(permission);
         return this;
     }
@@ -123,29 +123,29 @@ public class CommandTreeNode implements ICommandNode {
         return nodeInfo.aliases();
     }
 
-    public CommandTreeNode setAliases(@NotNull List<String> aliases) {
+    public SubcommandHandler setAliases(@NotNull List<String> aliases) {
         this.nodeInfo.setAliases(aliases);
         return this;
     }
 
-    public CommandTreeNode addAliases(@NotNull String alias) {
+    public SubcommandHandler addAliases(@NotNull String alias) {
         this.nodeInfo.aliases().add(alias);
         return this;
     }
 
     @Override
-    public @NotNull Map<String, CommandTreeNode> nodes() {
+    public @NotNull Map<String, SubcommandHandler> nodes() {
         return nodes;
     }
 
     @Override
-    public CommandTreeNode regNode(@NotNull CommandTreeNode commandTreeNode) {
-        return (CommandTreeNode) ICommandNode.super.regNode(commandTreeNode);
+    public SubcommandHandler regNode(@NotNull SubcommandHandler commandTreeNode) {
+        return (SubcommandHandler) ICommandNode.super.regNode(commandTreeNode);
     }
 
     @Override
-    public CommandTreeNode regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (CommandTreeNode) ICommandNode.super.regNode(name, executor);
+    public SubcommandHandler regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        return (SubcommandHandler) ICommandNode.super.regNode(name, executor);
     }
 
     public void registerPerms() {
