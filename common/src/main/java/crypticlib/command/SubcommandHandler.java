@@ -17,17 +17,17 @@ import java.util.function.BiFunction;
  */
 public class SubcommandHandler implements ICommandNode {
 
-    private final Map<String, SubcommandHandler> nodes = new ConcurrentHashMap<>();
-    private final NodeInfo nodeInfo;
+    private final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
+    private final SubcommandInfo subcommandInfo;
     private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
 
-    public SubcommandHandler(@NotNull SubcommandHandler.NodeInfo nodeInfo) {
-        this(nodeInfo, null);
+    public SubcommandHandler(@NotNull SubcommandInfo subcommandInfo) {
+        this(subcommandInfo, null);
     }
 
-    public SubcommandHandler(@NotNull SubcommandHandler.NodeInfo nodeInfo, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this.nodeInfo = nodeInfo;
+    public SubcommandHandler(@NotNull SubcommandInfo subcommandInfo, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
+        this.subcommandInfo = subcommandInfo;
         this.executor = executor;
     }
 
@@ -60,7 +60,7 @@ public class SubcommandHandler implements ICommandNode {
     }
 
     public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this.nodeInfo = new NodeInfo(name, permission, aliases);
+        this.subcommandInfo = new SubcommandInfo(name, permission, aliases);
         this.executor = executor;
     }
 
@@ -95,21 +95,21 @@ public class SubcommandHandler implements ICommandNode {
      */
     @NotNull
     public String name() {
-        return nodeInfo.name();
+        return subcommandInfo.name();
     }
 
     public SubcommandHandler setName(String name) {
-        this.nodeInfo.setName(name);
+        this.subcommandInfo.setName(name);
         return this;
     }
 
     @Nullable
     public PermInfo permission() {
-        return nodeInfo.permission();
+        return subcommandInfo.permission();
     }
 
     public SubcommandHandler setPermission(PermInfo permission) {
-        this.nodeInfo.setPermission(permission);
+        this.subcommandInfo.setPermission(permission);
         return this;
     }
 
@@ -120,32 +120,32 @@ public class SubcommandHandler implements ICommandNode {
      */
     @NotNull
     public List<String> aliases() {
-        return nodeInfo.aliases();
+        return subcommandInfo.aliases();
     }
 
     public SubcommandHandler setAliases(@NotNull List<String> aliases) {
-        this.nodeInfo.setAliases(aliases);
+        this.subcommandInfo.setAliases(aliases);
         return this;
     }
 
     public SubcommandHandler addAliases(@NotNull String alias) {
-        this.nodeInfo.aliases().add(alias);
+        this.subcommandInfo.aliases().add(alias);
         return this;
     }
 
     @Override
-    public @NotNull Map<String, SubcommandHandler> nodes() {
-        return nodes;
+    public @NotNull Map<String, SubcommandHandler> subcommands() {
+        return subcommands;
     }
 
     @Override
-    public SubcommandHandler regNode(@NotNull SubcommandHandler commandTreeNode) {
-        return (SubcommandHandler) ICommandNode.super.regNode(commandTreeNode);
+    public SubcommandHandler regSub(@NotNull SubcommandHandler subcommandHandler) {
+        return (SubcommandHandler) ICommandNode.super.regSub(subcommandHandler);
     }
 
     @Override
-    public SubcommandHandler regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (SubcommandHandler) ICommandNode.super.regNode(name, executor);
+    public SubcommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        return (SubcommandHandler) ICommandNode.super.regSub(name, executor);
     }
 
     public void registerPerms() {
@@ -155,22 +155,22 @@ public class SubcommandHandler implements ICommandNode {
             permission.register();
     }
 
-    public static class NodeInfo {
+    public static class SubcommandInfo {
 
         private String name;
         private PermInfo permission;
         private final List<String> aliases = new CopyOnWriteArrayList<>();
 
-        public NodeInfo(String name) {
+        public SubcommandInfo(String name) {
             this.name = name;
         }
 
-        public NodeInfo(String name, PermInfo permission) {
+        public SubcommandInfo(String name, PermInfo permission) {
             this.name = name;
             this.permission = permission;
         }
 
-        public NodeInfo(String name, PermInfo permission, List<String> aliases) {
+        public SubcommandInfo(String name, PermInfo permission, List<String> aliases) {
             this.name = name;
             this.permission = permission;
             this.aliases.addAll(aliases);
@@ -181,7 +181,7 @@ public class SubcommandHandler implements ICommandNode {
             return name;
         }
 
-        public NodeInfo setName(String name) {
+        public SubcommandInfo setName(String name) {
             this.name = name;
             return this;
         }
@@ -191,7 +191,7 @@ public class SubcommandHandler implements ICommandNode {
             return permission;
         }
 
-        public NodeInfo setPermission(PermInfo permission) {
+        public SubcommandInfo setPermission(PermInfo permission) {
             this.permission = permission;
             return this;
         }
@@ -201,7 +201,7 @@ public class SubcommandHandler implements ICommandNode {
             return aliases;
         }
 
-        public NodeInfo setAliases(List<String> aliases) {
+        public SubcommandInfo setAliases(List<String> aliases) {
             this.aliases.clear();
             this.aliases.addAll(aliases);
             return this;
