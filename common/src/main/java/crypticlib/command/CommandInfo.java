@@ -4,7 +4,7 @@ import crypticlib.perm.PermInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class CommandTreeInfo {
+public class CommandInfo {
 
     @NotNull
     private String name;
@@ -17,27 +17,27 @@ public class CommandTreeInfo {
     @NotNull
     private String usage;
 
-    public CommandTreeInfo(@NotNull String name) {
+    public CommandInfo(@NotNull String name) {
         this(name, (PermInfo) null);
     }
 
-    public CommandTreeInfo(@NotNull String name, @Nullable PermInfo permission) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission) {
         this(name, permission, new String[0]);
     }
 
-    public CommandTreeInfo(@NotNull String name, @NotNull String[] aliases) {
+    public CommandInfo(@NotNull String name, @NotNull String[] aliases) {
         this(name, null, aliases);
     }
 
-    public CommandTreeInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases) {
         this(name, permission, aliases, "");
     }
 
-    public CommandTreeInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases, @NotNull String description) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases, @NotNull String description) {
         this(name, permission, aliases, description, "");
     }
 
-    public CommandTreeInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases, @NotNull String description, @NotNull String usage) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases, @NotNull String description, @NotNull String usage) {
         this.name = name;
         this.permission = permission;
         this.aliases = aliases;
@@ -50,7 +50,7 @@ public class CommandTreeInfo {
         return name;
     }
 
-    public CommandTreeInfo setName(@NotNull String name) {
+    public CommandInfo setName(@NotNull String name) {
         this.name = name;
         return this;
     }
@@ -60,7 +60,7 @@ public class CommandTreeInfo {
         return permission;
     }
 
-    public CommandTreeInfo setPermission(@Nullable PermInfo permission) {
+    public CommandInfo setPermission(@Nullable PermInfo permission) {
         this.permission = permission;
         return this;
     }
@@ -70,7 +70,7 @@ public class CommandTreeInfo {
         return aliases;
     }
 
-    public CommandTreeInfo setAliases(@NotNull String[] aliases) {
+    public CommandInfo setAliases(@NotNull String[] aliases) {
         this.aliases = aliases;
         return this;
     }
@@ -80,7 +80,7 @@ public class CommandTreeInfo {
         return description;
     }
 
-    public CommandTreeInfo setDescription(@NotNull String description) {
+    public CommandInfo setDescription(@NotNull String description) {
         this.description = description;
         return this;
     }
@@ -90,7 +90,7 @@ public class CommandTreeInfo {
         return usage;
     }
 
-    public CommandTreeInfo setUsage(@NotNull String usage) {
+    public CommandInfo setUsage(@NotNull String usage) {
         this.usage = usage;
         return this;
     }
