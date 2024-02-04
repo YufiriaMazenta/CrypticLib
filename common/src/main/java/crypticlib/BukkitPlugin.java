@@ -67,7 +67,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                             continue;
                         if (field.getType().equals(SubcommandHandler.class)) {
                             SubcommandHandler commandTreeNode = (SubcommandHandler) ReflectUtil.getDeclaredFieldObj(field, commandHandler);
-                            commandHandler.regNode(commandTreeNode);
+                            commandHandler.regSub(commandTreeNode);
                         }
                     }
                     commandHandler.register(this);

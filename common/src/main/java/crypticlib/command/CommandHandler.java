@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import com.google.common.collect.Maps;
 import crypticlib.CrypticLib;
 import crypticlib.perm.PermInfo;
 import org.bukkit.command.Command;
@@ -20,7 +21,7 @@ import java.util.function.BiFunction;
  */
 public class CommandHandler implements ICommandNode, TabExecutor {
 
-    private final Map<String, SubcommandHandler> nodes = new ConcurrentHashMap<>();
+    private final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
     private CommandInfo commandInfo;
     private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
     private BiFunction<CommandSender, List<String>, Boolean> executor;
@@ -46,13 +47,13 @@ public class CommandHandler implements ICommandNode, TabExecutor {
     }
 
     @Override
-    public CommandHandler regNode(@NotNull SubcommandHandler commandTreeNode) {
-        return (CommandHandler) ICommandNode.super.regNode(commandTreeNode);
+    public CommandHandler regSub(@NotNull SubcommandHandler subcommandHandler) {
+        return (CommandHandler) ICommandNode.super.regSub(subcommandHandler);
     }
 
     @Override
-    public CommandHandler regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (CommandHandler) ICommandNode.super.regNode(name, executor);
+    public CommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+        return (CommandHandler) ICommandNode.super.regSub(name, executor);
     }
 
     public CommandInfo rootCommandInfo() {
@@ -60,8 +61,8 @@ public class CommandHandler implements ICommandNode, TabExecutor {
     }
 
     @Override
-    public @NotNull Map<String, SubcommandHandler> nodes() {
-        return nodes;
+    public @NotNull Map<String, SubcommandHandler> subcommands() {
+        return subcommands;
     }
 
     @Override

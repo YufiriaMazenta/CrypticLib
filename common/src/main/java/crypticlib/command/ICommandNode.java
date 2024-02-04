@@ -21,19 +21,19 @@ public interface ICommandNode {
      *
      * @return 命令的子命令表
      */
-    default @NotNull Map<String, SubcommandHandler> nodes() {
+    default @NotNull Map<String, SubcommandHandler> subcommands() {
         return new HashMap<>();
     }
 
     /**
      * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
      *
-     * @param commandTreeNode 注册的命令
+     * @param subcommandHandler 注册的命令
      */
-    default ICommandNode regNode(@NotNull SubcommandHandler commandTreeNode) {
-        nodes().put(commandTreeNode.name(), commandTreeNode);
-        for (String alias : commandTreeNode.aliases()) {
-            nodes().put(alias, commandTreeNode);
+    default ICommandNode regSub(@NotNull SubcommandHandler subcommandHandler) {
+        subcommands().put(subcommandHandler.name(), subcommandHandler);
+        for (String alias : subcommandHandler.aliases()) {
+            subcommands().put(alias, subcommandHandler);
         }
         return this;
     }
@@ -44,9 +44,9 @@ public interface ICommandNode {
      * @param name     子命令的名字
      * @param executor 子命令的执行方法
      */
-    default ICommandNode regNode(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+    default ICommandNode regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
         SubcommandHandler commandTreeNode = new SubcommandHandler(name, executor);
-        regNode(commandTreeNode);
+        regSub(commandTreeNode);
         return this;
     }
 
@@ -84,15 +84,15 @@ public interface ICommandNode {
      */
     default boolean onCommand(CommandSender sender, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
-        if (args.isEmpty() || nodes().isEmpty() || !nodes().containsKey(args.get(0))) {
+        if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
             return execute(sender, args);
         }
         //执行对应的子命令
-        SubcommandHandler node = nodes().get(args.get(0));
-        if (node != null) {
-            PermInfo perm = node.permission();
+        SubcommandHandler subcommand = subcommands().get(args.get(0));
+        if (subcommand != null) {
+            PermInfo perm = subcommand.permission();
             if (perm == null || sender.hasPermission(perm.permission())) {
-                return node.onCommand(sender, args.subList(1, args.size()));
+                return subcommand.onCommand(sender, args.subList(1, args.size()));
             }
         }
         return true;
@@ -132,25 +132,25 @@ public interface ICommandNode {
     default List<String> onTabComplete(CommandSender sender, List<String> args) {
         List<String> arguments = new ArrayList<>(tabArgs(sender, args));
         //尝试获取子命令的补全内容
-        if (!nodes().isEmpty()) {
+        if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
-                SubcommandHandler node = nodes().get(args.get(0));
-                if (node != null) {
-                    PermInfo perm = node.permission();
+                SubcommandHandler subcommand = subcommands().get(args.get(0));
+                if (subcommand != null) {
+                    PermInfo perm = subcommand.permission();
                     if (perm != null) {
                         if (sender.hasPermission(perm.permission()))
-                            return node.onTabComplete(sender, args.subList(1, args.size()));
+                            return subcommand.onTabComplete(sender, args.subList(1, args.size()));
                         else
                             return Collections.singletonList("");
                     } else {
-                        return node.onTabComplete(sender, args.subList(1, args.size()));
+                        return subcommand.onTabComplete(sender, args.subList(1, args.size()));
                     }
                 }
                 return Collections.singletonList("");
             }
-            for (String arg : nodes().keySet()) {
-                SubcommandHandler node = nodes().get(arg);
-                PermInfo perm = node.permission();
+            for (String arg : subcommands().keySet()) {
+                SubcommandHandler subcommand = subcommands().get(arg);
+                PermInfo perm = subcommand.permission();
                 if (perm != null) {
                     if (sender.hasPermission(perm.permission()))
                         arguments.add(arg);
@@ -164,22 +164,22 @@ public interface ICommandNode {
     }
 
     default void registerPerms() {
-        for (SubcommandHandler commandTreeNode : nodes().values()) {
+        for (SubcommandHandler commandTreeNode : subcommands().values()) {
             commandTreeNode.registerPerms();
         }
     }
 
     default void scanNodes() {
-        for (SubcommandHandler node : nodes().values()) {
-            for (Field field : node.getClass().getDeclaredFields()) {
+        for (SubcommandHandler subcommand : subcommands().values()) {
+            for (Field field : subcommand.getClass().getDeclaredFields()) {
                 if (!field.isAnnotationPresent(Subcommand.class))
                     continue;
                 if (field.getType().equals(SubcommandHandler.class)) {
-                    SubcommandHandler commandTreeNode = (SubcommandHandler) ReflectUtil.getDeclaredFieldObj(field, node);
-                    node.regNode(commandTreeNode);
+                    SubcommandHandler commandTreeNode = (SubcommandHandler) ReflectUtil.getDeclaredFieldObj(field, subcommand);
+                    subcommand.regSub(commandTreeNode);
                 }
             }
-            node.scanNodes();
+            subcommand.scanNodes();
         }
     }
 
