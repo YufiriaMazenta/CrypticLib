@@ -64,18 +64,20 @@ public class ReflectUtil {
         fieldCaches.put(className, classFieldCache);
     }
 
-    public static Object getFieldObj(@NotNull Field field, @Nullable Object owner) {
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldObj(@NotNull Field field, @Nullable Object owner) {
         try {
-            return field.get(owner);
+            return (T) field.get(owner);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Object getDeclaredFieldObj(@NotNull Field field, @Nullable Object owner) {
+    @SuppressWarnings("unchecked")
+    public static <T> T getDeclaredFieldObj(@NotNull Field field, @Nullable Object owner) {
         try {
             field.setAccessible(true);
-            return field.get(owner);
+            return (T) field.get(owner);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

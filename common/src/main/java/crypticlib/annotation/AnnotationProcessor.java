@@ -124,6 +124,7 @@ public enum AnnotationProcessor {
      * @return 类对应的实例
      * @param <T> 类的类型
      */
+    @SuppressWarnings("unchecked")
     public <T> T getClassInstance(Class<T> clazz, Object...objects) {
         if (singletonObjectMap.containsKey(clazz)) {
             return (T) singletonObjectMap.get(clazz);

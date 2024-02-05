@@ -12,9 +12,9 @@ import java.util.*;
 import java.util.function.BiFunction;
 
 /**
- * CrypticLib提供的底层命令节点接口
+ * CrypticLib提供的底层命令接口
  */
-public interface ICommandNode {
+public interface ICommandHandler {
 
     /**
      * 命令的子命令表
@@ -30,7 +30,7 @@ public interface ICommandNode {
      *
      * @param subcommandHandler 注册的命令
      */
-    default ICommandNode regSub(@NotNull SubcommandHandler subcommandHandler) {
+    default ICommandHandler regSub(@NotNull SubcommandHandler subcommandHandler) {
         subcommands().put(subcommandHandler.name(), subcommandHandler);
         for (String alias : subcommandHandler.aliases()) {
             subcommands().put(alias, subcommandHandler);
@@ -44,7 +44,7 @@ public interface ICommandNode {
      * @param name     子命令的名字
      * @param executor 子命令的执行方法
      */
-    default ICommandNode regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
+    default ICommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
         SubcommandHandler commandTreeNode = new SubcommandHandler(name, executor);
         regSub(commandTreeNode);
         return this;
@@ -73,7 +73,7 @@ public interface ICommandNode {
      * 设置此命令的执行器
      * @param executor 命令执行器
      */
-    ICommandNode setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor);
+    ICommandHandler setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor);
 
     /**
      * 执行此命令
@@ -120,7 +120,7 @@ public interface ICommandNode {
      * @param tabCompleter 此命令的默认返回参数提供者
      */
     @NotNull
-    ICommandNode setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter);
+    ICommandHandler setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter);
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容

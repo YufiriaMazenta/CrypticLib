@@ -46,6 +46,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
             .regClassAnnotationProcessor(
                 BukkitListener.class,
                 (annotation, clazz) -> {
+                    if (!Listener.class.isAssignableFrom(clazz))
+                        return;
                     boolean reg = true;
                     try {
                         clazz.getDeclaredMethods();
@@ -61,13 +63,17 @@ public abstract class BukkitPlugin extends JavaPlugin {
             .regClassAnnotationProcessor(
                 Command.class,
                 (annotation, clazz) -> {
+                    if (!CommandHandler.class.isAssignableFrom(clazz)) {
+                        MessageSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + clazz.getName());
+                        return;
+                    }
                     CommandHandler commandHandler = (CommandHandler) annotationProcessor.getClassInstance(clazz);
                     for (Field field : commandHandler.getClass().getDeclaredFields()) {
                         if (!field.isAnnotationPresent(Subcommand.class))
                             continue;
-                        if (field.getType().equals(SubcommandHandler.class)) {
-                            SubcommandHandler commandTreeNode = (SubcommandHandler) ReflectUtil.getDeclaredFieldObj(field, commandHandler);
-                            commandHandler.regSub(commandTreeNode);
+                        if (SubcommandHandler.class.isAssignableFrom(field.getType())) {
+                            SubcommandHandler subcommand = ReflectUtil.getDeclaredFieldObj(field, commandHandler);
+                            commandHandler.regSub(subcommand);
                         }
                     }
                     commandHandler.register(this);
@@ -97,6 +103,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
             .regClassAnnotationProcessor(
                 AutoDisable.class,
                 (annotation, clazz) -> {
+                    if (!Disableable.class.isAssignableFrom(clazz))
+                        return;
                     Disableable disableable = (Disableable) annotationProcessor.getClassInstance(clazz);
                     disableableList.add(disableable);
                 }
@@ -104,6 +112,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
             .regClassAnnotationProcessor(
                 AutoReload.class,
                 (annotation, clazz) -> {
+                    if (!Reloadable.class.isAssignableFrom(clazz))
+                        return;
                     Reloadable reloadable = (Reloadable) annotationProcessor.getClassInstance(clazz);
                     reloadableList.add(reloadable);
                 }
