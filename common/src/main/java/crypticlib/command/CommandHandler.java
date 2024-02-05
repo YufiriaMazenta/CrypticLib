@@ -1,6 +1,5 @@
 package crypticlib.command;
 
-import com.google.common.collect.Maps;
 import crypticlib.CrypticLib;
 import crypticlib.perm.PermInfo;
 import org.bukkit.command.Command;
@@ -17,9 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 /**
- * CrypticLib提供的命令树根类，用于注册插件命令
+ * CrypticLib提供的插件命令类，用于注册插件命令
  */
-public class CommandHandler implements ICommandNode, TabExecutor {
+public class CommandHandler implements ICommandHandler, TabExecutor {
 
     private final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
     private CommandInfo commandInfo;
@@ -48,12 +47,12 @@ public class CommandHandler implements ICommandNode, TabExecutor {
 
     @Override
     public CommandHandler regSub(@NotNull SubcommandHandler subcommandHandler) {
-        return (CommandHandler) ICommandNode.super.regSub(subcommandHandler);
+        return (CommandHandler) ICommandHandler.super.regSub(subcommandHandler);
     }
 
     @Override
     public CommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (CommandHandler) ICommandNode.super.regSub(name, executor);
+        return (CommandHandler) ICommandHandler.super.regSub(name, executor);
     }
 
     public CommandInfo rootCommandInfo() {
@@ -100,7 +99,7 @@ public class CommandHandler implements ICommandNode, TabExecutor {
 
     @Override
     public void registerPerms() {
-        ICommandNode.super.registerPerms();
+        ICommandHandler.super.registerPerms();
         PermInfo permission = commandInfo.permission();
         if (permission != null)
             permission.register();

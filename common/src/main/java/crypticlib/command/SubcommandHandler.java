@@ -13,9 +13,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BiFunction;
 
 /**
- * CrypticLib提供的命令树节点类，即子命令
+ * CrypticLib提供的子命令类
  */
-public class SubcommandHandler implements ICommandNode {
+public class SubcommandHandler implements ICommandHandler {
 
     private final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
     private final SubcommandInfo subcommandInfo;
@@ -140,16 +140,16 @@ public class SubcommandHandler implements ICommandNode {
 
     @Override
     public SubcommandHandler regSub(@NotNull SubcommandHandler subcommandHandler) {
-        return (SubcommandHandler) ICommandNode.super.regSub(subcommandHandler);
+        return (SubcommandHandler) ICommandHandler.super.regSub(subcommandHandler);
     }
 
     @Override
     public SubcommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (SubcommandHandler) ICommandNode.super.regSub(name, executor);
+        return (SubcommandHandler) ICommandHandler.super.regSub(name, executor);
     }
 
     public void registerPerms() {
-        ICommandNode.super.registerPerms();
+        ICommandHandler.super.registerPerms();
         PermInfo permission = permission();
         if (permission != null)
             permission.register();

@@ -10,6 +10,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ListUtil {
 
+    @Nullable
     @SuppressWarnings("unchecked")
     public <T> T get(List<?> list, int index, Class<T> tClass) {
         Object object = list.get(index);
