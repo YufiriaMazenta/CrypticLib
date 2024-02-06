@@ -20,11 +20,9 @@ import java.util.function.BiFunction;
  */
 public class CommandHandler implements ICommandHandler, TabExecutor {
 
-    private final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
-    private CommandInfo commandInfo;
-    private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
-    private BiFunction<CommandSender, List<String>, Boolean> executor;
-    private Boolean registered = false;
+    protected final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
+    protected CommandInfo commandInfo;
+    protected Boolean registered = false;
 
     public CommandHandler(CommandInfo commandInfo) {
         this.commandInfo = commandInfo;
@@ -50,11 +48,6 @@ public class CommandHandler implements ICommandHandler, TabExecutor {
         return (CommandHandler) ICommandHandler.super.regSub(subcommandHandler);
     }
 
-    @Override
-    public CommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (CommandHandler) ICommandHandler.super.regSub(name, executor);
-    }
-
     public CommandInfo rootCommandInfo() {
         return commandInfo;
     }
@@ -62,30 +55,6 @@ public class CommandHandler implements ICommandHandler, TabExecutor {
     @Override
     public @NotNull Map<String, SubcommandHandler> subcommands() {
         return subcommands;
-    }
-
-    @Override
-    @Nullable
-    public BiFunction<CommandSender, List<String>, Boolean> executor() {
-        return executor;
-    }
-
-    @Override
-    public CommandHandler setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this.executor = executor;
-        return this;
-    }
-
-    @Override
-    public @NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter() {
-        return tabCompleter;
-    }
-
-    @Override
-    @NotNull
-    public CommandHandler setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
-        this.tabCompleter = tabCompleter;
-        return this;
     }
     
     public void register(@NotNull Plugin plugin) {

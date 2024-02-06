@@ -1,6 +1,6 @@
 package crypticlib;
 
-public interface Reloadable {
+public interface Reloader {
 
     void reload();
 

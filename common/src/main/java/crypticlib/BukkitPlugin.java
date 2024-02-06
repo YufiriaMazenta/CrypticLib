@@ -29,11 +29,11 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     protected final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
-    protected final List<Disableable> disableableList = new CopyOnWriteArrayList<>();
-    protected final List<Reloadable> reloadableList = new CopyOnWriteArrayList<>();
-    private final String defaultConfigFileName = "config.yml";
-    private Integer lowestSupportVersion = 11200;
-    private Integer highestSupportVersion = 12004;
+    protected final List<Disabler> disablerList = new CopyOnWriteArrayList<>();
+    protected final List<Reloader> reloaderList = new CopyOnWriteArrayList<>();
+    protected final String defaultConfigFileName = "config.yml";
+    protected Integer lowestSupportVersion = 11200;
+    protected Integer highestSupportVersion = 12004;
 
     protected BukkitPlugin() {
         super();
@@ -103,19 +103,19 @@ public abstract class BukkitPlugin extends JavaPlugin {
             .regClassAnnotationProcessor(
                 AutoDisable.class,
                 (annotation, clazz) -> {
-                    if (!Disableable.class.isAssignableFrom(clazz))
+                    if (!Disabler.class.isAssignableFrom(clazz))
                         return;
-                    Disableable disableable = (Disableable) annotationProcessor.getClassInstance(clazz);
-                    disableableList.add(disableable);
+                    Disabler disabler = (Disabler) annotationProcessor.getClassInstance(clazz);
+                    disablerList.add(disabler);
                 }
             )
             .regClassAnnotationProcessor(
                 AutoReload.class,
                 (annotation, clazz) -> {
-                    if (!Reloadable.class.isAssignableFrom(clazz))
+                    if (!Reloader.class.isAssignableFrom(clazz))
                         return;
-                    Reloadable reloadable = (Reloadable) annotationProcessor.getClassInstance(clazz);
-                    reloadableList.add(reloadable);
+                    Reloader reloader = (Reloader) annotationProcessor.getClassInstance(clazz);
+                    reloaderList.add(reloader);
                 }
             );
         load();
@@ -131,15 +131,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public final void onDisable() {
         disable();
-        reloadableList.clear();
-        disableableList.forEach(it -> {
+        reloaderList.clear();
+        disablerList.forEach(it -> {
             try {
                 it.disable();
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         });
-        disableableList.clear();
+        disablerList.clear();
         configContainerMap.clear();
         langConfigContainerMap.clear();
         CrypticLib.platform().scheduler().cancelTasks(this);
@@ -163,6 +163,17 @@ public abstract class BukkitPlugin extends JavaPlugin {
      * 插件卸载时执行的方法
      */
     public void disable() {
+    }
+
+    public void reloadPlugin() {
+        reloadConfig();
+        reloaderList.forEach(it -> {
+            try {
+                it.reload();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        });
     }
 
     @Override
@@ -189,13 +200,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
         langConfigContainerMap.forEach((langFolder, container) -> container.reload());
-        reloadableList.forEach(it -> {
-            try {
-                it.reload();
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
     }
 
     private void checkVersion() {

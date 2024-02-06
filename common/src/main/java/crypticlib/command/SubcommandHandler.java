@@ -17,75 +17,28 @@ import java.util.function.BiFunction;
  */
 public class SubcommandHandler implements ICommandHandler {
 
-    private final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
-    private final SubcommandInfo subcommandInfo;
-    private BiFunction<CommandSender, List<String>, List<String>> tabCompleter;
-    private BiFunction<CommandSender, List<String>, Boolean> executor;
+    protected final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
+    protected final SubcommandInfo subcommandInfo;
 
     public SubcommandHandler(@NotNull SubcommandInfo subcommandInfo) {
-        this(subcommandInfo, null);
-    }
-
-    public SubcommandHandler(@NotNull SubcommandInfo subcommandInfo, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.subcommandInfo = subcommandInfo;
-        this.executor = executor;
     }
 
     public SubcommandHandler(@NotNull String name) {
         this(name, null, new ArrayList<>());
     }
 
-    public SubcommandHandler(@NotNull String name, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this(name, null, new ArrayList<>(), executor);
-    }
-
     public SubcommandHandler(@NotNull String name, @NotNull List<String> aliases) {
-        this(name, null, aliases, null);
+        this(name, null, aliases);
     }
 
-    public SubcommandHandler(@NotNull String name, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this(name, null, aliases, executor);
-    }
 
     public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission) {
-        this(name, permission, new ArrayList<>(), null);
-    }
-
-    public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this(name, permission, new ArrayList<>(), executor);
+        this(name, permission, new ArrayList<>());
     }
 
     public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
-        this(name, permission, aliases, null);
-    }
-
-    public SubcommandHandler(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
         this.subcommandInfo = new SubcommandInfo(name, permission, aliases);
-        this.executor = executor;
-    }
-
-    @Override
-    @Nullable
-    public BiFunction<CommandSender, List<String>, Boolean> executor() {
-        return executor;
-    }
-
-    @Override
-    public SubcommandHandler setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor) {
-        this.executor = executor;
-        return this;
-    }
-
-    @Override
-    @NotNull
-    public SubcommandHandler setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter) {
-        this.tabCompleter = tabCompleter;
-        return this;
-    }
-
-    @Override
-    public @NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter() {
-        return tabCompleter;
     }
 
     /**
@@ -141,11 +94,6 @@ public class SubcommandHandler implements ICommandHandler {
     @Override
     public SubcommandHandler regSub(@NotNull SubcommandHandler subcommandHandler) {
         return (SubcommandHandler) ICommandHandler.super.regSub(subcommandHandler);
-    }
-
-    @Override
-    public SubcommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        return (SubcommandHandler) ICommandHandler.super.regSub(name, executor);
     }
 
     public void registerPerms() {

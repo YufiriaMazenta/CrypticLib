@@ -9,12 +9,29 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiFunction;
 
 /**
  * CrypticLib提供的底层命令接口
  */
 public interface ICommandHandler {
+
+    /**
+     * 命令默认执行的方法，当未输入参数或者没有子命令时执行
+     *
+     * @param sender 执行者
+     * @param args   参数
+     */
+    default boolean execute(CommandSender sender, List<String> args) {
+        return true;
+    }
+
+    /**
+     * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
+     * @return 此命令的补全参数内容
+     */
+    default @Nullable List<String> tab(CommandSender sender, List<String> args) {
+        return null;
+    }
 
     /**
      * 命令的子命令表
@@ -37,43 +54,6 @@ public interface ICommandHandler {
         }
         return this;
     }
-
-    /**
-     * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
-     *
-     * @param name     子命令的名字
-     * @param executor 子命令的执行方法
-     */
-    default ICommandHandler regSub(@NotNull String name, @NotNull BiFunction<CommandSender, List<String>, Boolean> executor) {
-        SubcommandHandler commandTreeNode = new SubcommandHandler(name, executor);
-        regSub(commandTreeNode);
-        return this;
-    }
-
-    /**
-     * 命令默认执行的方法，当未输入参数或者没有子命令时执行
-     *
-     * @param sender 执行者
-     * @param args   参数
-     */
-    default boolean execute(CommandSender sender, List<String> args) {
-        if (executor() != null)
-            return executor().apply(sender, args);
-        return true;
-    }
-
-    /**
-     * 命令的执行器
-     * @return 此命令的执行器
-     */
-    @Nullable
-    BiFunction<CommandSender, List<String>, Boolean> executor();
-
-    /**
-     * 设置此命令的执行器
-     * @param executor 命令执行器
-     */
-    ICommandHandler setExecutor(@Nullable BiFunction<CommandSender, List<String>, Boolean> executor);
 
     /**
      * 执行此命令
@@ -99,30 +79,6 @@ public interface ICommandHandler {
     }
 
     /**
-     * 命令的命令补全器
-     * @return 此命令的默认返回参数提供者
-     */
-    @Nullable BiFunction<CommandSender, List<String>, List<String>> tabCompleter();
-
-    /**
-     * 命令的补全内容
-     * @return 此命令的默认返回参数
-     */
-    default @NotNull List<String> tabArgs(CommandSender sender, List<String> args) {
-        BiFunction<CommandSender, List<String>, List<String>> tabCompleter = tabCompleter();
-        if (tabCompleter == null)
-            return new ArrayList<>();
-        return tabCompleter.apply(sender, args);
-    }
-
-    /**
-     * 设置此命令的命令补全器
-     * @param tabCompleter 此命令的默认返回参数提供者
-     */
-    @NotNull
-    ICommandHandler setTabCompleter(@NotNull BiFunction<CommandSender, List<String>, List<String>> tabCompleter);
-
-    /**
      * 提供当玩家或控制台按下TAB时返回的内容
      *
      * @param sender 按下TAB的玩家或者控制台
@@ -130,7 +86,14 @@ public interface ICommandHandler {
      * @return 返回的tab列表内容
      */
     default List<String> onTabComplete(CommandSender sender, List<String> args) {
-        List<String> arguments = new ArrayList<>(tabArgs(sender, args));
+        List<String> arguments;
+        List<String> tab = tab(sender, args);
+        if (tab == null) {
+            arguments = new ArrayList<>();
+        } else {
+            arguments = new ArrayList<>(tab);
+        }
+
         //尝试获取子命令的补全内容
         if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
@@ -160,6 +123,8 @@ public interface ICommandHandler {
             }
         }
         arguments.removeIf(str -> !str.contains(args.get(0)));
+        if (arguments.isEmpty())
+            return Collections.singletonList("");
         return arguments;
     }
 
