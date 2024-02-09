@@ -1,8 +1,6 @@
 package crypticlib;
 
 import crypticlib.annotation.AnnotationProcessor;
-import crypticlib.chat.LangConfigContainer;
-import crypticlib.chat.LangConfigHandler;
 import crypticlib.chat.MessageSender;
 import crypticlib.command.CommandHandler;
 import crypticlib.command.SubcommandHandler;
@@ -11,6 +9,9 @@ import crypticlib.command.annotation.Subcommand;
 import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
+import crypticlib.lang.LangEntryContainer;
+import crypticlib.lang.LangHandler;
+import crypticlib.lang.LangManager;
 import crypticlib.listener.BukkitListener;
 import crypticlib.util.ReflectUtil;
 import org.bukkit.Bukkit;
@@ -28,7 +29,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final Map<String, LangConfigContainer> langConfigContainerMap = new ConcurrentHashMap<>();
     protected final List<Disabler> disablerList = new CopyOnWriteArrayList<>();
     protected final List<Reloader> reloaderList = new CopyOnWriteArrayList<>();
     protected final String defaultConfigFileName = "config.yml";
@@ -91,17 +91,16 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     configContainer.reload();
                 }, AnnotationProcessor.ProcessPriority.LOWEST)
             .regClassAnnotationProcessor(
-                LangConfigHandler.class,
+                LangHandler.class,
                 (annotation, clazz) -> {
-                    LangConfigHandler langConfigHandler = (LangConfigHandler) annotation;
-                    String langFileFolder = langConfigHandler.langFileFolder();
-                    String defLang = langConfigHandler.defLang();
-                    LangConfigContainer langConfigContainer = new LangConfigContainer(this, clazz, langFileFolder, defLang);
-                    langConfigContainerMap.put(langFileFolder, langConfigContainer);
-                    langConfigContainer.reload();
+                    LangHandler langHandler = (LangHandler) annotation;
+                    String langFileFolder = langHandler.langFileFolder();
+                    String defLang = langHandler.defLang();
+                    LangEntryContainer langEntryContainer = new LangEntryContainer(this, clazz, langFileFolder, defLang);
+                    LangManager.INSTANCE.loadLangEntryContainer(langFileFolder, langEntryContainer);
                 }, AnnotationProcessor.ProcessPriority.LOWEST)
             .regClassAnnotationProcessor(
-                AutoDisable.class,
+                OnDisable.class,
                 (annotation, clazz) -> {
                     if (!Disabler.class.isAssignableFrom(clazz))
                         return;
@@ -110,7 +109,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             )
             .regClassAnnotationProcessor(
-                AutoReload.class,
+                OnReload.class,
                 (annotation, clazz) -> {
                     if (!Reloader.class.isAssignableFrom(clazz))
                         return;
@@ -141,9 +140,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         });
         disablerList.clear();
         configContainerMap.clear();
-        langConfigContainerMap.clear();
         CrypticLib.platform().scheduler().cancelTasks(this);
-        CrypticLib.commandManager().unregisterAll();
     }
 
     /**
@@ -199,7 +196,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
-        langConfigContainerMap.forEach((langFolder, container) -> container.reload());
     }
 
     private void checkVersion() {

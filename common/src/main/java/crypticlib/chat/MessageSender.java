@@ -1,6 +1,6 @@
 package crypticlib.chat;
 
-import crypticlib.chat.entry.StringLangConfigEntry;
+import crypticlib.lang.entry.StringLangEntry;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -23,7 +23,7 @@ public class MessageSender {
      * @param receiver 发送到的对象
      * @param msg 发送的语言
      */
-    public static void sendMsg(@NotNull CommandSender receiver, StringLangConfigEntry msg) {
+    public static void sendMsg(@NotNull CommandSender receiver, StringLangEntry msg) {
         sendMsg(receiver, msg, new HashMap<>());
     }
 
@@ -43,7 +43,7 @@ public class MessageSender {
      * @param msg 发送的语言
      * @param replaceMap 需要替换的文本
      */
-    public static void sendMsg(@NotNull CommandSender receiver, StringLangConfigEntry msg, Map<String, String> replaceMap) {
+    public static void sendMsg(@NotNull CommandSender receiver, StringLangEntry msg, Map<String, String> replaceMap) {
         if (receiver instanceof Player) {
             sendMsg(receiver, msg.value((Player) receiver), replaceMap);
         } else {
@@ -89,15 +89,15 @@ public class MessageSender {
         receiver.spigot().sendMessage(baseComponent);
     }
 
-    public static void sendTitle(Player player, String title, StringLangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {
+    public static void sendTitle(Player player, String title, StringLangEntry subTitle, int fadeIn, int stay, int fadeOut) {
         sendTitle(player, title, subTitle.value(player), fadeIn, stay, fadeOut);
     }
 
-    public static void sendTitle(Player player, StringLangConfigEntry title, String subTitle, int fadeIn, int stay, int fadeOut) {
+    public static void sendTitle(Player player, StringLangEntry title, String subTitle, int fadeIn, int stay, int fadeOut) {
         sendTitle(player, title.value(player), subTitle, fadeIn, stay, fadeOut);
     }
 
-    public static void sendTitle(Player player, StringLangConfigEntry title, StringLangConfigEntry subTitle, int fadeIn, int stay, int fadeOut) {;
+    public static void sendTitle(Player player, StringLangEntry title, StringLangEntry subTitle, int fadeIn, int stay, int fadeOut) {;
         sendTitle(player, title.value(player), subTitle.value(player), fadeIn, stay, fadeOut);
     }
 
@@ -125,15 +125,15 @@ public class MessageSender {
         player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
     }
 
-    public static void sendTitle(Player player, String title, StringLangConfigEntry subTitle) {
+    public static void sendTitle(Player player, String title, StringLangEntry subTitle) {
         sendTitle(player, title, subTitle.value(player));
     }
 
-    public static void sendTitle(Player player, StringLangConfigEntry title, String subTitle) {
+    public static void sendTitle(Player player, StringLangEntry title, String subTitle) {
         sendTitle(player, title.value(player), subTitle);
     }
 
-    public static void sendTitle(Player player, StringLangConfigEntry title, StringLangConfigEntry subTitle) {
+    public static void sendTitle(Player player, StringLangEntry title, StringLangEntry subTitle) {
         sendTitle(player, title.value(player), subTitle.value(player));
     }
 
@@ -164,7 +164,7 @@ public class MessageSender {
         sendActionBar(player, new TextComponent(components));
     }
 
-    public static void sendActionBar(Player player, StringLangConfigEntry text) {
+    public static void sendActionBar(Player player, StringLangEntry text) {
         sendActionBar(player, text.value(player));
     }
 
@@ -179,7 +179,7 @@ public class MessageSender {
         sendActionBar(player, TextProcessor.toComponent(text));
     }
 
-    public static void broadcast(StringLangConfigEntry msg) {
+    public static void broadcast(StringLangEntry msg) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendMsg(player, msg);
         }
@@ -198,7 +198,7 @@ public class MessageSender {
         info(msg);
     }
 
-    public static void broadcastActionBar(StringLangConfigEntry msg) {
+    public static void broadcastActionBar(StringLangEntry msg) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendActionBar(player, msg);
         }
@@ -215,19 +215,19 @@ public class MessageSender {
         }
     }
 
-    public static void broadcastTitle(String title, StringLangConfigEntry subtitle, int fadeIn, int stay, int fadeOut) {
+    public static void broadcastTitle(String title, StringLangEntry subtitle, int fadeIn, int stay, int fadeOut) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
-    public static void broadcastTitle(StringLangConfigEntry title, String subtitle, int fadeIn, int stay, int fadeOut) {
+    public static void broadcastTitle(StringLangEntry title, String subtitle, int fadeIn, int stay, int fadeOut) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
-    public static void broadcastTitle(StringLangConfigEntry title, StringLangConfigEntry subtitle, int fadeIn, int stay, int fadeOut) {
+    public static void broadcastTitle(StringLangEntry title, StringLangEntry subtitle, int fadeIn, int stay, int fadeOut) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
@@ -248,19 +248,19 @@ public class MessageSender {
         }
     }
 
-    public static void broadcastTitle(String title, StringLangConfigEntry subtitle) {
+    public static void broadcastTitle(String title, StringLangEntry subtitle) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle);
         }
     }
 
-    public static void broadcastTitle(StringLangConfigEntry title, String subtitle) {
+    public static void broadcastTitle(StringLangEntry title, String subtitle) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle);
         }
     }
 
-    public static void broadcastTitle(StringLangConfigEntry title, StringLangConfigEntry subtitle) {
+    public static void broadcastTitle(StringLangEntry title, StringLangEntry subtitle) {
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle);
         }
@@ -278,7 +278,7 @@ public class MessageSender {
         }
     }
 
-    public static void info(StringLangConfigEntry msg) {
+    public static void info(StringLangEntry msg) {
         sendMsg(Bukkit.getConsoleSender(), msg);
     }
 
@@ -291,7 +291,7 @@ public class MessageSender {
         sendMsg(Bukkit.getConsoleSender(), msg);
     }
 
-    public static void info(StringLangConfigEntry msg, Map<String, String> replaceMap) {
+    public static void info(StringLangEntry msg, Map<String, String> replaceMap) {
         info(msg.value(), replaceMap);
     }
 

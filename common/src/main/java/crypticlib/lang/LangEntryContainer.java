@@ -1,8 +1,8 @@
-package crypticlib.chat;
+package crypticlib.lang;
 
 import com.google.common.base.Charsets;
-import crypticlib.chat.entry.LangConfigEntry;
 import crypticlib.config.ConfigWrapper;
+import crypticlib.lang.entry.LangEntry;
 import crypticlib.util.FileUtil;
 import crypticlib.util.LocaleUtil;
 import crypticlib.util.ReflectUtil;
@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class LangConfigContainer {
+public class LangEntryContainer {
 
     private final Class<?> containerClass;
     private final Map<String, ConfigWrapper> langConfigWrapperMap;
@@ -30,7 +30,7 @@ public class LangConfigContainer {
     private final Plugin plugin;
     private final String defLang;
 
-    public LangConfigContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
+    public LangEntryContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
         this.plugin = plugin;
         this.langConfigWrapperMap = new ConcurrentHashMap<>();
         this.langFileFolder = langFileFolder;
@@ -70,13 +70,14 @@ public class LangConfigContainer {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
             Object object = ReflectUtil.getDeclaredFieldObj(field, null);
-            if (!(object instanceof LangConfigEntry))
+            if (!(object instanceof LangEntry))
                 continue;
-            LangConfigEntry<?> langConfigEntry = (LangConfigEntry<?>) object;
-            if (!langConfigEntry.defLang().equals(defLang)) {
-                langConfigEntry.setDefLang(defLang);
+            LangEntry<?> langEntry = (LangEntry<?>) object;
+            if (!langEntry.defLang().equals(defLang)) {
+                langEntry.setDefLang(defLang);
             }
-            langConfigEntry.load(this);
+            langEntry.load(this);
+            LangManager.INSTANCE.putLangEntry(langFileFolder, langEntry);
         }
     }
 

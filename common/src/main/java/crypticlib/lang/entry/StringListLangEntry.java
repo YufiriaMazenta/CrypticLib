@@ -1,23 +1,23 @@
-package crypticlib.chat.entry;
+package crypticlib.lang.entry;
 
-import crypticlib.chat.LangConfigContainer;
+import crypticlib.lang.LangEntryContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
 
-public class StringListLangConfigEntry extends LangConfigEntry<List<String>> {
+public class StringListLangEntry extends LangEntry<List<String>> {
 
-    public StringListLangConfigEntry(@NotNull String key) {
+    public StringListLangEntry(@NotNull String key) {
         this(key, Collections.singletonList(key));
     }
 
-    public StringListLangConfigEntry(@NotNull String key, List<String> def) {
+    public StringListLangEntry(@NotNull String key, List<String> def) {
         super(key, def);
     }
 
     @Override
-    public StringListLangConfigEntry load(LangConfigContainer configContainer) {
+    public StringListLangEntry load(LangEntryContainer configContainer) {
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
             if (configWrapper.contains(key)) {

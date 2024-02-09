@@ -1,20 +1,20 @@
-package crypticlib.chat.entry;
+package crypticlib.lang.entry;
 
-import crypticlib.chat.LangConfigContainer;
+import crypticlib.lang.LangEntryContainer;
 import org.jetbrains.annotations.NotNull;
 
-public class StringLangConfigEntry extends LangConfigEntry<String> {
+public class StringLangEntry extends LangEntry<String> {
 
-    public StringLangConfigEntry(@NotNull String key) {
+    public StringLangEntry(@NotNull String key) {
         this(key, key);
     }
 
-    public StringLangConfigEntry(@NotNull String key, String def) {
+    public StringLangEntry(@NotNull String key, String def) {
         super(key, def);
     }
 
     @Override
-    public StringLangConfigEntry load(LangConfigContainer configContainer) {
+    public StringLangEntry load(LangEntryContainer configContainer) {
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
             if (configWrapper.contains(key)) {

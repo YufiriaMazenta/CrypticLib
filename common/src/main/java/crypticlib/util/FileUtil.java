@@ -17,7 +17,7 @@ public class FileUtil {
 
     public static final Pattern YAML_FILE_PATTERN = Pattern.compile("^(.*)\\.(yaml|yml)$");
     public static final Pattern JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(json)$");
-    public static final Pattern YAML_AND_JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(json)$");
+    public static final Pattern YAML_AND_JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(yaml|yml|json)$");
 
     /**
      * 获取文件夹下所有的json文件
