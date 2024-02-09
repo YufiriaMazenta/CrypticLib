@@ -1,11 +1,11 @@
-package crypticlib.chat;
+package crypticlib.lang;
 
 import java.lang.annotation.*;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface LangConfigHandler {
+public @interface LangHandler {
 
     String langFileFolder();
 

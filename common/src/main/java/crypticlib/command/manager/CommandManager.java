@@ -1,5 +1,7 @@
 package crypticlib.command.manager;
 
+import crypticlib.Disabler;
+import crypticlib.OnDisable;
 import crypticlib.command.CommandInfo;
 import crypticlib.command.SubcommandHandler;
 import crypticlib.perm.PermInfo;
@@ -19,7 +21,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public enum CommandManager {
+@OnDisable
+public enum CommandManager implements Disabler {
 
     INSTANCE;
 
@@ -99,6 +102,11 @@ public enum CommandManager {
 
     public static SubcommandHandler subcommand(@NotNull String name) {
         return new SubcommandHandler(name);
+    }
+
+    @Override
+    public void disable() {
+        unregisterAll();
     }
 
 }
