@@ -60,6 +60,11 @@ public class CommandInfo {
         return permission;
     }
 
+    public CommandInfo setPermission(@NotNull String permission) {
+        this.permission = new PermInfo(permission);
+        return this;
+    }
+
     public CommandInfo setPermission(@Nullable PermInfo permission) {
         this.permission = permission;
         return this;

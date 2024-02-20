@@ -1,6 +1,7 @@
 package crypticlib.command;
 
 import crypticlib.perm.PermInfo;
+import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * CrypticLib提供的子命令类
  */
-public class SubcommandHandler implements ICommandHandler {
+public abstract class SubcommandHandler implements ICommandHandler {
 
     protected final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
     protected final SubcommandInfo subcommandInfo;
@@ -39,6 +40,16 @@ public class SubcommandHandler implements ICommandHandler {
         this.subcommandInfo = new SubcommandInfo(name, permission, aliases);
     }
 
+    @Override
+    public final boolean onCommand(CommandSender sender, List<String> args) {
+        return ICommandHandler.super.onCommand(sender, args);
+    }
+
+    @Override
+    public final List<String> onTabComplete(CommandSender sender, List<String> args) {
+        return ICommandHandler.super.onTabComplete(sender, args);
+    }
+
     /**
      * 获取此子命令的名字
      *
@@ -59,7 +70,12 @@ public class SubcommandHandler implements ICommandHandler {
         return subcommandInfo.permission();
     }
 
-    public SubcommandHandler setPermission(PermInfo permission) {
+    public SubcommandHandler setPermission(@NotNull String permission) {
+        this.subcommandInfo.setPermission(new PermInfo(permission));
+        return this;
+    }
+
+    public SubcommandHandler setPermission(@Nullable PermInfo permission) {
         this.subcommandInfo.setPermission(permission);
         return this;
     }
