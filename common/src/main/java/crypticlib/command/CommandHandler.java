@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * CrypticLib提供的插件命令类，用于注册插件命令
  */
-public class CommandHandler implements ICommandHandler, TabExecutor {
+public abstract class CommandHandler implements ICommandHandler, TabExecutor {
 
     protected final Map<String, SubcommandHandler> subcommands = new ConcurrentHashMap<>();
     protected CommandInfo commandInfo;
@@ -39,6 +39,16 @@ public class CommandHandler implements ICommandHandler, TabExecutor {
     public CommandHandler setRootCommandInfo(CommandInfo commandInfo) {
         this.commandInfo = commandInfo;
         return this;
+    }
+
+    @Override
+    public final boolean onCommand(CommandSender sender, List<String> args) {
+        return ICommandHandler.super.onCommand(sender, args);
+    }
+
+    @Override
+    public final List<String> onTabComplete(CommandSender sender, List<String> args) {
+        return ICommandHandler.super.onTabComplete(sender, args);
     }
 
     @Override

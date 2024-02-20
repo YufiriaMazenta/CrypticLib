@@ -100,10 +100,6 @@ public enum CommandManager implements Disabler {
         return registeredCommands;
     }
 
-    public static SubcommandHandler subcommand(@NotNull String name) {
-        return new SubcommandHandler(name);
-    }
-
     @Override
     public void disable() {
         unregisterAll();
