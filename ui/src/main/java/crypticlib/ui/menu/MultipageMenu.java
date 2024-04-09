@@ -81,7 +81,6 @@ public class MultipageMenu extends Menu {
             }
         }
 
-        //绘制自动生成图标
         parseElements();
     }
 
@@ -97,6 +96,7 @@ public class MultipageMenu extends Menu {
             maxPage = elements.size() / maxElementNumPerPage + 1;
     }
 
+    //解析自动生成图标
     protected void parseElements() {
         updateMaxPage();
         for (Integer slot : elementSlots) {
