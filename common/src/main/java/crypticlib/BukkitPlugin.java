@@ -32,8 +32,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     protected final List<Disabler> disablerList = new CopyOnWriteArrayList<>();
     protected final List<Reloader> reloaderList = new CopyOnWriteArrayList<>();
     protected final String defaultConfigFileName = "config.yml";
-    protected Integer lowestSupportVersion = 11200;
-    protected Integer highestSupportVersion = 12004;
 
     protected BukkitPlugin() {
         super();
@@ -124,7 +122,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public final void onEnable() {
         AnnotationProcessor.INSTANCE.scanJar(getFile());
         enable();
-        checkVersion();
     }
 
     @Override
@@ -196,30 +193,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
-    }
-
-    private void checkVersion() {
-        int version = CrypticLib.minecraftVersion();
-        if (version > highestSupportVersion || version < lowestSupportVersion) {
-            MessageSender.info(this.getName() + " &c&lUnsupported Version");
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
-    }
-
-    public Integer lowestSupportVersion() {
-        return lowestSupportVersion;
-    }
-
-    public void setLowestSupportVersion(Integer lowestSupportVersion) {
-        this.lowestSupportVersion = lowestSupportVersion;
-    }
-
-    public Integer highestSupportVersion() {
-        return highestSupportVersion;
-    }
-
-    public void setHighestSupportVersion(Integer highestSupportVersion) {
-        this.highestSupportVersion = highestSupportVersion;
     }
 
 }

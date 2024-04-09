@@ -17,59 +17,82 @@ public class Icon {
     private Consumer<InventoryClickEvent> clickAction;
 
     public Icon(@NotNull Material material) {
-        this(material, null);
+        this(new ItemStack(material), null, null, null);
+    }
+
+    public Icon(@NotNull Material material, @Nullable Integer customModelData) {
+        this(new ItemStack(material), null, null, customModelData);
     }
 
     public Icon(@NotNull Material material, @Nullable String name) {
-        this(material, name, event -> event.setCancelled(true));
+        this(new ItemStack(material), name, null, null);
+    }
+
+    public Icon(@NotNull Material material, @Nullable List<String> lore) {
+        this(new ItemStack(material), null, lore, null);
+    }
+
+    public Icon(@NotNull Material material, @Nullable List<String> lore, @Nullable Integer customModelData) {
+        this(new ItemStack(material), null, lore, customModelData);
+    }
+
+    public Icon(@NotNull Material material, @Nullable String name, @Nullable Integer customModelData) {
+        this(new ItemStack(material), name, null, customModelData);
     }
 
     public Icon(@NotNull Material material, @Nullable String name, @Nullable List<String> lore) {
-        this(material, name, lore, event -> event.setCancelled(true));
+        this(new ItemStack(material), name, lore, null);
     }
 
-    public Icon(@NotNull Material material, @Nullable String name, @Nullable Consumer<InventoryClickEvent> clickAction) {
-        this(material, name, null, clickAction);
-    }
-
-    public Icon(@NotNull Material material, @Nullable String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickAction) {
-        this(new ItemStack(material), name, lore, clickAction);
+    public Icon(@NotNull Material material, @Nullable String name, @Nullable List<String> lore, @Nullable Integer customModelData) {
+        this(new ItemStack(material), name, lore, customModelData);
     }
 
     public Icon(@NotNull ItemStack display) {
-        this(display, event -> event.setCancelled(true));
-    }
-
-    public Icon(@NotNull ItemStack display, Consumer<InventoryClickEvent> clickAction) {
-        this(display, null, null, clickAction);
+        this(display, null, null, null);
     }
 
     public Icon(@NotNull ItemStack display, @Nullable String name) {
-        this(display, name, null, event -> event.setCancelled(true));
+        this(display, name, null, null);
     }
 
-    public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable Consumer<InventoryClickEvent> clickAction) {
-        this(display, name, null, clickAction);
+    public Icon(@NotNull ItemStack display, @Nullable List<String> lore) {
+        this(display, null, lore, null);
+    }
+
+    public Icon(@NotNull ItemStack display, @Nullable Integer customModelData) {
+        this(display, null, null, customModelData);
+    }
+
+    public Icon(@NotNull ItemStack display, @Nullable List<String> lore, @Nullable Integer customModelData) {
+        this(display, null, lore, customModelData);
+    }
+
+    public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable Integer customModelData) {
+        this(display, name, null, customModelData);
     }
 
     public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable List<String> lore) {
-        this(display, name, lore, event -> event.setCancelled(true));
+        this(display, name, lore, null);
     }
 
-    public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable List<String> lore, @Nullable Consumer<InventoryClickEvent> clickAction) {
+    public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable List<String> lore, @Nullable Integer customModelData) {
         if (!ItemUtil.isAir(display)) {
             ItemStack displayClone = display.clone();
             ItemMeta itemMeta = displayClone.getItemMeta();
+            if (itemMeta == null)
+                throw new IllegalArgumentException("Item meta can not be null");
             if (name != null)
                 itemMeta.setDisplayName(name);
             if (lore != null)
                 itemMeta.setLore(lore);
+            if (customModelData != null)
+                itemMeta.setCustomModelData(customModelData);
             displayClone.setItemMeta(itemMeta);
             this.display = displayClone;
         } else {
             this.display = display;
         }
-        this.clickAction = clickAction;
     }
 
     /**
