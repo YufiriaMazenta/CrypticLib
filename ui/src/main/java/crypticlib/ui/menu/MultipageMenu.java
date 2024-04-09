@@ -4,16 +4,12 @@ import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class MultipageMenu extends Menu {
@@ -62,7 +58,7 @@ public class MultipageMenu extends Menu {
         layoutSlotMap.clear();
         elementSlots.clear();
         
-        //绘制除了自动生成图标以外的所有图标
+        //解析除了自动生成图标以外的所有图标
         MenuLayout layout = display.layout();
         for (int x = 0; x < layout.layout().size(); x++) {
             String line = layout.layout().get(x);
@@ -87,11 +83,9 @@ public class MultipageMenu extends Menu {
 
         //绘制自动生成图标
         parseElements();
-        //刷新页面
-        refreshOpenedInventory();
     }
 
-    protected void refreshMaxPage() {
+    protected void updateMaxPage() {
         maxElementNumPerPage = elementSlots.size();
         if (maxElementNumPerPage == 0) {
             maxPage = 1;
@@ -104,7 +98,7 @@ public class MultipageMenu extends Menu {
     }
 
     protected void parseElements() {
-        refreshMaxPage();
+        updateMaxPage();
         for (Integer slot : elementSlots) {
             slotMap.remove(slot);
         }
@@ -133,7 +127,7 @@ public class MultipageMenu extends Menu {
             return;
         this.page = page;
         parseElements();
-        refreshOpenedInventory();
+        updateInventoryIcons();
     }
 
     public int maxPage() {
@@ -148,7 +142,7 @@ public class MultipageMenu extends Menu {
         this.elements.clear();
         this.elements.addAll(elements);
         parseElements();
-        refreshOpenedInventory();
+        updateInventoryIcons();
         return this;
     }
 

@@ -32,7 +32,7 @@ public class Menu implements InventoryHolder {
     protected final Player player;
     protected MenuDisplay display;
     protected final Map<Character, List<Integer>> layoutSlotMap;
-    protected Inventory openedInventory;
+    protected Inventory inventoryCache;
 
     public Menu(@NotNull Player player) {
         this(player, new MenuDisplay());
@@ -68,27 +68,41 @@ public class Menu implements InventoryHolder {
 
     public void onClose(InventoryCloseEvent event) {}
 
+    /**
+     * 为玩家打开页面
+     * @return 页面本身
+     */
     public Menu openMenu() {
-        if (openedInventory == null)
-            this.openedInventory = getInventory();
-        player.openInventory(openedInventory);
+        if (inventoryCache == null)
+            this.inventoryCache = getInventory();
+        player.openInventory(inventoryCache);
         return this;
     }
 
+    /**
+     * 获取UI
+     * 渲染步骤：解析布局->生成页面容器->绘制页面图标
+     * 若已经存在inventoryCache，将直接绘制页面图标并更新页面标题
+     */
     @Override
     @NotNull
     public Inventory getInventory() {
         updateLayout();
         int size = Math.min(display.layout().layout().size() * 9, 54);
-        String title = TextProcessor.color(TextProcessor.placeholder(player, display.title()));
-
-        Inventory inventory = Bukkit.createInventory(this, size, title);
+        Inventory inventory;
+        if (inventoryCache == null) {
+            String title = TextProcessor.color(TextProcessor.placeholder(player, display.title()));
+            inventory = Bukkit.createInventory(this, size, title);
+        } else {
+            inventory = inventoryCache;
+            updateMenuTitle();
+        }
         draw(inventory);
         return inventory;
     }
 
     /**
-     * 刷新布局，会根据MenuDisplay解析布局
+     * 刷新布局信息，会根据MenuDisplay解析布局，但不会更新页面图标，需手动调用updateInventoryIcons方法刷新
      */
     public void updateLayout() {
         slotMap.clear();
@@ -111,21 +125,22 @@ public class Menu implements InventoryHolder {
                 slotMap.put(slot, layout.layoutMap().get(key));
             }
         }
-
-        refreshOpenedInventory();
     }
 
     /**
      * 刷新页面图标，此方法不会重新解析布局
-     * 若需要重新解析布局，请调用parseLayout方法
+     * 若需要重新解析布局，请调用updateLayout方法
      */
-    public void refreshOpenedInventory() {
-        if (openedInventory != null) {
-            openedInventory.clear();
-            draw(openedInventory);
+    public void updateInventoryIcons() {
+        if (inventoryCache != null) {
+            inventoryCache.clear();
+            draw(inventoryCache);
         }
     }
 
+    /**
+     * 刷新页面标题，若玩家未打开此页面，则无效
+     */
     public void updateMenuTitle() {
         InventoryView inventoryView = player.getOpenInventory();
         Inventory topInventory = inventoryView.getTopInventory();
@@ -134,11 +149,23 @@ public class Menu implements InventoryHolder {
         }
     }
 
+    /**
+     * 刷新页面，此方法不会重新解析布局
+     */
     public void updateMenu() {
-        refreshOpenedInventory();
-        updateMenuTitle();
+        updateMenu(false);
     }
 
+    /**
+     * 刷新页面
+     * @param updateLayout 是否更新布局
+     */
+    public void updateMenu(boolean updateLayout) {
+        if (updateLayout)
+            updateLayout();
+        updateInventoryIcons();
+        updateMenuTitle();
+    }
 
     protected void draw(Inventory inventory) {
         slotMap.forEach((slot, icon) -> {
@@ -190,8 +217,8 @@ public class Menu implements InventoryHolder {
      * @return 如果覆盖了某图标将返回被覆盖的图标
      */
     public @Nullable Icon setIcon(int slot, Icon icon) {
-        if (openedInventory != null)
-            openedInventory.setItem(slot, icon.display());
+        if (inventoryCache != null)
+            inventoryCache.setItem(slot, icon.display());
         return slotMap.put(slot, icon);
     }
 
@@ -202,8 +229,8 @@ public class Menu implements InventoryHolder {
      * @return 被删除的图标
      */
     public @Nullable Icon removeIcon(int slot) {
-        if (openedInventory != null)
-            openedInventory.setItem(slot, new ItemStack(Material.AIR));
+        if (inventoryCache != null)
+            inventoryCache.setItem(slot, new ItemStack(Material.AIR));
         return slotMap.remove(slot);
     }
 
@@ -224,8 +251,8 @@ public class Menu implements InventoryHolder {
     }
 
     @Nullable
-    public Inventory openedInventory() {
-        return openedInventory;
+    public Inventory inventoryCache() {
+        return inventoryCache;
     }
 
 }
