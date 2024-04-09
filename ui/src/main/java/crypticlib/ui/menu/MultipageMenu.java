@@ -127,7 +127,7 @@ public class MultipageMenu extends Menu {
             return;
         this.page = page;
         parseElements();
-        updateInventoryIcons();
+        updateMenuIcons();
     }
 
     public int maxPage() {
@@ -142,7 +142,7 @@ public class MultipageMenu extends Menu {
         this.elements.clear();
         this.elements.addAll(elements);
         parseElements();
-        updateInventoryIcons();
+        updateMenuIcons();
         return this;
     }
 

@@ -131,7 +131,7 @@ public class Menu implements InventoryHolder {
      * 刷新页面图标，此方法不会重新解析布局
      * 若需要重新解析布局，请调用updateLayout方法
      */
-    public void updateInventoryIcons() {
+    public void updateMenuIcons() {
         if (inventoryCache != null) {
             inventoryCache.clear();
             draw(inventoryCache);
@@ -163,7 +163,7 @@ public class Menu implements InventoryHolder {
     public void updateMenu(boolean updateLayout) {
         if (updateLayout)
             updateLayout();
-        updateInventoryIcons();
+        updateMenuIcons();
         updateMenuTitle();
     }
 
