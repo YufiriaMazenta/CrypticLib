@@ -57,7 +57,7 @@ public class MultipageMenu extends Menu {
     }
 
     @Override
-    public void parseLayout() {
+    public void updateLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
         elementSlots.clear();
@@ -169,16 +169,6 @@ public class MultipageMenu extends Menu {
     @Override
     public MultipageMenu setDisplay(@NotNull MenuDisplay display) {
         return (MultipageMenu) super.setDisplay(display);
-    }
-
-    @Override
-    public MultipageMenu setOpenAction(@Nullable BiConsumer<Menu, InventoryOpenEvent> openAction) {
-        return (MultipageMenu) super.setOpenAction(openAction);
-    }
-
-    @Override
-    public MultipageMenu setCloseAction(@Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
-        return (MultipageMenu) super.setCloseAction(closeAction);
     }
 
 }

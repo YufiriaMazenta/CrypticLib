@@ -97,16 +97,6 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public StoredMenu setOpenAction(@Nullable BiConsumer<Menu, InventoryOpenEvent> openAction) {
-        return (StoredMenu) super.setOpenAction(openAction);
-    }
-
-    @Override
-    public StoredMenu setCloseAction(BiConsumer<Menu, InventoryCloseEvent> closeAction) {
-        return (StoredMenu) super.setCloseAction(closeAction);
-    }
-
-    @Override
     public void onDrag(InventoryDragEvent event) {
         if (event.getWhoClicked().getInventory().equals(event.getInventory()))
             return;

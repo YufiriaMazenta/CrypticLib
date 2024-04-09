@@ -13,6 +13,7 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class Menu implements InventoryHolder {
@@ -31,8 +31,6 @@ public class Menu implements InventoryHolder {
     protected final Map<Integer, Icon> slotMap;
     protected final Player player;
     protected MenuDisplay display;
-    protected BiConsumer<Menu, InventoryOpenEvent> openAction;
-    protected BiConsumer<Menu, InventoryCloseEvent> closeAction;
     protected final Map<Character, List<Integer>> layoutSlotMap;
     protected Inventory openedInventory;
 
@@ -66,15 +64,9 @@ public class Menu implements InventoryHolder {
 
     public void onDrag(InventoryDragEvent event) {}
 
-    public void onOpen(InventoryOpenEvent event) {
-        if (openAction != null)
-            openAction.accept(this, event);
-    }
+    public void onOpen(InventoryOpenEvent event) {}
 
-    public void onClose(InventoryCloseEvent event) {
-        if (closeAction != null)
-            closeAction.accept(this, event);
-    }
+    public void onClose(InventoryCloseEvent event) {}
 
     public Menu openMenu() {
         if (openedInventory == null)
@@ -86,7 +78,7 @@ public class Menu implements InventoryHolder {
     @Override
     @NotNull
     public Inventory getInventory() {
-        parseLayout();
+        updateLayout();
         int size = Math.min(display.layout().layout().size() * 9, 54);
         String title = TextProcessor.color(TextProcessor.placeholder(player, display.title()));
 
@@ -95,7 +87,10 @@ public class Menu implements InventoryHolder {
         return inventory;
     }
 
-    public void parseLayout() {
+    /**
+     * 刷新布局，会根据MenuDisplay解析布局
+     */
+    public void updateLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
 
@@ -120,12 +115,30 @@ public class Menu implements InventoryHolder {
         refreshOpenedInventory();
     }
 
+    /**
+     * 刷新页面图标，此方法不会重新解析布局
+     * 若需要重新解析布局，请调用parseLayout方法
+     */
     public void refreshOpenedInventory() {
         if (openedInventory != null) {
             openedInventory.clear();
             draw(openedInventory);
         }
     }
+
+    public void updateMenuTitle() {
+        InventoryView inventoryView = player.getOpenInventory();
+        Inventory topInventory = inventoryView.getTopInventory();
+        if (topInventory.getHolder() != null && topInventory.getHolder() instanceof Menu) {
+            inventoryView.setTitle(TextProcessor.color(TextProcessor.placeholder(player, display.title())));
+        }
+    }
+
+    public void updateMenu() {
+        refreshOpenedInventory();
+        updateMenuTitle();
+    }
+
 
     protected void draw(Inventory inventory) {
         slotMap.forEach((slot, icon) -> {
@@ -206,33 +219,13 @@ public class Menu implements InventoryHolder {
 
     public Menu setDisplay(@NotNull MenuDisplay display) {
         this.display = display;
-        parseLayout();
+        updateLayout();
         return this;
     }
 
     @Nullable
     public Inventory openedInventory() {
         return openedInventory;
-    }
-
-    @Nullable
-    public BiConsumer<Menu, InventoryOpenEvent> openAction() {
-        return openAction;
-    }
-
-    public Menu setOpenAction(@Nullable BiConsumer<Menu, InventoryOpenEvent> openAction) {
-        this.openAction = openAction;
-        return this;
-    }
-
-    @Nullable
-    public BiConsumer<Menu, InventoryCloseEvent> closeAction() {
-        return closeAction;
-    }
-
-    public Menu setCloseAction(@Nullable BiConsumer<Menu, InventoryCloseEvent> closeAction) {
-        this.closeAction = closeAction;
-        return this;
     }
 
 }
