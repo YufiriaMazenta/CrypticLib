@@ -6,6 +6,7 @@ import crypticlib.command.CommandHandler;
 import crypticlib.command.SubcommandHandler;
 import crypticlib.command.annotation.Command;
 import crypticlib.command.annotation.Subcommand;
+import crypticlib.command.manager.CommandManager;
 import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.ConfigWrapper;
@@ -137,6 +138,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         });
         disablerList.clear();
         configContainerMap.clear();
+        CommandManager.INSTANCE.unregisterAll();
         CrypticLib.platform().scheduler().cancelTasks(this);
     }
 
