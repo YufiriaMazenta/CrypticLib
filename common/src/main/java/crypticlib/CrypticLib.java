@@ -17,6 +17,7 @@ public class CrypticLib {
     private static IPlatform platform;
     private static Integer minecraftVersion;
     private static String nmsVersion;
+    private static boolean debug = false;
 
     static {
         loadPlatform();
@@ -90,6 +91,14 @@ public class CrypticLib {
     @NotNull
     public static PermManager permissionManager() {
         return PERM_MANAGER;
+    }
+
+    public static boolean debug() {
+        return debug;
+    }
+
+    public static void setDebug(boolean debug) {
+        CrypticLib.debug = debug;
     }
 
 }
