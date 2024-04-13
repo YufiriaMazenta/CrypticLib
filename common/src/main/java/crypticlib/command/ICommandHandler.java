@@ -21,7 +21,7 @@ public interface ICommandHandler {
      * @param sender 执行者
      * @param args   参数
      */
-    default boolean execute(CommandSender sender, List<String> args) {
+    default boolean execute(@NotNull CommandSender sender, @NotNull List<String> args) {
         return true;
     }
 
@@ -29,7 +29,7 @@ public interface ICommandHandler {
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
      * @return 此命令的补全参数内容
      */
-    default @Nullable List<String> tab(CommandSender sender, List<String> args) {
+    default @Nullable List<String> tab(@NotNull CommandSender sender, @NotNull List<String> args) {
         return null;
     }
 
