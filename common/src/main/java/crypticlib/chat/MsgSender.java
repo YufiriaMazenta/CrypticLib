@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import crypticlib.CrypticLib;
 import crypticlib.lang.entry.StringLangEntry;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -16,7 +17,7 @@ import java.util.Map;
  * 聊天信息发送器
  */
 @SuppressWarnings("deprecation")
-public class MessageSender {
+public class MsgSender {
 
     /**
      * 发送语言文本给一个对象，此文本会处理颜色代码与papi变量
@@ -296,6 +297,16 @@ public class MessageSender {
     }
 
     /**
+     * 向后台发送一条DEBUG文本，此文本只会在
+     * @param msg 发送的文本
+     * @param replaceMap 需要替换的文本
+     */
+    public static void debug(StringLangEntry msg, Map<String, String> replaceMap) {
+        if (CrypticLib.debug())
+            info("[DEBUG] | " + msg.value(), replaceMap);
+    }
+
+    /**
      * 给控制台发送一条文本，此文本会处理颜色代码，并根据replaceMap的内容替换源文本
      *
      * @param msg        发送的文本
@@ -303,6 +314,16 @@ public class MessageSender {
      */
     public static void info(String msg, Map<String, String> replaceMap) {
         sendMsg(Bukkit.getConsoleSender(), msg, replaceMap);
+    }
+
+    /**
+     * 向后台发送一条DEBUG文本，此文本只会在
+     * @param msg 发送的文本
+     * @param replaceMap 需要替换的文本
+     */
+    public static void debug(String msg, Map<String, String> replaceMap) {
+        if (CrypticLib.debug())
+            info("[DEBUG] | " + msg, replaceMap);
     }
 
 }

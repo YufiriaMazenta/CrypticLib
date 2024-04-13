@@ -1,7 +1,7 @@
 package crypticlib;
 
 import crypticlib.annotation.AnnotationProcessor;
-import crypticlib.chat.MessageSender;
+import crypticlib.chat.MsgSender;
 import crypticlib.command.CommandHandler;
 import crypticlib.command.SubcommandHandler;
 import crypticlib.command.annotation.Command;
@@ -63,7 +63,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 Command.class,
                 (annotation, clazz) -> {
                     if (!CommandHandler.class.isAssignableFrom(clazz)) {
-                        MessageSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + clazz.getName());
+                        MsgSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + clazz.getName());
                         return;
                     }
                     CommandHandler commandHandler = (CommandHandler) annotationProcessor.getClassInstance(clazz);
