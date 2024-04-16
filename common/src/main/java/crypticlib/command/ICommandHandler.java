@@ -122,7 +122,7 @@ public interface ICommandHandler {
                 }
             }
         }
-        arguments.removeIf(str -> !str.contains(args.get(0)));
+        arguments.removeIf(str -> !str.contains(args.get(args.size() - 1)));
         if (arguments.isEmpty())
             return Collections.singletonList("");
         return arguments;
