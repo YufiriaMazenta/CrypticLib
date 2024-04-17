@@ -101,4 +101,12 @@ public class CrypticLib {
         CrypticLib.debug = debug;
     }
 
+    public static boolean isFolia() {
+        return platform.platform().equals(IPlatform.Platform.FOLIA);
+    }
+
+    public static boolean isPaper() {
+        return platform.platform().equals(IPlatform.Platform.PAPER) || platform.platform().equals(IPlatform.Platform.FOLIA);
+    }
+
 }
