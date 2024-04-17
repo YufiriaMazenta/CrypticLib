@@ -47,17 +47,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 (annotation, clazz) -> {
                     if (!Listener.class.isAssignableFrom(clazz))
                         return;
-                    boolean reg = true;
                     try {
-                        clazz.getDeclaredMethods();
-                    } catch (NoClassDefFoundError ignored) {
-                        reg = false;
-                    }
-
-                    if (!reg)
-                        return;
-                    Listener listener = (Listener) annotationProcessor.getClassInstance(clazz);
-                    Bukkit.getPluginManager().registerEvents(listener, this);
+                        Listener listener = (Listener) annotationProcessor.getClassInstance(clazz);
+                        Bukkit.getPluginManager().registerEvents(listener, this);
+                    } catch (NoClassDefFoundError ignored) {}
                 })
             .regClassAnnotationProcessor(
                 Command.class,
