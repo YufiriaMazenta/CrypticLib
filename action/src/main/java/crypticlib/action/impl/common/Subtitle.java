@@ -1,0 +1,22 @@
+package crypticlib.action.impl.common;
+
+import crypticlib.action.BaseAction;
+import crypticlib.chat.MsgSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
+public class Subtitle extends BaseAction {
+
+    public String message;
+
+    public Subtitle(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public void run(Player player, Plugin plugin) {
+        MsgSender.sendTitle(player, "", message);
+        runNext(player, plugin);
+    }
+
+}
