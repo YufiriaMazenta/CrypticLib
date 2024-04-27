@@ -284,8 +284,7 @@ public class MsgSender {
     }
 
     public static void debug(String msg) {
-        if (CrypticLib.debug())
-            info(msg);
+        debug(msg, new HashMap<>());
     }
 
     public static void info(StringLangEntry msg) {
