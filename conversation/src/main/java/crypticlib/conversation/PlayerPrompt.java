@@ -8,13 +8,13 @@ import java.util.Map;
 public interface PlayerPrompt extends ValidatingPrompt {
 
     @Override
-    default boolean isInputInvalid(String input) {
+    default boolean isInputValid(String input) {
         return Bukkit.getPlayer(input) != null;
     }
 
     @Override
     default Prompt acceptValidatedInput(Map<Object, Object> conversationData, String input) {
-        if (isInputInvalid(input)) {
+        if (isInputValid(input)) {
             return acceptValidatedInput(conversationData, Bukkit.getPlayer(input));
         } else {
             return this;
