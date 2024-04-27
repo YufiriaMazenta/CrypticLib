@@ -279,6 +279,15 @@ public class MsgSender {
         }
     }
 
+    public static void debug(StringLangEntry msg) {
+        debug(msg.value());
+    }
+
+    public static void debug(String msg) {
+        if (CrypticLib.debug())
+            info(msg);
+    }
+
     public static void info(StringLangEntry msg) {
         sendMsg(Bukkit.getConsoleSender(), msg);
     }
