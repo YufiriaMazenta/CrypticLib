@@ -16,7 +16,6 @@ public class CrypticLib {
     private static final PermManager PERM_MANAGER;
     private static IPlatform platform;
     private static Integer minecraftVersion;
-    private static String nmsVersion;
     private static boolean debug = false;
 
     static {
@@ -47,15 +46,6 @@ public class CrypticLib {
         return minecraftVersion;
     }
 
-    /**
-     * 获取当前运行的NMS版本
-     *
-     * @return 当前运行的NMS版本
-     */
-    public static String nmsVersion() {
-        return nmsVersion;
-    }
-
     private static void loadPlatform() {
         try {
             Class<?> pluginMetaClass = Class.forName("io.papermc.paper.plugin.configuration.PluginMeta");
@@ -70,7 +60,7 @@ public class CrypticLib {
 
     private static void loadVersion() {
         //获取游戏版本
-        String versionStr = Bukkit.getBukkitVersion();
+        String versionStr = Bukkit.getMinecraftVersion();
         versionStr = versionStr.substring(0, versionStr.indexOf("-"));
         String[] split = versionStr.split("\\.");
         minecraftVersion = 0;
@@ -78,9 +68,6 @@ public class CrypticLib {
         minecraftVersion += (Integer.parseInt(split[1]) * 100);
         if (split.length > 2)
             minecraftVersion += Integer.parseInt(split[2]);
-
-        //获取NMS的版本
-        nmsVersion = Bukkit.getServer().getClass().getPackage().getName().substring(Bukkit.getServer().getClass().getPackage().getName().lastIndexOf('.') + 1);
     }
 
     @NotNull
