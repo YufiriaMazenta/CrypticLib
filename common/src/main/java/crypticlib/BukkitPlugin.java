@@ -1,6 +1,6 @@
 package crypticlib;
 
-import crypticlib.annotation.AnnotationProcessor;
+import crypticlib.annotation.PluginScanner;
 import crypticlib.chat.MsgSender;
 import crypticlib.command.CommandHandler;
 import crypticlib.command.SubcommandHandler;
@@ -40,15 +40,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void onLoad() {
-        AnnotationProcessor annotationProcessor = AnnotationProcessor.INSTANCE;
-        annotationProcessor
+        PluginScanner pluginScanner = PluginScanner.INSTANCE;
+        pluginScanner
             .regClassAnnotationProcessor(
                 BukkitListener.class,
                 (annotation, clazz) -> {
                     if (!Listener.class.isAssignableFrom(clazz))
                         return;
                     try {
-                        Listener listener = (Listener) annotationProcessor.getClassInstance(clazz);
+                        Listener listener = (Listener) pluginScanner.getClassInstance(clazz);
                         Bukkit.getPluginManager().registerEvents(listener, this);
                     } catch (NoClassDefFoundError ignored) {}
                 })
@@ -59,7 +59,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                         MsgSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + clazz.getName());
                         return;
                     }
-                    CommandHandler commandHandler = (CommandHandler) annotationProcessor.getClassInstance(clazz);
+                    CommandHandler commandHandler = (CommandHandler) pluginScanner.getClassInstance(clazz);
                     for (Field field : commandHandler.getClass().getDeclaredFields()) {
                         if (!field.isAnnotationPresent(Subcommand.class))
                             continue;
@@ -81,7 +81,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     ConfigContainer configContainer = new ConfigContainer(clazz, configWrapper);
                     configContainerMap.put(path, configContainer);
                     configContainer.reload();
-                }, AnnotationProcessor.ProcessPriority.LOWEST)
+                }, PluginScanner.ProcessPriority.LOWEST)
             .regClassAnnotationProcessor(
                 LangHandler.class,
                 (annotation, clazz) -> {
@@ -90,13 +90,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     String defLang = langHandler.defLang();
                     LangEntryContainer langEntryContainer = new LangEntryContainer(this, clazz, langFileFolder, defLang);
                     LangManager.INSTANCE.loadLangEntryContainer(langFileFolder, langEntryContainer);
-                }, AnnotationProcessor.ProcessPriority.LOWEST)
+                }, PluginScanner.ProcessPriority.LOWEST)
             .regClassAnnotationProcessor(
                 OnDisable.class,
                 (annotation, clazz) -> {
                     if (!Disabler.class.isAssignableFrom(clazz))
                         return;
-                    Disabler disabler = (Disabler) annotationProcessor.getClassInstance(clazz);
+                    Disabler disabler = (Disabler) pluginScanner.getClassInstance(clazz);
                     disablerList.add(disabler);
                 }
             )
@@ -105,7 +105,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 (annotation, clazz) -> {
                     if (!Reloader.class.isAssignableFrom(clazz))
                         return;
-                    Reloader reloader = (Reloader) annotationProcessor.getClassInstance(clazz);
+                    Reloader reloader = (Reloader) pluginScanner.getClassInstance(clazz);
                     reloaderList.add(reloader);
                 }
             );
@@ -114,7 +114,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void onEnable() {
-        AnnotationProcessor.INSTANCE.scanJar(getFile());
+        PluginScanner.INSTANCE.scanJar(getFile());
         enable();
     }
 

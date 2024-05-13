@@ -15,15 +15,16 @@ import java.util.jar.JarFile;
 /**
  * CrypticLib的注解处理器，暂时只支持处理类注解
  */
-public enum AnnotationProcessor {
+public enum PluginScanner {
 
     INSTANCE;
 
     private final Map<Class<?>, Object> singletonObjectMap;
     private final Map<Class<? extends Annotation>, BiConsumer<Annotation, Class<?>>> classAnnotationProcessorMap;
     private final Map<Class<? extends Annotation>, ProcessPriority> annotationProcessorPriorityMap;
+    private final Map<String, Class<?>> pluginClassMap = new ConcurrentHashMap<>();
 
-    AnnotationProcessor() {
+    PluginScanner() {
         singletonObjectMap = new ConcurrentHashMap<>();
         classAnnotationProcessorMap = new ConcurrentHashMap<>();
         annotationProcessorPriorityMap = new ConcurrentHashMap<>();
@@ -45,29 +46,32 @@ public enum AnnotationProcessor {
         while (entries.hasMoreElements()) {
             try {
                 JarEntry entry = entries.nextElement();
-                if (!entry.getName().endsWith(".class")) {
-                    continue;
-                }
-                String className = entry.getName()
-                    .replace('/', '.')
-                    .substring(0, entry.getName().length() - 6);
-                Class<?> clazz = classLoader.loadClass(className);
+                boolean isClassFile = entry.getName().endsWith(".class");
+                if (isClassFile) {
+                    String className = entry.getName()
+                        .replace('/', '.')
+                        .substring(0, entry.getName().length() - 6);
+                    Class<?> clazz = classLoader.loadClass(className);
+                    pluginClassMap.put(className, clazz);
+                } else {
 
-                //处理类级别的注解
-                for (Class<? extends Annotation> annotationClass : classAnnotationProcessorMap.keySet()) {
-                    if (!clazz.isAnnotationPresent(annotationClass))
-                        continue;
-                    ProcessPriority priority = annotationProcessorPriorityMap.get(annotationClass);
-                    Annotation annotation = clazz.getAnnotation(annotationClass);
-                    Runnable processTask = () -> classAnnotationProcessorMap.get(annotationClass).accept(annotation, clazz);
-                    if (processTaskCache.containsKey(priority)) {
-                        processTaskCache.get(priority).add(processTask);
-                    } else {
-                        List<Runnable> runnableList = new ArrayList<>();
-                        runnableList.add(processTask);
-                        processTaskCache.put(priority, runnableList);
-                    }
                 }
+
+//                //处理类级别的注解
+//                for (Class<? extends Annotation> annotationClass : classAnnotationProcessorMap.keySet()) {
+//                    if (!clazz.isAnnotationPresent(annotationClass))
+//                        continue;
+//                    ProcessPriority priority = annotationProcessorPriorityMap.get(annotationClass);
+//                    Annotation annotation = clazz.getAnnotation(annotationClass);
+//                    Runnable processTask = () -> classAnnotationProcessorMap.get(annotationClass).accept(annotation, clazz);
+//                    if (processTaskCache.containsKey(priority)) {
+//                        processTaskCache.get(priority).add(processTask);
+//                    } else {
+//                        List<Runnable> runnableList = new ArrayList<>();
+//                        runnableList.add(processTask);
+//                        processTaskCache.put(priority, runnableList);
+//                    }
+//                }
             } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
             } catch (Throwable throwable) {
                 throw new RuntimeException(throwable);
@@ -96,7 +100,7 @@ public enum AnnotationProcessor {
      * @param annotationProcessor 注解的处理器
      * @param priority 处理器的优先级，从LOWEST往HIGHEST依次执行
      */
-    public AnnotationProcessor regClassAnnotationProcessor(
+    public PluginScanner regClassAnnotationProcessor(
         @NotNull Class<? extends Annotation> annotationClass,
         @NotNull BiConsumer<Annotation, Class<?>> annotationProcessor,
         @NotNull ProcessPriority priority
@@ -111,7 +115,7 @@ public enum AnnotationProcessor {
      * @param annotationClass 注册的注解类
      * @param annotationProcessor 注解的处理器
      */
-    public AnnotationProcessor regClassAnnotationProcessor(
+    public PluginScanner regClassAnnotationProcessor(
         @NotNull Class<? extends Annotation> annotationClass,
         @NotNull BiConsumer<Annotation, Class<?>> annotationProcessor
     ) {

@@ -24,7 +24,6 @@ repositories {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":nms"))
     implementation(project(":ui"))
     implementation(project(":conversation"))
     implementation(project(":action"))
