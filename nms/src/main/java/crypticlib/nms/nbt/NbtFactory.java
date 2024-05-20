@@ -110,7 +110,7 @@ public class NbtFactory {
     }
 
     public static void regNbtTagCompoundProvider(
-        int minecraftVersion,
+        Integer minecraftVersion,
         Function<Map<String, Object>, NbtTagCompound> nbtTagCompoundProvider,
         Supplier<NbtTagCompound> emptyNbtTagCompoundProvider,
         Function<String, NbtTagCompound> mojangsonToNbtTagCompoundProvider
