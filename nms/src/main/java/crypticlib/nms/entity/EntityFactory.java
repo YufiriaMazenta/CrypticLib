@@ -26,28 +26,45 @@ import java.util.function.Function;
 
 public class EntityFactory {
 
-    private static final Map<String, Function<Entity, NbtEntity>> nbtEntityProviderMap;
+    private static final Map<Integer, Function<Entity, NbtEntity>> nbtEntityProviderMap;
 
     static {
         nbtEntityProviderMap = new ConcurrentHashMap<>();
 
-        regNbtEntityProvider("v1_12_R1", V1_12_R1NbtEntity::new);
-        regNbtEntityProvider("v1_13_R1", V1_13_R1NbtEntity::new);
-        regNbtEntityProvider("v1_13_R2", V1_13_R2NbtEntity::new);
-        regNbtEntityProvider("v1_14_R1", V1_14_R1NbtEntity::new);
-        regNbtEntityProvider("v1_15_R1", V1_15_R1NbtEntity::new);
-        regNbtEntityProvider("v1_16_R1", V1_16_R1NbtEntity::new);
-        regNbtEntityProvider("v1_16_R2", V1_16_R2NbtEntity::new);
-        regNbtEntityProvider("v1_16_R3", V1_16_R3NbtEntity::new);
-        regNbtEntityProvider("v1_17_R1", V1_17_R1NbtEntity::new);
-        regNbtEntityProvider("v1_18_R1", V1_18_R1NbtEntity::new);
-        regNbtEntityProvider("v1_18_R2", V1_18_R2NbtEntity::new);
-        regNbtEntityProvider("v1_19_R1", V1_19_R1NbtEntity::new);
-        regNbtEntityProvider("v1_19_R2", V1_19_R2NbtEntity::new);
-        regNbtEntityProvider("v1_19_R3", V1_19_R3NbtEntity::new);
-        regNbtEntityProvider("v1_20_R1", V1_20_R1NbtEntity::new);
-        regNbtEntityProvider("v1_20_R2", V1_20_R2NbtEntity::new);
-        regNbtEntityProvider("v1_20_R3", V1_20_R3NbtEntity::new);
+        regNbtEntityProvider(11200, V1_12_R1NbtEntity::new);
+        regNbtEntityProvider(11201, V1_12_R1NbtEntity::new);
+        regNbtEntityProvider(11202, V1_12_R1NbtEntity::new);
+        regNbtEntityProvider(11300, V1_13_R1NbtEntity::new);
+        regNbtEntityProvider(11301, V1_13_R1NbtEntity::new);
+        regNbtEntityProvider(11302, V1_13_R2NbtEntity::new);
+        regNbtEntityProvider(11400, V1_14_R1NbtEntity::new);
+        regNbtEntityProvider(11401, V1_14_R1NbtEntity::new);
+        regNbtEntityProvider(11402, V1_14_R1NbtEntity::new);
+        regNbtEntityProvider(11403, V1_14_R1NbtEntity::new);
+        regNbtEntityProvider(11404, V1_14_R1NbtEntity::new);
+        regNbtEntityProvider(11500, V1_15_R1NbtEntity::new);
+        regNbtEntityProvider(11501, V1_15_R1NbtEntity::new);
+        regNbtEntityProvider(11502, V1_15_R1NbtEntity::new);
+        regNbtEntityProvider(11600, V1_16_R1NbtEntity::new);
+        regNbtEntityProvider(11601, V1_16_R1NbtEntity::new);
+        regNbtEntityProvider(11602, V1_16_R1NbtEntity::new);
+        regNbtEntityProvider(11603, V1_16_R2NbtEntity::new);
+        regNbtEntityProvider(11604, V1_16_R3NbtEntity::new);
+        regNbtEntityProvider(11605, V1_16_R3NbtEntity::new);
+        regNbtEntityProvider(11700, V1_17_R1NbtEntity::new);
+        regNbtEntityProvider(11701, V1_17_R1NbtEntity::new);
+        regNbtEntityProvider(11800, V1_18_R1NbtEntity::new);
+        regNbtEntityProvider(11801, V1_18_R1NbtEntity::new);
+        regNbtEntityProvider(11802, V1_18_R2NbtEntity::new);
+        regNbtEntityProvider(11900, V1_19_R1NbtEntity::new);
+        regNbtEntityProvider(11901, V1_19_R1NbtEntity::new);
+        regNbtEntityProvider(11902, V1_19_R2NbtEntity::new);
+        regNbtEntityProvider(11903, V1_19_R3NbtEntity::new);
+        regNbtEntityProvider(11904, V1_19_R3NbtEntity::new);
+        regNbtEntityProvider(12000, V1_20_R1NbtEntity::new);
+        regNbtEntityProvider(12001, V1_20_R1NbtEntity::new);
+        regNbtEntityProvider(12002, V1_20_R2NbtEntity::new);
+        regNbtEntityProvider(12003, V1_20_R3NbtEntity::new);
     }
 
     /**
@@ -57,13 +74,13 @@ public class EntityFactory {
      * @return 代理实体对象
      */
     public static NbtEntity entity(Entity entity) {
-        return nbtEntityProviderMap.getOrDefault(CrypticLib.nmsVersion(), i -> {
-            throw new RuntimeException("Unsupported version: " + CrypticLib.nmsVersion());
+        return nbtEntityProviderMap.getOrDefault(CrypticLib.minecraftVersion(), i -> {
+            throw new RuntimeException("Unsupported version: " + CrypticLib.minecraftVersion());
         }).apply(entity);
     }
 
-    public static void regNbtEntityProvider(String nmsVersion, Function<Entity, NbtEntity> proxyEntityFunction) {
-        nbtEntityProviderMap.put(nmsVersion, proxyEntityFunction);
+    public static void regNbtEntityProvider(Integer minecraftVersion, Function<Entity, NbtEntity> proxyEntityFunction) {
+        nbtEntityProviderMap.put(minecraftVersion, proxyEntityFunction);
     }
 
 }
