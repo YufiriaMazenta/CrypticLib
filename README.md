@@ -1,18 +1,24 @@
-## 准备重构1.0
-
-目标为兼容bukkit，bungeecord和velocity的三平台库，并提供一套多端间通信标准
-
 ## CrypticLib
 
 ### 简介
 
-CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便开发流程的工具，目前正在开发中...
+CrypticLib是一个用于编写Bungee/Bukkit多端插件的库，提供各种简便开发流程的工具，目前正在开发中...
+
+计划支持版本`1.16-1.20.6`，需要使用`Java17`进行编译
+
+### 目前进度：
+
+完成基础架构，线程管理器
 
 ### 使用方式
 
 将CrypticLib作为依赖打包到插件中，并将crypticlib包relocate
 
 参考 https://github.com/YufiriaMazenta/CrypticLibExample
+
+### 模块介绍
+
+暂无
 
 #### pom.xml
 

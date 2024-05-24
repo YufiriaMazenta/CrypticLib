@@ -1,15 +1,16 @@
-java.sourceCompatibility = JavaVersion.VERSION_1_8
-java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "0.17.5"
+rootProject.version = "1.0.0-alpha"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
-var repositoryUrl = "http://repo.crypticlib.com:8081/repository/"
-repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
-    repositoryUrl.plus("maven-snapshots/")
+var repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
+    "http://repo.crypticlib.com:8081/repository/maven-snapshots/"
 } else {
-    repositoryUrl.plus("maven-releases/")
+    "http://repo.crypticlib.com:8081/repository/maven-releases"
 }
+val javaVersion = JavaVersion.VERSION_17
+
+java.sourceCompatibility = javaVersion
+java.targetCompatibility = javaVersion
 
 plugins {
     id("java")
@@ -24,9 +25,11 @@ repositories {
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":ui"))
-    implementation(project(":conversation"))
-    implementation(project(":action"))
+    implementation(project(":platform:bukkit"))
+    implementation(project(":platform:bungee"))
+//    implementation(project(":ui"))
+//    implementation(project(":conversation"))
+//    implementation(project(":action"))
 }
 
 tasks {
@@ -64,22 +67,10 @@ subprojects {
     version = rootProject.version
     repositories {
         mavenLocal()
-        maven("https://hub.spigotmc.org/nexus/content/repositories/releases/")
-        maven("https://oss.sonatype.org/content/groups/public/")
-        maven("https://jitpack.io")
-        maven("https://repo.rosewooddev.io/repository/public/")
-        maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
-        maven("https://repo.maven.apache.org/maven2/")
-        maven("https://mvn.lumine.io/repository/maven-public/")
-        maven("https://repo.papermc.io/repository/maven-public/")
-        maven("https://nexus.phoenixdevt.fr/repository/maven-public/")
-        maven("https://r.irepo.space/maven/")
-        maven("https://repo.codemc.io/repository/nms/")
-        maven("https://libraries.minecraft.net")
-        maven("http://repo.crypticlib.com:8081/repository/maven-public/") {
-            isAllowInsecureProtocol = true
-        }
         mavenCentral()
+    }
+    dependencies {
+        compileOnly("org.jetbrains:annotations:24.0.1")
     }
     tasks {
         compileJava {
@@ -107,6 +98,6 @@ subprojects {
             }
         }
     }
-    java.sourceCompatibility = JavaVersion.VERSION_1_8
-    java.targetCompatibility = JavaVersion.VERSION_1_8
+    java.sourceCompatibility = javaVersion
+    java.targetCompatibility = javaVersion
 }

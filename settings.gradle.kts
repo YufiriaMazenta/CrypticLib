@@ -1,6 +1,5 @@
 rootProject.name = "CrypticLib"
 
 include("common")
-include("ui")
-include("conversation")
-include("action")
+include("platform:bukkit")
+include("platform:bungee")
