@@ -1,5 +1,6 @@
 package crypticlib.api.command;
 
+import crypticlib.api.IPlayer;
 import net.md_5.bungee.api.chat.BaseComponent;
 
 import java.util.UUID;
@@ -7,7 +8,9 @@ import java.util.UUID;
 /**
  * 包装命令执行者，用于跨平台执行命令
  */
-public interface WrappedCommandSender<T> {
+public interface ICommandSender {
+
+    String getName();
 
     void sendMessage(String message);
 
@@ -25,16 +28,22 @@ public interface WrappedCommandSender<T> {
 
     void sendMessage(UUID uuid, BaseComponent... message);
 
+    boolean hasPermission(String permission);
+
     boolean isOp();
 
     void setOp(boolean value);
 
-    boolean hasPermission(String permission);
+    default boolean isConsole() {
+        return !isPlayer();
+    }
 
-    boolean isConsole();
+    default boolean isPlayer() {
+        return this instanceof IPlayer;
+    }
 
-    boolean isPlayer();
+    boolean dispatchCommand(String command);
 
-    T getPlatformSender();
+    Object getPlatformCommandSender();
     
 }

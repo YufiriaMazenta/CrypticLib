@@ -1,9 +1,10 @@
 package crypticlib.impl.command;
 
-import crypticlib.api.command.WrappedCommandSender;
+import crypticlib.api.command.ICommandSender;
 import crypticlib.internal.Platform;
 import crypticlib.internal.annotation.PlatformSide;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -13,17 +14,22 @@ import java.util.StringJoiner;
 import java.util.UUID;
 
 @PlatformSide(platform = Platform.BUNGEE)
-public class BungeeWrappedCommandSender implements WrappedCommandSender<CommandSender> {
+public class BungeeCommandSender implements ICommandSender {
 
-    private final CommandSender bungee;
+    private final CommandSender originCommandSender;
 
-    public BungeeWrappedCommandSender(@NotNull CommandSender bungee) {
-        this.bungee = Objects.requireNonNull(bungee);
+    public BungeeCommandSender(@NotNull CommandSender originCommandSender) {
+        this.originCommandSender = Objects.requireNonNull(originCommandSender);
+    }
+
+    @Override
+    public String getName() {
+        return originCommandSender.getName();
     }
 
     @Override
     public void sendMessage(String message) {
-        bungee.sendMessage(message);
+        originCommandSender.sendMessage(message);
     }
 
     @Override
@@ -32,7 +38,7 @@ public class BungeeWrappedCommandSender implements WrappedCommandSender<CommandS
         for (String s : message) {
             stringJoiner.add(s);
         }
-        bungee.sendMessage(stringJoiner.toString());
+        originCommandSender.sendMessage(stringJoiner.toString());
     }
 
     @Override
@@ -47,12 +53,12 @@ public class BungeeWrappedCommandSender implements WrappedCommandSender<CommandS
 
     @Override
     public void sendMessage(BaseComponent message) {
-        bungee.sendMessage(message);
+        originCommandSender.sendMessage(message);
     }
 
     @Override
     public void sendMessage(BaseComponent... message) {
-        bungee.sendMessage(message);
+        originCommandSender.sendMessage(message);
     }
 
     @Override
@@ -66,33 +72,28 @@ public class BungeeWrappedCommandSender implements WrappedCommandSender<CommandS
     }
 
     @Override
+    public boolean hasPermission(String permission) {
+        return originCommandSender.hasPermission(permission);
+    }
+
+    @Override
     public boolean isOp() {
-        return isConsole();
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public void setOp(boolean value) {
-        throw new UnsupportedOperationException("Bungee command sender cannot set OP");
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean hasPermission(String permission) {
-        return bungee.hasPermission(permission);
+    public boolean dispatchCommand(String command) {
+        return ProxyServer.getInstance().getPluginManager().dispatchCommand(originCommandSender, command);
     }
 
     @Override
-    public boolean isConsole() {
-        return !isPlayer();
-    }
-
-    @Override
-    public boolean isPlayer() {
-        return bungee instanceof ProxiedPlayer;
-    }
-
-    @Override
-    public CommandSender getPlatformSender() {
-        return bungee;
+    public CommandSender getPlatformCommandSender() {
+        return originCommandSender;
     }
 
 }

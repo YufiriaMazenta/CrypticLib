@@ -3,7 +3,7 @@ package crypticlib.platform.bukkit;
 import crypticlib.CrypticLib;
 import crypticlib.impl.command.BukkitCommandManager;
 import crypticlib.internal.Platform;
-import crypticlib.internal.PlatformPlugin;
+import crypticlib.internal.IPlatformPlugin;
 import crypticlib.internal.PluginUtil;
 import crypticlib.internal.annotation.PlatformSide;
 import crypticlib.internal.reflect.PluginScanner;
@@ -12,7 +12,7 @@ import crypticlib.impl.scheduler.FoliaScheduler;
 import org.bukkit.plugin.java.JavaPlugin;
 
 @PlatformSide(platform = Platform.BUKKIT)
-public class BukkitPlugin extends JavaPlugin implements PlatformPlugin {
+public class BukkitPlugin extends JavaPlugin implements IPlatformPlugin {
 
     public static BukkitPlugin INSTANCE;
 

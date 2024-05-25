@@ -7,7 +7,7 @@ import crypticlib.internal.reflect.ReflectUtil;
 import java.io.File;
 import java.util.logging.Logger;
 
-public class Plugin {
+public abstract class Plugin {
 
     private File pluginFile;
     private File dataFolder;

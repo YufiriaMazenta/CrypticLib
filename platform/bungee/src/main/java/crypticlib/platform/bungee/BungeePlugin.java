@@ -3,7 +3,7 @@ package crypticlib.platform.bungee;
 import crypticlib.CrypticLib;
 import crypticlib.impl.command.BungeeCommandManager;
 import crypticlib.internal.Platform;
-import crypticlib.internal.PlatformPlugin;
+import crypticlib.internal.IPlatformPlugin;
 import crypticlib.internal.PluginUtil;
 import crypticlib.internal.annotation.PlatformSide;
 import crypticlib.internal.reflect.PluginScanner;
@@ -11,7 +11,7 @@ import crypticlib.impl.schduler.BungeeScheduler;
 import net.md_5.bungee.api.plugin.Plugin;
 
 @PlatformSide(platform = Platform.BUNGEE)
-public class BungeePlugin extends Plugin implements PlatformPlugin {
+public class BungeePlugin extends Plugin implements IPlatformPlugin {
 
     public static BungeePlugin INSTANCE;
 

@@ -1,7 +1,7 @@
 package crypticlib.internal;
 
 import crypticlib.CrypticLib;
-import crypticlib.api.command.CommandHandler;
+import crypticlib.api.command.ICommandHandler;
 import crypticlib.api.command.CommandInfo;
 import crypticlib.api.command.annotation.Command;
 import crypticlib.api.permission.PermissionDefault;
@@ -12,11 +12,11 @@ import crypticlib.internal.reflect.ReflectUtil;
 import java.util.Arrays;
 import java.util.List;
 
-public interface PlatformPlugin {
+public interface IPlatformPlugin {
 
     default void regCommands() {
-        List<Class<CommandHandler>> commandClasses = PluginScanner.INSTANCE.getSubClasses(CommandHandler.class);
-        for (Class<CommandHandler> commandClass : commandClasses) {
+        List<Class<ICommandHandler>> commandClasses = PluginScanner.INSTANCE.getSubClasses(ICommandHandler.class);
+        for (Class<ICommandHandler> commandClass : commandClasses) {
             try {
                 if (!commandClass.isAnnotationPresent(Command.class)) {
                     continue;
@@ -34,8 +34,8 @@ public interface PlatformPlugin {
                 PermissionDefault permissionDefault = command.permissionDefault();
                 String[] aliases = command.aliases();
                 CommandInfo commandInfo = new CommandInfo(name, permission, permissionDefault, aliases);
-                CommandHandler commandHandler = ReflectUtil.getSingletonClassInstance(commandClass);
-                CrypticLib.getCommandManager().registerCommand(commandHandler, commandInfo);
+                ICommandHandler ICommandHandler = ReflectUtil.getSingletonClassInstance(commandClass);
+                CrypticLib.getCommandManager().registerCommand(ICommandHandler, commandInfo);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }

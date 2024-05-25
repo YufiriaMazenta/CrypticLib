@@ -1,6 +1,6 @@
 package crypticlib.impl.command;
 
-import crypticlib.api.command.CommandHandler;
+import crypticlib.api.command.ICommandHandler;
 import crypticlib.api.command.CommandInfo;
 import crypticlib.api.command.ICommandManager;
 import crypticlib.internal.Platform;
@@ -12,7 +12,7 @@ public enum BungeeCommandManager implements ICommandManager {
     INSTANCE;
 
     @Override
-    public void registerCommand(CommandHandler handler, CommandInfo commandInfo) {
+    public void registerCommand(ICommandHandler handler, CommandInfo commandInfo) {
 
     }
 
