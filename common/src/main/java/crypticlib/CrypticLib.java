@@ -61,7 +61,9 @@ public class CrypticLib {
     private static void loadVersion() {
         //获取游戏版本
         String versionStr = Bukkit.getBukkitVersion();
-        versionStr = versionStr.substring(0, versionStr.indexOf("-"));
+        if (versionStr.contains("-")) {
+            versionStr = versionStr.substring(0, versionStr.indexOf("-"));
+        }
         String[] split = versionStr.split("\\.");
         minecraftVersion = 0;
         minecraftVersion += (Integer.parseInt(split[0]) * 10000);
