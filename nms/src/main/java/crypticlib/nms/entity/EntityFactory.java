@@ -65,6 +65,7 @@ public class EntityFactory {
         regNbtEntityProvider(12001, V1_20_R1NbtEntity::new);
         regNbtEntityProvider(12002, V1_20_R2NbtEntity::new);
         regNbtEntityProvider(12003, V1_20_R3NbtEntity::new);
+        regNbtEntityProvider(12004, V1_20_R3NbtEntity::new);
     }
 
     /**
