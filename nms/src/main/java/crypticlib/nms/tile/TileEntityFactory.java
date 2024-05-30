@@ -65,6 +65,7 @@ public class TileEntityFactory {
         regNbtTileEntityProvider(12001, V1_20_R1NbtTileEntity::new);
         regNbtTileEntityProvider(12002, V1_20_R2NbtTileEntity::new);
         regNbtTileEntityProvider(12003, V1_20_R3NbtTileEntity::new);
+        regNbtTileEntityProvider(12004, V1_20_R3NbtTileEntity::new);
     }
 
     public static NbtTileEntity tileEntity(BlockState blockState) {

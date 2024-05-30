@@ -79,6 +79,7 @@ public class ItemFactory {
         regNbtItemProvider(12001, V1_20_R1NbtItem::new, V1_20_R1NbtItem::new, V1_20_R1NbtItem::new);
         regNbtItemProvider(12002, V1_20_R2NbtItem::new, V1_20_R2NbtItem::new, V1_20_R2NbtItem::new);
         regNbtItemProvider(12003, V1_20_R3NbtItem::new, V1_20_R3NbtItem::new, V1_20_R3NbtItem::new);
+        regNbtItemProvider(12004, V1_20_R3NbtItem::new, V1_20_R3NbtItem::new, V1_20_R3NbtItem::new);
     }
 
     public static NbtItem item(ItemStack itemStack) {
