@@ -79,7 +79,11 @@ public enum AnnotationProcessor {
             if (tasks == null)
                 continue;
             for (Runnable task : tasks) {
-                task.run();
+                try {
+                    task.run();
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
             }
         }
 
@@ -125,7 +129,7 @@ public enum AnnotationProcessor {
      * @param <T> 类的类型
      */
     @SuppressWarnings("unchecked")
-    public <T> T getClassInstance(Class<T> clazz, Object...objects) {
+    public <T> T getClassInstance(Class<T> clazz, Object...objects) throws NoClassDefFoundError, ClassNotFoundException {
         if (singletonObjectMap.containsKey(clazz)) {
             return (T) singletonObjectMap.get(clazz);
         } else {

@@ -50,7 +50,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     try {
                         Listener listener = (Listener) annotationProcessor.getClassInstance(clazz);
                         Bukkit.getPluginManager().registerEvents(listener, this);
-                    } catch (NoClassDefFoundError ignored) {}
+                    } catch (ClassNotFoundException | NoClassDefFoundError ignored) {}
                 })
             .regClassAnnotationProcessor(
                 Command.class,
@@ -59,16 +59,20 @@ public abstract class BukkitPlugin extends JavaPlugin {
                         MsgSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + clazz.getName());
                         return;
                     }
-                    CommandHandler commandHandler = (CommandHandler) annotationProcessor.getClassInstance(clazz);
-                    for (Field field : commandHandler.getClass().getDeclaredFields()) {
-                        if (!field.isAnnotationPresent(Subcommand.class))
-                            continue;
-                        if (SubcommandHandler.class.isAssignableFrom(field.getType())) {
-                            SubcommandHandler subcommand = ReflectUtil.getDeclaredFieldObj(field, commandHandler);
-                            commandHandler.regSub(subcommand);
+                    try {
+                        CommandHandler commandHandler = (CommandHandler) annotationProcessor.getClassInstance(clazz);
+                        for (Field field : commandHandler.getClass().getDeclaredFields()) {
+                            if (!field.isAnnotationPresent(Subcommand.class))
+                                continue;
+                            if (SubcommandHandler.class.isAssignableFrom(field.getType())) {
+                                SubcommandHandler subcommand = ReflectUtil.getDeclaredFieldObj(field, commandHandler);
+                                commandHandler.regSub(subcommand);
+                            }
                         }
+                        commandHandler.register(this);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
                     }
-                    commandHandler.register(this);
                 })
             .regClassAnnotationProcessor(
                 ConfigHandler.class,
@@ -96,8 +100,12 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 (annotation, clazz) -> {
                     if (!Disabler.class.isAssignableFrom(clazz))
                         return;
-                    Disabler disabler = (Disabler) annotationProcessor.getClassInstance(clazz);
-                    disablerList.add(disabler);
+                    try {
+                        Disabler disabler = (Disabler) annotationProcessor.getClassInstance(clazz);
+                        disablerList.add(disabler);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             )
             .regClassAnnotationProcessor(
@@ -105,8 +113,12 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 (annotation, clazz) -> {
                     if (!Reloader.class.isAssignableFrom(clazz))
                         return;
-                    Reloader reloader = (Reloader) annotationProcessor.getClassInstance(clazz);
-                    reloaderList.add(reloader);
+                    try {
+                        Reloader reloader = (Reloader) annotationProcessor.getClassInstance(clazz);
+                        reloaderList.add(reloader);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             );
         load();
