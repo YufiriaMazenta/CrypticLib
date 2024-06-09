@@ -1,7 +1,9 @@
 package crypticlib.action;
 
 import crypticlib.action.impl.EmptyAction;
+import crypticlib.action.impl.ErrorAction;
 import crypticlib.action.impl.common.*;
+import crypticlib.chat.MsgSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -37,10 +39,20 @@ public enum ActionCompiler {
         }
         int index = actionStr.indexOf(" ");
         if (index < 0) {
-            return actionSupplierMap.get(actionStr).apply(null);
+            if (actionSupplierMap.containsKey(actionStr)) {
+                return actionSupplierMap.get(actionStr).apply(null);
+            } else {
+                MsgSender.info("&cError when compile action: " + actionStr);
+                return new ErrorAction();
+            }
         } else {
             String token = actionStr.substring(0, index);
-            return actionSupplierMap.get(token).apply(actionStr.substring(index + 1));
+            if (actionSupplierMap.containsKey(token)) {
+                return actionSupplierMap.get(token).apply(actionStr.substring(index + 1));
+            } else {
+                MsgSender.info("&cError when compile action: " + actionStr);
+                return new ErrorAction();
+            }
         }
     }
 
