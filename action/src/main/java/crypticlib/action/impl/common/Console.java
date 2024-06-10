@@ -15,6 +15,11 @@ public class Console extends BaseAction {
     }
 
     @Override
+    public String toActionStr() {
+        return "console " + command;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
         String command = TextProcessor.placeholder(player, this.command);
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
