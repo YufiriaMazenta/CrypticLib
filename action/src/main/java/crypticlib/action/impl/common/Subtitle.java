@@ -14,6 +14,11 @@ public class Subtitle extends BaseAction {
     }
 
     @Override
+    public String toActionStr() {
+        return "subtitle " + message;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
         MsgSender.sendTitle(player, "", message);
         runNext(player, plugin);

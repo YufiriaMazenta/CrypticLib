@@ -14,6 +14,11 @@ public class ActionBar extends BaseAction {
     }
 
     @Override
+    public String toActionStr() {
+        return "actionbar " + message;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
         MsgSender.sendActionBar(player, message);
         runNext(player, plugin);

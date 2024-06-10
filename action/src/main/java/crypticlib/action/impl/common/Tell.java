@@ -14,6 +14,11 @@ public class Tell extends BaseAction {
     }
 
     @Override
+    public String toActionStr() {
+        return "tell " + message;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
         MsgSender.sendMsg(player, message);
         runNext(player, plugin);

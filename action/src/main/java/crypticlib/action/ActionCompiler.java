@@ -43,7 +43,7 @@ public enum ActionCompiler {
                 return actionSupplierMap.get(actionStr).apply(null);
             } else {
                 MsgSender.info("&cError when compile action: " + actionStr);
-                return new ErrorAction();
+                return new ErrorAction(actionStr);
             }
         } else {
             String token = actionStr.substring(0, index);
@@ -51,7 +51,7 @@ public enum ActionCompiler {
                 return actionSupplierMap.get(token).apply(actionStr.substring(index + 1));
             } else {
                 MsgSender.info("&cError when compile action: " + actionStr);
-                return new ErrorAction();
+                return new ErrorAction(actionStr);
             }
         }
     }
@@ -76,6 +76,15 @@ public enum ActionCompiler {
             pre.setNext(this_);
         }
         return actions.get(0);
+    }
+
+    public List<String> decompile(Action action) {
+        List<String> actionStrList = new ArrayList<>();
+        while (action.next() != null) {
+            actionStrList.add(action.toActionStr());
+            action = action.next();
+        }
+        return actionStrList;
     }
 
     public ActionCompiler regAction(String name, Function<String, Action> actionSupplier) {

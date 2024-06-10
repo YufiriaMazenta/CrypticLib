@@ -9,6 +9,12 @@ import org.bukkit.plugin.Plugin;
  */
 public interface Action {
 
+    /**
+     * 将动作还原为动作语句,实现者需保证还原出的语句能重新编译回此动作
+     * @return
+     */
+    String toActionStr();
+
     void run(Player player, Plugin plugin);
 
     Action next();

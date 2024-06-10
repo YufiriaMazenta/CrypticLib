@@ -12,6 +12,11 @@ import org.bukkit.plugin.Plugin;
  */
 public class EmptyAction implements Action {
     @Override
+    public String toActionStr() {
+        return null;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
 
     }

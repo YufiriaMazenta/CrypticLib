@@ -15,6 +15,11 @@ public class Command extends BaseAction {
     }
 
     @Override
+    public String toActionStr() {
+        return "command " + command;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
         String command = TextProcessor.placeholder(player, this.command);
         Bukkit.dispatchCommand(player, command);

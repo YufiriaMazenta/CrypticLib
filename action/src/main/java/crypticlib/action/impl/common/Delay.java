@@ -26,6 +26,11 @@ public class Delay extends BaseAction {
     }
 
     @Override
+    public String toActionStr() {
+        return "delay " + delayTick;
+    }
+
+    @Override
     public void run(Player player, Plugin plugin) {
         CrypticLib.platform().scheduler().runTaskLater(plugin, () -> {
             runNext(player, plugin);
