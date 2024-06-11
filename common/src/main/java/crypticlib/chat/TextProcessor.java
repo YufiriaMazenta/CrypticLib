@@ -7,9 +7,9 @@ import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +55,7 @@ public class TextProcessor {
      * @param source 源文本
      * @return 处理完成的文本
      */
-    public static String placeholder(Player player, String source) {
+    public static String placeholder(OfflinePlayer player, String source) {
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null)
             source = PlaceholderAPI.setPlaceholders(player, source);
         return source;
