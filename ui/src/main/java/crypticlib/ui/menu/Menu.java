@@ -122,7 +122,7 @@ public class Menu implements InventoryHolder {
                 } else {
                     layoutSlotMap.get(key).add(slot);
                 }
-                slotMap.put(slot, layout.layoutMap().get(key));
+                slotMap.put(slot, layout.layoutMap().get(key).get());
             }
         }
     }
