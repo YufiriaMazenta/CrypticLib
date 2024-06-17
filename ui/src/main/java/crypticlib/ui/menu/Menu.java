@@ -19,11 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class Menu implements InventoryHolder {
@@ -45,8 +41,8 @@ public class Menu implements InventoryHolder {
     public Menu(@NotNull Player player, @NotNull MenuDisplay display) {
         this.player = player;
         this.display = display;
-        this.slotMap = new ConcurrentHashMap<>();
-        this.layoutSlotMap = new ConcurrentHashMap<>();
+        this.slotMap = new LinkedHashMap<>();
+        this.layoutSlotMap = new LinkedHashMap<>();
     }
 
     public Icon onClick(int slot, InventoryClickEvent event) {
