@@ -1,8 +1,8 @@
 package crypticlib.impl.scheduler;
 
+import crypticlib.internal.BukkitUtil;
 import crypticlib.internal.Platform;
 import crypticlib.internal.annotation.PlatformSide;
-import crypticlib.platform.bukkit.BukkitPlugin;
 import crypticlib.api.scheduler.IScheduler;
 import crypticlib.impl.scheduler.task.FoliaTaskWrapper;
 import crypticlib.api.scheduler.task.ITaskWrapper;
@@ -25,61 +25,61 @@ public enum FoliaScheduler implements IScheduler {
 
     @Override
     public ITaskWrapper runTask(@NotNull Runnable task) {
-        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().run(BukkitPlugin.INSTANCE, runnableToConsumer(task)));
+        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().run(BukkitUtil.getPluginIns(), runnableToConsumer(task)));
     }
 
     @Override
     public ITaskWrapper runTaskAsync(@NotNull Runnable task) {
-        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runNow(BukkitPlugin.INSTANCE, runnableToConsumer(task)));
+        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runNow(BukkitUtil.getPluginIns(), runnableToConsumer(task)));
     }
 
     @Override
     public ITaskWrapper runTaskLater(@NotNull Runnable task, long delayTicks) {
-        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runDelayed(BukkitPlugin.INSTANCE, runnableToConsumer(task), delayTicks));
+        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runDelayed(BukkitUtil.getPluginIns(), runnableToConsumer(task), delayTicks));
     }
 
     @Override
     public ITaskWrapper runTaskLaterAsync(@NotNull Runnable task, long delayTicks) {
-        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runDelayed(BukkitPlugin.INSTANCE, runnableToConsumer(task), delayTicks * 50, TimeUnit.MILLISECONDS));
+        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runDelayed(BukkitUtil.getPluginIns(), runnableToConsumer(task), delayTicks * 50, TimeUnit.MILLISECONDS));
     }
 
     @Override
     public ITaskWrapper runTaskTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runAtFixedRate(BukkitPlugin.INSTANCE, runnableToConsumer(task), delayTicks, periodTicks));
+        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runAtFixedRate(BukkitUtil.getPluginIns(), runnableToConsumer(task), delayTicks, periodTicks));
     }
 
     @Override
     public ITaskWrapper runTaskTimerAsync(@NotNull Runnable task, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runAtFixedRate(BukkitPlugin.INSTANCE, runnableToConsumer(task), delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS));
+        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runAtFixedRate(BukkitUtil.getPluginIns(), runnableToConsumer(task), delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS));
     }
 
     public ITaskWrapper runTaskOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
-        return new FoliaTaskWrapper(entity.getScheduler().run(BukkitPlugin.INSTANCE, runnableToConsumer(task), retriedTask));
+        return new FoliaTaskWrapper(entity.getScheduler().run(BukkitUtil.getPluginIns(), runnableToConsumer(task), retriedTask));
     }
 
     public ITaskWrapper runTaskOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
-        return new FoliaTaskWrapper(entity.getScheduler().runDelayed(BukkitPlugin.INSTANCE, runnableToConsumer(task), retriedTask, delayTicks));
+        return new FoliaTaskWrapper(entity.getScheduler().runDelayed(BukkitUtil.getPluginIns(), runnableToConsumer(task), retriedTask, delayTicks));
     }
 
     public ITaskWrapper runTaskOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(entity.getScheduler().runAtFixedRate(BukkitPlugin.INSTANCE, runnableToConsumer(task), retriedTask, delayTicks, periodTicks));
+        return new FoliaTaskWrapper(entity.getScheduler().runAtFixedRate(BukkitUtil.getPluginIns(), runnableToConsumer(task), retriedTask, delayTicks, periodTicks));
     }
 
     public ITaskWrapper runTaskOnLocation(Location location, Runnable task) {
-        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().run(BukkitPlugin.INSTANCE, location, runnableToConsumer(task)));
+        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().run(BukkitUtil.getPluginIns(), location, runnableToConsumer(task)));
     }
 
     public ITaskWrapper runTaskOnLocationLater(Location location, Runnable task, long delayTicks) {
-        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runDelayed(BukkitPlugin.INSTANCE, location, runnableToConsumer(task), delayTicks));
+        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runDelayed(BukkitUtil.getPluginIns(), location, runnableToConsumer(task), delayTicks));
     }
 
     public ITaskWrapper runTaskOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runAtFixedRate(BukkitPlugin.INSTANCE, location, runnableToConsumer(task), delayTicks, periodTicks));
+        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runAtFixedRate(BukkitUtil.getPluginIns(), location, runnableToConsumer(task), delayTicks, periodTicks));
     }
 
     public void cancelTasks() {
-        Bukkit.getGlobalRegionScheduler().cancelTasks(BukkitPlugin.INSTANCE);
-        Bukkit.getAsyncScheduler().cancelTasks(BukkitPlugin.INSTANCE);
+        Bukkit.getGlobalRegionScheduler().cancelTasks(BukkitUtil.getPluginIns());
+        Bukkit.getAsyncScheduler().cancelTasks(BukkitUtil.getPluginIns());
     }
 
     private Consumer<ScheduledTask> runnableToConsumer(Runnable runnable) {
