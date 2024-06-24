@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
-public class MultipageMenu extends Menu {
+public class MultipageMenu extends Menu implements Multipage {
 
     protected List<Icon> elements = new CopyOnWriteArrayList<>();
     protected Integer page = 0;
@@ -110,19 +110,23 @@ public class MultipageMenu extends Menu {
         }
     }
 
+    @Override
     public void nextPage() {
-        setPage(page + 1);
+        page(page + 1);
     }
 
+    @Override
     public void previousPage() {
-        setPage(page - 1);
+        page(page - 1);
     }
 
-    public int page() {
+    @Override
+    public Integer page() {
         return page;
     }
 
-    public void setPage(Integer page) {
+    @Override
+    public void page(int page) {
         if (page < 0 || page >= maxPage)
             return;
         this.page = page;
@@ -130,7 +134,8 @@ public class MultipageMenu extends Menu {
         updateMenuIcons();
     }
 
-    public int maxPage() {
+    @Override
+    public Integer maxPage() {
         return maxPage;
     }
 
