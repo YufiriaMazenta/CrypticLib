@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -137,7 +138,13 @@ public enum AnnotationProcessor {
             if (clazz.isEnum()) {
                 t = clazz.getEnumConstants()[0];
             } else {
-                t = ReflectUtil.newDeclaredInstance(clazz, objects);
+                try {
+                    //反射获取名为INSTANCE的单例
+                    Field instance = ReflectUtil.getDeclaredField(clazz, "INSTANCE");
+                    t = (T) instance.get(null);
+                } catch (Throwable throwable) {
+                    t = ReflectUtil.newDeclaredInstance(clazz, objects);
+                }
             }
             singletonObjectMap.put(clazz, t);
             return t;
