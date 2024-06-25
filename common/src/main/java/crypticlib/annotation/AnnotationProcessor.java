@@ -140,8 +140,8 @@ public enum AnnotationProcessor {
             } else {
                 try {
                     //反射获取名为INSTANCE的单例
-                    Field instance = ReflectUtil.getDeclaredField(clazz, "INSTANCE");
-                    t = (T) instance.get(null);
+                    Field instanceField = ReflectUtil.getDeclaredField(clazz, "INSTANCE");
+                    t = ReflectUtil.getDeclaredFieldObj(instanceField, null);
                 } catch (Throwable throwable) {
                     t = ReflectUtil.newDeclaredInstance(clazz, objects);
                 }
