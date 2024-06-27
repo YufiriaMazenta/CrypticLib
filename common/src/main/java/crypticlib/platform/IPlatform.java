@@ -44,11 +44,17 @@ public interface IPlatform {
      */
     void teleportEntity(@NotNull Entity entity, @NotNull Location location);
 
+    boolean isBukkit();
+
+    boolean isPaper();
+
+    boolean isFolia();
+
     /**
      * 平台的类型
      */
     enum Platform {
-        BUKKIT, PAPER, FOLIA
+        BUKKIT, PAPER, FOLIA;
     }
 
 }

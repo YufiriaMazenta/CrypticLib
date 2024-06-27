@@ -36,4 +36,19 @@ public enum PaperPlatform implements IPlatform {
         BukkitPlatform.INSTANCE.teleportEntity(entity, location);
     }
 
+    @Override
+    public boolean isBukkit() {
+        return true;
+    }
+
+    @Override
+    public boolean isPaper() {
+        return true;
+    }
+
+    @Override
+    public boolean isFolia() {
+        return false;
+    }
+
 }

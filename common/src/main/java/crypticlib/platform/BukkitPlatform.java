@@ -36,4 +36,19 @@ public enum BukkitPlatform implements IPlatform {
         teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
     }
 
+    @Override
+    public boolean isBukkit() {
+        return true;
+    }
+
+    @Override
+    public boolean isPaper() {
+        return false;
+    }
+
+    @Override
+    public boolean isFolia() {
+        return false;
+    }
+
 }
