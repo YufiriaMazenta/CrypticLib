@@ -36,4 +36,19 @@ public enum FoliaPlatform implements IPlatform {
         teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
     }
 
+    @Override
+    public boolean isBukkit() {
+        return true;
+    }
+
+    @Override
+    public boolean isPaper() {
+        return true;
+    }
+
+    @Override
+    public boolean isFolia() {
+        return true;
+    }
+
 }
