@@ -3,16 +3,16 @@ package crypticlib.config.entry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public class BooleanConfigEntry extends ConfigEntry<Boolean> {
+public class StringConfig extends Config<String> {
 
-    public BooleanConfigEntry(@NotNull String key, @NotNull Boolean def) {
+    public StringConfig(@NotNull String key, @NotNull String def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getBoolean(key));
+        setValue(config.getString(key, def));
     }
 
 }

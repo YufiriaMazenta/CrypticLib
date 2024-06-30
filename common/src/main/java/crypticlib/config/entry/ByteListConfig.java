@@ -3,15 +3,17 @@ package crypticlib.config.entry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public class IntConfigEntry extends ConfigEntry<Integer> {
+import java.util.List;
 
-    public IntConfigEntry(@NotNull String key, @NotNull Integer def) {
+public class ByteListConfig extends Config<List<Byte>> {
+
+    public ByteListConfig(@NotNull String key, @NotNull List<Byte> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getInt(key));
+        setValue(config.getByteList(key));
     }
 }

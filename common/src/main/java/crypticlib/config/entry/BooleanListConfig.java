@@ -3,15 +3,18 @@ package crypticlib.config.entry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public class LongConfigEntry extends ConfigEntry<Long> {
+import java.util.List;
 
-    public LongConfigEntry(@NotNull String key, @NotNull Long def) {
+public class BooleanListConfig extends Config<List<Boolean>> {
+
+    public BooleanListConfig(@NotNull String key, @NotNull List<Boolean> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getLong(key));
+        setValue(config.getBooleanList(key));
     }
+
 }

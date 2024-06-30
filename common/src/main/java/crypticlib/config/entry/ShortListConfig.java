@@ -5,16 +5,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class BooleanListConfigEntry extends ConfigEntry<List<Boolean>> {
+public class ShortListConfig extends Config<List<Short>> {
 
-    public BooleanListConfigEntry(@NotNull String key, @NotNull List<Boolean> def) {
+    public ShortListConfig(@NotNull String key, @NotNull List<Short> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getBooleanList(key));
+        setValue(config.getShortList(key));
     }
-
 }

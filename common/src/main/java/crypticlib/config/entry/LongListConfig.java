@@ -5,16 +5,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class IntListConfigEntry extends ConfigEntry<List<Integer>> {
+public class LongListConfig extends Config<List<Long>> {
 
-    public IntListConfigEntry(@NotNull String key, @NotNull List<Integer> def) {
+    public LongListConfig(@NotNull String key, @NotNull List<Long> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getIntegerList(key));
+        setValue(config.getLongList(key));
     }
-
 }
