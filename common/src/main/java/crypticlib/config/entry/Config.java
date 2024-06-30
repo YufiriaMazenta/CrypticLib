@@ -4,14 +4,14 @@ import crypticlib.config.ConfigContainer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class ConfigEntry<T> {
+public abstract class Config<T> {
 
     protected final String key;
     protected final T def;
     protected T value;
     protected ConfigContainer configContainer;
 
-    public ConfigEntry(@NotNull String key, @NotNull T def) {
+    public Config(@NotNull String key, @NotNull T def) {
         this.key = key;
         this.def = def;
     }
@@ -21,7 +21,7 @@ public abstract class ConfigEntry<T> {
         return value;
     }
 
-    public ConfigEntry<T> setValue(@NotNull T value) {
+    public Config<T> setValue(@NotNull T value) {
         this.value = value;
         return this;
     }
@@ -40,7 +40,7 @@ public abstract class ConfigEntry<T> {
         return configContainer;
     }
 
-    public ConfigEntry<T> setConfigContainer(ConfigContainer configContainer) {
+    public Config<T> setConfigContainer(ConfigContainer configContainer) {
         this.configContainer = configContainer;
         return this;
     }

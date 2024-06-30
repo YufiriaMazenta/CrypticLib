@@ -5,16 +5,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class DoubleListConfigEntry extends ConfigEntry<List<Double>> {
+public class StringListConfig extends Config<List<String>> {
 
-    public DoubleListConfigEntry(@NotNull String key, @NotNull List<Double> def) {
+    public StringListConfig(@NotNull String key, @NotNull List<String> def) {
         super(key, def);
     }
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
-        setValue(config.getDoubleList(key));
+        setValue(config.getStringList(key));
     }
-
 }

@@ -6,15 +6,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-public class ConfigSectionConfigEntry extends ConfigEntry<ConfigurationSection> {
+public class ConfigSectionConfig extends Config<ConfigurationSection> {
 
     private final Map<String, Object> default_;
 
-    public ConfigSectionConfigEntry(@NotNull String key) {
+    public ConfigSectionConfig(@NotNull String key) {
         this(key, null);
     }
 
-    public ConfigSectionConfigEntry(@NotNull String key, @Nullable Map<String, Object> default_) {
+    public ConfigSectionConfig(@NotNull String key, @Nullable Map<String, Object> default_) {
         super(key, null);
         this.default_ = default_;
     }

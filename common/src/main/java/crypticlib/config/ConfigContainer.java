@@ -1,6 +1,6 @@
 package crypticlib.config;
 
-import crypticlib.config.entry.ConfigEntry;
+import crypticlib.config.entry.Config;
 import crypticlib.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,11 +33,11 @@ public class ConfigContainer {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
             Object obj = ReflectUtil.getDeclaredFieldObj(field, null);
-            if (obj instanceof ConfigEntry) {
-                ConfigEntry<?> configEntry = (ConfigEntry<?>) obj;
-                if (configEntry.configContainer() == null)
-                    configEntry.setConfigContainer(this);
-                configEntry.load(configWrapper.config());
+            if (obj instanceof Config) {
+                Config<?> config = (Config<?>) obj;
+                if (config.configContainer() == null)
+                    config.setConfigContainer(this);
+                config.load(configWrapper.config());
             }
         }
         configWrapper.saveConfig();
