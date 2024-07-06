@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReflectUtil {
 
     private final static Map<String, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
+    private final static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<>();
 
     public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
         Field cacheField = getFieldCache(clazz, fieldName);
@@ -166,6 +168,48 @@ public class ReflectUtil {
         }
         Constructor<T> constructor = getDeclaredConstructor(clazz, argClasses);
         return invokeDeclaredConstructor(constructor, args);
+    }
+
+    /**
+     * 获取某类对应的实例，如果某类已经在注解处理器注册实例，则获取已经注册的实例
+     * @param clazz 需要获取实例的类
+     * @return 类对应的实例
+     * @param <T> 类的类型
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T getSingletonClassInstance(Class<T> clazz, Object...objects) throws NoClassDefFoundError, ClassNotFoundException {
+        if (singletonObjectMap.containsKey(clazz)) {
+            return (T) singletonObjectMap.get(clazz);
+        } else {
+            T object;
+            if (clazz.isEnum()) {
+                //如果是枚举，则使用它的第一个枚举值
+                object = clazz.getEnumConstants()[0];
+            } else {
+                try {
+                    //尝试获取名为INSTANCE的静态变量，判断是否为该类的实例，若是则用作其实例
+                    Field instanceField = ReflectUtil.getDeclaredField(clazz, "INSTANCE");
+                    if (Modifier.isStatic(instanceField.getModifiers())) {
+                        if (instanceField.getType().equals(clazz)) {
+                            object = (T) instanceField.get(clazz);
+                        } else {
+                            object = ReflectUtil.newDeclaredInstance(clazz, objects);
+                        }
+                    } else {
+                        object = ReflectUtil.newDeclaredInstance(clazz, objects);
+                    }
+                } catch (RuntimeException e) {
+                    //当没有INSTANCE名字的变量时，则新建一个对象
+                    object = ReflectUtil.newDeclaredInstance(clazz, objects);
+                } catch (IllegalAccessException e) {
+                    //当抛出此错误时，新建一个对象，并打印错误信息
+                    e.printStackTrace();
+                    object = ReflectUtil.newDeclaredInstance(clazz, objects);
+                }
+            }
+            singletonObjectMap.put(clazz, object);
+            return object;
+        }
     }
 
 }

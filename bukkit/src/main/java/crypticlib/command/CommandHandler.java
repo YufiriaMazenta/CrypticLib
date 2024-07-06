@@ -1,6 +1,6 @@
 package crypticlib.command;
 
-import crypticlib.CrypticLib;
+import crypticlib.CrypticLibBukkit;
 import crypticlib.perm.PermInfo;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -71,7 +71,7 @@ public abstract class CommandHandler implements ICommandHandler, TabExecutor {
         registered = true;
         scanNodes();
         registerPerms();
-        CrypticLib.commandManager().register(plugin, commandInfo, this);
+        CrypticLibBukkit.commandManager().register(plugin, commandInfo, this);
     }
 
     @Override

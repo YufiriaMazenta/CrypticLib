@@ -1,17 +1,17 @@
 package crypticlib.config.entry;
 
+import com.electronwill.nightconfig.core.Config;
 import crypticlib.config.ConfigContainer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class Config<T> {
+public abstract class ConfigNode<T> {
 
     protected final String key;
     protected final T def;
     protected T value;
     protected ConfigContainer configContainer;
 
-    public Config(@NotNull String key, @NotNull T def) {
+    public ConfigNode(@NotNull String key, @NotNull T def) {
         this.key = key;
         this.def = def;
     }
@@ -21,7 +21,7 @@ public abstract class Config<T> {
         return value;
     }
 
-    public Config<T> setValue(@NotNull T value) {
+    public ConfigNode<T> setValue(@NotNull T value) {
         this.value = value;
         return this;
     }
@@ -40,12 +40,12 @@ public abstract class Config<T> {
         return configContainer;
     }
 
-    public Config<T> setConfigContainer(ConfigContainer configContainer) {
+    public ConfigNode<T> setConfigContainer(ConfigContainer configContainer) {
         this.configContainer = configContainer;
         return this;
     }
 
-    public void saveDef(@NotNull ConfigurationSection config) {
+    public void saveDef(@NotNull Config config) {
         if (config.contains(key))
             return;
         config.set(key, def);
@@ -56,6 +56,9 @@ public abstract class Config<T> {
         configContainer.configWrapper().saveConfig();
     }
 
-    public abstract void load(@NotNull ConfigurationSection config);
+    public void load(@NotNull Config config) {
+        saveDef(config);
+        setValue(config.get(key));
+    }
 
 }

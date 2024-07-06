@@ -1,9 +1,9 @@
 package crypticlib.lang;
 
-import crypticlib.Disabler;
-import crypticlib.OnDisable;
-import crypticlib.OnReload;
-import crypticlib.Reloader;
+import crypticlib.lifecycle.Disabler;
+import crypticlib.lifecycle.annotation.OnDisable;
+import crypticlib.lifecycle.annotation.OnReload;
+import crypticlib.lifecycle.Reloader;
 import crypticlib.lang.entry.LangEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

@@ -125,7 +125,7 @@ public class LangEntryContainer {
 
     public @NotNull ConfigWrapper createNewLang(String lang) {
         String fileName = lang + ".yml";
-        ConfigWrapper langConfigWrapper = new ConfigWrapper(plugin, langFileFolder + "/" + fileName);
+        ConfigWrapper langConfigWrapper = new ConfigWrapper(langFileFolder + "/" + fileName);
         langConfigWrapperMap.put(lang, langConfigWrapper);
         return langConfigWrapper;
     }

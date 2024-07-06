@@ -1,6 +1,6 @@
 package crypticlib.chat;
 
-import crypticlib.CrypticLib;
+import crypticlib.CrypticLibBukkit;
 import crypticlib.lang.entry.StringLangEntry;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -310,7 +310,7 @@ public class MsgSender {
      * @param replaceMap 需要替换的文本
      */
     public static void debug(StringLangEntry msg, Map<String, String> replaceMap) {
-        if (CrypticLib.debug())
+        if (CrypticLibBukkit.debug())
             info("[DEBUG] | " + msg.value(), replaceMap);
     }
 
@@ -330,7 +330,7 @@ public class MsgSender {
      * @param replaceMap 需要替换的文本
      */
     public static void debug(String msg, Map<String, String> replaceMap) {
-        if (CrypticLib.debug())
+        if (CrypticLibBukkit.debug())
             info("[DEBUG] | " + msg, replaceMap);
     }
 

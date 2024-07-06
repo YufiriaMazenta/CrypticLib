@@ -1,6 +1,6 @@
 package crypticlib.conversation;
 
-import crypticlib.CrypticLib;
+import crypticlib.CrypticLibBukkit;
 import crypticlib.chat.MsgSender;
 import crypticlib.conversation.handler.ConversationHandler;
 import org.bukkit.entity.Player;
@@ -86,7 +86,7 @@ public class Conversation {
     }
 
     public void handleInput(String input) {
-        CrypticLib.platform().scheduler().runTask(plugin, () -> {
+        CrypticLibBukkit.platform().scheduler().runTask(plugin, () -> {
             if (input.equalsIgnoreCase(cancelInput)) {
                 end();
                 return;

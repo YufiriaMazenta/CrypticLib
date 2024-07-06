@@ -1,6 +1,6 @@
 package crypticlib.chat;
 
-import crypticlib.CrypticLib;
+import crypticlib.CrypticLibBukkit;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
@@ -34,7 +34,7 @@ public class TextProcessor {
      * @return 处理完颜色代码的文本
      */
     public static String color(String text) {
-        if (CrypticLib.minecraftVersion() >= 16) {
+        if (CrypticLibBukkit.minecraftVersion() >= 16) {
             StringBuilder strBuilder = new StringBuilder(text);
             Matcher matcher = colorPattern.matcher(strBuilder);
             while (matcher.find()) {

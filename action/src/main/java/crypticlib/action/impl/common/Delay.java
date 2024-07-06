@@ -1,6 +1,6 @@
 package crypticlib.action.impl.common;
 
-import crypticlib.CrypticLib;
+import crypticlib.CrypticLibBukkit;
 import crypticlib.action.BaseAction;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -32,7 +32,7 @@ public class Delay extends BaseAction {
 
     @Override
     public void run(Player player, Plugin plugin) {
-        CrypticLib.platform().scheduler().runTaskLater(plugin, () -> {
+        CrypticLibBukkit.platform().scheduler().runTaskLater(plugin, () -> {
             runNext(player, plugin);
         }, delayTick);
     }

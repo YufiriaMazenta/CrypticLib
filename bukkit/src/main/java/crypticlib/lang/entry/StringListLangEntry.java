@@ -21,7 +21,7 @@ public class StringListLangEntry extends LangEntry<List<String>> {
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
             if (configWrapper.contains(key)) {
-                langMap.put(lang, configWrapper.config().getStringList(key));
+                langMap.put(lang, configWrapper.config().get(key));
             }
         });
         return this;
