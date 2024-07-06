@@ -10,7 +10,6 @@ repositories {
 
 dependencies {
     implementation("com.electronwill.night-config:yaml:$nightConfigVer")
-    implementation("com.electronwill.night-config:hocon:$nightConfigVer")
     implementation("com.electronwill.night-config:toml:$nightConfigVer")
     implementation("com.electronwill.night-config:json:$nightConfigVer")
 }
@@ -18,9 +17,6 @@ dependencies {
 tasks {
     build {
         dependsOn(shadowJar)
-    }
-    shadowJar {
-        archiveFileName.set("${project.name}-${version}.jar")
     }
 }
 

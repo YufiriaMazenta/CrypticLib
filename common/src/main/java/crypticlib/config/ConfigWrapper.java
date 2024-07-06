@@ -7,6 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Objects;
+import java.util.Scanner;
 
 /**
  * 对配置文件的封装，支持yaml，hocon，toml和json
@@ -27,7 +31,8 @@ public class ConfigWrapper {
     public ConfigWrapper(@NotNull String path) {
         this.path = path;
         this.configFile = new File(dataFolder, path);
-        loadConfig();
+        saveDefaultConfigFile();
+        reloadConfig();
     }
 
     /**
@@ -38,10 +43,8 @@ public class ConfigWrapper {
     public ConfigWrapper(@NotNull File file) {
         this.configFile = file;
         this.path = file.getPath();
-        if (!configFile.exists()) {
-            FileUtil.createNewFile(file);
-        }
-        loadConfig();
+        saveDefaultConfigFile();
+        reloadConfig();
     }
 
     /**
@@ -75,7 +78,11 @@ public class ConfigWrapper {
      * 重载配置文件
      */
     public void reloadConfig() {
-        config = FileConfig.of(configFile);
+        if (!configFile.exists()) {
+            saveDefaultConfigFile();
+        }
+        this.config = FileConfig.of(configFile);
+        this.config.load();
     }
 
     /**
@@ -83,6 +90,33 @@ public class ConfigWrapper {
      */
     public synchronized void saveConfig() {
         config.save();
+    }
+
+    public void saveDefaultConfigFile() {
+        if (!configFile.exists()) {
+            try {
+                if (!dataFolder.exists()) {
+                    dataFolder.mkdirs();
+                }
+                if (!configFile.exists()) {
+                    FileOutputStream output = new FileOutputStream(configFile);
+                    InputStream input = getResource(path);
+                    if (input == null)
+                        throw new NullPointerException();
+                    Objects.requireNonNull(output, "out");
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = input.read(buffer, 0, 8192)) >= 0) {
+                        output.write(buffer, 0, read);
+                    }
+                    output.close();
+                    input.close();
+                }
+            } catch (NullPointerException | IllegalArgumentException | IOException e) {
+                e.printStackTrace();
+                FileUtil.createNewFile(configFile);
+            }
+        }
     }
 
     /**
@@ -100,13 +134,19 @@ public class ConfigWrapper {
         return configFile;
     }
 
-    private void loadConfig() {
+    private @Nullable InputStream getResource(@NotNull String filename) {
         try {
-            this.config = FileConfig.builder(configFile).defaultResource(path).build();
-        } catch (Throwable e) {
-            this.config = FileConfig.builder(configFile).onFileNotFound(FileNotFoundAction.CREATE_EMPTY).build();
+            URL url = this.getClass().getClassLoader().getResource(filename);
+            if (url == null) {
+                return null;
+            } else {
+                URLConnection connection = url.openConnection();
+                connection.setUseCaches(false);
+                return connection.getInputStream();
+            }
+        } catch (IOException var4) {
+            return null;
         }
-
     }
 
 }
