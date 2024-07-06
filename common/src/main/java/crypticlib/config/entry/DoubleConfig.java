@@ -1,16 +1,12 @@
 package crypticlib.config.entry;
 
-import org.bukkit.configuration.ConfigurationSection;
+import com.electronwill.nightconfig.core.Config;
 import org.jetbrains.annotations.NotNull;
 
-public class DoubleConfig extends Config<Double> {
+public class DoubleConfig extends ConfigNode<Double> {
+
     public DoubleConfig(@NotNull String key, @NotNull Double def) {
         super(key, def);
     }
 
-    @Override
-    public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
-        setValue(config.getDouble(key));
-    }
 }

@@ -6,10 +6,11 @@ import crypticlib.platform.BukkitPlatform;
 import crypticlib.platform.FoliaPlatform;
 import crypticlib.platform.IPlatform;
 import crypticlib.platform.PaperPlatform;
+import crypticlib.scheduler.IScheduler;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
-public class CrypticLib {
+public class CrypticLibBukkit {
 
 
     private static final CommandManager commandManager;
@@ -33,6 +34,11 @@ public class CrypticLib {
     @NotNull
     public static IPlatform platform() {
         return platform;
+    }
+
+    @NotNull
+    public static IScheduler scheduler() {
+        return platform().scheduler();
     }
 
     /**
@@ -87,7 +93,7 @@ public class CrypticLib {
     }
 
     public static void setDebug(boolean debug) {
-        CrypticLib.debug = debug;
+        CrypticLibBukkit.debug = debug;
     }
 
     public static boolean isFolia() {

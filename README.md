@@ -1,7 +1,3 @@
-## 准备重构1.0
-
-目标为兼容bukkit，bungeecord和velocity的三平台库，并提供一套多端间通信标准
-
 ## CrypticLib
 
 ### 简介

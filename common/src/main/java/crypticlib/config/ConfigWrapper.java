@@ -1,35 +1,33 @@
 package crypticlib.config;
 
+import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.core.file.FileNotFoundAction;
 import crypticlib.util.FileUtil;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**
- * 对Yaml类型的配置文件的封装
+ * 对配置文件的封装，支持yaml，hocon，toml和json
  */
 public class ConfigWrapper {
+
+    public static File dataFolder;
     private final File configFile;
     private final String path;
-    private final Plugin plugin;
-    private YamlConfiguration config;
+    private FileConfig config;
+    private boolean autoReload;
 
     /**
      * 从指定插件中释放并创建一个配置文件
      *
-     * @param plugin 创建配置文件的插件
      * @param path   相对插件文件夹的路径
      */
-    public ConfigWrapper(@NotNull Plugin plugin, @NotNull String path) {
+    public ConfigWrapper(@NotNull String path) {
         this.path = path;
-        File dataFolder = plugin.getDataFolder();
-        configFile = new File(dataFolder, path);
-        this.plugin = plugin;
-        createDefaultConfig();
+        this.configFile = new File(dataFolder, path);
+        loadConfig();
     }
 
     /**
@@ -43,19 +41,7 @@ public class ConfigWrapper {
         if (!configFile.exists()) {
             FileUtil.createNewFile(file);
         }
-        this.config = YamlConfiguration.loadConfiguration(file);
-        this.plugin = null;
-    }
-
-    public void createDefaultConfig() {
-        if (!configFile.exists()) {
-            try {
-                plugin.saveResource(path, false);
-            } catch (NullPointerException | IllegalArgumentException e) {
-                FileUtil.createNewFile(configFile);
-            }
-        }
-        reloadConfig();
+        loadConfig();
     }
 
     /**
@@ -64,7 +50,7 @@ public class ConfigWrapper {
      * @return 配置文件实例
      */
     @NotNull
-    public YamlConfiguration config() {
+    public FileConfig config() {
         if (config == null) {
             reloadConfig();
         }
@@ -89,18 +75,14 @@ public class ConfigWrapper {
      * 重载配置文件
      */
     public void reloadConfig() {
-        config = YamlConfiguration.loadConfiguration(configFile);
+        config = FileConfig.of(configFile);
     }
 
     /**
      * 保存配置文件
      */
     public synchronized void saveConfig() {
-        try {
-            config().save(configFile);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
+        config.save();
     }
 
     /**
@@ -118,9 +100,13 @@ public class ConfigWrapper {
         return configFile;
     }
 
-    @Nullable
-    public Plugin plugin() {
-        return plugin;
+    private void loadConfig() {
+        try {
+            this.config = FileConfig.builder(configFile).defaultResource(path).build();
+        } catch (Throwable e) {
+            this.config = FileConfig.builder(configFile).onFileNotFound(FileNotFoundAction.CREATE_EMPTY).build();
+        }
+
     }
 
 }
