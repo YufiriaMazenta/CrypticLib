@@ -1,7 +1,9 @@
 package crypticlib.lifecycle;
 
+import org.bukkit.plugin.Plugin;
+
 public interface Reloader {
 
-    void reload();
+    void reload(Plugin plugin);
 
 }

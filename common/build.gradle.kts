@@ -2,18 +2,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-val nightConfigVer = rootProject.findProperty("nightconfig-ver").toString()
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation("com.electronwill.night-config:yaml:$nightConfigVer")
-    implementation("com.electronwill.night-config:toml:$nightConfigVer")
-    implementation("com.electronwill.night-config:json:$nightConfigVer")
-}
-
 tasks {
     build {
         dependsOn(shadowJar)

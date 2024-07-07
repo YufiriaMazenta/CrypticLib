@@ -1,18 +1,26 @@
 package crypticlib;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
-import crypticlib.chat.MsgSender;
-import crypticlib.command.CommandHandler;
+import crypticlib.command.BukkitCommand;
+import crypticlib.config.BukkitConfigContainer;
+import crypticlib.config.BukkitConfigWrapper;
+import crypticlib.command.manager.BukkitCommandManager;
 import crypticlib.command.annotation.Command;
-import crypticlib.command.manager.CommandManager;
-import crypticlib.config.ConfigContainer;
 import crypticlib.config.ConfigHandler;
-import crypticlib.config.ConfigWrapper;
 import crypticlib.internal.PluginScanner;
+import crypticlib.internal.exception.PluginEnableException;
+import crypticlib.internal.exception.PluginLoadException;
 import crypticlib.lifecycle.Disabler;
+import crypticlib.lifecycle.Enabler;
+import crypticlib.lifecycle.Loader;
 import crypticlib.lifecycle.Reloader;
+import crypticlib.lifecycle.annotation.OnDisable;
+import crypticlib.lifecycle.annotation.OnEnable;
+import crypticlib.lifecycle.annotation.OnLoad;
+import crypticlib.lifecycle.annotation.OnReload;
 import crypticlib.listener.BukkitListener;
-import crypticlib.util.ReflectUtil;
+import crypticlib.perm.BukkitPermManager;
+import crypticlib.perm.PermInfo;
+import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
@@ -26,8 +34,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
-    protected final Map<String, ConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<String, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
     protected final List<Disabler> disablerList = new CopyOnWriteArrayList<>();
+    protected final List<Loader> loaderList = new CopyOnWriteArrayList<>();
+    protected final List<Enabler> enablerList = new CopyOnWriteArrayList<>();
     protected final List<Reloader> reloaderList = new CopyOnWriteArrayList<>();
     protected final String defaultConfigFileName = "config.yml";
 
@@ -37,7 +47,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void onLoad() {
-        ConfigWrapper.dataFolder = getDataFolder();
+        PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
         PluginScanner pluginScanner = PluginScanner.INSTANCE;
         pluginScanner.scanJar(this.getFile());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
@@ -46,8 +56,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 String path = configHandler.path();
                 if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
                     path += ".yml";
-                ConfigWrapper configWrapper = new ConfigWrapper(path);
-                ConfigContainer configContainer = new ConfigContainer(configClass, configWrapper);
+                BukkitConfigWrapper configWrapper = new BukkitConfigWrapper(this, path);
+                BukkitConfigContainer configContainer = new BukkitConfigContainer(configClass, configWrapper);
                 configContainerMap.put(path, configContainer);
                 configContainer.reload();
             }
@@ -58,7 +68,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     if (!Listener.class.isAssignableFrom(listenerClass)) {
                         return;
                     }
-                    Listener listener = (Listener) ReflectUtil.getSingletonClassInstance(listenerClass);
+                    Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     Bukkit.getPluginManager().registerEvents(listener, this);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
@@ -68,88 +78,115 @@ public abstract class BukkitPlugin extends JavaPlugin {
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
                 try {
-                    if (!CommandHandler.class.isAssignableFrom(commandClass)) {
-                        MsgSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + commandClass.getName());
+                    if (!BukkitCommand.class.isAssignableFrom(commandClass)) {
+//                        MsgSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + commandClass.getName());
                         return;
                     }
-                    CommandHandler commandHandler = (CommandHandler) ReflectUtil.getSingletonClassInstance(commandClass);
-                    commandHandler.register(this);
+                    BukkitCommand bukkitCommand = (BukkitCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
+                    bukkitCommand.register(this);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
             }
         );
-//        pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach()
-//            .regClassAnnotationProcessor(
-//                ConfigHandler.class,
-//                (annotation, clazz) -> {
-//                    ConfigHandler configHandler = (ConfigHandler) annotation;
-//                    String path = configHandler.path();
-//                    if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
-//                        path += ".yml";
-//                    ConfigWrapper configWrapper = new ConfigWrapper(this, path);
-//                    ConfigContainer configContainer = new ConfigContainer(clazz, configWrapper);
-//                    configContainerMap.put(path, configContainer);
-//                    configContainer.reload();
-//                }, PluginScanner.ProcessPriority.LOWEST)
-//            .regClassAnnotationProcessor(
-//                LangHandler.class,
-//                (annotation, clazz) -> {
-//                    LangHandler langHandler = (LangHandler) annotation;
-//                    String langFileFolder = langHandler.langFileFolder();
-//                    String defLang = langHandler.defLang();
-//                    LangEntryContainer langEntryContainer = new LangEntryContainer(this, clazz, langFileFolder, defLang);
-//                    LangManager.INSTANCE.loadLangEntryContainer(langFileFolder, langEntryContainer);
-//                }, PluginScanner.ProcessPriority.LOWEST)
-//            .regClassAnnotationProcessor(
-//                OnDisable.class,
-//                (annotation, clazz) -> {
-//                    if (!Disabler.class.isAssignableFrom(clazz))
-//                        return;
-//                    try {
-//                        Disabler disabler = (Disabler) pluginScanner.getClassInstance(clazz);
-//                        disablerList.add(disabler);
-//                    } catch (ClassNotFoundException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            )
-//            .regClassAnnotationProcessor(
-//                OnReload.class,
-//                (annotation, clazz) -> {
-//                    if (!Reloader.class.isAssignableFrom(clazz))
-//                        return;
-//                    try {
-//                        Reloader reloader = (Reloader) pluginScanner.getClassInstance(clazz);
-//                        reloaderList.add(reloader);
-//                    } catch (ClassNotFoundException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                }
-//            );
+        loaderList.clear();
+        pluginScanner.getAnnotatedClasses(OnLoad.class).forEach(
+            loaderClass -> {
+                try {
+                    if (!Loader.class.isAssignableFrom(loaderClass)) {
+                        return;
+                    }
+                    Loader loader = (Loader) ReflectionHelper.getSingletonClassInstance(loaderClass);
+                    loaderList.add(loader);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        enablerList.clear();
+        pluginScanner.getAnnotatedClasses(OnEnable.class).forEach(
+            enablerClass -> {
+                try {
+                    if (!Enabler.class.isAssignableFrom(enablerClass)) {
+                        return;
+                    }
+                    Enabler enabler = (Enabler) ReflectionHelper.getSingletonClassInstance(enablerClass);
+                    enablerList.add(enabler);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        reloaderList.clear();
+        pluginScanner.getAnnotatedClasses(OnReload.class).forEach(
+            reloaderClass -> {
+                try {
+                    if (!Reloader.class.isAssignableFrom(reloaderClass)) {
+                        return;
+                    }
+                    Reloader reloader = (Reloader) ReflectionHelper.getSingletonClassInstance(reloaderClass);
+                    reloaderList.add(reloader);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        disablerList.clear();
+        pluginScanner.getAnnotatedClasses(OnDisable.class).forEach(
+            disablerClass -> {
+                try {
+                    if (!Disabler.class.isAssignableFrom(disablerClass)) {
+                        return;
+                    }
+                    Disabler disabler = (Disabler) ReflectionHelper.getSingletonClassInstance(disablerClass);
+                    disablerList.add(disabler);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        loaderList.forEach(
+            loader -> {
+                try {
+                    loader.load(this);
+                } catch (Throwable throwable) {
+                    throw new PluginLoadException(throwable);
+                }
+            }
+        );
         load();
     }
 
     @Override
     public final void onEnable() {
-        PluginScanner.INSTANCE.scanJar(getFile());
+        enablerList.forEach(
+            enabler -> {
+                try {
+                    enabler.enable(this);
+                } catch (Throwable throwable) {
+                    throw new PluginEnableException(throwable);
+                }
+            }
+        );
         enable();
     }
 
     @Override
     public final void onDisable() {
         disable();
+        loaderList.clear();
+        enablerList.clear();
         reloaderList.clear();
         disablerList.forEach(it -> {
             try {
-                it.disable();
+                it.disable(this);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         });
         disablerList.clear();
         configContainerMap.clear();
-        CommandManager.INSTANCE.unregisterAll();
+        BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.platform().scheduler().cancelTasks(this);
     }
 
@@ -176,14 +213,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
         reloadConfig();
         reloaderList.forEach(it -> {
             try {
-                it.reload();
+                it.reload(this);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         });
     }
 
-    public @NotNull FileConfig getDefaultConfig() {
+    @Override
+    public @NotNull FileConfiguration getConfig() {
         if (configContainerMap.containsKey(defaultConfigFileName)) {
             return configContainerMap.get(defaultConfigFileName).configWrapper().config();
         }
@@ -197,7 +235,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public void saveDefaultConfig() {
-        ConfigContainer defConfig = new ConfigContainer(this.getClass(), new ConfigWrapper(defaultConfigFileName));
+        BukkitConfigContainer defConfig = new BukkitConfigContainer(this.getClass(), new BukkitConfigWrapper(this, defaultConfigFileName));
         defConfig.reload();
         configContainerMap.put(defaultConfigFileName, defConfig);
     }

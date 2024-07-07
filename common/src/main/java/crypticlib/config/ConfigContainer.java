@@ -1,18 +1,13 @@
 package crypticlib.config;
 
-import crypticlib.config.entry.ConfigNode;
-import crypticlib.util.ReflectUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+public abstract class ConfigContainer<C extends ConfigWrapper<?>> {
 
-public class ConfigContainer {
+    protected final Class<?> containerClass;
+    protected final C configWrapper;
 
-    private final Class<?> containerClass;
-    private final ConfigWrapper configWrapper;
-
-    public ConfigContainer(@NotNull Class<?> containerClass, @NotNull ConfigWrapper configWrapper) {
+    public ConfigContainer(@NotNull Class<?> containerClass, @NotNull C configWrapper) {
         this.containerClass = containerClass;
         this.configWrapper = configWrapper;
     }
@@ -23,24 +18,10 @@ public class ConfigContainer {
     }
 
     @NotNull
-    public ConfigWrapper configWrapper() {
+    public C configWrapper() {
         return configWrapper;
     }
 
-    public void reload() {
-        configWrapper.reloadConfig();
-        for (Field field : containerClass.getDeclaredFields()) {
-            if (!Modifier.isStatic(field.getModifiers()))
-                continue;
-            Object obj = ReflectUtil.getDeclaredFieldObj(field, null);
-            if (obj instanceof ConfigNode) {
-                ConfigNode<?> config = (ConfigNode<?>) obj;
-                if (config.configContainer() == null)
-                    config.setConfigContainer(this);
-                config.load(configWrapper.config());
-            }
-        }
-        configWrapper.saveConfig();
-    }
+    public abstract void reload();
 
 }

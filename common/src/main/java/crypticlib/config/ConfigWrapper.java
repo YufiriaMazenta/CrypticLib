@@ -1,34 +1,30 @@
 package crypticlib.config;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.core.file.FileNotFoundAction;
-import crypticlib.util.FileUtil;
+import crypticlib.util.FileHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
 
 /**
- * 对配置文件的封装，支持yaml，hocon，toml和json
+ * 对配置文件的封装，支持yaml
  */
-public class ConfigWrapper {
+public abstract class ConfigWrapper<C> {
 
-    public static File dataFolder;
-    private final File configFile;
-    private final String path;
-    private FileConfig config;
-    private boolean autoReload;
+    protected final File configFile;
+    protected final String path;
+    protected C config;
 
     /**
      * 从指定插件中释放并创建一个配置文件
      *
      * @param path   相对插件文件夹的路径
      */
-    public ConfigWrapper(@NotNull String path) {
+    public ConfigWrapper(@NotNull File dataFolder, @NotNull String path) {
         this.path = path;
         this.configFile = new File(dataFolder, path);
         saveDefaultConfigFile();
@@ -53,16 +49,14 @@ public class ConfigWrapper {
      * @return 配置文件实例
      */
     @NotNull
-    public FileConfig config() {
+    public C config() {
         if (config == null) {
             reloadConfig();
         }
         return config;
     }
 
-    public boolean contains(String key) {
-        return config.contains(key);
-    }
+    public abstract boolean contains(String key);
 
     /**
      * 设置配置文件指定路径的值
@@ -70,33 +64,26 @@ public class ConfigWrapper {
      * @param key    配置的路径
      * @param object 值
      */
-    public void set(@NotNull String key, @Nullable Object object) {
-        config.set(key, object);
-    }
+    public abstract void set(@NotNull String key, @Nullable Object object);
+
+    public abstract void setComments(@NotNull String key, @Nullable List<String> comments);
 
     /**
      * 重载配置文件
      */
-    public void reloadConfig() {
-        if (!configFile.exists()) {
-            saveDefaultConfigFile();
-        }
-        this.config = FileConfig.of(configFile);
-        this.config.load();
-    }
+    public abstract void reloadConfig();
 
     /**
      * 保存配置文件
      */
-    public synchronized void saveConfig() {
-        config.save();
-    }
+    public abstract void saveConfig();
 
     public void saveDefaultConfigFile() {
         if (!configFile.exists()) {
             try {
-                if (!dataFolder.exists()) {
-                    dataFolder.mkdirs();
+                File folder = configFile.getParentFile();
+                if (!folder.exists()) {
+                    folder.mkdirs();
                 }
                 if (!configFile.exists()) {
                     FileOutputStream output = new FileOutputStream(configFile);
@@ -113,8 +100,7 @@ public class ConfigWrapper {
                     input.close();
                 }
             } catch (NullPointerException | IllegalArgumentException | IOException e) {
-                e.printStackTrace();
-                FileUtil.createNewFile(configFile);
+                FileHelper.createNewFile(configFile);
             }
         }
     }
