@@ -2,18 +2,16 @@ package crypticlib.ui.menu;
 
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
-import crypticlib.util.ItemUtil;
+import crypticlib.util.ItemHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class StoredMenu extends Menu {
@@ -57,7 +55,7 @@ public class StoredMenu extends Menu {
         for (int i = 0; i < inventory.getSize(); i++) {
             if (slotMap.containsKey(i))
                 continue;
-            if (ItemUtil.isAir(inventory.getItem(i)))
+            if (ItemHelper.isAir(inventory.getItem(i)))
                 continue;
             storedItems.put(i, inventory.getItem(i));
         }

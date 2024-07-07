@@ -1,6 +1,6 @@
 package crypticlib.conversation;
 
-import crypticlib.util.StringUtil;
+import crypticlib.util.StringHelper;
 
 import java.util.Map;
 
@@ -8,13 +8,13 @@ public interface NumberPrompt extends ValidatingPrompt {
 
     @Override
     default boolean isInputValid(String input) {
-        return StringUtil.isNumber(input);
+        return StringHelper.isNumber(input);
     }
 
     @Override
     default Prompt acceptValidatedInput(Map<Object, Object> conversationData, String input) {
         if (isInputValid(input)) {
-            return acceptValidatedInput(conversationData, StringUtil.toNumber(input));
+            return acceptValidatedInput(conversationData, StringHelper.toNumber(input));
         } else {
             return this;
         }

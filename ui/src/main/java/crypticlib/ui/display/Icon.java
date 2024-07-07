@@ -1,6 +1,6 @@
 package crypticlib.ui.display;
 
-import crypticlib.util.ItemUtil;
+import crypticlib.util.ItemHelper;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -77,7 +77,7 @@ public class Icon {
     }
 
     public Icon(@NotNull ItemStack display, @Nullable String name, @Nullable List<String> lore, @Nullable Integer customModelData) {
-        if (!ItemUtil.isAir(display)) {
+        if (!ItemHelper.isAir(display)) {
             ItemStack displayClone = display.clone();
             ItemMeta itemMeta = displayClone.getItemMeta();
             if (itemMeta == null)
@@ -140,12 +140,12 @@ public class Icon {
     }
 
     public Icon setName(String name) {
-        ItemUtil.setDisplayName(display, name);
+        ItemHelper.setDisplayName(display, name);
         return this;
     }
 
     public Icon setLore(List<String> lore) {
-        ItemUtil.setLore(display, lore);
+        ItemHelper.setLore(display, lore);
         return this;
     }
 
