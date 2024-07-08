@@ -1,7 +1,7 @@
 package crypticlib.platform;
 
-import crypticlib.scheduler.bukkit.FoliaScheduler;
-import crypticlib.scheduler.bukkit.IScheduler;
+import crypticlib.scheduler.FoliaScheduler;
+import crypticlib.scheduler.IScheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;

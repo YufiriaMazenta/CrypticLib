@@ -1,7 +1,7 @@
-package crypticlib.scheduler.bukkit;
+package crypticlib.scheduler;
 
-import crypticlib.scheduler.bukkit.task.FoliaTaskWrapper;
-import crypticlib.scheduler.bukkit.task.ITaskWrapper;
+import crypticlib.scheduler.task.FoliaTaskWrapper;
+import crypticlib.scheduler.task.ITaskWrapper;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

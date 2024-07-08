@@ -1,4 +1,4 @@
-package crypticlib.scheduler.bukkit.task;
+package crypticlib.scheduler.task;
 
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.plugin.Plugin;
