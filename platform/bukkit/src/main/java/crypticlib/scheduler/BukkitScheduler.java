@@ -1,7 +1,7 @@
-package crypticlib.scheduler.bukkit;
+package crypticlib.scheduler;
 
-import crypticlib.scheduler.bukkit.task.BukkitTaskWrapper;
-import crypticlib.scheduler.bukkit.task.ITaskWrapper;
+import crypticlib.scheduler.task.BukkitTaskWrapper;
+import crypticlib.scheduler.task.ITaskWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;

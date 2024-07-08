@@ -4,7 +4,7 @@ import crypticlib.platform.BukkitPlatform;
 import crypticlib.platform.FoliaPlatform;
 import crypticlib.platform.PaperPlatform;
 import crypticlib.platform.Platform;
-import crypticlib.scheduler.bukkit.IScheduler;
+import crypticlib.scheduler.IScheduler;
 import org.jetbrains.annotations.NotNull;
 
 public class CrypticLibBukkit {

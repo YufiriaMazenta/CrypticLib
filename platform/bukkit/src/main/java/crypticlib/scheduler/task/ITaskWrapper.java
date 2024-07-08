@@ -1,4 +1,4 @@
-package crypticlib.scheduler.bukkit.task;
+package crypticlib.scheduler.task;
 
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
