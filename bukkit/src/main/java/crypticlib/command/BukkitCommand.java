@@ -1,6 +1,5 @@
 package crypticlib.command;
 
-import crypticlib.CrypticLibBukkit;
 import crypticlib.perm.PermInfo;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -71,7 +70,7 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
         registered = true;
         scanSubCommands();
         registerPerms();
-        CrypticLibBukkit.commandManager().register(plugin, commandInfo, this);
+        BukkitCommandManager.INSTANCE.register(plugin, commandInfo, this);
     }
 
     @Override

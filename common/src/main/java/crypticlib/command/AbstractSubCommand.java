@@ -13,9 +13,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * CrypticLib提供的子命令类
  */
-public abstract class AbstractSubCommand<C> implements CommandHandler<C> {
+public abstract class AbstractSubCommand<CommandSender> implements CommandHandler<CommandSender> {
 
-    protected final Map<String, AbstractSubCommand<C>> subcommands = new ConcurrentHashMap<>();
+    protected final Map<String, AbstractSubCommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
     protected final SubcommandInfo subcommandInfo;
 
     public AbstractSubCommand(@NotNull SubcommandInfo subcommandInfo) {
@@ -40,12 +40,12 @@ public abstract class AbstractSubCommand<C> implements CommandHandler<C> {
     }
 
     @Override
-    public final boolean onCommand(C sender, List<String> args) {
+    public final boolean onCommand(CommandSender sender, List<String> args) {
         return CommandHandler.super.onCommand(sender, args);
     }
 
     @Override
-    public final List<String> onTabComplete(C sender, List<String> args) {
+    public final List<String> onTabComplete(CommandSender sender, List<String> args) {
         return CommandHandler.super.onTabComplete(sender, args);
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstractSubCommand<C> implements CommandHandler<C> {
         return subcommandInfo.name();
     }
 
-    public AbstractSubCommand<C> setName(String name) {
+    public AbstractSubCommand<CommandSender> setName(String name) {
         this.subcommandInfo.setName(name);
         return this;
     }
@@ -69,12 +69,12 @@ public abstract class AbstractSubCommand<C> implements CommandHandler<C> {
         return subcommandInfo.permission();
     }
 
-    public AbstractSubCommand<C> setPermission(@NotNull String permission) {
+    public AbstractSubCommand<CommandSender> setPermission(@NotNull String permission) {
         this.subcommandInfo.setPermission(new PermInfo(permission));
         return this;
     }
 
-    public AbstractSubCommand<C> setPermission(@Nullable PermInfo permission) {
+    public AbstractSubCommand<CommandSender> setPermission(@Nullable PermInfo permission) {
         this.subcommandInfo.setPermission(permission);
         return this;
     }
@@ -89,24 +89,24 @@ public abstract class AbstractSubCommand<C> implements CommandHandler<C> {
         return subcommandInfo.aliases();
     }
 
-    public AbstractSubCommand<C> setAliases(@NotNull List<String> aliases) {
+    public AbstractSubCommand<CommandSender> setAliases(@NotNull List<String> aliases) {
         this.subcommandInfo.setAliases(aliases);
         return this;
     }
 
-    public AbstractSubCommand<C> addAliases(@NotNull String alias) {
+    public AbstractSubCommand<CommandSender> addAliases(@NotNull String alias) {
         this.subcommandInfo.aliases().add(alias);
         return this;
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubCommand<C>> subcommands() {
+    public @NotNull Map<String, AbstractSubCommand<CommandSender>> subcommands() {
         return subcommands;
     }
 
     @Override
-    public AbstractSubCommand<C> regSub(@NotNull AbstractSubCommand<C> subcommandHandler) {
-        return (AbstractSubCommand<C>) CommandHandler.super.regSub(subcommandHandler);
+    public AbstractSubCommand<CommandSender> regSub(@NotNull AbstractSubCommand<CommandSender> subcommandHandler) {
+        return (AbstractSubCommand<CommandSender>) CommandHandler.super.regSub(subcommandHandler);
     }
 
     public void registerPerms() {

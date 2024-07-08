@@ -1,6 +1,6 @@
 package crypticlib.ui.handler;
 
-import crypticlib.listener.BukkitListener;
+import crypticlib.listener.EventListener;
 import crypticlib.ui.menu.Menu;
 import crypticlib.ui.menu.StoredMenu;
 import org.bukkit.event.EventHandler;
@@ -13,7 +13,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.InventoryHolder;
 
-@BukkitListener
+@EventListener
 public enum MenuHandler implements Listener {
 
     INSTANCE;

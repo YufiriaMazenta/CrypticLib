@@ -1,9 +1,9 @@
 package crypticlib.perm;
 
-public interface PermManager<P> {
+public interface PermManager {
 
-    PermManager<P> regPerm(PermInfo permission);
+    PermManager regPerm(PermInfo permission);
 
-    boolean hasPermission(P permissible, String permission);
+    boolean hasPermission(Object permissible, String permission);
 
 }

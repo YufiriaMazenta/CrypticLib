@@ -3,7 +3,7 @@ package crypticlib.action;
 import crypticlib.action.impl.EmptyAction;
 import crypticlib.action.impl.ErrorAction;
 import crypticlib.action.impl.common.*;
-import crypticlib.chat.MsgSender;
+import crypticlib.chat.BukkitMsgSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public enum ActionCompiler {
             if (actionSupplierMap.containsKey(actionStr)) {
                 return actionSupplierMap.get(actionStr).apply(null);
             } else {
-                MsgSender.info("&cError when compile action: " + actionStr);
+                BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
                 return new ErrorAction(actionStr);
             }
         } else {
@@ -50,7 +50,7 @@ public enum ActionCompiler {
             if (actionSupplierMap.containsKey(token)) {
                 return actionSupplierMap.get(token).apply(actionStr.substring(index + 1));
             } else {
-                MsgSender.info("&cError when compile action: " + actionStr);
+                BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
                 return new ErrorAction(actionStr);
             }
         }

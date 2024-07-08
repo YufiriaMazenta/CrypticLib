@@ -1,7 +1,7 @@
 package crypticlib.conversation.handler;
 
 import crypticlib.conversation.Conversation;
-import crypticlib.listener.BukkitListener;
+import crypticlib.listener.EventListener;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@BukkitListener
+@EventListener
 public enum ConversationHandler implements Listener {
 
     INSTANCE;

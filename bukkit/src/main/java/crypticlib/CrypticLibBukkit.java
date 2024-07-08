@@ -1,23 +1,18 @@
 package crypticlib;
 
-import crypticlib.command.manager.BukkitCommandManager;
-import crypticlib.platform.bukkit.BukkitPlatform;
-import crypticlib.platform.bukkit.FoliaPlatform;
-import crypticlib.platform.bukkit.IPlatform;
-import crypticlib.platform.bukkit.PaperPlatform;
+import crypticlib.platform.BukkitPlatform;
+import crypticlib.platform.FoliaPlatform;
+import crypticlib.platform.Platform;
+import crypticlib.platform.PaperPlatform;
 import crypticlib.scheduler.bukkit.IScheduler;
 import org.jetbrains.annotations.NotNull;
 
 public class CrypticLibBukkit {
 
-    private static final BukkitCommandManager commandManager;
-    private static IPlatform platform;
-    private static boolean debug = false;
+    private static Platform platform;
 
     static {
         loadPlatform();
-        loadVersion();
-        commandManager = BukkitCommandManager.INSTANCE;
     }
 
     /**
@@ -26,7 +21,7 @@ public class CrypticLibBukkit {
      * @return 当前运行的平台实例
      */
     @NotNull
-    public static IPlatform platform() {
+    public static Platform platform() {
         return platform;
     }
 
@@ -47,29 +42,12 @@ public class CrypticLibBukkit {
         }
     }
 
-    private static void loadVersion() {
-
-    }
-
-    @NotNull
-    public static BukkitCommandManager commandManager() {
-        return commandManager;
-    }
-
-    public static boolean debug() {
-        return debug;
-    }
-
-    public static void setDebug(boolean debug) {
-        CrypticLibBukkit.debug = debug;
-    }
-
     public static boolean isFolia() {
-        return platform.platform().equals(IPlatform.Platform.FOLIA);
+        return platform.type().equals(Platform.PlatformType.FOLIA);
     }
 
     public static boolean isPaper() {
-        return platform.platform().equals(IPlatform.Platform.PAPER) || platform.platform().equals(IPlatform.Platform.FOLIA);
+        return platform.type().equals(Platform.PlatformType.PAPER) || platform.type().equals(Platform.PlatformType.FOLIA);
     }
 
 }
