@@ -1,7 +1,9 @@
 package crypticlib;
 
+import com.google.gson.Gson;
 import net.md_5.bungee.api.ProxyServer;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -86,7 +88,11 @@ public class BungeeVersion {
 
     private static void loadCurrentVersion() {
         //获取游戏版本
-        String versionStr = ProxyServer.getInstance().getVersion();
+        String versionStr = ProxyServer.getInstance().getGameVersion();
+        //拿到支持的最后一个版本
+        versionStr = versionStr.substring(versionStr.lastIndexOf(",") + 1);
+        //将.x去掉
+        versionStr = versionStr.replace(".x", "").trim();
         if (versionStr.contains("-")) {
             versionStr = versionStr.substring(0, versionStr.indexOf("-"));
         }
