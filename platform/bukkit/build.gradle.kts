@@ -8,5 +8,5 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.1")
     compileOnly("org.spigotmc:spigot:1.20")
     compileOnly("dev.folia:folia-api:1.20.2")
-    implementation(project(":common"))
+    implementation(project(":platform:common"))
 }
