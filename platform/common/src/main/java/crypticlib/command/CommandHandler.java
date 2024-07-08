@@ -21,9 +21,7 @@ public interface CommandHandler<CommandSender> {
      * @param sender 执行者
      * @param args   参数
      */
-    default boolean execute(@NotNull CommandSender sender, @NotNull List<String> args) {
-        return true;
-    }
+    default void execute(@NotNull CommandSender sender, @NotNull List<String> args) {}
 
     /**
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加

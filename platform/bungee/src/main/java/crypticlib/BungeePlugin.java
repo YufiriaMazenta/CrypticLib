@@ -49,7 +49,7 @@ public class BungeePlugin extends Plugin {
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
                 String path = configHandler.path();
-                if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
+                if (!path.endsWith(".yml") && !path.endsWith(".yaml") && !path.endsWith(".json"))
                     path += ".yml";
                 BungeeConfigWrapper configWrapper = new BungeeConfigWrapper(this, path);
                 BungeeConfigContainer configContainer = new BungeeConfigContainer(configClass, configWrapper);
