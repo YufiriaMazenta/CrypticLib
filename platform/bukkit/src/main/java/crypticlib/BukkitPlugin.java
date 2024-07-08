@@ -149,7 +149,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
             commandClass -> {
                 try {
                     if (!BukkitCommand.class.isAssignableFrom(commandClass)) {
-//                        MsgSender.info("&e@Command annotation is used on non-CommandHandler implementation class:" + commandClass.getName());
                         return;
                     }
                     BukkitCommand bukkitCommand = (BukkitCommand) ReflectionHelper.getSingletonClassInstance(commandClass);

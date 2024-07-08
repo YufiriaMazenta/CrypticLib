@@ -9,7 +9,6 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -23,7 +22,7 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
 
     private final CommandMap serverCommandMap;
     private final Constructor<?> pluginCommandConstructor;
-    private final Map<String, Map<String, Command>> registeredCommands = new ConcurrentHashMap<>();
+    private final Map<String, Command> registeredCommands = new ConcurrentHashMap<>();
 
     BukkitCommandManager() {
         Method getCommandMapMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "getCommandMap");
@@ -42,40 +41,23 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
         pluginCommand.setUsage(commandInfo.usage());
         pluginCommand.setExecutor(commandExecutor);
         pluginCommand.setTabCompleter(commandExecutor);
-        String pluginName = plugin.getName();
-        serverCommandMap.register(pluginName, pluginCommand);
-        if (registeredCommands.containsKey(pluginName)) {
-            Map<String, Command> commandMap = registeredCommands.get(pluginName);
-            commandMap.put(commandInfo.name(), pluginCommand);
-        } else {
-            Map<String, Command> commandMap = new ConcurrentHashMap<>();
-            commandMap.put(commandInfo.name(), pluginCommand);
-            registeredCommands.put(pluginName, commandMap);
-        }
+        serverCommandMap.register(plugin.getName(), pluginCommand);
+        registeredCommands.put(commandInfo.name(), pluginCommand);
         return pluginCommand;
     }
 
     /**
      * 注销一个命令
-     * @param plugin 命令所属的插件
      * @param commandName 命令的名字
      * @return 被注销的命令，若为null即不存在此命令
      */
     @Override
-    @Nullable
-    public Command unregister(Plugin plugin, String commandName) {
-        String pluginName = plugin.getName();
-        if (!registeredCommands.containsKey(pluginName))
-            return null;
-        Map<String, Command> commandMap = registeredCommands.get(commandName);
-        Command command = commandMap.get(pluginName);
+    public Command unregister(String commandName) {
+        Command command = registeredCommands.get(commandName);
         if (command == null)
             return null;
         command.unregister(serverCommandMap);
-        commandMap.remove(commandName);
-        if (commandMap.isEmpty()) {
-            registeredCommands.remove(pluginName);
-        }
+        registeredCommands.remove(commandName);
         return command;
     }
 
@@ -85,17 +67,15 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
     @Override
     public void unregisterAll() {
         registeredCommands.forEach(
-            (plugin, commandMap) -> {
-                for (Command command : commandMap.values()) {
-                    command.unregister(serverCommandMap);
-                }
+            (pluginName, command) -> {
+                command.unregister(serverCommandMap);
             }
         );
         registeredCommands.clear();
     }
 
     @Override
-    public Map<String, Map<String, Command>> registeredCommands() {
+    public Map<String, Command> registeredCommands() {
         return registeredCommands;
     }
 

@@ -2,8 +2,4 @@ package crypticlib.lifecycle;
 
 import org.bukkit.plugin.Plugin;
 
-public interface BukkitDisabler extends Disabler<Plugin> {
-
-    void disable(Plugin plugin);
-
-}
+public interface BukkitDisabler extends Disabler<Plugin> {}
