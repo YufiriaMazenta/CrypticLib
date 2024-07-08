@@ -1,12 +1,12 @@
 package crypticlib.lang;
 
 import crypticlib.internal.PluginScanner;
-import crypticlib.lifecycle.Disabler;
-import crypticlib.lifecycle.Loader;
+import crypticlib.lifecycle.BukkitDisabler;
+import crypticlib.lifecycle.BukkitLoader;
 import crypticlib.lifecycle.annotation.OnDisable;
 import crypticlib.lifecycle.annotation.OnLoad;
 import crypticlib.lifecycle.annotation.OnReload;
-import crypticlib.lifecycle.Reloader;
+import crypticlib.lifecycle.BukkitReloader;
 import crypticlib.lang.entry.LangEntry;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @OnReload
 @OnDisable
 @OnLoad
-public enum LangManager implements Reloader, Disabler, Loader {
+public enum LangManager implements BukkitReloader, BukkitDisabler, BukkitLoader {
 
     INSTANCE;
     private final Map<String, Map<String, LangEntry<?>>> folderLangEntryMap = new ConcurrentHashMap<>();

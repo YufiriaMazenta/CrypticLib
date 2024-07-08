@@ -5,7 +5,7 @@ import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 
-public enum BukkitPermManager implements PermManager<Permissible> {
+public enum BukkitPermManager implements PermManager {
 
     INSTANCE;
 
@@ -26,9 +26,9 @@ public enum BukkitPermManager implements PermManager<Permissible> {
     }
 
     @Override
-    public boolean hasPermission(Permissible sender, String permission) {
-        if (sender != null) {
-            return sender.hasPermission(permission);
+    public boolean hasPermission(Object sender, String permission) {
+        if (sender instanceof Permissible) {
+            return ((Permissible) sender).hasPermission(permission);
         }
         return false;
     }

@@ -1,5 +1,7 @@
 package crypticlib.perm;
 
+import crypticlib.CrypticLib;
+
 public class PermInfo {
 
     public static PermManager PERM_MANAGER;

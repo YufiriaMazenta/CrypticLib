@@ -1,23 +1,25 @@
 package crypticlib;
 
+import crypticlib.chat.BukkitMsgSender;
 import crypticlib.command.BukkitCommand;
+import crypticlib.command.CommandInfo;
 import crypticlib.config.BukkitConfigContainer;
 import crypticlib.config.BukkitConfigWrapper;
-import crypticlib.command.manager.BukkitCommandManager;
+import crypticlib.command.BukkitCommandManager;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
 import crypticlib.internal.exception.PluginEnableException;
 import crypticlib.internal.exception.PluginLoadException;
-import crypticlib.lifecycle.Disabler;
-import crypticlib.lifecycle.Enabler;
-import crypticlib.lifecycle.Loader;
-import crypticlib.lifecycle.Reloader;
+import crypticlib.lifecycle.BukkitDisabler;
+import crypticlib.lifecycle.BukkitEnabler;
+import crypticlib.lifecycle.BukkitLoader;
+import crypticlib.lifecycle.BukkitReloader;
 import crypticlib.lifecycle.annotation.OnDisable;
 import crypticlib.lifecycle.annotation.OnEnable;
 import crypticlib.lifecycle.annotation.OnLoad;
 import crypticlib.lifecycle.annotation.OnReload;
-import crypticlib.listener.BukkitListener;
+import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
@@ -34,11 +36,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
+    protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final List<Disabler> disablerList = new CopyOnWriteArrayList<>();
-    protected final List<Loader> loaderList = new CopyOnWriteArrayList<>();
-    protected final List<Enabler> enablerList = new CopyOnWriteArrayList<>();
-    protected final List<Reloader> reloaderList = new CopyOnWriteArrayList<>();
+    protected final List<BukkitDisabler> disablerList = new CopyOnWriteArrayList<>();
+    protected final List<BukkitLoader> loaderList = new CopyOnWriteArrayList<>();
+    protected final List<BukkitEnabler> enablerList = new CopyOnWriteArrayList<>();
+    protected final List<BukkitReloader> reloaderList = new CopyOnWriteArrayList<>();
     protected final String defaultConfigFileName = "config.yml";
 
     protected BukkitPlugin() {
@@ -48,7 +51,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
-        PluginScanner pluginScanner = PluginScanner.INSTANCE;
         pluginScanner.scanJar(this.getFile());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -62,7 +64,77 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 configContainer.reload();
             }
         );
-        pluginScanner.getAnnotatedClasses(BukkitListener.class).forEach(
+        loaderList.clear();
+        pluginScanner.getAnnotatedClasses(OnLoad.class).forEach(
+            loaderClass -> {
+                try {
+                    if (!BukkitLoader.class.isAssignableFrom(loaderClass)) {
+                        return;
+                    }
+                    BukkitLoader loader = (BukkitLoader) ReflectionHelper.getSingletonClassInstance(loaderClass);
+                    loaderList.add(loader);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        enablerList.clear();
+        pluginScanner.getAnnotatedClasses(OnEnable.class).forEach(
+            enablerClass -> {
+                try {
+                    if (!BukkitEnabler.class.isAssignableFrom(enablerClass)) {
+                        return;
+                    }
+                    BukkitEnabler enabler = (BukkitEnabler) ReflectionHelper.getSingletonClassInstance(enablerClass);
+                    enablerList.add(enabler);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        reloaderList.clear();
+        pluginScanner.getAnnotatedClasses(OnReload.class).forEach(
+            reloaderClass -> {
+                try {
+                    if (!BukkitReloader.class.isAssignableFrom(reloaderClass)) {
+                        return;
+                    }
+                    BukkitReloader reloader = (BukkitReloader) ReflectionHelper.getSingletonClassInstance(reloaderClass);
+                    reloaderList.add(reloader);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        disablerList.clear();
+        pluginScanner.getAnnotatedClasses(OnDisable.class).forEach(
+            disablerClass -> {
+                try {
+                    if (!BukkitDisabler.class.isAssignableFrom(disablerClass)) {
+                        return;
+                    }
+                    BukkitDisabler disabler = (BukkitDisabler) ReflectionHelper.getSingletonClassInstance(disablerClass);
+                    disablerList.add(disabler);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        loaderList.forEach(
+            loader -> {
+                try {
+                    loader.load(this);
+                } catch (Throwable throwable) {
+                    throw new PluginLoadException(throwable);
+                }
+            }
+        );
+        load();
+    }
+
+    @Override
+    public final void onEnable() {
+        pluginScanner.getAnnotatedClasses(EventListener.class).forEach(
             listenerClass -> {
                 try {
                     if (!Listener.class.isAssignableFrom(listenerClass)) {
@@ -89,76 +161,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
-        loaderList.clear();
-        pluginScanner.getAnnotatedClasses(OnLoad.class).forEach(
-            loaderClass -> {
-                try {
-                    if (!Loader.class.isAssignableFrom(loaderClass)) {
-                        return;
-                    }
-                    Loader loader = (Loader) ReflectionHelper.getSingletonClassInstance(loaderClass);
-                    loaderList.add(loader);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        enablerList.clear();
-        pluginScanner.getAnnotatedClasses(OnEnable.class).forEach(
-            enablerClass -> {
-                try {
-                    if (!Enabler.class.isAssignableFrom(enablerClass)) {
-                        return;
-                    }
-                    Enabler enabler = (Enabler) ReflectionHelper.getSingletonClassInstance(enablerClass);
-                    enablerList.add(enabler);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        reloaderList.clear();
-        pluginScanner.getAnnotatedClasses(OnReload.class).forEach(
-            reloaderClass -> {
-                try {
-                    if (!Reloader.class.isAssignableFrom(reloaderClass)) {
-                        return;
-                    }
-                    Reloader reloader = (Reloader) ReflectionHelper.getSingletonClassInstance(reloaderClass);
-                    reloaderList.add(reloader);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        disablerList.clear();
-        pluginScanner.getAnnotatedClasses(OnDisable.class).forEach(
-            disablerClass -> {
-                try {
-                    if (!Disabler.class.isAssignableFrom(disablerClass)) {
-                        return;
-                    }
-                    Disabler disabler = (Disabler) ReflectionHelper.getSingletonClassInstance(disablerClass);
-                    disablerList.add(disabler);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        loaderList.forEach(
-            loader -> {
-                try {
-                    loader.load(this);
-                } catch (Throwable throwable) {
-                    throw new PluginLoadException(throwable);
-                }
-            }
-        );
-        load();
-    }
-
-    @Override
-    public final void onEnable() {
         enablerList.forEach(
             enabler -> {
                 try {
