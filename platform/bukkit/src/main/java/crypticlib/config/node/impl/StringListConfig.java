@@ -12,11 +12,15 @@ public class StringListConfig extends BukkitConfigNode<List<String>> {
         super(key, def);
     }
 
+    public StringListConfig(@NotNull String key, @NotNull List<String> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
         setValue(config.getStringList(key));
-        setComments(config.getComments(key));
+        setComments(getCommentsFromConfig());
     }
 
 }

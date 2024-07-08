@@ -1,12 +1,10 @@
 package crypticlib;
 
-import crypticlib.chat.BukkitMsgSender;
 import crypticlib.command.BukkitCommand;
-import crypticlib.command.CommandInfo;
-import crypticlib.config.BukkitConfigContainer;
-import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.command.BukkitCommandManager;
 import crypticlib.command.annotation.Command;
+import crypticlib.config.BukkitConfigContainer;
+import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
 import crypticlib.internal.exception.PluginEnableException;

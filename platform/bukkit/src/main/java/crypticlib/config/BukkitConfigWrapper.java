@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
@@ -37,6 +38,15 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
             return;
         }
         config.setComments(key, comments);
+    }
+
+    @Override
+    public @Nullable List<String> getComments(@NotNull String key) {
+        if (MinecraftVersion.current().afterOrEquals(MinecraftVersion.V1_18_1)) {
+            return config.getComments(key);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     @Override

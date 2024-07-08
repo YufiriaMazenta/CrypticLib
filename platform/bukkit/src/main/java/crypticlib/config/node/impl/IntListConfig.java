@@ -12,11 +12,15 @@ public class IntListConfig extends BukkitConfigNode<List<Integer>> {
         super(key, def);
     }
 
+    public IntListConfig(@NotNull String key, @NotNull List<Integer> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
         setValue(config.getIntegerList(key));
-        setComments(config.getComments(key));
+        setComments(getCommentsFromConfig());
     }
 
 }

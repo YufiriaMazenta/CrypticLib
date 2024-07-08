@@ -12,11 +12,15 @@ public class FloatListConfig extends BukkitConfigNode<List<Float>> {
         super(key, def);
     }
 
+    public FloatListConfig(@NotNull String key, @NotNull List<Float> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
         setValue(config.getFloatList(key));
-        setComments(config.getComments(key));
+        setComments(getCommentsFromConfig());
     }
 
 }

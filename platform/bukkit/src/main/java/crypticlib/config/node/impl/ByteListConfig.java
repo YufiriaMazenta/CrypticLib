@@ -12,11 +12,15 @@ public class ByteListConfig extends BukkitConfigNode<List<Byte>> {
         super(key, def);
     }
 
+    public ByteListConfig(@NotNull String key, @NotNull List<Byte> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
         setValue(config.getByteList(key));
-        setComments(config.getComments(key));
+        setComments(getCommentsFromConfig());
     }
 
 }

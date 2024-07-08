@@ -12,11 +12,15 @@ public class CharacterListConfig extends BukkitConfigNode<List<Character>> {
         super(key, def);
     }
 
+    public CharacterListConfig(@NotNull String key, @NotNull List<Character> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
         setValue(config.getCharacterList(key));
-        setComments(config.getComments(key));
+        setComments(getCommentsFromConfig());
     }
 
 }

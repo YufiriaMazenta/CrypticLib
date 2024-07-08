@@ -16,14 +16,19 @@ public abstract class ConfigNode<T, C> {
 
     protected final String key;
     protected final T def;
+    protected final List<String> defComments;
     protected T value;
     protected List<String> comments;
-    protected ConfigContainer configContainer;
+    protected ConfigContainer<?> configContainer;
 
-    public ConfigNode(@NotNull String key, @NotNull T def) {
+    public ConfigNode(String key, T def) {
+        this(key, def, new ArrayList<>());
+    }
+
+    public ConfigNode(@NotNull String key, @NotNull T def, @NotNull List<String> defComments) {
         this.key = key;
         this.def = def;
-        this.comments = new ArrayList<>();
+        this.defComments = defComments;
     }
 
     @NotNull
@@ -40,16 +45,20 @@ public abstract class ConfigNode<T, C> {
         return def;
     }
 
+    public List<String> getDefComments() {
+        return defComments;
+    }
+
     @NotNull
     public String key() {
         return key;
     }
 
-    public ConfigContainer configContainer() {
+    public ConfigContainer<?> configContainer() {
         return configContainer;
     }
 
-    public ConfigNode<T, C> setConfigContainer(ConfigContainer configContainer) {
+    public ConfigNode<T, C> setConfigContainer(ConfigContainer<?> configContainer) {
         this.configContainer = configContainer;
         return this;
     }
