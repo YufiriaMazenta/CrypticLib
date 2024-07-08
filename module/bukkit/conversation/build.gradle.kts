@@ -4,6 +4,6 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.1")
     compileOnly("org.spigotmc:spigot:1.20")
     compileOnly("org.spigotmc:spigot-api:1.20.4-R0.1-SNAPSHOT")
-    compileOnly(project(":bukkit"))
-    compileOnly(project(":common"))
+    compileOnly(project(":platform:common"))
+    compileOnly(project(":platform:bukkit"))
 }

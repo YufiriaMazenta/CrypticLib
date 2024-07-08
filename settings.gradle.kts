@@ -1,8 +1,4 @@
 rootProject.name = "CrypticLib"
 
-include("common")
-include("bukkit")
-include("ui")
-include("conversation")
-include("action")
-include("i18n-bukkit")
+include("platform:common", "platform:bukkit")
+include("module:bukkit:ui", "module:bukkit:conversation", "module:bukkit:action", "module:bukkit:i18n")

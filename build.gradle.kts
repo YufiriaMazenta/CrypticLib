@@ -1,7 +1,7 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "0.19.0"
+rootProject.version = "0.19.1"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
 var repositoryUrl = "http://repo.crypticlib.com:8081/repository/"
@@ -64,11 +64,17 @@ subprojects {
             artifact(tasks["shadowJar"]) {
                 classifier = null
             }
-            var path = project.path
-            val lastColonIndex = path.lastIndexOf(":")
-            val name = path.substring(lastColonIndex + 1)
-            path = path.substring(0, lastColonIndex).replace(":", ".")
-            groupId = "${rootProject.group}${path}"
+            val path = project.path
+            val name = when  {
+                path.startsWith(":module:") -> {
+                    path.replaceFirst(":module:", "")
+                }
+                path.startsWith(":platform:") -> {
+                    path.replaceFirst(":platform:", "")
+                }
+                else -> path.substring(1)
+            }.replace(":", "-")
+            groupId = "${rootProject.group}"
             artifactId = name
         }
     }
