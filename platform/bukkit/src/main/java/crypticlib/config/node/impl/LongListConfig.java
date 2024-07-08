@@ -12,11 +12,15 @@ public class LongListConfig extends BukkitConfigNode<List<Long>> {
         super(key, def);
     }
 
+    public LongListConfig(@NotNull String key, @NotNull List<Long> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull ConfigurationSection config) {
         saveDef(config);
         setValue(config.getLongList(key));
-        setComments(config.getComments(key));
+        setComments(getCommentsFromConfig());
     }
 
 }

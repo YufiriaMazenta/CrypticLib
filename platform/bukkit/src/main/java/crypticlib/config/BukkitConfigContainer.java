@@ -29,4 +29,9 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> 
         }
         configWrapper.saveConfig();
     }
+
+    @Override
+    public @NotNull BukkitConfigWrapper configWrapper() {
+        return super.configWrapper();
+    }
 }

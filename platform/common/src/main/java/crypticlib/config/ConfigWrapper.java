@@ -68,6 +68,8 @@ public abstract class ConfigWrapper<C> {
 
     public abstract void setComments(@NotNull String key, @Nullable List<String> comments);
 
+    public abstract @Nullable List<String> getComments(@NotNull String key);
+
     /**
      * 重载配置文件
      */
