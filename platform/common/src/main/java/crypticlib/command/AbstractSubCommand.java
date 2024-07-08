@@ -40,8 +40,8 @@ public abstract class AbstractSubCommand<CommandSender> implements CommandHandle
     }
 
     @Override
-    public final boolean onCommand(CommandSender sender, List<String> args) {
-        return CommandHandler.super.onCommand(sender, args);
+    public final void onCommand(CommandSender sender, List<String> args) {
+        CommandHandler.super.onCommand(sender, args);
     }
 
     @Override

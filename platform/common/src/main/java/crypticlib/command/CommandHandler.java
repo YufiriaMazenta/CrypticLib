@@ -60,22 +60,21 @@ public interface CommandHandler<CommandSender> {
      *
      * @param sender 发送此命令的人
      * @param args   发送时的参数
-     * @return 执行结果
      */
-    default boolean onCommand(CommandSender sender, List<String> args) {
+    default void onCommand(CommandSender sender, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
-            return execute(sender, args);
+            execute(sender, args);
+            return;
         }
         //执行对应的子命令
         AbstractSubCommand<CommandSender> subcommand = subcommands().get(args.get(0));
         if (subcommand != null) {
             PermInfo perm = subcommand.permission();
             if (perm == null || perm.hasPermission(sender)) {
-                return subcommand.onCommand(sender, args.subList(1, args.size()));
+                subcommand.onCommand(sender, args.subList(1, args.size()));
             }
         }
-        return true;
     }
 
     /**

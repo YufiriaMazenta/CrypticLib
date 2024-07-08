@@ -1,6 +1,6 @@
 package crypticlib.ui.menu;
 
-import crypticlib.chat.TextProcessor;
+import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
@@ -87,7 +87,7 @@ public class Menu implements InventoryHolder {
         int size = Math.min(display.layout().layout().size() * 9, 54);
         Inventory inventory;
         if (inventoryCache == null) {
-            String title = TextProcessor.color(TextProcessor.placeholder(player, display.title()));
+            String title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title()));
             inventory = Bukkit.createInventory(this, size, title);
         } else {
             inventory = inventoryCache;
@@ -141,7 +141,7 @@ public class Menu implements InventoryHolder {
         InventoryView inventoryView = player.getOpenInventory();
         Inventory topInventory = inventoryView.getTopInventory();
         if (topInventory.getHolder() != null && topInventory.getHolder() instanceof Menu) {
-            inventoryView.setTitle(TextProcessor.color(TextProcessor.placeholder(player, display.title())));
+            inventoryView.setTitle(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title())));
         }
     }
 
@@ -171,10 +171,10 @@ public class Menu implements InventoryHolder {
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
-                meta.setDisplayName(TextProcessor.color(TextProcessor.placeholder(player, meta.getDisplayName())));
+                meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, meta.getDisplayName())));
                 List<String> lore = meta.getLore();
                 if (lore != null) {
-                    lore.replaceAll(source -> TextProcessor.color(TextProcessor.placeholder(player, source)));
+                    lore.replaceAll(source -> BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, source)));
                 }
                 meta.setLore(lore);
                 display.setItemMeta(meta);

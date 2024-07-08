@@ -32,7 +32,8 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        return onCommand(sender, Arrays.asList(args));
+        onCommand(sender, Arrays.asList(args));
+        return true;
     }
 
     public BukkitCommand setRootCommandInfo(CommandInfo commandInfo) {
@@ -41,8 +42,8 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     }
 
     @Override
-    public final boolean onCommand(CommandSender sender, List<String> args) {
-        return CommandHandler.super.onCommand(sender, args);
+    public final void onCommand(CommandSender sender, List<String> args) {
+        CommandHandler.super.onCommand(sender, args);
     }
 
     @Override

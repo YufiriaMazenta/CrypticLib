@@ -95,4 +95,21 @@ public class FileHelper {
         }
     }
 
+    public static boolean isYamlFile(@NotNull File file) {
+        return isYamlFile(file.getName());
+    }
+
+    public static boolean isYamlFile(String filename) {
+        return YAML_FILE_PATTERN.matcher(filename).find();
+    }
+
+    public static boolean isJsonFile(@NotNull File file) {
+        return isJsonFile(file.getName());
+    }
+
+    public static boolean isJsonFile(String filename) {
+        return JSON_FILE_PATTERN.matcher(filename).find();
+    }
+
+
 }

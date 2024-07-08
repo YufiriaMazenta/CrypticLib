@@ -1,7 +1,7 @@
 package crypticlib.util;
 
 import com.google.common.base.Preconditions;
-import crypticlib.chat.TextProcessor;
+import crypticlib.chat.BukkitTextProcessor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -31,7 +31,7 @@ public class ItemHelper {
         Preconditions.checkArgument(!ItemHelper.isAir(item), "Item can not be null");
         ItemMeta meta = item.getItemMeta();
         if (format) {
-            displayName = TextProcessor.color(displayName);
+            displayName = BukkitTextProcessor.color(displayName);
         }
         meta.setDisplayName(displayName);
         item.setItemMeta(meta);
@@ -45,7 +45,7 @@ public class ItemHelper {
         Preconditions.checkArgument(!ItemHelper.isAir(item), "Item can not be air");
         ItemMeta itemMeta = item.getItemMeta();
         if (format) {
-            lore.replaceAll(TextProcessor::color);
+            lore.replaceAll(BukkitTextProcessor::color);
         }
         itemMeta.setLore(lore);
 
