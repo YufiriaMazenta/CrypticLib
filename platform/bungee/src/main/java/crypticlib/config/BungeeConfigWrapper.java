@@ -46,6 +46,7 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
 
     @Override
     public void reloadConfig() {
+        saveDefaultConfigFile();
         try {
             if (FileHelper.isYamlFile(path)) {
                 config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);

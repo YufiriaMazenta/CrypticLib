@@ -51,6 +51,7 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
 
     @Override
     public void reloadConfig() {
+        saveDefaultConfigFile();
         config = YamlConfiguration.loadConfiguration(configFile);
     }
 
