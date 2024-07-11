@@ -12,6 +12,10 @@ public class StringConfig extends BukkitConfigNode<String> {
         super(key, def);
     }
 
+    public StringConfig(String key, String def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public StringConfig(@NotNull String key, @NotNull String def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

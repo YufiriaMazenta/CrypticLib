@@ -12,6 +12,10 @@ public class FloatListConfig extends BukkitConfigNode<List<Float>> {
         super(key, def);
     }
 
+    public FloatListConfig(String key, List<Float> def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public FloatListConfig(@NotNull String key, @NotNull List<Float> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

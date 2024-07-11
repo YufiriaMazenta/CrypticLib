@@ -12,6 +12,10 @@ public class ByteListConfig extends BukkitConfigNode<List<Byte>> {
         super(key, def);
     }
 
+    public ByteListConfig(String key, List<Byte> def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public ByteListConfig(@NotNull String key, @NotNull List<Byte> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

@@ -26,6 +26,11 @@ public abstract class ConfigNode<T, C> {
         this(key, def, new ArrayList<>());
     }
 
+    public ConfigNode(String key, T def, @NotNull String defComment) {
+        this(key, def, new ArrayList<>(Collections.singletonList(defComment)));
+    }
+
+
     public ConfigNode(@NotNull String key, @NotNull T def, @NotNull List<String> defComments) {
         this.key = key;
         this.def = def;

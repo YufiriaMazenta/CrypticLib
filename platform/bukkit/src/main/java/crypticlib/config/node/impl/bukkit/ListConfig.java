@@ -13,6 +13,10 @@ public class ListConfig<T> extends BukkitConfigNode<List<T>> {
         super(key, def);
     }
 
+    public ListConfig(String key, List<T> def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public ListConfig(@NotNull String key, @NotNull List<T> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

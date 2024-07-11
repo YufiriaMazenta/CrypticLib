@@ -12,6 +12,10 @@ public class DoubleConfig extends BukkitConfigNode<Double> {
         super(key, def);
     }
 
+    public DoubleConfig(String key, Double def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public DoubleConfig(@NotNull String key, @NotNull Double def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

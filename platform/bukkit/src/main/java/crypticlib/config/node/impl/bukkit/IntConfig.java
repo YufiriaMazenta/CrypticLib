@@ -12,6 +12,10 @@ public class IntConfig extends BukkitConfigNode<Integer> {
         super(key, def);
     }
 
+    public IntConfig(String key, Integer def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public IntConfig(@NotNull String key, @NotNull Integer def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

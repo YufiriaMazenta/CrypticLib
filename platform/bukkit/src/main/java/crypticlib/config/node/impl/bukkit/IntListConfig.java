@@ -12,6 +12,10 @@ public class IntListConfig extends BukkitConfigNode<List<Integer>> {
         super(key, def);
     }
 
+    public IntListConfig(String key, List<Integer> def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public IntListConfig(@NotNull String key, @NotNull List<Integer> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

@@ -12,6 +12,10 @@ public class BooleanConfig extends BukkitConfigNode<Boolean> {
         super(key, def);
     }
 
+    public BooleanConfig(String key, Boolean def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public BooleanConfig(@NotNull String key, @NotNull Boolean def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }
