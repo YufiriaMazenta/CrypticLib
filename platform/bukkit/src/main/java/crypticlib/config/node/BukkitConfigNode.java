@@ -16,6 +16,10 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
         super(key, def, defComments);
     }
 
+    public BukkitConfigNode(String key, T def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     @Override
     public void saveDef(@NotNull ConfigurationSection config) {
         //加载默认值

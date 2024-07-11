@@ -12,6 +12,10 @@ public class ShortListConfig extends BukkitConfigNode<List<Short>> {
         super(key, def);
     }
 
+    public ShortListConfig(String key, List<Short> def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public ShortListConfig(@NotNull String key, @NotNull List<Short> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }

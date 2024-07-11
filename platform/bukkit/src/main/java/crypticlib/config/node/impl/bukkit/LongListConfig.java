@@ -12,6 +12,10 @@ public class LongListConfig extends BukkitConfigNode<List<Long>> {
         super(key, def);
     }
 
+    public LongListConfig(String key, List<Long> def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public LongListConfig(@NotNull String key, @NotNull List<Long> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }
