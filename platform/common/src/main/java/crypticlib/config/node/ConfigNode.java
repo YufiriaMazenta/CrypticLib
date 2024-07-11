@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,6 +72,10 @@ public abstract class ConfigNode<T, C> {
 
     public void setComments(@Nullable List<String> comments) {
         this.comments = comments;
+    }
+
+    public void setComment(@Nullable String comment) {
+        setComments(Collections.singletonList(comment));
     }
 
     public @Nullable List<String> getComments() {
