@@ -77,28 +77,30 @@ public abstract class ConfigWrapper<C> {
     public abstract void saveConfig();
 
     public void saveDefaultConfigFile() {
-        if (!configFile.exists()) {
-            try {
-                File folder = configFile.getParentFile();
-                if (!folder.exists()) {
-                    folder.mkdirs();
-                }
-                if (!configFile.exists()) {
-                    FileOutputStream output = new FileOutputStream(configFile);
-                    InputStream input = getResource(path);
-                    if (input == null)
-                        throw new NullPointerException();
-                    Objects.requireNonNull(output, "out");
-                    byte[] buffer = new byte[8192];
-                    int read;
-                    while ((read = input.read(buffer, 0, 8192)) >= 0) {
-                        output.write(buffer, 0, read);
+        synchronized (this) {
+            if (!configFile.exists()) {
+                try {
+                    File folder = configFile.getParentFile();
+                    if (!folder.exists()) {
+                        folder.mkdirs();
                     }
-                    output.close();
-                    input.close();
+                    if (!configFile.exists()) {
+                        FileOutputStream output = new FileOutputStream(configFile);
+                        InputStream input = getResource(path);
+                        if (input == null)
+                            throw new NullPointerException();
+                        Objects.requireNonNull(output, "out");
+                        byte[] buffer = new byte[8192];
+                        int read;
+                        while ((read = input.read(buffer, 0, 8192)) >= 0) {
+                            output.write(buffer, 0, read);
+                        }
+                        output.close();
+                        input.close();
+                    }
+                } catch (NullPointerException | IllegalArgumentException | IOException e) {
+                    FileHelper.createNewFile(configFile);
                 }
-            } catch (NullPointerException | IllegalArgumentException | IOException e) {
-                FileHelper.createNewFile(configFile);
             }
         }
     }
