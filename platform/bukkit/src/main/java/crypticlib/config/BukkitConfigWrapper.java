@@ -28,16 +28,20 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
-        config.set(key, object);
+        synchronized (this) {
+            config.set(key, object);
+        }
     }
 
     @Override
     public void setComments(@NotNull String key, @Nullable List<String> comments) {
-        if (MinecraftVersion.current().before(MinecraftVersion.V1_18_1)) {
-            //1.18.1以下不支持注释
-            return;
+        synchronized (this) {
+            if (MinecraftVersion.current().before(MinecraftVersion.V1_18_1)) {
+                //1.18.1以下不支持注释
+                return;
+            }
+            config.setComments(key, comments);
         }
-        config.setComments(key, comments);
     }
 
     @Override

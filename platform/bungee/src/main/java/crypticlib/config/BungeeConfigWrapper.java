@@ -30,7 +30,9 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
-        config.set(key, object);
+        synchronized (this) {
+            config.set(key, object);
+        }
     }
 
     @Override
