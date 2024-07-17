@@ -1,8 +1,0 @@
-jdk:
-  - openjdk17
-before_install:
-  - echo '故意构建失败获取缓存'
-  - chmod +x ./gradlew
-  - ./gradlew clean build
-install:
-  - ./gradlew clean build publishToMavenLocal
