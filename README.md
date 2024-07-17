@@ -2,7 +2,13 @@
 
 ### 简介
 
-CrypticLib是一个基于BukkitAPI和FoliaAPI编写的库，提供各种简便开发流程的工具，目前正在开发中...
+CrypticLib是一个Minecraft插件开发库，提供各种简便开发流程的工具，目前正在开发中...
+
+#### 目前支持平台
+
+Bukkit
+
+Bungee
 
 ### 使用方式
 
