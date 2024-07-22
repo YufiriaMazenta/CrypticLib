@@ -50,7 +50,6 @@ public class IconDisplay {
         this.name = name;
         this.lore = lore;
         this.customModelData = customModelData;
-        this.display = toItemStack();
     }
 
     public @NotNull Material material() {
