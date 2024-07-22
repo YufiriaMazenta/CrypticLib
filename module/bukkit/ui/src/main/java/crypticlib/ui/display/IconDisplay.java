@@ -108,7 +108,7 @@ public class IconDisplay {
     public @NotNull ItemStack applyToItemStack(@NotNull ItemStack itemStack) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null)
-            throw new IllegalArgumentException("Item meta can not be null");
+            return itemStack;
         if (name != null)
             itemMeta.setDisplayName(name);
         if (lore != null)
