@@ -88,7 +88,7 @@ public class IconDisplay {
         return this;
     }
 
-    public @Nullable ItemStack display() {
+    public @NotNull ItemStack display() {
         if (display == null) {
             display = toItemStack();
         }
