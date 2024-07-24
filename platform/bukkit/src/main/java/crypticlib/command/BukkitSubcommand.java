@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.chat.BukkitMsgSender;
 import crypticlib.perm.PermInfo;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 public class BukkitSubcommand extends AbstractSubcommand<CommandSender> {
 
-    public BukkitSubcommand(@NotNull SubcommandInfo subcommandInfo) {
+    public BukkitSubcommand(@NotNull CommandInfo subcommandInfo) {
         super(subcommandInfo);
     }
 
@@ -84,4 +85,13 @@ public class BukkitSubcommand extends AbstractSubcommand<CommandSender> {
     public void registerPerms() {
         super.registerPerms();
     }
+
+    @Override
+    public void sendDescriptions(CommandSender commandSender) {
+        List<String> descriptions = toDescriptions();
+        for (String description : descriptions) {
+            BukkitMsgSender.INSTANCE.sendMsg(commandSender, description);
+        }
+    }
+
 }

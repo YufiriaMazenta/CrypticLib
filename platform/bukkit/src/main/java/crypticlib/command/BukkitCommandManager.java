@@ -33,7 +33,7 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
     @Override
     public Command register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
         PluginCommand pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
-        pluginCommand.setAliases(Arrays.asList(commandInfo.aliases()));
+        pluginCommand.setAliases(commandInfo.aliases());
         pluginCommand.setDescription(commandInfo.description());
         PermInfo permInfo = commandInfo.permission();
         if (permInfo != null)

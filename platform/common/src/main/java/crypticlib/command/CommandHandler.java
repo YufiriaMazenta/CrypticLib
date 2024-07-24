@@ -21,7 +21,9 @@ public interface CommandHandler<CommandSender> {
      * @param sender 执行者
      * @param args   参数
      */
-    default void execute(@NotNull CommandSender sender, @NotNull List<String> args) {}
+    default void execute(@NotNull CommandSender sender, @NotNull List<String> args) {
+        sendDescriptions(sender);
+    }
 
     /**
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
@@ -155,5 +157,48 @@ public interface CommandHandler<CommandSender> {
             }
         }
     }
+
+    /**
+     * 获取此命令的介绍
+     * 格式为:
+     * <command>:
+     * <usage>
+     * <description>
+     *  - <子命令usage>
+     *    <子命令description>
+     *  - <子命令usage>
+     *    <子命令description>
+     *
+     * @return 转换完成的介绍
+     */
+    default List<String> toDescriptions() {
+        List<String> description = new ArrayList<>();
+
+        description.add("&7/" + commandInfo().name() + ":");
+        if (!commandInfo().usage().isEmpty()) {
+            description.add("&7" + commandInfo().usage());
+        }
+        if (!commandInfo().description().isEmpty()) {
+            description.add("&7" + commandInfo().description());
+        }
+        subcommands().forEach(
+            (key, subcommand) -> {
+                if (subcommand.commandInfo().usage().isEmpty()) {
+                    description.add(" &7- &r" + subcommand.commandInfo().name());
+                } else {
+                    description.add(" &7- &r" + subcommand.commandInfo().usage());
+                }
+                if (subcommand.commandInfo().description().isEmpty()) {
+                    return;
+                }
+                description.add("   &7" + subcommand.commandInfo().description());
+            }
+        );
+        return description;
+    }
+
+    void sendDescriptions(CommandSender commandSender);
+
+    CommandInfo commandInfo();
 
 }
