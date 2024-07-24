@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.Nullable;
 
-public class MenuUtil {
+public class MenuHelper {
 
     public static @Nullable Menu getPlayerMenu(Player player) {
         InventoryHolder holder = player.getOpenInventory().getTopInventory().getHolder();
