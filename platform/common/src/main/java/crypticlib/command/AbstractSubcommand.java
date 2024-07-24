@@ -13,29 +13,29 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * CrypticLib提供的子命令类
  */
-public abstract class AbstractSubCommand<CommandSender> implements CommandHandler<CommandSender> {
+public abstract class AbstractSubcommand<CommandSender> implements CommandHandler<CommandSender> {
 
-    protected final Map<String, AbstractSubCommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
+    protected final Map<String, AbstractSubcommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
     protected final SubcommandInfo subcommandInfo;
 
-    public AbstractSubCommand(@NotNull SubcommandInfo subcommandInfo) {
+    public AbstractSubcommand(@NotNull SubcommandInfo subcommandInfo) {
         this.subcommandInfo = subcommandInfo;
     }
 
-    public AbstractSubCommand(@NotNull String name) {
+    public AbstractSubcommand(@NotNull String name) {
         this(name, null, new ArrayList<>());
     }
 
-    public AbstractSubCommand(@NotNull String name, @NotNull List<String> aliases) {
+    public AbstractSubcommand(@NotNull String name, @NotNull List<String> aliases) {
         this(name, null, aliases);
     }
 
 
-    public AbstractSubCommand(@NotNull String name, @Nullable PermInfo permission) {
+    public AbstractSubcommand(@NotNull String name, @Nullable PermInfo permission) {
         this(name, permission, new ArrayList<>());
     }
 
-    public AbstractSubCommand(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
+    public AbstractSubcommand(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
         this.subcommandInfo = new SubcommandInfo(name, permission, aliases);
     }
 
@@ -59,7 +59,7 @@ public abstract class AbstractSubCommand<CommandSender> implements CommandHandle
         return subcommandInfo.name();
     }
 
-    public AbstractSubCommand<CommandSender> setName(String name) {
+    public AbstractSubcommand<CommandSender> setName(String name) {
         this.subcommandInfo.setName(name);
         return this;
     }
@@ -69,12 +69,12 @@ public abstract class AbstractSubCommand<CommandSender> implements CommandHandle
         return subcommandInfo.permission();
     }
 
-    public AbstractSubCommand<CommandSender> setPermission(@NotNull String permission) {
+    public AbstractSubcommand<CommandSender> setPermission(@NotNull String permission) {
         this.subcommandInfo.setPermission(new PermInfo(permission));
         return this;
     }
 
-    public AbstractSubCommand<CommandSender> setPermission(@Nullable PermInfo permission) {
+    public AbstractSubcommand<CommandSender> setPermission(@Nullable PermInfo permission) {
         this.subcommandInfo.setPermission(permission);
         return this;
     }
@@ -89,24 +89,24 @@ public abstract class AbstractSubCommand<CommandSender> implements CommandHandle
         return subcommandInfo.aliases();
     }
 
-    public AbstractSubCommand<CommandSender> setAliases(@NotNull List<String> aliases) {
+    public AbstractSubcommand<CommandSender> setAliases(@NotNull List<String> aliases) {
         this.subcommandInfo.setAliases(aliases);
         return this;
     }
 
-    public AbstractSubCommand<CommandSender> addAliases(@NotNull String alias) {
+    public AbstractSubcommand<CommandSender> addAliases(@NotNull String alias) {
         this.subcommandInfo.aliases().add(alias);
         return this;
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubCommand<CommandSender>> subcommands() {
+    public @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
         return subcommands;
     }
 
     @Override
-    public AbstractSubCommand<CommandSender> regSub(@NotNull AbstractSubCommand<CommandSender> subcommandHandler) {
-        return (AbstractSubCommand<CommandSender>) CommandHandler.super.regSub(subcommandHandler);
+    public AbstractSubcommand<CommandSender> regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
+        return (AbstractSubcommand<CommandSender>) CommandHandler.super.regSub(subcommandHandler);
     }
 
     public void registerPerms() {
