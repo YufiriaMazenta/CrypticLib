@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.chat.BungeeMsgSender;
 import crypticlib.perm.PermInfo;
 import net.md_5.bungee.api.CommandSender;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 public class BungeeSubcommand extends AbstractSubcommand<CommandSender> {
 
-    public BungeeSubcommand(@NotNull SubcommandInfo subcommandInfo) {
+    public BungeeSubcommand(@NotNull CommandInfo subcommandInfo) {
         super(subcommandInfo);
     }
 
@@ -84,4 +85,13 @@ public class BungeeSubcommand extends AbstractSubcommand<CommandSender> {
     public void registerPerms() {
         super.registerPerms();
     }
+
+    @Override
+    public void sendDescriptions(CommandSender commandSender) {
+        List<String> descriptions = toDescriptions();
+        for (String description : descriptions) {
+            BungeeMsgSender.INSTANCE.sendMsg(commandSender, description);
+        }
+    }
+
 }

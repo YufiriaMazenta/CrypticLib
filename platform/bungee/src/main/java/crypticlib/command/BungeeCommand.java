@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.chat.BungeeMsgSender;
 import crypticlib.perm.PermInfo;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.plugin.Command;
@@ -22,13 +23,8 @@ public class BungeeCommand extends Command implements CommandHandler<CommandSend
     protected Boolean registered = false;
 
     public BungeeCommand(CommandInfo commandInfo) {
-        super(commandInfo.name(), commandInfo.permission() != null ? commandInfo.permission().permission() : null, commandInfo.aliases());
+        super(commandInfo.name(), commandInfo.permission() != null ? commandInfo.permission().permission() : null, commandInfo.aliases().toArray(new String[]{}));
         this.commandInfo = commandInfo;
-    }
-
-    public BungeeCommand setRootCommandInfo(CommandInfo commandInfo) {
-        this.commandInfo = commandInfo;
-        return this;
     }
 
     @Override
@@ -44,10 +40,6 @@ public class BungeeCommand extends Command implements CommandHandler<CommandSend
     @Override
     public BungeeCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         return (BungeeCommand) CommandHandler.super.regSub(subcommandHandler);
-    }
-
-    public CommandInfo rootCommandInfo() {
-        return commandInfo;
     }
 
     @Override
@@ -70,6 +62,19 @@ public class BungeeCommand extends Command implements CommandHandler<CommandSend
         PermInfo permission = commandInfo.permission();
         if (permission != null)
             permission.register();
+    }
+
+    @Override
+    public void sendDescriptions(CommandSender commandSender) {
+        List<String> descriptions = toDescriptions();
+        for (String description : descriptions) {
+            BungeeMsgSender.INSTANCE.sendMsg(commandSender, description);
+        }
+    }
+
+    @Override
+    public CommandInfo commandInfo() {
+        return commandInfo;
     }
 
     @Override

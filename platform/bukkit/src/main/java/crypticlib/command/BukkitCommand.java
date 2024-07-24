@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.chat.BukkitMsgSender;
 import crypticlib.perm.PermInfo;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -26,19 +27,14 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public final List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         return onTabComplete(sender, Arrays.asList(args));
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public final boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         onCommand(sender, Arrays.asList(args));
         return true;
-    }
-
-    public BukkitCommand setRootCommandInfo(CommandInfo commandInfo) {
-        this.commandInfo = commandInfo;
-        return this;
     }
 
     @Override
@@ -54,10 +50,6 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     @Override
     public BukkitCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         return (BukkitCommand) CommandHandler.super.regSub(subcommandHandler);
-    }
-
-    public CommandInfo rootCommandInfo() {
-        return commandInfo;
     }
 
     @Override
@@ -80,6 +72,19 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
         PermInfo permission = commandInfo.permission();
         if (permission != null)
             permission.register();
+    }
+
+    @Override
+    public void sendDescriptions(CommandSender commandSender) {
+        List<String> descriptions = toDescriptions();
+        for (String description : descriptions) {
+            BukkitMsgSender.INSTANCE.sendMsg(commandSender, description);
+        }
+    }
+
+    @Override
+    public CommandInfo commandInfo() {
+        return commandInfo;
     }
 
 }

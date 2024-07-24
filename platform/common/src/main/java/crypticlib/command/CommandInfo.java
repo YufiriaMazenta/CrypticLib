@@ -4,6 +4,9 @@ import crypticlib.perm.PermInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CommandInfo {
 
     @NotNull
@@ -11,7 +14,7 @@ public class CommandInfo {
     @Nullable
     private PermInfo permission;
     @NotNull
-    private String[] aliases;
+    private final List<String> aliases = new ArrayList<>();
     @NotNull
     private String description;
     @NotNull
@@ -22,25 +25,25 @@ public class CommandInfo {
     }
 
     public CommandInfo(@NotNull String name, @Nullable PermInfo permission) {
-        this(name, permission, new String[0]);
+        this(name, permission, new ArrayList<>());
     }
 
-    public CommandInfo(@NotNull String name, @NotNull String[] aliases) {
+    public CommandInfo(@NotNull String name, @NotNull List<String> aliases) {
         this(name, null, aliases);
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
         this(name, permission, aliases, "");
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases, @NotNull String description) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @NotNull String description) {
         this(name, permission, aliases, description, "");
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull String[] aliases, @NotNull String description, @NotNull String usage) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @NotNull String description, @NotNull String usage) {
         this.name = name;
         this.permission = permission;
-        this.aliases = aliases;
+        this.aliases.addAll(aliases);
         this.description = description;
         this.usage = usage;
     }
@@ -71,12 +74,13 @@ public class CommandInfo {
     }
 
     @NotNull
-    public String[] aliases() {
+    public List<String> aliases() {
         return aliases;
     }
 
-    public CommandInfo setAliases(@NotNull String[] aliases) {
-        this.aliases = aliases;
+    public CommandInfo setAliases(@NotNull List<String> aliases) {
+        this.aliases.clear();
+        this.aliases.addAll(aliases);
         return this;
     }
 
