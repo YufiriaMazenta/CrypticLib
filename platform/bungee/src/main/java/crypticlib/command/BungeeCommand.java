@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BungeeCommand extends Command implements CommandHandler<CommandSender>, TabExecutor {
 
-    protected final Map<String, AbstractSubCommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
+    protected final Map<String, AbstractSubcommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
     protected CommandInfo commandInfo;
     protected Boolean registered = false;
 
@@ -42,7 +42,7 @@ public class BungeeCommand extends Command implements CommandHandler<CommandSend
     }
 
     @Override
-    public BungeeCommand regSub(@NotNull AbstractSubCommand<CommandSender> subcommandHandler) {
+    public BungeeCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         return (BungeeCommand) CommandHandler.super.regSub(subcommandHandler);
     }
 
@@ -51,7 +51,7 @@ public class BungeeCommand extends Command implements CommandHandler<CommandSend
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubCommand<CommandSender>> subcommands() {
+    public @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
         return subcommands;
     }
     

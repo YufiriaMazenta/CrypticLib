@@ -36,7 +36,7 @@ public interface CommandHandler<CommandSender> {
      *
      * @return 命令的子命令表
      */
-    default @NotNull Map<String, AbstractSubCommand<CommandSender>> subcommands() {
+    default @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
         return new HashMap<>();
     }
 
@@ -45,7 +45,7 @@ public interface CommandHandler<CommandSender> {
      *
      * @param subcommandHandler 注册的命令
      */
-    default CommandHandler<?> regSub(@NotNull AbstractSubCommand<CommandSender> subcommandHandler) {
+    default CommandHandler<?> regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         subcommands().put(subcommandHandler.name(), subcommandHandler);
         for (String alias : subcommandHandler.aliases()) {
             subcommands().put(alias, subcommandHandler);
@@ -66,7 +66,7 @@ public interface CommandHandler<CommandSender> {
             return;
         }
         //执行对应的子命令
-        AbstractSubCommand<CommandSender> subcommand = subcommands().get(args.get(0));
+        AbstractSubcommand<CommandSender> subcommand = subcommands().get(args.get(0));
         if (subcommand != null) {
             PermInfo perm = subcommand.permission();
             if (perm == null || perm.hasPermission(sender)) {
@@ -94,7 +94,7 @@ public interface CommandHandler<CommandSender> {
         //尝试获取子命令的补全内容
         if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
-                AbstractSubCommand<CommandSender> subcommand = subcommands().get(args.get(0));
+                AbstractSubcommand<CommandSender> subcommand = subcommands().get(args.get(0));
                 if (subcommand != null) {
                     PermInfo perm = subcommand.permission();
                     if (perm != null) {
@@ -109,7 +109,7 @@ public interface CommandHandler<CommandSender> {
                 return Collections.singletonList("");
             }
             for (String arg : subcommands().keySet()) {
-                AbstractSubCommand<CommandSender> subcommand = subcommands().get(arg);
+                AbstractSubcommand<CommandSender> subcommand = subcommands().get(arg);
                 PermInfo perm = subcommand.permission();
                 if (perm != null) {
                     if (perm.hasPermission(sender))
@@ -126,7 +126,7 @@ public interface CommandHandler<CommandSender> {
     }
 
     default void registerPerms() {
-        for (AbstractSubCommand<CommandSender> commandTreeNode : subcommands().values()) {
+        for (AbstractSubcommand<CommandSender> commandTreeNode : subcommands().values()) {
             commandTreeNode.registerPerms();
         }
     }
@@ -136,20 +136,20 @@ public interface CommandHandler<CommandSender> {
         for (Field field : this.getClass().getDeclaredFields()) {
             if (!field.isAnnotationPresent(Subcommand.class))
                 continue;
-            if (AbstractSubCommand.class.isAssignableFrom(field.getType())) {
-                AbstractSubCommand<CommandSender> subcommand = ReflectionHelper.getDeclaredFieldObj(field, this);
+            if (AbstractSubcommand.class.isAssignableFrom(field.getType())) {
+                AbstractSubcommand<CommandSender> subcommand = ReflectionHelper.getDeclaredFieldObj(field, this);
                 this.regSub(subcommand);
             }
         }
 
         //再注册子命令的子命令
-        for (AbstractSubCommand<CommandSender> subcommand : subcommands().values()) {
+        for (AbstractSubcommand<CommandSender> subcommand : subcommands().values()) {
             subcommand.scanSubCommands();
             for (Field field : subcommand.getClass().getDeclaredFields()) {
                 if (!field.isAnnotationPresent(Subcommand.class))
                     continue;
-                if (AbstractSubCommand.class.isAssignableFrom(field.getType())) {
-                    AbstractSubCommand<CommandSender> subcommandsSubcommand = ReflectionHelper.getDeclaredFieldObj(field, subcommand);
+                if (AbstractSubcommand.class.isAssignableFrom(field.getType())) {
+                    AbstractSubcommand<CommandSender> subcommandsSubcommand = ReflectionHelper.getDeclaredFieldObj(field, subcommand);
                     subcommand.regSub(subcommandsSubcommand);
                 }
             }

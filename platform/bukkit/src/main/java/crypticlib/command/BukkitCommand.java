@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor {
 
-    protected final Map<String, AbstractSubCommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
+    protected final Map<String, AbstractSubcommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
     protected CommandInfo commandInfo;
     protected Boolean registered = false;
 
@@ -52,7 +52,7 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     }
 
     @Override
-    public BukkitCommand regSub(@NotNull AbstractSubCommand<CommandSender> subcommandHandler) {
+    public BukkitCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         return (BukkitCommand) CommandHandler.super.regSub(subcommandHandler);
     }
 
@@ -61,7 +61,7 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubCommand<CommandSender>> subcommands() {
+    public @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
         return subcommands;
     }
     
