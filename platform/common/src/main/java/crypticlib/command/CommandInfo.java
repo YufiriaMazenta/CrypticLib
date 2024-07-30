@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CommandInfo {
 
@@ -105,17 +106,15 @@ public class CommandInfo {
     }
 
     public static class Builder {
-        private @NotNull String name;
+        private String name;
         private PermInfo permission;
         private List<String> aliases;
         private String description;
         private String usage;
 
-        public Builder(@NotNull String name) {
-            this.name = name;
-        }
+        public Builder() {}
 
-        public Builder setName(@NotNull String name) {
+        public Builder name(@NotNull String name) {
             this.name = name;
             return this;
         }
@@ -123,9 +122,6 @@ public class CommandInfo {
         public Builder permission(PermInfo permission) {
             this.permission = permission;
             return this;
-        }
-        public String description() {
-            return description;
         }
 
         public Builder description(String description) {
@@ -144,6 +140,7 @@ public class CommandInfo {
         }
 
         public CommandInfo build() {
+            Objects.requireNonNull(name);
             return new CommandInfo(name, permission, aliases, description, usage);
         }
 
