@@ -28,22 +28,22 @@ public class CommandInfo {
         this(name, permission, new ArrayList<>());
     }
 
-    public CommandInfo(@NotNull String name, @NotNull List<String> aliases) {
+    public CommandInfo(@NotNull String name, @Nullable List<String> aliases) {
         this(name, null, aliases);
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases) {
         this(name, permission, aliases, "");
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @NotNull String description) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases, @NotNull String description) {
         this(name, permission, aliases, description, "");
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @NotNull List<String> aliases, @NotNull String description, @NotNull String usage) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases, @NotNull String description, @NotNull String usage) {
         this.name = name;
         this.permission = permission;
-        this.aliases.addAll(aliases);
+        this.aliases.addAll(aliases != null ? aliases : new ArrayList<>());
         this.description = description;
         this.usage = usage;
     }
@@ -102,6 +102,51 @@ public class CommandInfo {
     public CommandInfo setUsage(@NotNull String usage) {
         this.usage = usage;
         return this;
+    }
+
+    public static class Builder {
+        private @NotNull String name;
+        private PermInfo permission;
+        private List<String> aliases;
+        private String description;
+        private String usage;
+
+        public Builder(@NotNull String name) {
+            this.name = name;
+        }
+
+        public Builder setName(@NotNull String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder permission(PermInfo permission) {
+            this.permission = permission;
+            return this;
+        }
+        public String description() {
+            return description;
+        }
+
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder usage(String usage) {
+            this.usage = usage;
+            return this;
+        }
+
+        public Builder aliases(@Nullable List<String> aliases) {
+            this.aliases = aliases;
+            return this;
+        }
+
+        public CommandInfo build() {
+            return new CommandInfo(name, permission, aliases, description, usage);
+        }
+
     }
 
 }
