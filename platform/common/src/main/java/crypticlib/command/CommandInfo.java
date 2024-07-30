@@ -105,6 +105,14 @@ public class CommandInfo {
         return this;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static Builder builder(String name) {
+        return new Builder(name);
+    }
+
     public static class Builder {
         private String name;
         private PermInfo permission;
@@ -113,6 +121,10 @@ public class CommandInfo {
         private String usage;
 
         public Builder() {}
+
+        public Builder(String name) {
+            this.name = name;
+        }
 
         public Builder name(@NotNull String name) {
             this.name = name;
