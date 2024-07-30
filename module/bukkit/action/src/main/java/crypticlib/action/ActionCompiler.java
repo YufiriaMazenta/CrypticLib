@@ -34,7 +34,7 @@ public enum ActionCompiler {
      * @return 编译完成的动作
      */
     public @NotNull Action compile(String actionStr) {
-        if (actionStr.isEmpty()) {
+        if (actionStr == null || actionStr.isEmpty()) {
             return new EmptyAction();
         }
         int index = actionStr.indexOf(" ");
@@ -62,7 +62,7 @@ public enum ActionCompiler {
      * @return 编译完成的动作链首个动作
      */
     public Action compile(List<String> actionStrList) {
-        if (actionStrList.isEmpty())
+        if (actionStrList == null || actionStrList.isEmpty())
             return new EmptyAction();
         List<Action> actions = new ArrayList<>();
         for (String actionStr : actionStrList) {
