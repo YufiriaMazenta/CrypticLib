@@ -1,7 +1,9 @@
 package crypticlib.lang.entry;
 
+import crypticlib.chat.BukkitMsgSender;
 import crypticlib.lang.LangEntryContainer;
 import crypticlib.util.LocaleHelper;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -70,5 +72,7 @@ public abstract class LangEntry<T> {
         this.defLang = defLang;
         return this;
     }
+
+    public abstract void send(CommandSender sender);
 
 }
