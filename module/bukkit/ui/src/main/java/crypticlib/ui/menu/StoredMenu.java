@@ -2,6 +2,7 @@ package crypticlib.ui.menu;
 
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
+import crypticlib.util.InventoryHelper;
 import crypticlib.util.ItemHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.*;
@@ -34,7 +35,8 @@ public class StoredMenu extends Menu {
     @Override
     public Icon onClick(int slot, InventoryClickEvent event) {
         InventoryAction action = event.getAction();
-        if (!event.getView().getTopInventory().equals(event.getClickedInventory())) {
+        Inventory topInv = InventoryHelper.getTopInventory(event);
+        if (!topInv.equals(event.getClickedInventory())) {
             if (action.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY) || action.equals(InventoryAction.COLLECT_TO_CURSOR))
                 event.setCancelled(true);
             return null;

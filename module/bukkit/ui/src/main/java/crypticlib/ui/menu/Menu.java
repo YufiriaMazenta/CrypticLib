@@ -4,6 +4,7 @@ import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
+import crypticlib.util.InventoryHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -46,7 +47,8 @@ public class Menu implements InventoryHolder {
     }
 
     public Icon onClick(int slot, InventoryClickEvent event) {
-        if (!event.getView().getTopInventory().equals(event.getClickedInventory())) {
+        Inventory topInv = InventoryHelper.getTopInventory(event);
+        if (!topInv.equals(event.getClickedInventory())) {
             event.setCancelled(true);
             return null;
         }
@@ -138,10 +140,10 @@ public class Menu implements InventoryHolder {
      * 刷新页面标题，若玩家未打开此页面，则无效
      */
     public void updateMenuTitle() {
-        InventoryView inventoryView = player.getOpenInventory();
-        Inventory topInventory = inventoryView.getTopInventory();
+        Object inventoryView = InventoryHelper.getOpenInventory(player);
+        Inventory topInventory = InventoryHelper.getTopInventory(player);
         if (topInventory.getHolder() != null && topInventory.getHolder() instanceof Menu) {
-            inventoryView.setTitle(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title())));
+            InventoryHelper.setInventoryViewTitle(inventoryView, BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title())));
         }
     }
 
