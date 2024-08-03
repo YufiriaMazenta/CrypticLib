@@ -3,26 +3,44 @@ package crypticlib.ui.handler;
 import crypticlib.listener.EventListener;
 import crypticlib.ui.menu.Menu;
 import crypticlib.ui.menu.StoredMenu;
+import crypticlib.util.ReflectionHelper;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+
+import java.lang.reflect.Method;
 
 @EventListener
 public enum MenuHandler implements Listener {
 
     INSTANCE;
+    private final Method inventoryEventGetViewMethod;
+    private final Method inventoryViewGetTopInventoryMethod;
+    private final Method playerGetOpenInventoryMethod;
+
+    MenuHandler() {
+        try {
+            inventoryEventGetViewMethod = ReflectionHelper.getMethod(InventoryEvent.class, "getView");
+            Class<?> inventoryViewClass = Class.forName("org.bukkit.inventory.InventoryView");
+            inventoryViewGetTopInventoryMethod = ReflectionHelper.getMethod(inventoryViewClass, "getTopInventory");
+            playerGetOpenInventoryMethod = ReflectionHelper.getMethod(Player.class, "getOpenInventory");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClickMenu(InventoryClickEvent event) {
         if (event.getClickedInventory() == null)
             return;
-        InventoryHolder holder = event.getView().getTopInventory().getHolder();
+        InventoryHolder holder = getTopInventory(getInventoryView(event)).getHolder();
         if (!(holder instanceof Menu))
             return;
         ((Menu) holder).onClick(event.getSlot(), event);
@@ -30,31 +48,47 @@ public enum MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDragMenu(InventoryDragEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof Menu))
+        InventoryHolder holder = getTopInventory(getInventoryView(event)).getHolder();
+        if (!(holder instanceof Menu))
             return;
-        ((Menu) event.getView().getTopInventory().getHolder()).onDrag(event);
+        ((Menu) holder).onDrag(event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onOpenMenu(InventoryOpenEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof Menu))
+        InventoryHolder holder = getTopInventory(getInventoryView(event)).getHolder();
+        if (!(holder instanceof Menu))
             return;
-        ((Menu) event.getView().getTopInventory().getHolder()).onOpen(event);
+        ((Menu) holder).onOpen(event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCloseMenu(InventoryCloseEvent event) {
-        if (!(event.getView().getTopInventory().getHolder() instanceof Menu))
+        InventoryHolder holder = getTopInventory(getInventoryView(event)).getHolder();
+        if (!(holder instanceof Menu))
             return;
-        ((Menu) event.getView().getTopInventory().getHolder()).onClose(event);
+        ((Menu) holder).onClose(event);
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        InventoryHolder inventoryHolder = event.getPlayer().getInventory().getHolder();
-        if (inventoryHolder instanceof StoredMenu) {
-            ((StoredMenu) inventoryHolder).refreshStoredItems(event.getPlayer().getInventory()).returnStoredItems();
+        Player player = event.getPlayer();
+        InventoryHolder topInvHolder = getTopInventory(getOpenInventory(player)).getHolder();
+        if (topInvHolder instanceof StoredMenu) {
+            ((StoredMenu) topInvHolder).refreshStoredItems(event.getPlayer().getInventory()).returnStoredItems();
         }
+    }
+
+    private Inventory getTopInventory(Object inventoryView) {
+        return (Inventory) ReflectionHelper.invokeMethod(inventoryViewGetTopInventoryMethod, inventoryView);
+    }
+
+    private Object getInventoryView(InventoryEvent event) {
+        return ReflectionHelper.invokeMethod(inventoryEventGetViewMethod, event);
+    }
+
+    private Object getOpenInventory(Player player) {
+        return ReflectionHelper.invokeMethod(playerGetOpenInventoryMethod, player);
     }
 
 }
