@@ -3,7 +3,7 @@ package crypticlib.ui.handler;
 import crypticlib.listener.EventListener;
 import crypticlib.ui.menu.Menu;
 import crypticlib.ui.menu.StoredMenu;
-import crypticlib.util.InventoryHelper;
+import crypticlib.util.InventoryViewHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,7 +22,7 @@ public enum MenuHandler implements Listener {
     public void onClickMenu(InventoryClickEvent event) {
         if (event.getClickedInventory() == null)
             return;
-        InventoryHolder holder = InventoryHelper.getTopInventory(event).getHolder();
+        InventoryHolder holder = InventoryViewHelper.getTopInventory(event).getHolder();
         if (!(holder instanceof Menu))
             return;
         ((Menu) holder).onClick(event.getSlot(), event);
@@ -30,7 +30,7 @@ public enum MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDragMenu(InventoryDragEvent event) {
-        InventoryHolder holder = InventoryHelper.getTopInventory(event).getHolder();
+        InventoryHolder holder = InventoryViewHelper.getTopInventory(event).getHolder();
         if (!(holder instanceof Menu))
             return;
         ((Menu) holder).onDrag(event);
@@ -38,7 +38,7 @@ public enum MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onOpenMenu(InventoryOpenEvent event) {
-        InventoryHolder holder = InventoryHelper.getTopInventory(event).getHolder();
+        InventoryHolder holder = InventoryViewHelper.getTopInventory(event).getHolder();
         if (!(holder instanceof Menu))
             return;
         ((Menu) holder).onOpen(event);
@@ -46,7 +46,7 @@ public enum MenuHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCloseMenu(InventoryCloseEvent event) {
-        InventoryHolder holder = InventoryHelper.getTopInventory(event).getHolder();
+        InventoryHolder holder = InventoryViewHelper.getTopInventory(event).getHolder();
         if (!(holder instanceof Menu))
             return;
         ((Menu) holder).onClose(event);
@@ -55,7 +55,7 @@ public enum MenuHandler implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        InventoryHolder topInvHolder = InventoryHelper.getTopInventory(player).getHolder();
+        InventoryHolder topInvHolder = InventoryViewHelper.getTopInventory(player).getHolder();
         if (topInvHolder instanceof StoredMenu) {
             ((StoredMenu) topInvHolder).refreshStoredItems(event.getPlayer().getInventory()).returnStoredItems();
         }
