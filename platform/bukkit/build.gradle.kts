@@ -1,7 +1,3 @@
-plugins {
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-}
-
 dependencies {
     compileOnly("net.md-5:bungeecord-chat:1.16-R0.4")
     compileOnly("net.kyori:adventure-api:4.14.0")
