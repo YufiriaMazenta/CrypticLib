@@ -33,7 +33,7 @@ public enum BukkitPlatform implements Platform {
     public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
         future.complete(entity.teleport(location, cause));
-        return CompletableFuture.completedFuture(entity.teleport(location, cause));
+        return future;
     }
 
     @Override
