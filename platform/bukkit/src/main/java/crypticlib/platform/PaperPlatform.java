@@ -7,6 +7,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.Future;
+
 /**
  * Paper平台的一些方法集成
  */
@@ -27,13 +29,13 @@ public enum PaperPlatform implements Platform {
     }
 
     @Override
-    public void teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
-        BukkitPlatform.INSTANCE.teleportEntity(entity, location, cause);
+    public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
+        return BukkitPlatform.INSTANCE.teleportEntity(entity, location, cause);
     }
 
     @Override
-    public void teleportEntity(@NotNull Entity entity, @NotNull Location location) {
-        BukkitPlatform.INSTANCE.teleportEntity(entity, location);
+    public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location) {
+        return BukkitPlatform.INSTANCE.teleportEntity(entity, location);
     }
 
     @Override

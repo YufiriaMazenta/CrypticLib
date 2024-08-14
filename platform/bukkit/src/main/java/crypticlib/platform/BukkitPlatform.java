@@ -7,6 +7,9 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+
 /**
  * Bukkit平台的一些方法集成
  */
@@ -27,13 +30,15 @@ public enum BukkitPlatform implements Platform {
     }
 
     @Override
-    public void teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
-        entity.teleport(location, cause);
+    public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+        future.complete(entity.teleport(location, cause));
+        return CompletableFuture.completedFuture(entity.teleport(location, cause));
     }
 
     @Override
-    public void teleportEntity(@NotNull Entity entity, @NotNull Location location) {
-        teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
+    public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location) {
+        return teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
     }
 
     @Override
