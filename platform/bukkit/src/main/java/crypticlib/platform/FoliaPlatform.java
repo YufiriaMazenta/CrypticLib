@@ -7,6 +7,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.Future;
+
 /**
  * Folia平台的一些方法集成
  */
@@ -27,13 +29,13 @@ public enum FoliaPlatform implements Platform {
     }
 
     @Override
-    public void teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
-        entity.teleportAsync(location, cause);
+    public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
+        return entity.teleportAsync(location, cause);
     }
 
     @Override
-    public void teleportEntity(@NotNull Entity entity, @NotNull Location location) {
-        teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
+    public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location) {
+        return teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
     }
 
     @Override
