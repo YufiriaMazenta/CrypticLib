@@ -119,10 +119,19 @@ public class Menu implements InventoryHolder {
                 } else {
                     layoutSlotMap.get(key).add(slot);
                 }
-                slotMap.put(slot, layout.layoutMap().get(key).get());
+                Icon icon = layout.layoutMap().get(key).get();
+                preProcessIconWhenUpdateLayout(slot, icon);
+                slotMap.put(slot, icon);
             }
         }
     }
+
+    /**
+     * 当页面更新布局时,对Icon进行预处理
+     * @param slot 此Icon所处的slot
+     * @param icon 预处理的Icon
+     */
+    public void preProcessIconWhenUpdateLayout(Integer slot, @NotNull Icon icon) {}
 
     /**
      * 刷新页面图标，此方法不会重新解析布局
@@ -164,11 +173,16 @@ public class Menu implements InventoryHolder {
         updateMenuTitle();
     }
 
+    /**
+     * 绘制页面
+     * @param inventory 要进行绘制的Inventory
+     */
     protected void draw(Inventory inventory) {
         slotMap.forEach((slot, icon) -> {
             if (icon == null) {
                 return;
             }
+            preProcessIconWhenDraw(slot, icon);
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
@@ -183,6 +197,13 @@ public class Menu implements InventoryHolder {
             inventory.setItem(slot, display);
         });
     }
+
+    /**
+     * 绘制页面时,对Icon进行预处理
+     * @param slot icon所处的slot
+     * @param icon 要处理的icon
+     */
+    private void preProcessIconWhenDraw(Integer slot, @NotNull Icon icon) {}
 
     public @NotNull Map<Integer, Icon> slotMap() {
         return slotMap;
