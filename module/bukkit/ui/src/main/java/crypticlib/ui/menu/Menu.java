@@ -88,8 +88,7 @@ public class Menu implements InventoryHolder {
         int size = Math.min(display.layout().layout().size() * 9, 54);
         Inventory inventory;
         if (inventoryCache == null) {
-            String title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title()));
-            inventory = Bukkit.createInventory(this, size, title);
+            inventory = Bukkit.createInventory(this, size, formattedTitle());
         } else {
             inventory = inventoryCache;
             updateMenuTitle();
@@ -151,7 +150,7 @@ public class Menu implements InventoryHolder {
         Object inventoryView = InventoryViewHelper.getOpenInventory(player);
         Inventory topInventory = InventoryViewHelper.getTopInventory(player);
         if (topInventory.getHolder() != null && topInventory.getHolder() instanceof Menu) {
-            InventoryViewHelper.setTitle(inventoryView, BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title())));
+            InventoryViewHelper.setTitle(inventoryView, formattedTitle());
         }
     }
 
@@ -250,6 +249,14 @@ public class Menu implements InventoryHolder {
         if (inventoryCache != null)
             inventoryCache.setItem(slot, new ItemStack(Material.AIR));
         return slotMap.remove(slot);
+    }
+
+    /**
+     * 获取解析后的标题,UI的最终标题将会使用此方法的结果进行显示
+     * @return 解析完成的标题
+     */
+    public String formattedTitle() {
+        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title()));
     }
 
     @NotNull
