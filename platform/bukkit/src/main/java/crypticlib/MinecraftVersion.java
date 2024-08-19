@@ -100,7 +100,7 @@ public class MinecraftVersion {
     public static final MinecraftVersion V1_20_6 = new MinecraftVersion(12006);
 
     public static final MinecraftVersion V1_21 = new MinecraftVersion(12100);
-
+    public static final MinecraftVersion V1_21_1 = new MinecraftVersion(12101);
 
     public static MinecraftVersion current() {
         if (current == null) {
