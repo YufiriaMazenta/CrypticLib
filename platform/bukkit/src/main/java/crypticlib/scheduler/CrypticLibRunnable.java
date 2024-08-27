@@ -79,7 +79,9 @@ public abstract class CrypticLibRunnable implements Runnable {
     }
 
     public boolean isCancelled() {
-        checkTaskNull();
+        if (this.taskWrapper == null) {
+            return true;
+        }
         return this.taskWrapper.isCancelled();
     }
 
