@@ -34,11 +34,13 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
     public Command register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
         PluginCommand pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
         pluginCommand.setAliases(commandInfo.aliases());
-        pluginCommand.setDescription(commandInfo.description());
+        String description = commandInfo.description();
+        pluginCommand.setDescription(description == null ? "" : description);
         PermInfo permInfo = commandInfo.permission();
         if (permInfo != null)
             pluginCommand.setPermission(permInfo.permission());
-        pluginCommand.setUsage(commandInfo.usage());
+        String usage = commandInfo.usage();
+        pluginCommand.setUsage(usage == null ? "" : usage)  ;
         pluginCommand.setExecutor(commandExecutor);
         pluginCommand.setTabCompleter(commandExecutor);
         serverCommandMap.register(plugin.getName(), pluginCommand);
