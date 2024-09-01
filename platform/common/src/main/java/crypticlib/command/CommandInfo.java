@@ -16,9 +16,9 @@ public class CommandInfo {
     private PermInfo permission;
     @NotNull
     private final List<String> aliases = new ArrayList<>();
-    @NotNull
+    @Nullable
     private String description;
-    @NotNull
+    @Nullable
     private String usage;
 
     public CommandInfo(@NotNull String name) {
@@ -37,11 +37,11 @@ public class CommandInfo {
         this(name, permission, aliases, "");
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases, @NotNull String description) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases, @Nullable String description) {
         this(name, permission, aliases, description, "");
     }
 
-    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases, @NotNull String description, @NotNull String usage) {
+    public CommandInfo(@NotNull String name, @Nullable PermInfo permission, @Nullable List<String> aliases, @Nullable String description, @Nullable String usage) {
         this.name = name;
         this.permission = permission;
         this.aliases.addAll(aliases != null ? aliases : new ArrayList<>());
@@ -85,17 +85,17 @@ public class CommandInfo {
         return this;
     }
 
-    @NotNull
+    @Nullable
     public String description() {
         return description;
     }
 
-    public CommandInfo setDescription(@NotNull String description) {
+    public CommandInfo setDescription(@Nullable String description) {
         this.description = description;
         return this;
     }
 
-    @NotNull
+    @Nullable
     public String usage() {
         return usage;
     }

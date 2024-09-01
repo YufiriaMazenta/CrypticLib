@@ -175,23 +175,27 @@ public interface CommandHandler<CommandSender> {
         List<String> description = new ArrayList<>();
 
         description.add("&7/" + commandInfo().name() + ":");
-        if (!commandInfo().usage().isEmpty()) {
-            description.add("&7" + commandInfo().usage());
+        String usage = commandInfo().usage();
+        if (usage != null && !usage.isEmpty()) {
+            description.add("&7" + usage);
         }
-        if (!commandInfo().description().isEmpty()) {
-            description.add("&7" + commandInfo().description());
+        String desc = commandInfo().description();
+        if (desc != null && !desc.isEmpty()) {
+            description.add("&7" + desc);
         }
         subcommands().forEach(
             (key, subcommand) -> {
-                if (subcommand.commandInfo().usage().isEmpty()) {
+                String subUsage = subcommand.commandInfo().usage();
+                if (subUsage == null || subUsage.isEmpty()) {
                     description.add(" &7- &r" + subcommand.commandInfo().name());
                 } else {
-                    description.add(" &7- &r" + subcommand.commandInfo().usage());
+                    description.add(" &7- &r" + subUsage);
                 }
-                if (subcommand.commandInfo().description().isEmpty()) {
+                String subDesc = subcommand.commandInfo().description();
+                if (subDesc == null || subDesc.isEmpty()) {
                     return;
                 }
-                description.add("   &7" + subcommand.commandInfo().description());
+                description.add("   &7" + subDesc);
             }
         );
         return description;
