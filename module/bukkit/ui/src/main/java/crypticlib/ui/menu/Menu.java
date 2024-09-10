@@ -202,7 +202,7 @@ public class Menu implements InventoryHolder {
      * @param slot icon所处的slot
      * @param icon 要处理的icon
      */
-    private void preProcessIconWhenDraw(Integer slot, @NotNull Icon icon) {}
+    public void preProcessIconWhenDraw(Integer slot, @NotNull Icon icon) {}
 
     public @NotNull Map<Integer, Icon> slotMap() {
         return slotMap;
