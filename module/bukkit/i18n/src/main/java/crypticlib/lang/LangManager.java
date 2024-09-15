@@ -56,13 +56,13 @@ public enum LangManager implements BukkitReloader, BukkitDisabler, BukkitLoader 
     }
 
     @Override
-    public void disable(Plugin plugin) {
+    public void onDisable(Plugin plugin) {
         langEntryContainerMap.clear();
         folderLangEntryMap.clear();
     }
 
     @Override
-    public void reload(Plugin plugin) {
+    public void onReload(Plugin plugin) {
         folderLangEntryMap.clear();
         langEntryContainerMap.forEach(
             (langFolder, container) -> container.reload()
@@ -70,7 +70,7 @@ public enum LangManager implements BukkitReloader, BukkitDisabler, BukkitLoader 
     }
 
     @Override
-    public void load(Plugin plugin) {
+    public void onLoad(Plugin plugin) {
         PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(
             langClass -> {
                 LangHandler langHandler = langClass.getAnnotation(LangHandler.class);

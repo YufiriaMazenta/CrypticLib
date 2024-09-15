@@ -9,10 +9,7 @@ import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
 import crypticlib.internal.exception.PluginEnableException;
 import crypticlib.internal.exception.PluginLoadException;
-import crypticlib.lifecycle.BukkitDisabler;
-import crypticlib.lifecycle.BukkitEnabler;
-import crypticlib.lifecycle.BukkitLoader;
-import crypticlib.lifecycle.BukkitReloader;
+import crypticlib.lifecycle.*;
 import crypticlib.lifecycle.annotation.OnDisable;
 import crypticlib.lifecycle.annotation.OnEnable;
 import crypticlib.lifecycle.annotation.OnLoad;
@@ -27,6 +24,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,6 +60,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 configContainer.reload();
             }
         );
+
         loaderList.clear();
         pluginScanner.getAnnotatedClasses(OnLoad.class).forEach(
             loaderClass -> {
@@ -76,6 +75,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
+        loaderList.sort(Comparator.comparing(Loader::loadPriority));
+
         enablerList.clear();
         pluginScanner.getAnnotatedClasses(OnEnable.class).forEach(
             enablerClass -> {
@@ -90,6 +91,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
+        enablerList.sort(Comparator.comparing(Enabler::enablePriority));
+
         reloaderList.clear();
         pluginScanner.getAnnotatedClasses(OnReload.class).forEach(
             reloaderClass -> {
@@ -104,6 +107,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
+        reloaderList.sort(Comparator.comparing(Reloader::reloadPriority));
+
         disablerList.clear();
         pluginScanner.getAnnotatedClasses(OnDisable.class).forEach(
             disablerClass -> {
@@ -118,10 +123,12 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
+        disablerList.sort(Comparator.comparing(Disabler::disablePriority));
+
         loaderList.forEach(
             loader -> {
                 try {
-                    loader.load(this);
+                    loader.onLoad(this);
                 } catch (Throwable throwable) {
                     throw new PluginLoadException(throwable);
                 }
@@ -161,7 +168,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         enablerList.forEach(
             enabler -> {
                 try {
-                    enabler.enable(this);
+                    enabler.onEnable(this);
                 } catch (Throwable throwable) {
                     throw new PluginEnableException(throwable);
                 }
@@ -178,7 +185,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         reloaderList.clear();
         disablerList.forEach(it -> {
             try {
-                it.disable(this);
+                it.onDisable(this);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
@@ -212,7 +219,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         reloadConfig();
         reloaderList.forEach(it -> {
             try {
-                it.reload(this);
+                it.onReload(this);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }

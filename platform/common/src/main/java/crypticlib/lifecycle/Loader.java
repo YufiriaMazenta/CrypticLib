@@ -7,6 +7,10 @@ package crypticlib.lifecycle;
  */
 public interface Loader<Plugin> {
 
-    void load(Plugin plugin);
+    void onLoad(Plugin plugin);
+
+    default int loadPriority() {
+        return 0;
+    }
 
 }

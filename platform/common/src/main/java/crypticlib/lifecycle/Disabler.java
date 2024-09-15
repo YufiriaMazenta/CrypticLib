@@ -7,6 +7,10 @@ package crypticlib.lifecycle;
  */
 public interface Disabler<Plugin> {
 
-    void disable(Plugin plugin);
+    void onDisable(Plugin plugin);
+
+    default int disablePriority() {
+        return 0;
+    }
 
 }
