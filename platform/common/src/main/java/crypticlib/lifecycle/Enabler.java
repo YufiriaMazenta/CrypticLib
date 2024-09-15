@@ -7,6 +7,10 @@ package crypticlib.lifecycle;
  */
 public interface Enabler<Plugin> {
 
-    void enable(Plugin plugin);
+    void onEnable(Plugin plugin);
+
+    default int enablePriority() {
+        return 0;
+    }
 
 }

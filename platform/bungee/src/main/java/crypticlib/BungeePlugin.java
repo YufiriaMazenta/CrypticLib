@@ -116,7 +116,7 @@ public class BungeePlugin extends Plugin {
         loaderList.forEach(
             loader -> {
                 try {
-                    loader.load(this);
+                    loader.onLoad(this);
                 } catch (Throwable throwable) {
                     throw new PluginLoadException(throwable);
                 }
@@ -156,7 +156,7 @@ public class BungeePlugin extends Plugin {
         enablerList.forEach(
             enabler -> {
                 try {
-                    enabler.enable(this);
+                    enabler.onEnable(this);
                 } catch (Throwable throwable) {
                     throw new PluginEnableException(throwable);
                 }
@@ -173,7 +173,7 @@ public class BungeePlugin extends Plugin {
         reloaderList.clear();
         disablerList.forEach(it -> {
             try {
-                it.disable(this);
+                it.onDisable(this);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
@@ -207,7 +207,7 @@ public class BungeePlugin extends Plugin {
         reloadConfig();
         reloaderList.forEach(it -> {
             try {
-                it.reload(this);
+                it.onReload(this);
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }

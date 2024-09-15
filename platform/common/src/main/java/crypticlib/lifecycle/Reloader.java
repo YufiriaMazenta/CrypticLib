@@ -7,6 +7,10 @@ package crypticlib.lifecycle;
  */
 public interface Reloader<Plugin> {
 
-    void reload(Plugin plugin);
+    void onReload(Plugin plugin);
+
+    default int reloadPriority() {
+        return 0;
+    }
 
 }
