@@ -7,16 +7,9 @@ import crypticlib.config.BungeeConfigContainer;
 import crypticlib.config.BungeeConfigWrapper;
 import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
-import crypticlib.internal.exception.PluginEnableException;
-import crypticlib.internal.exception.PluginLoadException;
-import crypticlib.lifecycle.BungeeDisabler;
-import crypticlib.lifecycle.BungeeEnabler;
-import crypticlib.lifecycle.BungeeLoader;
-import crypticlib.lifecycle.BungeeReloader;
-import crypticlib.lifecycle.annotation.OnDisable;
-import crypticlib.lifecycle.annotation.OnEnable;
-import crypticlib.lifecycle.annotation.OnLoad;
-import crypticlib.lifecycle.annotation.OnReload;
+import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.BungeeLifeCycleTask;
+import crypticlib.lifecycle.LifeCycle;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermInfo;
@@ -31,20 +24,49 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class BungeePlugin extends Plugin {
+public abstract class BungeePlugin extends Plugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BungeeConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final List<BungeeDisabler> disablerList = new CopyOnWriteArrayList<>();
-    protected final List<BungeeLoader> loaderList = new CopyOnWriteArrayList<>();
-    protected final List<BungeeEnabler> enablerList = new CopyOnWriteArrayList<>();
-    protected final List<BungeeReloader> reloaderList = new CopyOnWriteArrayList<>();
+    protected final Map<LifeCycle, List<BungeeLifeCycleTask>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
+
+    public BungeePlugin() {
+        pluginScanner.scanJar(this.getFile());
+        pluginScanner.scanJar(this.getFile());
+        lifeCycleTaskMap.clear();
+        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+            taskClass -> {
+                try {
+                    if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
+                        return;
+                    }
+                    BungeeLifeCycleTask task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (annotation == null) {
+                        return;
+                    }
+                    for (LifeCycle lifecycle : annotation.lifecycles()) {
+                        if (lifeCycleTaskMap.containsKey(lifecycle)) {
+                            lifeCycleTaskMap.get(lifecycle).add(task);
+                        } else {
+                            List<BungeeLifeCycleTask> tasks = new CopyOnWriteArrayList<>();
+                            tasks.add(task);
+                            lifeCycleTaskMap.put(lifecycle, tasks);
+                        }
+                    }
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        runLifeCycleTasks(LifeCycle.INIT);
+    }
 
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BungeePermManager.INSTANCE;
-        pluginScanner.scanJar(this.getFile());
+
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
@@ -57,71 +79,7 @@ public class BungeePlugin extends Plugin {
                 configContainer.reload();
             }
         );
-        loaderList.clear();
-        pluginScanner.getAnnotatedClasses(OnLoad.class).forEach(
-            loaderClass -> {
-                try {
-                    if (!BungeeLoader.class.isAssignableFrom(loaderClass)) {
-                        return;
-                    }
-                    BungeeLoader loader = (BungeeLoader) ReflectionHelper.getSingletonClassInstance(loaderClass);
-                    loaderList.add(loader);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        enablerList.clear();
-        pluginScanner.getAnnotatedClasses(OnEnable.class).forEach(
-            enablerClass -> {
-                try {
-                    if (!BungeeEnabler.class.isAssignableFrom(enablerClass)) {
-                        return;
-                    }
-                    BungeeEnabler enabler = (BungeeEnabler) ReflectionHelper.getSingletonClassInstance(enablerClass);
-                    enablerList.add(enabler);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        reloaderList.clear();
-        pluginScanner.getAnnotatedClasses(OnReload.class).forEach(
-            reloaderClass -> {
-                try {
-                    if (!BungeeReloader.class.isAssignableFrom(reloaderClass)) {
-                        return;
-                    }
-                    BungeeReloader reloader = (BungeeReloader) ReflectionHelper.getSingletonClassInstance(reloaderClass);
-                    reloaderList.add(reloader);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        disablerList.clear();
-        pluginScanner.getAnnotatedClasses(OnDisable.class).forEach(
-            disablerClass -> {
-                try {
-                    if (!BungeeDisabler.class.isAssignableFrom(disablerClass)) {
-                        return;
-                    }
-                    BungeeDisabler disabler = (BungeeDisabler) ReflectionHelper.getSingletonClassInstance(disablerClass);
-                    disablerList.add(disabler);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        loaderList.forEach(
-            loader -> {
-                try {
-                    loader.onLoad(this);
-                } catch (Throwable throwable) {
-                    throw new PluginLoadException(throwable);
-                }
-            }
-        );
+        runLifeCycleTasks(LifeCycle.LOAD);
         load();
     }
 
@@ -153,32 +111,15 @@ public class BungeePlugin extends Plugin {
                 }
             }
         );
-        enablerList.forEach(
-            enabler -> {
-                try {
-                    enabler.onEnable(this);
-                } catch (Throwable throwable) {
-                    throw new PluginEnableException(throwable);
-                }
-            }
-        );
+        runLifeCycleTasks(LifeCycle.LOAD);
         enable();
     }
 
     @Override
     public final void onDisable() {
         disable();
-        loaderList.clear();
-        enablerList.clear();
-        reloaderList.clear();
-        disablerList.forEach(it -> {
-            try {
-                it.onDisable(this);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
-        disablerList.clear();
+        runLifeCycleTasks(LifeCycle.DISABLE);
+        lifeCycleTaskMap.clear();
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         getProxy().getScheduler().cancel(this);
@@ -205,13 +146,7 @@ public class BungeePlugin extends Plugin {
 
     public void reloadPlugin() {
         reloadConfig();
-        reloaderList.forEach(it -> {
-            try {
-                it.onReload(this);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
+        runLifeCycleTasks(LifeCycle.RELOAD);
     }
     
     public @NotNull Configuration getConfig() {
@@ -235,5 +170,11 @@ public class BungeePlugin extends Plugin {
         configContainerMap.forEach((path, container) -> container.reload());
     }
 
+    private void runLifeCycleTasks(LifeCycle lifeCycle) {
+        List<BungeeLifeCycleTask> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
+        if (lifeCycleTasks != null) {
+            lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
+        }
+    }
 
 }

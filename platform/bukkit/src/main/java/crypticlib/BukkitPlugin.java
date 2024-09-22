@@ -7,13 +7,7 @@ import crypticlib.config.BukkitConfigContainer;
 import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
-import crypticlib.internal.exception.PluginEnableException;
-import crypticlib.internal.exception.PluginLoadException;
 import crypticlib.lifecycle.*;
-import crypticlib.lifecycle.annotation.OnDisable;
-import crypticlib.lifecycle.annotation.OnEnable;
-import crypticlib.lifecycle.annotation.OnLoad;
-import crypticlib.lifecycle.annotation.OnReload;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
@@ -24,7 +18,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,20 +27,44 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final List<BukkitDisabler> disablerList = new CopyOnWriteArrayList<>();
-    protected final List<BukkitLoader> loaderList = new CopyOnWriteArrayList<>();
-    protected final List<BukkitEnabler> enablerList = new CopyOnWriteArrayList<>();
-    protected final List<BukkitReloader> reloaderList = new CopyOnWriteArrayList<>();
+    protected final Map<LifeCycle, List<BukkitLifeCycleTask>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
-    protected BukkitPlugin() {
-        super();
+    public BukkitPlugin() {
+        pluginScanner.scanJar(this.getFile());
+        lifeCycleTaskMap.clear();
+        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+            taskClass -> {
+                try {
+                    if (!BukkitLifeCycleTask.class.isAssignableFrom(taskClass)) {
+                        return;
+                    }
+                    BukkitLifeCycleTask task = (BukkitLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (annotation == null) {
+                        return;
+                    }
+                    for (LifeCycle lifecycle : annotation.lifecycles()) {
+                        if (lifeCycleTaskMap.containsKey(lifecycle)) {
+                            lifeCycleTaskMap.get(lifecycle).add(task);
+                        } else {
+                            List<BukkitLifeCycleTask> tasks = new CopyOnWriteArrayList<>();
+                            tasks.add(task);
+                            lifeCycleTaskMap.put(lifecycle, tasks);
+                        }
+                    }
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
-        pluginScanner.scanJar(this.getFile());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
@@ -60,80 +77,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 configContainer.reload();
             }
         );
-
-        loaderList.clear();
-        pluginScanner.getAnnotatedClasses(OnLoad.class).forEach(
-            loaderClass -> {
-                try {
-                    if (!BukkitLoader.class.isAssignableFrom(loaderClass)) {
-                        return;
-                    }
-                    BukkitLoader loader = (BukkitLoader) ReflectionHelper.getSingletonClassInstance(loaderClass);
-                    loaderList.add(loader);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        loaderList.sort(Comparator.comparing(Loader::loadPriority));
-
-        enablerList.clear();
-        pluginScanner.getAnnotatedClasses(OnEnable.class).forEach(
-            enablerClass -> {
-                try {
-                    if (!BukkitEnabler.class.isAssignableFrom(enablerClass)) {
-                        return;
-                    }
-                    BukkitEnabler enabler = (BukkitEnabler) ReflectionHelper.getSingletonClassInstance(enablerClass);
-                    enablerList.add(enabler);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        enablerList.sort(Comparator.comparing(Enabler::enablePriority));
-
-        reloaderList.clear();
-        pluginScanner.getAnnotatedClasses(OnReload.class).forEach(
-            reloaderClass -> {
-                try {
-                    if (!BukkitReloader.class.isAssignableFrom(reloaderClass)) {
-                        return;
-                    }
-                    BukkitReloader reloader = (BukkitReloader) ReflectionHelper.getSingletonClassInstance(reloaderClass);
-                    reloaderList.add(reloader);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        reloaderList.sort(Comparator.comparing(Reloader::reloadPriority));
-
-        disablerList.clear();
-        pluginScanner.getAnnotatedClasses(OnDisable.class).forEach(
-            disablerClass -> {
-                try {
-                    if (!BukkitDisabler.class.isAssignableFrom(disablerClass)) {
-                        return;
-                    }
-                    BukkitDisabler disabler = (BukkitDisabler) ReflectionHelper.getSingletonClassInstance(disablerClass);
-                    disablerList.add(disabler);
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        disablerList.sort(Comparator.comparing(Disabler::disablePriority));
-
-        loaderList.forEach(
-            loader -> {
-                try {
-                    loader.onLoad(this);
-                } catch (Throwable throwable) {
-                    throw new PluginLoadException(throwable);
-                }
-            }
-        );
+        runLifeCycleTasks(LifeCycle.LOAD);
         load();
     }
 
@@ -165,32 +109,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
-        enablerList.forEach(
-            enabler -> {
-                try {
-                    enabler.onEnable(this);
-                } catch (Throwable throwable) {
-                    throw new PluginEnableException(throwable);
-                }
-            }
-        );
+        runLifeCycleTasks(LifeCycle.ENABLE);
         enable();
     }
 
     @Override
     public final void onDisable() {
         disable();
-        loaderList.clear();
-        enablerList.clear();
-        reloaderList.clear();
-        disablerList.forEach(it -> {
-            try {
-                it.onDisable(this);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
-        disablerList.clear();
+        runLifeCycleTasks(LifeCycle.DISABLE);
+        lifeCycleTaskMap.clear();
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.platform().scheduler().cancelTasks(this);
@@ -217,13 +144,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     public void reloadPlugin() {
         reloadConfig();
-        reloaderList.forEach(it -> {
-            try {
-                it.onReload(this);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        });
+        runLifeCycleTasks(LifeCycle.RELOAD);
     }
 
     @Override
@@ -249,6 +170,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
+    }
+
+    private void runLifeCycleTasks(LifeCycle lifeCycle) {
+        List<BukkitLifeCycleTask> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
+        if (lifeCycleTasks != null) {
+            lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
+        }
     }
 
 }
