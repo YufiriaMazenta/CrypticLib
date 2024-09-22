@@ -1,13 +1,10 @@
 package crypticlib.lang;
 
 import crypticlib.internal.PluginScanner;
-import crypticlib.lifecycle.BukkitDisabler;
-import crypticlib.lifecycle.BukkitLoader;
-import crypticlib.lifecycle.annotation.OnDisable;
-import crypticlib.lifecycle.annotation.OnLoad;
-import crypticlib.lifecycle.annotation.OnReload;
-import crypticlib.lifecycle.BukkitReloader;
 import crypticlib.lang.entry.LangEntry;
+import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycle;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,10 +12,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@OnReload
-@OnDisable
-@OnLoad
-public enum LangManager implements BukkitReloader, BukkitDisabler, BukkitLoader {
+@AutoTask(
+    lifecycles = {LifeCycle.LOAD, LifeCycle.RELOAD, LifeCycle.DISABLE}
+)
+public enum LangManager implements BukkitLifeCycleTask {
 
     INSTANCE;
     private final Map<String, Map<String, LangEntry<?>>> folderLangEntryMap = new ConcurrentHashMap<>();
@@ -56,29 +53,29 @@ public enum LangManager implements BukkitReloader, BukkitDisabler, BukkitLoader 
     }
 
     @Override
-    public void onDisable(Plugin plugin) {
-        langEntryContainerMap.clear();
-        folderLangEntryMap.clear();
-    }
-
-    @Override
-    public void onReload(Plugin plugin) {
-        folderLangEntryMap.clear();
-        langEntryContainerMap.forEach(
-            (langFolder, container) -> container.reload()
-        );
-    }
-
-    @Override
-    public void onLoad(Plugin plugin) {
-        PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(
-            langClass -> {
-                LangHandler langHandler = langClass.getAnnotation(LangHandler.class);
-                String langFileFolder = langHandler.langFileFolder();
-                String defLang = langHandler.defLang();
-                LangEntryContainer langEntryContainer = new LangEntryContainer(plugin, langClass, langFileFolder, defLang);
-                LangManager.INSTANCE.loadLangEntryContainer(langFileFolder, langEntryContainer);
-            }
-        );
+    public void run(Plugin plugin, LifeCycle lifeCycle) {
+        switch (lifeCycle) {
+            case LOAD:
+                PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(
+                    langClass -> {
+                        LangHandler langHandler = langClass.getAnnotation(LangHandler.class);
+                        String langFileFolder = langHandler.langFileFolder();
+                        String defLang = langHandler.defLang();
+                        LangEntryContainer langEntryContainer = new LangEntryContainer(plugin, langClass, langFileFolder, defLang);
+                        LangManager.INSTANCE.loadLangEntryContainer(langFileFolder, langEntryContainer);
+                    }
+                );
+                break;
+            case RELOAD:
+                folderLangEntryMap.clear();
+                langEntryContainerMap.forEach(
+                    (langFolder, container) -> container.reload()
+                );
+                break;
+            case DISABLE:
+                langEntryContainerMap.clear();
+                folderLangEntryMap.clear();
+                break;
+        }
     }
 }

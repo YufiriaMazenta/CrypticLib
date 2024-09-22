@@ -1,9 +1,12 @@
-package crypticlib.lifecycle.annotation;
+package crypticlib.lifecycle;
 
 import java.lang.annotation.*;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface OnLoad {
+public @interface AutoTask {
+
+    LifeCycle[] lifecycles();
+
 }
