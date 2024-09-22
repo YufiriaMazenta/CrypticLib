@@ -7,6 +7,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface AutoTask {
 
-    LifeCycle[] lifecycles();
+    TaskRule[] rules();
 
 }
