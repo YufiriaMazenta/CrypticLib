@@ -7,9 +7,7 @@ import crypticlib.config.BungeeConfigContainer;
 import crypticlib.config.BungeeConfigWrapper;
 import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
-import crypticlib.lifecycle.AutoTask;
-import crypticlib.lifecycle.BungeeLifeCycleTask;
-import crypticlib.lifecycle.LifeCycle;
+import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermInfo;
@@ -19,6 +17,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +27,7 @@ public abstract class BungeePlugin extends Plugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BungeeConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final Map<LifeCycle, List<BungeeLifeCycleTask>> lifeCycleTaskMap = new ConcurrentHashMap<>();
+    protected final Map<LifeCycle, List<BungeeLifeCycleTaskWrapper>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
     public BungeePlugin() {
@@ -46,13 +45,15 @@ public abstract class BungeePlugin extends Plugin {
                     if (annotation == null) {
                         return;
                     }
-                    for (LifeCycle lifecycle : annotation.lifecycles()) {
-                        if (lifeCycleTaskMap.containsKey(lifecycle)) {
-                            lifeCycleTaskMap.get(lifecycle).add(task);
+                    for (TaskRule taskRule : annotation.rules()) {
+                        LifeCycle lifeCycle = taskRule.lifeCycle();
+                        BungeeLifeCycleTaskWrapper wrapper = new BungeeLifeCycleTaskWrapper(task, taskRule.priority());
+                        if (lifeCycleTaskMap.containsKey(lifeCycle)) {
+                            lifeCycleTaskMap.get(lifeCycle).add(wrapper);
                         } else {
-                            List<BungeeLifeCycleTask> tasks = new CopyOnWriteArrayList<>();
-                            tasks.add(task);
-                            lifeCycleTaskMap.put(lifecycle, tasks);
+                            List<BungeeLifeCycleTaskWrapper> taskWrappers = new CopyOnWriteArrayList<>();
+                            taskWrappers.add(wrapper);
+                            lifeCycleTaskMap.put(lifeCycle, taskWrappers);
                         }
                     }
                 } catch (Throwable throwable) {
@@ -60,6 +61,10 @@ public abstract class BungeePlugin extends Plugin {
                 }
             }
         );
+        lifeCycleTaskMap.forEach((lifeCycle, taskWrappers) -> {
+            taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
+        });
+
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
@@ -171,7 +176,7 @@ public abstract class BungeePlugin extends Plugin {
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<BungeeLifeCycleTask> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
+        List<BungeeLifeCycleTaskWrapper> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
         if (lifeCycleTasks != null) {
             lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
         }

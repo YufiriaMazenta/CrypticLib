@@ -18,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +28,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final Map<LifeCycle, List<BukkitLifeCycleTask>> lifeCycleTaskMap = new ConcurrentHashMap<>();
+    protected final Map<LifeCycle, List<BukkitLifeCycleTaskWrapper>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
     public BukkitPlugin() {
@@ -44,13 +45,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     if (annotation == null) {
                         return;
                     }
-                    for (LifeCycle lifecycle : annotation.lifecycles()) {
-                        if (lifeCycleTaskMap.containsKey(lifecycle)) {
-                            lifeCycleTaskMap.get(lifecycle).add(task);
+                    for (TaskRule taskRule : annotation.rules()) {
+                        LifeCycle lifeCycle = taskRule.lifeCycle();
+                        BukkitLifeCycleTaskWrapper wrapper = new BukkitLifeCycleTaskWrapper(task, taskRule.priority());
+                        if (lifeCycleTaskMap.containsKey(lifeCycle)) {
+                            lifeCycleTaskMap.get(lifeCycle).add(wrapper);
                         } else {
-                            List<BukkitLifeCycleTask> tasks = new CopyOnWriteArrayList<>();
-                            tasks.add(task);
-                            lifeCycleTaskMap.put(lifecycle, tasks);
+                            List<BukkitLifeCycleTaskWrapper> taskWrappers = new CopyOnWriteArrayList<>();
+                            taskWrappers.add(wrapper);
+                            lifeCycleTaskMap.put(lifeCycle, taskWrappers);
                         }
                     }
                 } catch (Throwable throwable) {
@@ -58,6 +61,9 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
+        lifeCycleTaskMap.forEach((lifeCycle, taskWrappers) -> {
+            taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
+        });
 
         runLifeCycleTasks(LifeCycle.INIT);
     }
@@ -173,7 +179,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<BukkitLifeCycleTask> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
+        List<BukkitLifeCycleTaskWrapper> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
         if (lifeCycleTasks != null) {
             lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
         }

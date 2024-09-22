@@ -5,6 +5,7 @@ import crypticlib.lang.entry.LangEntry;
 import crypticlib.lifecycle.AutoTask;
 import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
+import crypticlib.lifecycle.TaskRule;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,7 +14,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @AutoTask(
-    lifecycles = {LifeCycle.LOAD, LifeCycle.RELOAD, LifeCycle.DISABLE}
+    rules = {
+        @TaskRule(lifeCycle = LifeCycle.LOAD),
+        @TaskRule(lifeCycle = LifeCycle.RELOAD),
+        @TaskRule(lifeCycle = LifeCycle.DISABLE)
+    }
 )
 public enum LangManager implements BukkitLifeCycleTask {
 
