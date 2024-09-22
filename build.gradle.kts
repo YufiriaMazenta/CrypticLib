@@ -46,7 +46,6 @@ subprojects {
     }
     tasks {
         compileJava {
-            dependsOn(clean)
             options.encoding = "UTF-8"
         }
         build {
