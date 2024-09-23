@@ -72,7 +72,7 @@ public class BungeeVersion {
 
     public static final BungeeVersion V1_18 = new BungeeVersion(11800);
 
-    public static final BungeeVersion V1_19 = new BungeeVersion(19000);
+    public static final BungeeVersion V1_19 = new BungeeVersion(11900);
 
     public static final BungeeVersion V1_20 = new BungeeVersion(12000);
 
