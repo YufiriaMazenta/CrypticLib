@@ -85,11 +85,11 @@ public class MinecraftVersion {
     public static final MinecraftVersion V1_18_1 = new MinecraftVersion(11801);
     public static final MinecraftVersion V1_18_2 = new MinecraftVersion(11802);
 
-    public static final MinecraftVersion V1_19 = new MinecraftVersion(19000);
-    public static final MinecraftVersion V1_19_1 = new MinecraftVersion(19001);
-    public static final MinecraftVersion V1_19_2 = new MinecraftVersion(19002);
-    public static final MinecraftVersion V1_19_3 = new MinecraftVersion(19003);
-    public static final MinecraftVersion V1_19_4 = new MinecraftVersion(19004);
+    public static final MinecraftVersion V1_19 = new MinecraftVersion(11900);
+    public static final MinecraftVersion V1_19_1 = new MinecraftVersion(11901);
+    public static final MinecraftVersion V1_19_2 = new MinecraftVersion(11902);
+    public static final MinecraftVersion V1_19_3 = new MinecraftVersion(11903);
+    public static final MinecraftVersion V1_19_4 = new MinecraftVersion(11904);
 
     public static final MinecraftVersion V1_20 = new MinecraftVersion(12000);
     public static final MinecraftVersion V1_20_1 = new MinecraftVersion(12001);
