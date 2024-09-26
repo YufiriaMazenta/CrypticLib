@@ -148,13 +148,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public void disable() {
     }
 
-    public void reloadPlugin() {
+    public final void reloadPlugin() {
         reloadConfig();
         runLifeCycleTasks(LifeCycle.RELOAD);
     }
 
     @Override
-    public @NotNull FileConfiguration getConfig() {
+    public final @NotNull FileConfiguration getConfig() {
         if (configContainerMap.containsKey(defaultConfigFileName)) {
             return configContainerMap.get(defaultConfigFileName).configWrapper().config();
         }
@@ -162,19 +162,19 @@ public abstract class BukkitPlugin extends JavaPlugin {
     }
 
     @Override
-    public void saveConfig() {
+    public final void saveConfig() {
         configContainerMap.forEach((path, configContainer) -> configContainer.configWrapper().saveConfig());
     }
 
     @Override
-    public void saveDefaultConfig() {
+    public final void saveDefaultConfig() {
         BukkitConfigContainer defConfig = new BukkitConfigContainer(this.getClass(), new BukkitConfigWrapper(this, defaultConfigFileName));
         defConfig.reload();
         configContainerMap.put(defaultConfigFileName, defConfig);
     }
 
     @Override
-    public void reloadConfig() {
+    public final void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
     }
 

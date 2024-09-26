@@ -4,6 +4,7 @@ import crypticlib.CrypticLib;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public interface MsgSender<Receiver, Component, Player> {
@@ -53,7 +54,11 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param stay     Title的停留时间
      * @param fadeOut  Title的淡出时间
      */
-    void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut);
+    default void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+        sendTitle(player, title, subTitle, fadeIn, stay, fadeOut, new HashMap<>());
+    }
+
+    void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap);
 
     /**
      * 给玩家发送Title
@@ -74,6 +79,12 @@ public interface MsgSender<Receiver, Component, Player> {
      */
     void sendActionBar(Player player, Component component);
 
+    /**
+     * 给玩家发送Action Bar
+     *
+     * @param player    发送的玩家
+     * @param components 发送的ActionBar聊天组件
+     */
     void sendActionBar(Player player, Component... components);
 
     /**
@@ -82,21 +93,38 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param player 发送的玩家
      * @param text   发送的ActionBar文本
      */
-    void sendActionBar(Player player, String text);
+    default void sendActionBar(Player player, String text) {
+        sendActionBar(player, text, new HashMap<>());
+    }
+
+    void sendActionBar(Player player, String text, Map<String, String> replaceMap);
 
     /**
      * 为所有玩家发送一条消息,这条消息会处理颜色代码和PlaceholderAPI变量
      *
      * @param msg 发送的消息
      */
-    void broadcast(String msg);
+    default void broadcast(String msg) {
+        broadcast(msg, new HashMap<>());
+    }
+
+    /**
+     * 为所有玩家发送一条消息,这条消息会处理颜色代码和PlaceholderAPI变量
+     *
+     * @param msg 发送的消息
+     */
+    void broadcast(String msg, Map<String, String> replaceMap);
 
     /**
      * 给所有玩家发送一条ActionBar位置的消息
      *
      * @param msg 发送的消息
      */
-    void broadcastActionbar(String msg);
+    default void broadcastActionbar(String msg) {
+        broadcastActionbar(msg, new HashMap<>());
+    }
+
+    void broadcastActionbar(String msg, Map<String, String> replaceMap);
 
     /**
      * 给所有玩家发送一条title
@@ -107,7 +135,11 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param stay     停留时间
      * @param fadeOut  淡出时间
      */
-    void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut);
+    default void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+        broadcastTitle(title, subtitle, fadeIn, stay, fadeOut, new HashMap<>());
+    }
+
+    void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap);
 
     /**
      * 给所有玩家发送一条title
@@ -115,7 +147,11 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param title    发送的title文本
      * @param subtitle 发送的subtitle文本
      */
-    void broadcastTitle(String title, String subtitle);
+    default void broadcastTitle(String title, String subtitle) {
+        broadcastTitle(title, subtitle, new HashMap<>());
+    }
+
+    void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap);
 
     default void debug(String msg) {
         debug(msg, new HashMap<>());

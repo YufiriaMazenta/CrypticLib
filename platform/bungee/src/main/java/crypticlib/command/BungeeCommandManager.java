@@ -8,9 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BungeeCommandManager implements CommandManager<Plugin, BungeeCommand, Command> {
+public enum BungeeCommandManager implements CommandManager<Plugin, BungeeCommand, Command> {
 
-    public static final BungeeCommandManager INSTANCE = new BungeeCommandManager();
+    INSTANCE;
 
     private final Map<String, Command> registeredCommands = new ConcurrentHashMap<>();
 

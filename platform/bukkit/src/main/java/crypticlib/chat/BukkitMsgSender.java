@@ -37,7 +37,7 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+    public void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         if (player == null)
             return;
         if (title == null) {
@@ -45,6 +45,10 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
         }
         if (subTitle == null) {
             subTitle = "";
+        }
+        for (String key : replaceMap.keySet()) {
+            title = title.replace(key, replaceMap.get(key));
+            subTitle = subTitle.replace(key, replaceMap.get(key));
         }
         title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, title));
         subTitle = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, subTitle));
@@ -64,13 +68,19 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendActionBar(Player player, String text) {
+    public void sendActionBar(Player player, String text, Map<String, String> replaceMap) {
+        for (String formatStr : replaceMap.keySet()) {
+            text = text.replace(formatStr, replaceMap.get(formatStr));
+        }
         text = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, text));
         sendActionBar(player, BukkitTextProcessor.toComponent(text));
     }
 
     @Override
-    public void broadcast(String msg) {
+    public void broadcast(String msg, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            msg = msg.replace(replace, replaceMap.get(replace));
+        }
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendMsg(player, msg);
         }
@@ -78,21 +88,32 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void broadcastActionbar(String msg) {
+    public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            msg = msg.replace(replace, replaceMap.get(replace));
+        }
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendActionBar(player, msg);
         }
     }
 
     @Override
-    public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+    public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            title = title.replace(replace, replaceMap.get(replace));
+            subtitle = subtitle.replace(replace, replaceMap.get(replace));
+        }
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
     @Override
-    public void broadcastTitle(String title, String subtitle) {
+    public void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            title = title.replace(replace, replaceMap.get(replace));
+            subtitle = subtitle.replace(replace, replaceMap.get(replace));
+        }
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle);
         }

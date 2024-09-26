@@ -32,7 +32,6 @@ public abstract class BungeePlugin extends Plugin {
 
     public BungeePlugin() {
         pluginScanner.scanJar(this.getFile());
-        pluginScanner.scanJar(this.getFile());
         lifeCycleTaskMap.clear();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
             taskClass -> {
@@ -109,14 +108,14 @@ public abstract class BungeePlugin extends Plugin {
                     if (!BungeeCommand.class.isAssignableFrom(commandClass)) {
                         return;
                     }
-                    BungeeCommand BungeeCommand = (BungeeCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
-                    BungeeCommand.register(this);
+                    BungeeCommand bungeeCommand = (BungeeCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
+                    bungeeCommand.register(this);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
             }
         );
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifeCycleTasks(LifeCycle.ENABLE);
         enable();
     }
 
@@ -149,29 +148,29 @@ public abstract class BungeePlugin extends Plugin {
     public void disable() {
     }
 
-    public void reloadPlugin() {
+    public final void reloadPlugin() {
         reloadConfig();
         runLifeCycleTasks(LifeCycle.RELOAD);
     }
     
-    public @NotNull Configuration getConfig() {
+    public final @NotNull Configuration getConfig() {
         if (configContainerMap.containsKey(defaultConfigFileName)) {
             return configContainerMap.get(defaultConfigFileName).configWrapper().config();
         }
         throw new UnsupportedOperationException("No default config file");
     }
     
-    public void saveConfig() {
+    public final void saveConfig() {
         configContainerMap.forEach((path, configContainer) -> configContainer.configWrapper().saveConfig());
     }
     
-    public void saveDefaultConfig() {
+    public final void saveDefaultConfig() {
         BungeeConfigContainer defConfig = new BungeeConfigContainer(this.getClass(), new BungeeConfigWrapper(this, defaultConfigFileName));
         defConfig.reload();
         configContainerMap.put(defaultConfigFileName, defConfig);
     }
 
-    public void reloadConfig() {
+    public final void reloadConfig() {
         configContainerMap.forEach((path, container) -> container.reload());
     }
 

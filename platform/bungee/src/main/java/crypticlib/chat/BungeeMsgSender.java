@@ -35,7 +35,7 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendTitle(ProxiedPlayer player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+    public void sendTitle(ProxiedPlayer player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         if (player == null)
             return;
         if (title == null) {
@@ -43,6 +43,10 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
         }
         if (subTitle == null) {
             subTitle = "";
+        }
+        for (String key : replaceMap.keySet()) {
+            title = title.replace(key, replaceMap.get(key));
+            subTitle = subTitle.replace(key, replaceMap.get(key));
         }
         title = BungeeTextProcessor.color(title);
         subTitle = BungeeTextProcessor.color(subTitle);
@@ -68,13 +72,19 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendActionBar(ProxiedPlayer player, String text) {
+    public void sendActionBar(ProxiedPlayer player, String text, Map<String, String> replaceMap) {
+        for (String formatStr : replaceMap.keySet()) {
+            text = text.replace(formatStr, replaceMap.get(formatStr));
+        }
         text = BungeeTextProcessor.color(text);
         sendActionBar(player, BungeeTextProcessor.toComponent(text));
     }
 
     @Override
-    public void broadcast(String msg) {
+    public void broadcast(String msg, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            msg = msg.replace(replace, replaceMap.get(replace));
+        }
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendMsg(player, msg);
         }
@@ -82,21 +92,32 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void broadcastActionbar(String msg) {
+    public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            msg = msg.replace(replace, replaceMap.get(replace));
+        }
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendActionBar(player, msg);
         }
     }
 
     @Override
-    public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+    public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            title = title.replace(replace, replaceMap.get(replace));
+            subtitle = subtitle.replace(replace, replaceMap.get(replace));
+        }
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
     @Override
-    public void broadcastTitle(String title, String subtitle) {
+    public void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap) {
+        for (String replace : replaceMap.keySet()) {
+            title = title.replace(replace, replaceMap.get(replace));
+            subtitle = subtitle.replace(replace, replaceMap.get(replace));
+        }
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendTitle(player, title, subtitle);
         }
