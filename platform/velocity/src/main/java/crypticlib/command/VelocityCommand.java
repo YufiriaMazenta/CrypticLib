@@ -12,7 +12,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSource>  {
 
@@ -39,6 +41,13 @@ public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSou
     public final List<String> suggest(Invocation invocation) {
         List<String> arguments = Arrays.asList(invocation.arguments());
         return onTabComplete(invocation.source(), arguments);
+    }
+
+    @Override
+    public final CompletableFuture<List<String>> suggestAsync(Invocation invocation) {
+        CompletableFuture<List<String>> future = new CompletableFuture<>();
+        future.complete(suggest(invocation));
+        return future;
     }
 
     @Override
