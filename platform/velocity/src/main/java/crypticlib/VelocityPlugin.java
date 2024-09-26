@@ -55,7 +55,12 @@ public abstract class VelocityPlugin {
                     if (!VelocityLifeCycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    VelocityLifeCycleTask task = (VelocityLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    VelocityLifeCycleTask task;
+                    if (VelocityPlugin.class.isAssignableFrom(taskClass)) {
+                        task = (VelocityLifeCycleTask) this;
+                    } else {
+                        task = (VelocityLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    }
                     AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
                     if (annotation == null) {
                         return;
@@ -109,7 +114,12 @@ public abstract class VelocityPlugin {
         pluginScanner.getAnnotatedClasses(EventListener.class).forEach(
             listenerClass -> {
                 try {
-                    Object listener = ReflectionHelper.getSingletonClassInstance(listenerClass);
+                    Object listener;
+                    if (VelocityPlugin.class.isAssignableFrom(listenerClass)) {
+                        listener = this;
+                    } else {
+                        listener = ReflectionHelper.getSingletonClassInstance(listenerClass);
+                    }
                     proxyServer.getEventManager().register(this, listener);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();

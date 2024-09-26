@@ -39,7 +39,12 @@ public abstract class BungeePlugin extends Plugin {
                     if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    BungeeLifeCycleTask task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    BungeeLifeCycleTask task;
+                    if (BungeePlugin.class.isAssignableFrom(taskClass)) {
+                        task = (BungeeLifeCycleTask) this;
+                    } else {
+                        task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    }
                     AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
                     if (annotation == null) {
                         return;
@@ -95,7 +100,12 @@ public abstract class BungeePlugin extends Plugin {
                     if (!Listener.class.isAssignableFrom(listenerClass)) {
                         return;
                     }
-                    Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
+                    Listener listener;
+                    if (BungeePlugin.class.isAssignableFrom(listenerClass)) {
+                        listener = (Listener) this;
+                    } else {
+                        listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
+                    }
                     getProxy().getPluginManager().registerListener(this, listener);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
