@@ -121,7 +121,8 @@ public interface CommandHandler<CommandSender> {
                 }
             }
         }
-        arguments.removeIf(str -> !str.contains(args.get(args.size() - 1)));
+        if (!args.isEmpty())
+            arguments.removeIf(str -> !str.contains(args.get(args.size() - 1)));
         if (arguments.isEmpty())
             return Collections.singletonList("");
         return arguments;
