@@ -40,7 +40,12 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     if (!BukkitLifeCycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    BukkitLifeCycleTask task = (BukkitLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    BukkitLifeCycleTask task;
+                    if (BukkitPlugin.class.isAssignableFrom(taskClass)) {
+                        task = (BukkitLifeCycleTask) this;
+                    } else {
+                        task = (BukkitLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    }
                     AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
                     if (annotation == null) {
                         return;
@@ -95,7 +100,12 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     if (!Listener.class.isAssignableFrom(listenerClass)) {
                         return;
                     }
-                    Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
+                    Listener listener;
+                    if (BukkitPlugin.class.isAssignableFrom(listenerClass)) {
+                        listener = (Listener) this;
+                    } else {
+                        listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
+                    }
                     Bukkit.getPluginManager().registerEvents(listener, this);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
