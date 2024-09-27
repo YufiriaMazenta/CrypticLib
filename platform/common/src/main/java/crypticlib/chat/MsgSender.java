@@ -15,7 +15,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param receiver 发送到的对象
      * @param msg      发送的消息
      */
-    default void sendMsg(@NotNull Receiver receiver, String msg) {
+    default void sendMsg(Receiver receiver, String msg) {
         sendMsg(receiver, msg, new HashMap<>());
     }
 
@@ -26,7 +26,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param msg        发送的消息
      * @param replaceMap 需要替换的文本
      */
-    void sendMsg(@NotNull Receiver receiver, String msg, @NotNull Map<String, String> replaceMap);
+    void sendMsg(Receiver receiver, String msg, @NotNull Map<String, String> replaceMap);
 
     /**
      * 发送多个聊天组件给接收者
@@ -34,7 +34,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param receiver       接收者
      * @param baseComponents bungee聊天组件
      */
-    void sendMsg(@NotNull Receiver receiver, @NotNull Component... baseComponents);
+    void sendMsg(Receiver receiver, @NotNull Component... baseComponents);
 
     /**
      * 发送Bungee聊天组件给接收者
@@ -42,7 +42,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param receiver      接收者
      * @param baseComponent bungee聊天组件
      */
-    void sendMsg(@NotNull Receiver receiver, @NotNull Component baseComponent);
+    void sendMsg(Receiver receiver, @NotNull Component baseComponent);
 
     /**
      * 给玩家发送Title

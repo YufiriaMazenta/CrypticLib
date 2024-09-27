@@ -24,30 +24,38 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     private VelocityPlugin plugin;
 
     @Override
-    public void sendMsg(@NotNull CommandSource commandSource, String msg, @NotNull Map<String, String> replaceMap) {
+    public void sendMsg(CommandSource receiver, String msg, @NotNull Map<String, String> replaceMap) {
+        if (receiver == null)
+            return;
         for (String key : replaceMap.keySet()) {
             msg = msg.replace(key, replaceMap.get(key));
         }
         Component component = VelocityTextProcessor.toComponent(msg);
-        commandSource.sendMessage(component);
+        receiver.sendMessage(component);
     }
 
     @Override
-    public void sendMsg(@NotNull CommandSource commandSource, @NotNull Component... baseComponents) {
+    public void sendMsg(CommandSource receiver, @NotNull Component... baseComponents) {
+        if (receiver == null)
+            return;
         Component component = Component.text().build();
         for (Component baseComponent : baseComponents) {
             component = component.append(baseComponent);
         }
-        commandSource.sendMessage(component);
+        receiver.sendMessage(component);
     }
 
     @Override
-    public void sendMsg(@NotNull CommandSource commandSource, @NotNull Component baseComponent) {
-        commandSource.sendMessage(baseComponent);
+    public void sendMsg(CommandSource receiver, @NotNull Component baseComponent) {
+        if (receiver == null)
+            return;
+        receiver.sendMessage(baseComponent);
     }
 
     @Override
     public void sendTitle(Player player, String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+        if (player == null)
+            return;
         Title titleObj = buildTitle(title, subtitle, fadeIn, stay, fadeOut, replaceMap);
         player.showTitle(titleObj);
     }
@@ -59,6 +67,8 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
 
     @Override
     public void sendActionBar(Player player, Component... components) {
+        if (player == null)
+            return;
         Component component = Component.text().build();
         for (Component baseComponent : components) {
             component = component.append(baseComponent);
@@ -68,6 +78,8 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
 
     @Override
     public void sendActionBar(Player player, String text, Map<String, String> replaceMap) {
+        if (player == null)
+            return;
         for (String formatStr : replaceMap.keySet()) {
             text = text.replace(formatStr, replaceMap.get(formatStr));
         }
