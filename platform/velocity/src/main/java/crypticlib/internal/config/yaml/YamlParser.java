@@ -24,16 +24,19 @@ public final class YamlParser implements ConfigParser<Config> {
         this.configFormat = configFormat;
     }
 
+    @Override
     public ConfigFormat<Config> getFormat() {
         return this.configFormat;
     }
 
+    @Override
     public Config parse(Reader reader) {
         Config config = this.configFormat.createConfig();
         this.parse(reader, config, ParsingMode.MERGE);
         return config;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public void parse(Reader reader, Config destination, ParsingMode parsingMode) {
         try {
