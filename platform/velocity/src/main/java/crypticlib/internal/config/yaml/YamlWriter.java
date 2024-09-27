@@ -17,16 +17,8 @@ public final class YamlWriter implements ConfigWriter {
 
     private final Yaml yaml;
 
-    public YamlWriter() {
-        this(new Yaml());
-    }
-
     public YamlWriter(Yaml yaml) {
         this.yaml = yaml;
-    }
-
-    public YamlWriter(DumperOptions options) {
-        this(new Yaml(options));
     }
 
     public void write(UnmodifiableConfig config, Writer writer) {
