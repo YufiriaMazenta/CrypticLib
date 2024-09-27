@@ -15,7 +15,9 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     INSTANCE;
 
     @Override
-    public void sendMsg(@NotNull CommandSender receiver, String msg, @NotNull Map<String, String> replaceMap) {
+    public void sendMsg(CommandSender receiver, String msg, @NotNull Map<String, String> replaceMap) {
+        if (receiver == null)
+            return;
         if (msg == null)
             return;
         for (String formatStr : replaceMap.keySet()) {
@@ -25,12 +27,14 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendMsg(@NotNull CommandSender receiver, @NotNull BaseComponent... baseComponents) {
+    public void sendMsg(CommandSender receiver, @NotNull BaseComponent... baseComponents) {
         sendMsg(receiver, new TextComponent(baseComponents));
     }
 
     @Override
-    public void sendMsg(@NotNull CommandSender receiver, @NotNull BaseComponent baseComponent) {
+    public void sendMsg(CommandSender receiver, @NotNull BaseComponent baseComponent) {
+        if (receiver == null)
+            return;
         receiver.sendMessage(baseComponent);
     }
 
@@ -73,6 +77,8 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void sendActionBar(ProxiedPlayer player, String text, Map<String, String> replaceMap) {
+        if (player == null)
+            return;
         for (String formatStr : replaceMap.keySet()) {
             text = text.replace(formatStr, replaceMap.get(formatStr));
         }
