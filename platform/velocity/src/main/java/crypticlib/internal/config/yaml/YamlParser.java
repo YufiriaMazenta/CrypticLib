@@ -24,15 +24,6 @@ public final class YamlParser implements ConfigParser<Config> {
         this.configFormat = configFormat;
     }
 
-    public YamlParser(Yaml yaml) {
-        this.yaml = yaml;
-        this.configFormat = YamlFormat.configuredInstance(yaml);
-    }
-
-    public YamlParser(LoaderOptions options) {
-        this(new Yaml(options));
-    }
-
     public ConfigFormat<Config> getFormat() {
         return this.configFormat;
     }

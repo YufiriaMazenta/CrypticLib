@@ -13,30 +13,22 @@ import java.util.function.Supplier;
 
 import org.yaml.snakeyaml.Yaml;
 
-public final class YamlFormat implements ConfigFormat<Config> {
+public enum YamlFormat implements ConfigFormat<Config> {
 
-    private static final ThreadLocal<YamlFormat> LOCAL_DEFAULT_FORMAT = ThreadLocal.withInitial(() -> new YamlFormat(new Yaml()));
+    INSTANCE(new Yaml());
 
     private final Yaml yaml;
 
-    public static YamlFormat defaultInstance() {
-        return LOCAL_DEFAULT_FORMAT.get();
-    }
-
-    public static YamlFormat configuredInstance(Yaml yaml) {
-        return new YamlFormat(yaml);
-    }
-
     public static Config newConfig() {
-        return defaultInstance().createConfig();
+        return INSTANCE.createConfig();
     }
 
     public static Config newConfig(Supplier<Map<String, Object>> mapCreator) {
-        return defaultInstance().createConfig(mapCreator);
+        return INSTANCE.createConfig(mapCreator);
     }
 
     public static Config newConcurrentConfig() {
-        return defaultInstance().createConcurrentConfig();
+        return INSTANCE.createConcurrentConfig();
     }
 
     private YamlFormat(Yaml yaml) {

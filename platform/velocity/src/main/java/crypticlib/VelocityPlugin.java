@@ -91,9 +91,8 @@ public abstract class VelocityPlugin {
     @Subscribe
     public final void onProxyInitialization(ProxyInitializeEvent event) {
         //Load 阶段
-        FormatDetector.registerExtension("yaml", YamlFormat::defaultInstance);
-        FormatDetector.registerExtension("yml", YamlFormat::defaultInstance);
-
+        FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
+        FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
         PermInfo.PERM_MANAGER = VelocityPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -167,6 +166,8 @@ public abstract class VelocityPlugin {
     }
 
     public final void reloadConfig() {
+        FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
+        FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
         configContainerMap.forEach((path, container) -> container.reload());
     }
 
