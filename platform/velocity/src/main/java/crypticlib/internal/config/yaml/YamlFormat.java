@@ -35,22 +35,27 @@ public enum YamlFormat implements ConfigFormat<Config> {
         this.yaml = yaml;
     }
 
+    @Override
     public ConfigWriter createWriter() {
         return new YamlWriter(this.yaml);
     }
 
+    @Override
     public ConfigParser<Config> createParser() {
         return new YamlParser(this);
     }
 
+    @Override
     public Config createConfig(Supplier<Map<String, Object>> mapCreator) {
         return Config.of(mapCreator, this);
     }
 
+    @Override
     public boolean supportsComments() {
         return false;
     }
 
+    @Override
     public boolean supportsType(Class<?> type) {
         return type == null || type.isEnum() || type == Boolean.class || type == String.class || type == Date.class || type == java.sql.Date.class || type == Timestamp.class || type == byte[].class || type == Object[].class || Number.class.isAssignableFrom(type) || Set.class.isAssignableFrom(type) || List.class.isAssignableFrom(type) || Config.class.isAssignableFrom(type);
     }
