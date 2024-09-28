@@ -1,6 +1,5 @@
 package crypticlib;
 
-import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
@@ -14,7 +13,6 @@ import crypticlib.config.ConfigHandler;
 import crypticlib.config.VelocityConfigContainer;
 import crypticlib.config.VelocityConfigWrapper;
 import crypticlib.internal.PluginScanner;
-import crypticlib.internal.config.yaml.YamlFormat;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.PermInfo;
@@ -91,8 +89,6 @@ public abstract class VelocityPlugin {
     @Subscribe
     public final void onProxyInitialization(ProxyInitializeEvent event) {
         //Load 阶段
-        FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
-        FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
         PermInfo.PERM_MANAGER = VelocityPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -166,8 +162,6 @@ public abstract class VelocityPlugin {
     }
 
     public final void reloadConfig() {
-        FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
-        FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
         configContainerMap.forEach((path, container) -> container.reload());
     }
 

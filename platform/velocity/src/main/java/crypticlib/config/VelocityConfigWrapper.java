@@ -1,8 +1,9 @@
 package crypticlib.config;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.core.file.FileNotFoundAction;
+import com.electronwill.nightconfig.core.file.FormatDetector;
 import crypticlib.VelocityPlugin;
+import crypticlib.internal.config.yaml.YamlFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,8 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
     @Override
     public void reloadConfig() {
         saveDefaultConfigFile();
+        FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
+        FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
         config = FileConfig.builder(configFile).concurrent().build();
         config.load();
     }
