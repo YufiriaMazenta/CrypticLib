@@ -55,6 +55,8 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
     @Override
     public void saveConfig() {
         synchronized (this) {
+            FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
+            FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
             config.save();
         }
     }

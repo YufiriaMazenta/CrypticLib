@@ -4,14 +4,14 @@ import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.io.ConfigParser;
 import com.electronwill.nightconfig.core.io.ConfigWriter;
+import org.yaml.snakeyaml.Yaml;
+
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import org.yaml.snakeyaml.Yaml;
 
 public enum YamlFormat implements ConfigFormat<Config> {
 
@@ -31,7 +31,7 @@ public enum YamlFormat implements ConfigFormat<Config> {
         return INSTANCE.createConcurrentConfig();
     }
 
-    private YamlFormat(Yaml yaml) {
+    YamlFormat(Yaml yaml) {
         this.yaml = yaml;
     }
 

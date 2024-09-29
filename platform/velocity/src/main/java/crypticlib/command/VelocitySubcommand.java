@@ -2,7 +2,6 @@ package crypticlib.command;
 
 import com.velocitypowered.api.command.CommandSource;
 import crypticlib.chat.VelocityMsgSender;
-import crypticlib.command.annotation.Subcommand;
 import crypticlib.perm.PermInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

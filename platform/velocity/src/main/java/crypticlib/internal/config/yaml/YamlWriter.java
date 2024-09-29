@@ -6,7 +6,6 @@ import com.electronwill.nightconfig.core.io.ConfigWriter;
 import com.electronwill.nightconfig.core.io.WritingException;
 import com.electronwill.nightconfig.core.utils.TransformingList;
 import com.electronwill.nightconfig.core.utils.TransformingMap;
-import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.Writer;
