@@ -8,11 +8,13 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.core.utils.TransformingList;
 import com.electronwill.nightconfig.core.utils.TransformingMap;
-import java.io.Reader;
-import java.util.*;
-
-import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public final class YamlParser implements ConfigParser<Config> {
 

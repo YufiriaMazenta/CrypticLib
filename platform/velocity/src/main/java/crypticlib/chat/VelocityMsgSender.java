@@ -2,11 +2,11 @@ package crypticlib.chat;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
+import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.AutoTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.lifecycle.VelocityLifeCycleTask;
-import crypticlib.VelocityPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.util.Ticks;

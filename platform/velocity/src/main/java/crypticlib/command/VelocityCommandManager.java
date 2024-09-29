@@ -1,13 +1,13 @@
 package crypticlib.command;
 
 import com.velocitypowered.api.command.Command;
+import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.AutoTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
-import crypticlib.VelocityPlugin;
+import crypticlib.lifecycle.VelocityLifeCycleTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import crypticlib.lifecycle.VelocityLifeCycleTask;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

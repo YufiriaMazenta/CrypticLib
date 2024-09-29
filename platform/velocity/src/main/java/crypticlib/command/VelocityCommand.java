@@ -3,10 +3,10 @@ package crypticlib.command;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.permission.Tristate;
+import crypticlib.VelocityPlugin;
 import crypticlib.chat.VelocityMsgSender;
 import crypticlib.perm.PermDef;
 import crypticlib.perm.PermInfo;
-import crypticlib.VelocityPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSource>  {
 
