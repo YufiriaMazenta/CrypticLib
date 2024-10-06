@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,6 +74,10 @@ public abstract class LangEntry<T> {
         return this;
     }
 
-    public abstract void send(CommandSender sender);
+    public void send(CommandSender sender) {
+        send(sender, Collections.emptyMap());
+    }
+
+    public abstract void send(CommandSender sender, Map<String, String> replaceMap);
 
 }
