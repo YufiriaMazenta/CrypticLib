@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class StringListLangEntry extends LangEntry<List<String>> {
 
@@ -31,15 +32,15 @@ public class StringListLangEntry extends LangEntry<List<String>> {
     }
 
     @Override
-    public void send(CommandSender sender) {
+    public void send(CommandSender sender, Map<String, String> replaceMap) {
         List<String> lang;
         if (sender instanceof Player) {
             lang = value((Player) sender);
         } else {
             lang = value();
         }
-        for (String s : lang) {
-            BukkitMsgSender.INSTANCE.sendMsg(sender, s);
+        for (String str : lang) {
+            BukkitMsgSender.INSTANCE.sendMsg(sender, str, replaceMap);
         }
     }
 

@@ -6,6 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+
 public class StringLangEntry extends LangEntry<String> {
 
     public StringLangEntry(@NotNull String key) {
@@ -28,11 +30,11 @@ public class StringLangEntry extends LangEntry<String> {
     }
 
     @Override
-    public void send(CommandSender sender) {
+    public void send(CommandSender sender, Map<String, String> replaceMap) {
         if (sender instanceof Player) {
-            BukkitMsgSender.INSTANCE.sendMsg(sender, value((Player) sender));
+            BukkitMsgSender.INSTANCE.sendMsg(sender, value((Player) sender), replaceMap);
         } else {
-            BukkitMsgSender.INSTANCE.sendMsg(sender, value());
+            BukkitMsgSender.INSTANCE.sendMsg(sender, value(), replaceMap);
         }
     }
 
