@@ -1,5 +1,6 @@
 package crypticlib.internal.config.yaml;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.NullObject;
@@ -9,13 +10,23 @@ import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.core.utils.TransformingList;
 import com.electronwill.nightconfig.core.utils.TransformingMap;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.comments.CommentLine;
+import org.yaml.snakeyaml.error.YAMLException;
+import org.yaml.snakeyaml.nodes.AnchorNode;
+import org.yaml.snakeyaml.nodes.MappingNode;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.reader.UnicodeReader;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
+/**
+ * @author Electronwill, YufiriaMazenta
+ */
 public final class YamlParser implements ConfigParser<Config> {
 
     private final Yaml yaml;
@@ -42,17 +53,17 @@ public final class YamlParser implements ConfigParser<Config> {
     @SuppressWarnings("unchecked")
     public void parse(Reader reader, Config destination, ParsingMode parsingMode) {
         try {
-            Map<String, Object> load = (Map<String, Object>) this.yaml.loadAs(reader, Map.class);
-            Map<String, Object> wrappedMap = this.wrap(load);
-            parsingMode.prepareParsing(destination);
-            if (parsingMode == ParsingMode.ADD) {
-                for (Map.Entry<String, Object> entry : wrappedMap.entrySet()) {
-                    destination.valueMap().putIfAbsent(entry.getKey(), entry.getValue());
-                }
-            } else {
-                destination.valueMap().putAll(wrappedMap);
-            }
 
+            MappingNode mappingNode;
+            Node rawNode = yaml.compose(reader);
+            try {
+                mappingNode = (MappingNode) rawNode;
+            } catch (ClassCastException e) {
+                throw new YAMLException("Top level is not a Map.");
+            }
+            Map<String, Object> valueMap = new LinkedHashMap<>();
+            Map<String, String> commentMap = new LinkedHashMap<>();
+            //TODO 解析整个mappingnode
         } catch (Exception e) {
             throw new ParsingException("YAML parsing failed", e);
         }

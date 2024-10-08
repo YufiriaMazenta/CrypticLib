@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+/**
+ * @author Electronwill, YufiriaMazenta
+ */
 public class YamlFormat implements ConfigFormat<Config> {
 
     private static final ThreadLocal<YamlFormat> LOCAL_DEFAULT_FORMAT = ThreadLocal.withInitial(
@@ -32,9 +35,6 @@ public class YamlFormat implements ConfigFormat<Config> {
         return LOCAL_DEFAULT_FORMAT.get();
     }
 
-    public static YamlFormat configuredInstance(Yaml yaml) {
-        return new YamlFormat(yaml);
-    }
     private final Yaml yaml;
 
     public static Config newConfig() {
