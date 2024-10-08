@@ -46,8 +46,8 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
     @Override
     public void reloadConfig() {
         saveDefaultConfigFile();
-        FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
-        FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
+        FormatDetector.registerExtension("yaml", YamlFormat.defaultInstance());
+        FormatDetector.registerExtension("yml", YamlFormat.defaultInstance());
         config = FileConfig.builder(configFile).concurrent().build();
         config.load();
     }
@@ -55,8 +55,8 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
     @Override
     public void saveConfig() {
         synchronized (lock) {
-            FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
-            FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
+            FormatDetector.registerExtension("yaml", YamlFormat.defaultInstance());
+            FormatDetector.registerExtension("yml", YamlFormat.defaultInstance());
             config.save();
         }
     }
