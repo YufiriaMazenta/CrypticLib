@@ -102,8 +102,8 @@ public abstract class VelocityPlugin {
                 configContainer.reload();
             }
         );
-        runLifeCycleTasks(LifeCycle.LOAD);
         load();
+        runLifeCycleTasks(LifeCycle.LOAD);
 
         //Enable 阶段
         pluginScanner.getAnnotatedClasses(EventListener.class).forEach(
@@ -135,12 +135,12 @@ public abstract class VelocityPlugin {
                 }
             }
         );
+        enable();
         runLifeCycleTasks(LifeCycle.ENABLE);
     }
 
     @Subscribe
     public final void onProxyShutdown(ProxyShutdownEvent event) {
-        disable();
         runLifeCycleTasks(LifeCycle.DISABLE);
         lifeCycleTaskMap.clear();
         configContainerMap.clear();
@@ -148,6 +148,7 @@ public abstract class VelocityPlugin {
         for (ScheduledTask scheduledTask : proxyServer.getScheduler().tasksByPlugin(this)) {
             scheduledTask.cancel();
         }
+        disable();
     }
 
     public void load() {}

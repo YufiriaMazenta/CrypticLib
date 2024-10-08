@@ -88,8 +88,8 @@ public abstract class BungeePlugin extends Plugin {
                 configContainer.reload();
             }
         );
-        runLifeCycleTasks(LifeCycle.LOAD);
         load();
+        runLifeCycleTasks(LifeCycle.LOAD);
     }
 
     @Override
@@ -125,18 +125,18 @@ public abstract class BungeePlugin extends Plugin {
                 }
             }
         );
-        runLifeCycleTasks(LifeCycle.ENABLE);
         enable();
+        runLifeCycleTasks(LifeCycle.ENABLE);
     }
 
     @Override
     public final void onDisable() {
-        disable();
         runLifeCycleTasks(LifeCycle.DISABLE);
         lifeCycleTaskMap.clear();
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         getProxy().getScheduler().cancel(this);
+        disable();
     }
     
     /**

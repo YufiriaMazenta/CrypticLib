@@ -88,8 +88,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 configContainer.reload();
             }
         );
-        runLifeCycleTasks(LifeCycle.LOAD);
         load();
+        runLifeCycleTasks(LifeCycle.LOAD);
     }
 
     @Override
@@ -125,18 +125,18 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 }
             }
         );
-        runLifeCycleTasks(LifeCycle.ENABLE);
         enable();
+        runLifeCycleTasks(LifeCycle.ENABLE);
     }
 
     @Override
     public final void onDisable() {
-        disable();
         runLifeCycleTasks(LifeCycle.DISABLE);
         lifeCycleTaskMap.clear();
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.platform().scheduler().cancelTasks(this);
+        disable();
     }
 
     /**
