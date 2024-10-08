@@ -18,6 +18,8 @@ public abstract class ConfigWrapper<C> {
     protected final File configFile;
     protected final String path;
     protected C config;
+    //用于同步锁
+    protected final Object lock = new Object();
 
     /**
      * 从指定插件中释放并创建一个配置文件

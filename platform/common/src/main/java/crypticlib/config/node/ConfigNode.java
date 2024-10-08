@@ -44,6 +44,7 @@ public abstract class ConfigNode<T, C> {
 
     public void setValue(@NotNull T value) {
         this.value = value;
+        configContainer.configWrapper().set(key, value);
     }
 
     @NotNull
@@ -70,13 +71,12 @@ public abstract class ConfigNode<T, C> {
     }
 
     public void saveConfig() {
-        configContainer.configWrapper().setComments(key, comments);
-        configContainer.configWrapper().set(key, value);
         configContainer.configWrapper().saveConfig();
     }
 
     public void setComments(@Nullable List<String> comments) {
         this.comments = comments;
+        configContainer.configWrapper().setComments(key, comments);
     }
 
     public void setComment(@Nullable String comment) {

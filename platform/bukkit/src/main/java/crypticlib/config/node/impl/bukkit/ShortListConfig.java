@@ -22,7 +22,6 @@ public class ShortListConfig extends BukkitConfigNode<List<Short>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getShortList(key));
         setComments(getCommentsFromConfig());
     }

@@ -14,7 +14,6 @@ public class CharacterListConfig extends BungeeConfigNode<List<Character>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getCharList(key));
     }
 

@@ -14,7 +14,6 @@ public class IntListConfig extends BungeeConfigNode<List<Integer>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getIntList(key));
     }
 

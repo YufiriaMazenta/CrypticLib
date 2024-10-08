@@ -14,7 +14,6 @@ public class LongListConfig extends VelocityConfigNode<List<Long>> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getOrElse(key, def));
     }
 

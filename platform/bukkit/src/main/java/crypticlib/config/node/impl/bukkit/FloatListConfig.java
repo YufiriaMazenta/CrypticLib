@@ -22,7 +22,6 @@ public class FloatListConfig extends BukkitConfigNode<List<Float>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getFloatList(key));
         setComments(getCommentsFromConfig());
     }

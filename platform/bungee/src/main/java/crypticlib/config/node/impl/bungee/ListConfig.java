@@ -16,7 +16,6 @@ public class ListConfig<T> extends BungeeConfigNode<List<T>> {
     @SuppressWarnings("unchecked")
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue((List<T>) Objects.requireNonNull(config.getList(key)));
     }
 

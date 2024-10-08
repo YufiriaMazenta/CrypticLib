@@ -12,7 +12,6 @@ public class IntConfig extends VelocityConfigNode<Integer> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getIntOrElse(key, def));
     }
 

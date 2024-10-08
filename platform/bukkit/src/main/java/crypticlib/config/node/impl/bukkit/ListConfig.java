@@ -24,7 +24,6 @@ public class ListConfig<T> extends BukkitConfigNode<List<T>> {
     @SuppressWarnings("unchecked")
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue((List<T>) Objects.requireNonNull(config.getList(key)));
         setComments(getCommentsFromConfig());
     }

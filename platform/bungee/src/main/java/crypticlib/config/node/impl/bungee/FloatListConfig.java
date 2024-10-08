@@ -14,7 +14,6 @@ public class FloatListConfig extends BungeeConfigNode<List<Float>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getFloatList(key));
     }
 

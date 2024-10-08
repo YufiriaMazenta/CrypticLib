@@ -16,7 +16,6 @@ public class ConfigSectionConfig extends BungeeConfigNode<Configuration> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getSection(key));
     }
 

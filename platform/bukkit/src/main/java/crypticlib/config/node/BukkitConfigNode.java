@@ -24,7 +24,7 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
     public void saveDef(@NotNull ConfigurationSection config) {
         //加载默认值
         if (!config.contains(key)) {
-            config.set(key, def);
+            setValue(def);
         }
 
         //加载默认注释
@@ -35,7 +35,7 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
             if (!config.getComments(key).isEmpty()) {
                 return;
             }
-            config.setComments(key, defComments);
+            setComments(defComments);
         }
     }
 

@@ -13,8 +13,9 @@ public abstract class BungeeConfigNode<T> extends ConfigNode<T, Configuration> {
     public void saveDef(@NotNull Configuration config) {
         //加载默认值
         if (!config.contains(key)) {
-            config.set(key, def);
+            setValue(def);
         }
+        load(config);
     }
 
 }

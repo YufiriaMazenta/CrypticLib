@@ -24,6 +24,7 @@ public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapp
                 VelocityConfigNode<?> config = (VelocityConfigNode<?>) obj;
                 if (config.configContainer() == null)
                     config.setConfigContainer(this);
+                config.saveDef(configWrapper.config());
                 config.load(configWrapper.config());
             }
         }

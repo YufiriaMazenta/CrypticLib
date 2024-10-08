@@ -12,7 +12,6 @@ public class IntConfig extends BungeeConfigNode<Integer> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getInt(key));
     }
 

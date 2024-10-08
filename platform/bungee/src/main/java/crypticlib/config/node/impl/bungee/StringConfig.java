@@ -12,7 +12,6 @@ public class StringConfig extends BungeeConfigNode<String> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getString(key, def));
     }
 

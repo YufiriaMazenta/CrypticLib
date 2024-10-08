@@ -14,7 +14,6 @@ public class BooleanListConfig extends VelocityConfigNode<List<Boolean>> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getOrElse(key, def));
     }
 

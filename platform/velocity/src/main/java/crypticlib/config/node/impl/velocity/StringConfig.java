@@ -12,7 +12,6 @@ public class StringConfig extends VelocityConfigNode<String> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getOrElse(key, def));
     }
 

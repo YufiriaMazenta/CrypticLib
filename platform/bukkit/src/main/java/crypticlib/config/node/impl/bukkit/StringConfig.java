@@ -22,7 +22,6 @@ public class StringConfig extends BukkitConfigNode<String> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getString(key, def));
         setComments(getCommentsFromConfig());
     }
