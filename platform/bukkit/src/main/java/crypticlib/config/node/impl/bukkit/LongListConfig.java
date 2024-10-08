@@ -22,7 +22,6 @@ public class LongListConfig extends BukkitConfigNode<List<Long>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getLongList(key));
         setComments(getCommentsFromConfig());
     }

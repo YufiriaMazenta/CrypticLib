@@ -14,7 +14,6 @@ public class BooleanListConfig extends BungeeConfigNode<List<Boolean>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getBooleanList(key));
     }
 

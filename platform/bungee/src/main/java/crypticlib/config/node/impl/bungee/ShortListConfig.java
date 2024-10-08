@@ -14,7 +14,6 @@ public class ShortListConfig extends BungeeConfigNode<List<Short>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getShortList(key));
     }
 

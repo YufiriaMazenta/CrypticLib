@@ -22,7 +22,6 @@ public class DoubleListConfig extends BukkitConfigNode<List<Double>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getDoubleList(key));
         setComments(getCommentsFromConfig());
     }

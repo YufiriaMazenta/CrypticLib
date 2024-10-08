@@ -22,7 +22,6 @@ public class CharacterListConfig extends BukkitConfigNode<List<Character>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getCharacterList(key));
         setComments(getCommentsFromConfig());
     }

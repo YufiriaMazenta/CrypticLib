@@ -22,7 +22,6 @@ public class IntConfig extends BukkitConfigNode<Integer> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getInt(key));
         setComments(getCommentsFromConfig());
     }

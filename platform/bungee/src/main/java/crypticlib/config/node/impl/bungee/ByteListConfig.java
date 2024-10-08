@@ -14,7 +14,6 @@ public class ByteListConfig extends BungeeConfigNode<List<Byte>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getByteList(key));
     }
 

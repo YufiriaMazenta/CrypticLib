@@ -24,6 +24,7 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> 
                 BukkitConfigNode<?> config = (BukkitConfigNode<?>) obj;
                 if (config.configContainer() == null)
                     config.setConfigContainer(this);
+                config.saveDef(configWrapper.config());
                 config.load(configWrapper.config());
             }
         }

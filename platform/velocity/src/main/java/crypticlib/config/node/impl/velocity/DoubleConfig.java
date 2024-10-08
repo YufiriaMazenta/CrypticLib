@@ -12,7 +12,6 @@ public class DoubleConfig extends VelocityConfigNode<Double> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getOrElse(key, def));
     }
 

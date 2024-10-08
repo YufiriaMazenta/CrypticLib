@@ -4,10 +4,7 @@ import crypticlib.config.node.BukkitConfigNode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> {
 
@@ -41,17 +38,17 @@ public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> 
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        ConfigurationSection configSection;
-        if (config.contains(key)) {
-            configSection = config.getConfigurationSection(key);
-        } else {
-            if (default_ != null)
-                configSection = config.createSection(key, default_);
-            else
-                configSection = config.createSection(key);
-        }
-        setValue(configSection);
+        setValue(Objects.requireNonNull(config.getConfigurationSection(key)));
         setComments(getCommentsFromConfig());
     }
 
+    @Override
+    public void saveDef(@NotNull ConfigurationSection config) {
+        if (!config.contains(key)) {
+            if (default_ != null)
+                config.createSection(key, default_);
+            else
+                config.createSection(key);
+        }
+    }
 }

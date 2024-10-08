@@ -22,7 +22,6 @@ public class ByteListConfig extends BukkitConfigNode<List<Byte>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getByteList(key));
         setComments(getCommentsFromConfig());
     }

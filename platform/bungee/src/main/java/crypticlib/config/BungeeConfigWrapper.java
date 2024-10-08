@@ -30,7 +30,7 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
-        synchronized (this) {
+        synchronized (lock) {
             config.set(key, object);
         }
     }
@@ -65,7 +65,7 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
 
     @Override
     public void saveConfig() {
-        synchronized (this) {
+        synchronized (lock) {
             try {
                 if (FileHelper.isYamlFile(path)) {
                     ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, configFile);

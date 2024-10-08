@@ -12,7 +12,6 @@ public class LongConfig extends VelocityConfigNode<Long> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getLongOrElse(key, def));
     }
 

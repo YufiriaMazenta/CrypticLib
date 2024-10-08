@@ -14,7 +14,6 @@ public class LongListConfig extends BungeeConfigNode<List<Long>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getLongList(key));
     }
 

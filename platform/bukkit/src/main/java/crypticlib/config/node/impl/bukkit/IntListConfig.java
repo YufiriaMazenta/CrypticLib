@@ -22,7 +22,6 @@ public class IntListConfig extends BukkitConfigNode<List<Integer>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getIntegerList(key));
         setComments(getCommentsFromConfig());
     }

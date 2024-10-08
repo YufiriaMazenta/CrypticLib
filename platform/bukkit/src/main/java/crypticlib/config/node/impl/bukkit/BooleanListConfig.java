@@ -22,7 +22,6 @@ public class BooleanListConfig extends BukkitConfigNode<List<Boolean>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        saveDef(config);
         setValue(config.getBooleanList(key));
         setComments(getCommentsFromConfig());
     }

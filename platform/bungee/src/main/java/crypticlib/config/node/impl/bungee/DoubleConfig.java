@@ -12,7 +12,6 @@ public class DoubleConfig extends BungeeConfigNode<Double> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getDouble(key));
     }
 

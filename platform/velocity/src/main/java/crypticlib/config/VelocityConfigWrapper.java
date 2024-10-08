@@ -27,7 +27,7 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
-        synchronized (this) {
+        synchronized (lock) {
             config.set(key, object);
         }
     }
@@ -54,7 +54,7 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
 
     @Override
     public void saveConfig() {
-        synchronized (this) {
+        synchronized (lock) {
             FormatDetector.registerExtension("yaml", YamlFormat.INSTANCE);
             FormatDetector.registerExtension("yml", YamlFormat.INSTANCE);
             config.save();

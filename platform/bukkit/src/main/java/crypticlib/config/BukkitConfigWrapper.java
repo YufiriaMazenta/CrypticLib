@@ -28,7 +28,7 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
-        synchronized (this) {
+        synchronized (lock) {
             config.set(key, object);
         }
     }
@@ -61,7 +61,7 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
 
     @Override
     public void saveConfig() {
-        synchronized (this) {
+        synchronized (lock) {
             try {
                 config.save(configFile);
             } catch (IOException ex) {

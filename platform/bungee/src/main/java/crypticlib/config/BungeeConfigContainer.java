@@ -24,6 +24,7 @@ public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper> 
                 BungeeConfigNode<?> config = (BungeeConfigNode<?>) obj;
                 if (config.configContainer() == null)
                     config.setConfigContainer(this);
+                config.saveDef(configWrapper.config());
                 config.load(configWrapper.config());
             }
         }

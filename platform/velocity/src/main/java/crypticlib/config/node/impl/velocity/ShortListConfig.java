@@ -14,7 +14,6 @@ public class ShortListConfig extends VelocityConfigNode<List<Short>> {
 
     @Override
     public void load(@NotNull Config config) {
-        saveDef(config);
         setValue(config.getOrElse(key, def));
     }
 

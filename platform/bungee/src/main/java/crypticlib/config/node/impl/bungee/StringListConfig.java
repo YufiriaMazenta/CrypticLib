@@ -14,7 +14,6 @@ public class StringListConfig extends BungeeConfigNode<List<String>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getStringList(key));
     }
 

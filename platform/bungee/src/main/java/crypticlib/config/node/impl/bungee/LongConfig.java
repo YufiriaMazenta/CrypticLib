@@ -12,7 +12,6 @@ public class LongConfig extends BungeeConfigNode<Long> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getLong(key));
     }
 

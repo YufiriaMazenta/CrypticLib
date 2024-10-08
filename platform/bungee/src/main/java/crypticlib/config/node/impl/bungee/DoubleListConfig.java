@@ -14,7 +14,6 @@ public class DoubleListConfig extends BungeeConfigNode<List<Double>> {
 
     @Override
     public void load(@NotNull Configuration config) {
-        saveDef(config);
         setValue(config.getDoubleList(key));
     }
 
