@@ -60,7 +60,7 @@ public class YamlFormat implements ConfigFormat<CommentedConfig> {
         this.dumperOptions = dumperOptions;
         this.constructor = new Constructor(loaderOptions);
         this.representer = new Representer(dumperOptions);
-        this.yaml = new Yaml(constructor, representer, dumperOptions);
+        this.yaml = new Yaml(constructor, representer, dumperOptions, loaderOptions);
     }
 
     @Override

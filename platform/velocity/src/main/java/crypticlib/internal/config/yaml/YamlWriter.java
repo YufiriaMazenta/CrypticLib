@@ -6,6 +6,7 @@ import com.electronwill.nightconfig.core.NullObject;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.io.ConfigWriter;
 import com.electronwill.nightconfig.core.io.WritingException;
+import com.electronwill.nightconfig.core.io.WritingMode;
 import com.electronwill.nightconfig.core.utils.TransformingList;
 import com.electronwill.nightconfig.core.utils.TransformingMap;
 import crypticlib.chat.VelocityMsgSender;
@@ -18,6 +19,7 @@ import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,31 +39,17 @@ public final class YamlWriter implements ConfigWriter {
     }
 
     @Override
+    public void write(UnmodifiableConfig config, Path file, WritingMode writingMode) {
+        ConfigWriter.super.write(config, file, writingMode);
+    }
+
+    @Override
     public void write(UnmodifiableConfig config, Writer writer) {
         try {
             MappingNode nodeTree = toNodeTree(config);
             this.yaml.serialize(nodeTree, writer);
         } catch (Exception e) {
             throw new WritingException("YAML writing failed", e);
-        }
-    }
-
-    private static Map<String, Object> unwrap(UnmodifiableConfig config) {
-        return new TransformingMap<>(config.valueMap(), YamlWriter::unwrap, (v) -> v, (v) -> v);
-    }
-
-    private static List<Object> unwrapList(List<Object> list) {
-        return new TransformingList<>(list, YamlWriter::unwrap, (v) -> v, (v) -> v);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Object unwrap(Object value) {
-        if (value instanceof UnmodifiableConfig) {
-            return unwrap((UnmodifiableConfig)value);
-        } else if (value instanceof List) {
-            return unwrapList((List<Object>) value);
-        } else {
-            return value == NullObject.NULL_OBJECT ? null : value;
         }
     }
 
@@ -106,7 +94,7 @@ public final class YamlWriter implements ConfigWriter {
                 }
             }
         );
-        return new SequenceNode(Tag.SET, nodes, DumperOptions.FlowStyle.BLOCK);
+        return new SequenceNode(Tag.SEQ, nodes, DumperOptions.FlowStyle.BLOCK);
     }
 
 }

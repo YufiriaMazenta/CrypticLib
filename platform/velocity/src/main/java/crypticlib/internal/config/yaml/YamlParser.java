@@ -3,21 +3,19 @@ package crypticlib.internal.config.yaml;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigFormat;
-import com.electronwill.nightconfig.core.NullObject;
 import com.electronwill.nightconfig.core.io.ConfigParser;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.ParsingMode;
-import com.electronwill.nightconfig.core.utils.TransformingList;
-import com.electronwill.nightconfig.core.utils.TransformingMap;
+import crypticlib.chat.VelocityMsgSender;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.comments.CommentLine;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.comments.CommentType;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.reader.UnicodeReader;
-import org.yaml.snakeyaml.representer.Representer;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -46,7 +44,7 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
 
     @Override
     public CommentedConfig parse(Reader reader) {
-        CommentedConfig config = this.configFormat.createConfig();
+        CommentedConfig config = this.configFormat.createConfig(LinkedHashMap::new);
         this.parse(reader, config, ParsingMode.MERGE);
         return config;
     }
@@ -54,49 +52,45 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
     @Override
     public void parse(Reader reader, Config destination, ParsingMode parsingMode) {
         try {
+            String text = readText(reader);
+            configFormat.loaderOptions().setProcessComments(true);
+
             MappingNode mappingNode;
-            Node rawNode = yaml.compose(reader);
-            try {
-                mappingNode = (MappingNode) rawNode;
-            } catch (ClassCastException e) {
-                throw new YAMLException("Top level is not a Map.");
+            try (Reader unicodeReader = new UnicodeReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)))) {
+                Node rawNode = yaml.compose(unicodeReader);
+                try {
+                    mappingNode = (MappingNode) rawNode;
+                } catch (ClassCastException e) {
+                    throw new YAMLException("Failed to parse yaml content", e);
+                }
+            } catch (YAMLException | IOException | ClassCastException e) {
+                throw new RuntimeException(e);
             }
             parsingMode.prepareParsing(destination);
-            fromNodeTree(mappingNode, destination);
+            if (mappingNode != null) {
+                adjustNodeComments(mappingNode);
+                fromNodeTree(mappingNode, destination);
+            }
         } catch (Exception e) {
             throw new ParsingException("YAML parsing failed", e);
         }
     }
 
-    private Map<String, Object> wrap(Map<String, Object> map) {
-        if (map == null) {
-            map = new HashMap<>();
+    private String readText(Reader reader) {
+        StringBuilder contentBuilder = new StringBuilder();
+        try {
+            String line;
+            while ((line = ((BufferedReader) reader).readLine()) != null) {
+                contentBuilder.append(line).append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return new TransformingMap<>(map, this::wrap, (v) -> v, (v) -> v);
+
+        return contentBuilder.toString();
     }
 
-    private List<Object> wrapList(List<Object> list) {
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        return new TransformingList<>(list, this::wrap, (v) -> v, (v) -> v);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Object wrap(Object value) {
-        if (value instanceof Map) {
-            Map<String, Object> map = this.wrap((Map<String, Object>) value);
-            return Config.wrap(map, this.configFormat);
-        } else if (value instanceof List) {
-            return this.wrapList((List<Object>) value);
-        } else {
-            return value == null ? NullObject.NULL_OBJECT : value;
-        }
-    }
-
-    private void fromNodeTree(MappingNode input, @NotNull Config config) {
-        if (input == null)
-            return;
+    private void fromNodeTree(@NotNull MappingNode input, @NotNull Config config) {
         constructor.flattenMapping(input);
         for (NodeTuple nodeTuple : input.getValue()) {
             Node keyNode = nodeTuple.getKeyNode();
@@ -142,6 +136,25 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
                 objects.add(objects2);
             } else {
                 objects.add(constructor.construct(node));
+            }
+        }
+    }
+
+    private void adjustNodeComments(final MappingNode node) {
+        if (node.getBlockComments() == null && !node.getValue().isEmpty()) {
+            Node firstNode = node.getValue().get(0).getKeyNode();
+            List<CommentLine> lines = firstNode.getBlockComments();
+            if (lines != null) {
+                int index = -1;
+                for (int i = 0; i < lines.size(); i++) {
+                    if (lines.get(i).getCommentType() == CommentType.BLANK_LINE) {
+                        index = i;
+                    }
+                }
+                if (index != -1) {
+                    node.setBlockComments(lines.subList(0, index + 1));
+                    firstNode.setBlockComments(lines.subList(index + 1, lines.size()));
+                }
             }
         }
     }
