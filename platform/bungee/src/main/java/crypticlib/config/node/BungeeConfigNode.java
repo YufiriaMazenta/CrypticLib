@@ -15,7 +15,6 @@ public abstract class BungeeConfigNode<T> extends ConfigNode<T, Configuration> {
         if (!config.contains(key)) {
             setValue(def);
         }
-        load(config);
     }
 
 }

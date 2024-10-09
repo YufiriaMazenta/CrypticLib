@@ -1,5 +1,6 @@
 package crypticlib.internal.config.yaml;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.io.ConfigParser;
@@ -18,17 +19,18 @@ import java.util.function.Supplier;
 /**
  * @author Electronwill, YufiriaMazenta
  */
-public class YamlFormat implements ConfigFormat<Config> {
+public class YamlFormat implements ConfigFormat<CommentedConfig> {
 
     private static final ThreadLocal<YamlFormat> LOCAL_DEFAULT_FORMAT = ThreadLocal.withInitial(
         () -> {
-            DumperOptions yamlDumperOptions = new DumperOptions();
-            yamlDumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            LoaderOptions yamlLoaderOptions = new LoaderOptions();
-            yamlLoaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
-            yamlLoaderOptions.setCodePointLimit(Integer.MAX_VALUE);
-            Yaml yaml = new Yaml(new Constructor(yamlLoaderOptions), new Representer(yamlDumperOptions), yamlDumperOptions);
-            return new YamlFormat(yaml);
+            DumperOptions dumperOptions = new DumperOptions();
+            dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            dumperOptions.setProcessComments(true);
+            LoaderOptions loaderOptions = new LoaderOptions();
+            loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
+            loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
+            loaderOptions.setProcessComments(true);
+            return new YamlFormat(loaderOptions, dumperOptions);
         });
 
     public static YamlFormat defaultInstance() {
@@ -36,45 +38,69 @@ public class YamlFormat implements ConfigFormat<Config> {
     }
 
     private final Yaml yaml;
+    private final Constructor constructor;
+    private final Representer representer;
+    private final LoaderOptions loaderOptions;
+    private final DumperOptions dumperOptions;
 
-    public static Config newConfig() {
+    public static CommentedConfig newConfig() {
         return defaultInstance().createConfig();
     }
 
-    public static Config newConfig(Supplier<Map<String, Object>> mapCreator) {
+    public static CommentedConfig newConfig(Supplier<Map<String, Object>> mapCreator) {
         return defaultInstance().createConfig(mapCreator);
     }
 
-    public static Config newConcurrentConfig() {
+    public static CommentedConfig newConcurrentConfig() {
         return defaultInstance().createConcurrentConfig();
     }
 
-    YamlFormat(Yaml yaml) {
-        this.yaml = yaml;
+    YamlFormat(LoaderOptions loaderOptions, DumperOptions dumperOptions) {
+        this.loaderOptions = loaderOptions;
+        this.dumperOptions = dumperOptions;
+        this.constructor = new Constructor(loaderOptions);
+        this.representer = new Representer(dumperOptions);
+        this.yaml = new Yaml(constructor, representer, dumperOptions);
     }
 
     @Override
     public ConfigWriter createWriter() {
-        return new YamlWriter(this.yaml);
+        return new YamlWriter(this);
     }
 
     @Override
-    public ConfigParser<Config> createParser() {
+    public ConfigParser<CommentedConfig> createParser() {
         return new YamlParser(this);
     }
 
     @Override
-    public Config createConfig(Supplier<Map<String, Object>> mapCreator) {
-        return Config.of(mapCreator, this);
+    public CommentedConfig createConfig(Supplier<Map<String, Object>> mapCreator) {
+        return CommentedConfig.of(mapCreator, this);
     }
 
     @Override
     public boolean supportsComments() {
-        return false;
+        return true;
     }
 
     public Yaml yaml() {
         return yaml;
+    }
+
+    public Constructor constructor() {
+        return constructor;
+    }
+
+    public Representer representer() {
+        return representer;
+    }
+
+    public LoaderOptions loaderOptions() {
+        return loaderOptions;
+    }
+
+    public DumperOptions dumperOptions() {
+        return dumperOptions;
     }
 
     @Override
