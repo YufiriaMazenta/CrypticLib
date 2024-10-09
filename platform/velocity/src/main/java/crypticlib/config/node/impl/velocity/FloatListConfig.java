@@ -1,5 +1,6 @@
 package crypticlib.config.node.impl.velocity;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import crypticlib.config.node.VelocityConfigNode;
 import org.jetbrains.annotations.NotNull;
@@ -12,9 +13,14 @@ public class FloatListConfig extends VelocityConfigNode<List<Float>> {
         super(key, def);
     }
 
+    public FloatListConfig(@NotNull String key, @NotNull List<Float> def, @NotNull String comment) {
+        super(key, def, comment);
+    }
+
     @Override
-    public void load(@NotNull Config config) {
+    public void load(@NotNull CommentedConfig config) {
         setValue(config.getOrElse(key, def));
+        setComment(config.getComment(key));
     }
 
 }

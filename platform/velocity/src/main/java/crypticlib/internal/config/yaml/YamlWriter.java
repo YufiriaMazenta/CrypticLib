@@ -8,14 +8,14 @@ import com.electronwill.nightconfig.core.io.ConfigWriter;
 import com.electronwill.nightconfig.core.io.WritingException;
 import com.electronwill.nightconfig.core.utils.TransformingList;
 import com.electronwill.nightconfig.core.utils.TransformingMap;
+import crypticlib.chat.VelocityMsgSender;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.comments.CommentLine;
 import org.yaml.snakeyaml.comments.CommentType;
-import org.yaml.snakeyaml.nodes.MappingNode;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeTuple;
-import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.*;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.Writer;
 import java.util.ArrayList;
@@ -29,9 +29,11 @@ import java.util.Map;
 public final class YamlWriter implements ConfigWriter {
 
     private final Yaml yaml;
+    private final Representer representer;
 
-    public YamlWriter(Yaml yaml) {
-        this.yaml = yaml;
+    public YamlWriter(YamlFormat yamlFormat) {
+        this.yaml = yamlFormat.yaml();
+        this.representer = yamlFormat.representer();
     }
 
     @Override
@@ -63,39 +65,48 @@ public final class YamlWriter implements ConfigWriter {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public MappingNode toNodeTree(UnmodifiableConfig config) {
-        Map<String, Object> unwrappedMap = unwrap(config);
         List<NodeTuple> nodeTuples = new ArrayList<>();
-        if (config instanceof CommentedConfig) {
-            CommentedConfig commentedConfig = (CommentedConfig) config;
-            Map<String, String> commentMap = commentedConfig.commentMap();
-            unwrappedMap.forEach((key, value) -> {
-                Node keyNode = yaml.represent(key);
+        config.valueMap().forEach(
+            (key, value) -> {
+                Node keyNode = representer.represent(key);
                 Node valueNode;
                 if (value instanceof UnmodifiableConfig) {
-                    valueNode = toNodeTree((UnmodifiableConfig)value);
+                    valueNode = toNodeTree((UnmodifiableConfig) value);
+                } else if (value instanceof List) {
+                    valueNode = toSequenceNode((List<Object>) value);
                 } else {
-                    valueNode = yaml.represent(value);
+                    valueNode = representer.represent(value);
                 }
-                String comment = commentMap.get(key);
-                if (comment != null && !comment.trim().isEmpty()) {
-                    keyNode.setBlockComments(Collections.singletonList(new CommentLine(null, null, comment, CommentType.BLOCK)));
+                if (config instanceof CommentedConfig) {
+                    CommentedConfig commentedConfig = (CommentedConfig) config;
+                    String comment = commentedConfig.getComment(key);
+                    if (comment != null && !comment.trim().isEmpty()) {
+                        keyNode.setBlockComments(Collections.singletonList(new CommentLine(null, null, comment, CommentType.BLOCK)));
+                    }
                 }
                 nodeTuples.add(new NodeTuple(keyNode, valueNode));
-            });
-        } else {
-            unwrappedMap.forEach((key, value) -> {
-                Node keyNode = yaml.represent(key);
-                Node valueNode;
-                if (value instanceof UnmodifiableConfig) {
-                    valueNode = toNodeTree((UnmodifiableConfig)value);
-                } else {
-                    valueNode = yaml.represent(value);
-                }
-                nodeTuples.add(new NodeTuple(keyNode, valueNode));
-            });
-        }
+            }
+        );
         return new MappingNode(Tag.MAP, nodeTuples, DumperOptions.FlowStyle.BLOCK);
+    }
+
+    @SuppressWarnings("unchecked")
+    public SequenceNode toSequenceNode(List<Object> objects) {
+        List<Node> nodes = new ArrayList<>();
+        objects.forEach(
+            it -> {
+                if (it instanceof UnmodifiableConfig) {
+                    nodes.add(toNodeTree((UnmodifiableConfig) it));
+                } else if (it instanceof List) {
+                    nodes.add(toSequenceNode((List<Object>) it));
+                } else {
+                    nodes.add(representer.represent(it));
+                }
+            }
+        );
+        return new SequenceNode(Tag.SET, nodes, DumperOptions.FlowStyle.BLOCK);
     }
 
 }

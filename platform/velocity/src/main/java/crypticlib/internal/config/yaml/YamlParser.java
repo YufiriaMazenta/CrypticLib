@@ -9,14 +9,14 @@ import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.core.utils.TransformingList;
 import com.electronwill.nightconfig.core.utils.TransformingMap;
+import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.comments.CommentLine;
+import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
-import org.yaml.snakeyaml.nodes.AnchorNode;
-import org.yaml.snakeyaml.nodes.MappingNode;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeTuple;
+import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.reader.UnicodeReader;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,33 +27,33 @@ import java.util.*;
 /**
  * @author Electronwill, YufiriaMazenta
  */
-public final class YamlParser implements ConfigParser<Config> {
+public final class YamlParser implements ConfigParser<CommentedConfig> {
 
     private final Yaml yaml;
-    private final ConfigFormat<Config> configFormat;
+    private final YamlFormat configFormat;
+    private final YamlConstructor constructor;
 
-    public YamlParser(YamlFormat configFormat) {
-        this.yaml = configFormat.yaml();
-        this.configFormat = configFormat;
+    public YamlParser(YamlFormat yamlFormat) {
+        this.yaml = yamlFormat.yaml();
+        this.configFormat = yamlFormat;
+        this.constructor = new YamlConstructor(yamlFormat.loaderOptions());
     }
 
     @Override
-    public ConfigFormat<Config> getFormat() {
+    public ConfigFormat<CommentedConfig> getFormat() {
         return this.configFormat;
     }
 
     @Override
-    public Config parse(Reader reader) {
-        Config config = this.configFormat.createConfig();
+    public CommentedConfig parse(Reader reader) {
+        CommentedConfig config = this.configFormat.createConfig();
         this.parse(reader, config, ParsingMode.MERGE);
         return config;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void parse(Reader reader, Config destination, ParsingMode parsingMode) {
         try {
-
             MappingNode mappingNode;
             Node rawNode = yaml.compose(reader);
             try {
@@ -61,9 +61,8 @@ public final class YamlParser implements ConfigParser<Config> {
             } catch (ClassCastException e) {
                 throw new YAMLException("Top level is not a Map.");
             }
-            Map<String, Object> valueMap = new LinkedHashMap<>();
-            Map<String, String> commentMap = new LinkedHashMap<>();
-            //TODO 解析整个mappingnode
+            parsingMode.prepareParsing(destination);
+            fromNodeTree(mappingNode, destination);
         } catch (Exception e) {
             throw new ParsingException("YAML parsing failed", e);
         }
@@ -94,4 +93,57 @@ public final class YamlParser implements ConfigParser<Config> {
             return value == null ? NullObject.NULL_OBJECT : value;
         }
     }
+
+    private void fromNodeTree(MappingNode input, @NotNull Config config) {
+        if (input == null)
+            return;
+        constructor.flattenMapping(input);
+        for (NodeTuple nodeTuple : input.getValue()) {
+            Node keyNode = nodeTuple.getKeyNode();
+            String key = String.valueOf(constructor.construct(keyNode));
+            Node valueNode = nodeTuple.getValueNode();
+
+            while (valueNode instanceof AnchorNode) {
+                valueNode = ((AnchorNode) valueNode).getRealNode();
+            }
+
+            if (valueNode instanceof MappingNode) {
+                Config subConfig = config.createSubConfig();
+                fromNodeTree((MappingNode) valueNode, subConfig);
+                config.set(key, subConfig);
+            } else if (valueNode instanceof SequenceNode) {
+                List<Object> objects = new ArrayList<>();
+                fromNodeList((SequenceNode) valueNode, objects);
+                config.set(key, objects);
+            } else {
+                config.set(key, constructor.construct(valueNode));
+            }
+
+            if (config instanceof CommentedConfig) {
+                List<CommentLine> blockComments = keyNode.getBlockComments();
+                if (blockComments == null || blockComments.isEmpty()) {
+                    continue;
+                }
+                String comment = blockComments.get(0).getValue();
+                ((CommentedConfig) config).setComment(key, comment);
+            }
+        }
+    }
+
+    private void fromNodeList(@NotNull SequenceNode input, @NotNull List<Object> objects) {
+        for (Node node : input.getValue()) {
+            if (node instanceof MappingNode) {
+                CommentedConfig subConfig = CommentedConfig.inMemory();
+                fromNodeTree((MappingNode) node, subConfig);
+                objects.add(subConfig);
+            } else if (node instanceof SequenceNode) {
+                List<Object> objects2 = new ArrayList<>();
+                fromNodeList((SequenceNode) node, objects2);
+                objects.add(objects2);
+            } else {
+                objects.add(constructor.construct(node));
+            }
+        }
+    }
+
 }

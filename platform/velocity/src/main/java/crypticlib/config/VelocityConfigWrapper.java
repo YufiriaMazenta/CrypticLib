@@ -1,6 +1,6 @@
 package crypticlib.config;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import crypticlib.VelocityPlugin;
 import crypticlib.internal.config.yaml.YamlFormat;
@@ -8,9 +8,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
+public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
 
     public VelocityConfigWrapper(@NotNull VelocityPlugin plugin, @NotNull String path) {
         super(plugin.dataFolder(), path);
@@ -34,13 +36,18 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
 
     @Override
     public void setComments(@NotNull String key, @Nullable List<String> comments) {
-        //Velocity的Config不支持注解
+        if (comments == null || comments.isEmpty())
+            return;
+        config.setComment(key, comments.get(0));
     }
 
     @Override
     public @Nullable List<String> getComments(@NotNull String key) {
-        //Velocity的Config不支持注解
-        return null;
+        String comment = config.getComment(key);
+        if (comment == null)
+            return null;
+        else
+            return new ArrayList<>(Collections.singletonList(comment));
     }
 
     @Override
@@ -48,7 +55,7 @@ public class VelocityConfigWrapper extends ConfigWrapper<FileConfig> {
         saveDefaultConfigFile();
         FormatDetector.registerExtension("yaml", YamlFormat.defaultInstance());
         FormatDetector.registerExtension("yml", YamlFormat.defaultInstance());
-        config = FileConfig.builder(configFile).concurrent().build();
+        config = CommentedFileConfig.ofConcurrent(configFile);
         config.load();
     }
 
