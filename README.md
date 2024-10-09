@@ -10,6 +10,8 @@ Bukkit
 
 Bungee
 
+Velocity
+
 ### 使用方式
 
 将CrypticLib作为依赖打包到插件中，并将crypticlib包relocate
