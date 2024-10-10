@@ -62,7 +62,6 @@ public final class YamlWriter implements ConfigWriter {
                 if (config instanceof CommentedConfig) {
                     CommentedConfig commentedConfig = (CommentedConfig) config;
                     String commentJsonArray = commentedConfig.getComment(key);
-                    VelocityMsgSender.INSTANCE.debug(key + "'s comment: " + commentJsonArray);
                     if (commentJsonArray != null && !commentJsonArray.trim().isEmpty()) {
                         keyNode.setBlockComments(CommentLoader.loadCommentLineList(commentJsonArray));
                     }
