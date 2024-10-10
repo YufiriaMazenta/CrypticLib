@@ -17,10 +17,14 @@ public class ListConfig<T> extends VelocityConfigNode<List<T>> {
         super(key, def, comment);
     }
 
+    public ListConfig(@NotNull String key, @NotNull List<T> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull CommentedConfig config) {
         setValue(config.getOrElse(key, def));
-        setComment(config.getComment(key));
+        setComments(configContainer.configWrapper().getComments(key));
     }
 
 }

@@ -17,10 +17,14 @@ public class CharacterListConfig extends VelocityConfigNode<List<Character>> {
         super(key, def, comment);
     }
 
+    public CharacterListConfig(@NotNull String key, @NotNull List<Character> def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull CommentedConfig config) {
         setValue(config.getOrElse(key, def));
-        setComment(config.getComment(key));
+        setComments(configContainer.configWrapper().getComments(key));
     }
 
 }

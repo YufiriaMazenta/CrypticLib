@@ -5,6 +5,8 @@ import com.electronwill.nightconfig.core.Config;
 import crypticlib.config.node.VelocityConfigNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class StringConfig extends VelocityConfigNode<String> {
 
     public StringConfig(@NotNull String key, @NotNull String def) {
@@ -15,10 +17,14 @@ public class StringConfig extends VelocityConfigNode<String> {
         super(key, def, comment);
     }
 
+    public StringConfig(@NotNull String key, @NotNull String def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
+    }
+
     @Override
     public void load(@NotNull CommentedConfig config) {
         setValue(config.getOrElse(key, def));
-        setComment(config.getComment(key));
+        setComments(configContainer.configWrapper().getComments(key));
     }
 
 }

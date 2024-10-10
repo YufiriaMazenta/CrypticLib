@@ -1,29 +1,20 @@
 package crypticlib.internal.config.yaml;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.Config;
-import com.electronwill.nightconfig.core.NullObject;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.io.ConfigWriter;
 import com.electronwill.nightconfig.core.io.WritingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import com.electronwill.nightconfig.core.utils.TransformingList;
-import com.electronwill.nightconfig.core.utils.TransformingMap;
+import com.google.gson.Gson;
 import crypticlib.chat.VelocityMsgSender;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.comments.CommentLine;
-import org.yaml.snakeyaml.comments.CommentType;
-import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Electronwill, YufiriaMazenta
@@ -32,6 +23,7 @@ public final class YamlWriter implements ConfigWriter {
 
     private final Yaml yaml;
     private final Representer representer;
+    private final Gson gson = new Gson();
 
     public YamlWriter(YamlFormat yamlFormat) {
         this.yaml = yamlFormat.yaml();
@@ -69,9 +61,10 @@ public final class YamlWriter implements ConfigWriter {
                 }
                 if (config instanceof CommentedConfig) {
                     CommentedConfig commentedConfig = (CommentedConfig) config;
-                    String comment = commentedConfig.getComment(key);
-                    if (comment != null && !comment.trim().isEmpty()) {
-                        keyNode.setBlockComments(Collections.singletonList(new CommentLine(null, null, comment, CommentType.BLOCK)));
+                    String commentJsonArray = commentedConfig.getComment(key);
+                    VelocityMsgSender.INSTANCE.debug(key + "'s comment: " + commentJsonArray);
+                    if (commentJsonArray != null && !commentJsonArray.trim().isEmpty()) {
+                        keyNode.setBlockComments(CommentLoader.loadCommentLineList(commentJsonArray));
                     }
                 }
                 nodeTuples.add(new NodeTuple(keyNode, valueNode));
