@@ -3,13 +3,12 @@ package crypticlib.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import crypticlib.VelocityPlugin;
+import crypticlib.internal.config.yaml.CommentLoader;
 import crypticlib.internal.config.yaml.YamlFormat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
@@ -38,16 +37,15 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
     public void setComments(@NotNull String key, @Nullable List<String> comments) {
         if (comments == null || comments.isEmpty())
             return;
-        config.setComment(key, comments.get(0));
+        config.setComment(key, CommentLoader.commentList2JsonArray(comments));
     }
 
     @Override
     public @Nullable List<String> getComments(@NotNull String key) {
-        String comment = config.getComment(key);
-        if (comment == null)
+        String commentJsonArray = config.getComment(key);
+        if (commentJsonArray == null)
             return null;
-        else
-            return new ArrayList<>(Collections.singletonList(comment));
+        return CommentLoader.loadCommentList(commentJsonArray);
     }
 
     @Override

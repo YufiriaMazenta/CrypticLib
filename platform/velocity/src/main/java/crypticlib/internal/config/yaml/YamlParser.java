@@ -6,7 +6,8 @@ import com.electronwill.nightconfig.core.ConfigFormat;
 import com.electronwill.nightconfig.core.io.ConfigParser;
 import com.electronwill.nightconfig.core.io.ParsingException;
 import com.electronwill.nightconfig.core.io.ParsingMode;
-import crypticlib.chat.VelocityMsgSender;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.comments.CommentLine;
@@ -118,8 +119,9 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
                 if (blockComments == null || blockComments.isEmpty()) {
                     continue;
                 }
-                String comment = blockComments.get(0).getValue();
-                ((CommentedConfig) config).setComment(key, comment);
+
+                String commentJsonArray = CommentLoader.commentLineList2JsonArray(blockComments);
+                ((CommentedConfig) config).setComment(key, commentJsonArray);
             }
         }
     }
