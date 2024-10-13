@@ -98,11 +98,17 @@ public class Menu implements InventoryHolder {
     }
 
     /**
+     * 在布局刷新前会调用此方法
+     */
+    public void beforeUpdateLayout() {}
+
+    /**
      * 刷新布局信息，会根据MenuDisplay解析布局，但不会更新页面图标，需手动调用updateInventoryIcons方法刷新
      */
     public void updateLayout() {
         slotMap.clear();
         layoutSlotMap.clear();
+        beforeUpdateLayout();
 
         MenuLayout layout = display.layout();
         for (int x = 0; x < layout.layout().size(); x++) {
@@ -179,10 +185,16 @@ public class Menu implements InventoryHolder {
     }
 
     /**
+     * 当页面开始绘制前会调用此方法
+     */
+    public void beforeDraw() {}
+
+    /**
      * 绘制页面
      * @param inventory 要进行绘制的Inventory
      */
     protected void draw(Inventory inventory) {
+        beforeDraw();
         slotMap.forEach((slot, icon) -> {
             if (icon == null) {
                 return;
