@@ -17,6 +17,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Ref;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ public abstract class BungeePlugin extends Plugin {
 
     public BungeePlugin() {
         pluginScanner.scanJar(this.getFile());
+        ReflectionHelper.setPluginInstance(this);
+
         lifeCycleTaskMap.clear();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
             taskClass -> {
@@ -39,12 +42,7 @@ public abstract class BungeePlugin extends Plugin {
                     if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    BungeeLifeCycleTask task;
-                    if (BungeePlugin.class.isAssignableFrom(taskClass)) {
-                        task = (BungeeLifeCycleTask) this;
-                    } else {
-                        task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                    }
+                    BungeeLifeCycleTask task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
                     AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
                     if (annotation == null) {
                         return;
@@ -100,12 +98,7 @@ public abstract class BungeePlugin extends Plugin {
                     if (!Listener.class.isAssignableFrom(listenerClass)) {
                         return;
                     }
-                    Listener listener;
-                    if (BungeePlugin.class.isAssignableFrom(listenerClass)) {
-                        listener = (Listener) this;
-                    } else {
-                        listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
-                    }
+                    Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     getProxy().getPluginManager().registerListener(this, listener);
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();

@@ -17,6 +17,7 @@ public class ReflectionHelper {
 
     private final static Map<String, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<>();
+    private static Object PLUGIN_INSTANCE = null;
 
     public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
         Field cacheField = getFieldCache(clazz, fieldName);
@@ -178,7 +179,9 @@ public class ReflectionHelper {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getSingletonClassInstance(Class<T> clazz, Object...objects) throws NoClassDefFoundError, ClassNotFoundException {
-        if (singletonObjectMap.containsKey(clazz)) {
+        if (PLUGIN_INSTANCE.getClass().isAssignableFrom(clazz)) {
+            return (T) PLUGIN_INSTANCE;
+        } else if (singletonObjectMap.containsKey(clazz)) {
             return (T) singletonObjectMap.get(clazz);
         } else {
             T object;
@@ -210,6 +213,14 @@ public class ReflectionHelper {
             singletonObjectMap.put(clazz, object);
             return object;
         }
+    }
+
+    @Deprecated
+    public static void setPluginInstance(Object pluginInstance) {
+        if (PLUGIN_INSTANCE != null) {
+            throw new UnsupportedOperationException("Plugin instance already set");
+        }
+        PLUGIN_INSTANCE = pluginInstance;
     }
 
 }
