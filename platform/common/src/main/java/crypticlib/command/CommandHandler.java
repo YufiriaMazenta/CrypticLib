@@ -157,9 +157,11 @@ public interface CommandHandler<CommandSender> {
      * <command>:
      * <usage>
      * <description>
-     *  - <子命令usage>
+     *  - <子命令>
+     *    <子命令usage>
      *    <子命令description>
-     *  - <子命令usage>
+     *  - <子命令>
+     *    <子命令usage>
      *    <子命令description>
      *
      * @return 转换完成的介绍
@@ -183,16 +185,15 @@ public interface CommandHandler<CommandSender> {
         }
         subcommands().forEach(
             (key, subcommand) -> {
+                StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- &r", "");
+                subNameJoiner.add(subcommand.commandInfo().name());
+                for (String alias : subcommand.commandInfo().aliases()) {
+                    subNameJoiner.add(alias);
+                }
+                description.add(subNameJoiner.toString());
                 String subUsage = subcommand.commandInfo().usage();
-                if (subUsage == null || subUsage.isEmpty()) {
-                    StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- &r", "");
-                    subNameJoiner.add(subcommand.commandInfo().name());
-                    for (String alias : subcommand.commandInfo().aliases()) {
-                        subNameJoiner.add(alias);
-                    }
-                    description.add(subNameJoiner.toString());
-                } else {
-                    description.add(" &7- &r" + subUsage);
+                if (subUsage != null && !subUsage.isEmpty()) {
+                    description.add(" - &r" + subUsage);
                 }
                 String subDesc = subcommand.commandInfo().description();
                 if (subDesc == null || subDesc.isEmpty()) {
