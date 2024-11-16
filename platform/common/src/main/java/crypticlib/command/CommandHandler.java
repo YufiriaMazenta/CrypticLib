@@ -167,7 +167,7 @@ public interface CommandHandler<CommandSender> {
     default List<String> toDescriptions() {
         List<String> description = new ArrayList<>();
 
-        StringJoiner nameJoiner = new StringJoiner(" | ", "&7/", ":");
+        StringJoiner nameJoiner = new StringJoiner(" | ", "&7", ":");
         nameJoiner.add(commandInfo().name());
         for (String alias : commandInfo().aliases()) {
             nameJoiner.add(alias);
