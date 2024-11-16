@@ -175,11 +175,11 @@ public interface CommandHandler<CommandSender> {
         description.add(nameJoiner.toString());
         String usage = commandInfo().usage();
         if (usage != null && !usage.isEmpty()) {
-            description.add("&7" + usage);
+            description.add(usage);
         }
         String desc = commandInfo().description();
         if (desc != null && !desc.isEmpty()) {
-            description.add("&7" + desc);
+            description.add(desc);
         }
         subcommands().forEach(
             (key, subcommand) -> {
@@ -198,7 +198,7 @@ public interface CommandHandler<CommandSender> {
                 if (subDesc == null || subDesc.isEmpty()) {
                     return;
                 }
-                description.add("   &7" + subDesc);
+                description.add("   " + subDesc);
             }
         );
         return description;
