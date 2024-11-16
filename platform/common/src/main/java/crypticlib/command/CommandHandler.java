@@ -167,7 +167,12 @@ public interface CommandHandler<CommandSender> {
     default List<String> toDescriptions() {
         List<String> description = new ArrayList<>();
 
-        description.add("&7/" + commandInfo().name() + ":");
+        StringJoiner nameJoiner = new StringJoiner(" | ", "&7/", ":");
+        nameJoiner.add(commandInfo().name());
+        for (String alias : commandInfo().aliases()) {
+            nameJoiner.add(alias);
+        }
+        description.add(nameJoiner.toString());
         String usage = commandInfo().usage();
         if (usage != null && !usage.isEmpty()) {
             description.add("&7" + usage);
@@ -180,7 +185,12 @@ public interface CommandHandler<CommandSender> {
             (key, subcommand) -> {
                 String subUsage = subcommand.commandInfo().usage();
                 if (subUsage == null || subUsage.isEmpty()) {
-                    description.add(" &7- &r" + subcommand.commandInfo().name());
+                    StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- &r", "");
+                    subNameJoiner.add(subcommand.commandInfo().name());
+                    for (String alias : subcommand.commandInfo().aliases()) {
+                        subNameJoiner.add(alias);
+                    }
+                    description.add(subNameJoiner.toString());
                 } else {
                     description.add(" &7- &r" + subUsage);
                 }
