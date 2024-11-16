@@ -26,11 +26,6 @@ public enum LangManager implements BukkitLifeCycleTask {
     private final Map<String, Map<String, LangEntry<?>>> folderLangEntryMap = new ConcurrentHashMap<>();
     private final Map<String, LangEntryContainer> langEntryContainerMap = new ConcurrentHashMap<>();
 
-    public void loadLangEntryContainer(@NotNull String langFileFolder, @NotNull LangEntryContainer container) {
-        langEntryContainerMap.put(langFileFolder, container);
-        container.reload();
-    }
-
     public void removeLangEntryContainer(@NotNull String langFileFolder) {
         LangEntryContainer container = langEntryContainerMap.remove(langFileFolder);
         if (container == null)
@@ -60,14 +55,15 @@ public enum LangManager implements BukkitLifeCycleTask {
     @Override
     public void run(Plugin plugin, LifeCycle lifeCycle) {
         switch (lifeCycle) {
-            case LOAD:
+            case ENABLE:
                 PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(
                     langClass -> {
                         LangHandler langHandler = langClass.getAnnotation(LangHandler.class);
                         String langFileFolder = langHandler.langFileFolder();
                         String defLang = langHandler.defLang();
-                        LangEntryContainer langEntryContainer = new LangEntryContainer(plugin, langClass, langFileFolder, defLang);
-                        LangManager.INSTANCE.loadLangEntryContainer(langFileFolder, langEntryContainer);
+                        LangEntryContainer container = new LangEntryContainer(plugin, langClass, langFileFolder, defLang);
+                        langEntryContainerMap.put(langFileFolder, container);
+                        container.reload();
                     }
                 );
                 break;

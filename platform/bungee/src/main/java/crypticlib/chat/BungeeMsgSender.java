@@ -131,7 +131,7 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        sendMsg(ProxyServer.getInstance().getConsole(), msg);
+        sendMsg(ProxyServer.getInstance().getConsole(), msg, replaceMap);
     }
 
 }

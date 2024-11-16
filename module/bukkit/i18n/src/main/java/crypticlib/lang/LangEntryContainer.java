@@ -94,7 +94,9 @@ public class LangEntryContainer {
         for (File langFile : yamlFiles) {
             String fileName = langFile.getName();
             String lang = fileName.substring(0, fileName.lastIndexOf("."));
-            langConfigWrapperMap.put(lang, new BukkitConfigWrapper(langFile));
+            BukkitConfigWrapper configWrapper = new BukkitConfigWrapper(langFile);
+            configWrapper.reloadConfig();
+            langConfigWrapperMap.put(lang, configWrapper);
         }
         updateLangFiles();
     }

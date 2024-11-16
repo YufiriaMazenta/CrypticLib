@@ -125,7 +125,7 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        sendMsg(Bukkit.getConsoleSender(), msg);
+        sendMsg(Bukkit.getConsoleSender(), msg, replaceMap);
     }
 
 }
