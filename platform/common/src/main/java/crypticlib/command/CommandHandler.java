@@ -148,14 +148,6 @@ public interface CommandHandler<CommandSender> {
         //再注册子命令的子命令
         for (AbstractSubcommand<CommandSender> subcommand : subcommands().values()) {
             subcommand.scanSubCommands();
-            for (Field field : subcommand.getClass().getDeclaredFields()) {
-                if (!field.isAnnotationPresent(Subcommand.class))
-                    continue;
-                if (AbstractSubcommand.class.isAssignableFrom(field.getType())) {
-                    AbstractSubcommand<CommandSender> subcommandsSubcommand = ReflectionHelper.getDeclaredFieldObj(field, subcommand);
-                    subcommand.regSub(subcommandsSubcommand);
-                }
-            }
         }
     }
 

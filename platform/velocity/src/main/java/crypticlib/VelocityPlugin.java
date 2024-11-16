@@ -46,7 +46,11 @@ public abstract class VelocityPlugin {
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
+    }
 
+    @Subscribe
+    public final void onProxyInitialization(ProxyInitializeEvent event) {
+        //Load 阶段
         lifeCycleTaskMap.clear();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
             taskClass -> {
@@ -79,12 +83,6 @@ public abstract class VelocityPlugin {
             taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
         });
 
-        runLifeCycleTasks(LifeCycle.INIT);
-    }
-
-    @Subscribe
-    public final void onProxyInitialization(ProxyInitializeEvent event) {
-        //Load 阶段
         PermInfo.PERM_MANAGER = VelocityPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -107,6 +105,11 @@ public abstract class VelocityPlugin {
                 try {
                     Object listener = ReflectionHelper.getSingletonClassInstance(listenerClass);
                     proxyServer.getEventManager().register(this, listener);
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    EventListener annotation = listenerClass.getAnnotation(EventListener.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
@@ -121,6 +124,11 @@ public abstract class VelocityPlugin {
                     }
                     VelocityCommand command = (VelocityCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
                     command.register(this);
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    Command annotation = commandClass.getAnnotation(Command.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }

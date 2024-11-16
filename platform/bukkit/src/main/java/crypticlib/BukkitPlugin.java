@@ -34,7 +34,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public BukkitPlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+    }
 
+    @Override
+    public final void onLoad() {
         lifeCycleTaskMap.clear();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
             taskClass -> {
@@ -67,11 +70,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
             taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
         });
 
-        runLifeCycleTasks(LifeCycle.INIT);
-    }
-
-    @Override
-    public final void onLoad() {
         PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -99,6 +97,11 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     }
                     Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     Bukkit.getPluginManager().registerEvents(listener, this);
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    EventListener annotation = listenerClass.getAnnotation(EventListener.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
@@ -112,6 +115,11 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     }
                     BukkitCommand bukkitCommand = (BukkitCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
                     bukkitCommand.register(this);
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    Command annotation = commandClass.getAnnotation(Command.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
