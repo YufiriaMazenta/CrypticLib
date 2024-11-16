@@ -34,7 +34,10 @@ public abstract class BungeePlugin extends Plugin {
     public BungeePlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+    }
 
+    @Override
+    public final void onLoad() {
         lifeCycleTaskMap.clear();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
             taskClass -> {
@@ -67,11 +70,6 @@ public abstract class BungeePlugin extends Plugin {
             taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
         });
 
-        runLifeCycleTasks(LifeCycle.INIT);
-    }
-
-    @Override
-    public final void onLoad() {
         PermInfo.PERM_MANAGER = BungeePermManager.INSTANCE;
 
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
@@ -100,6 +98,11 @@ public abstract class BungeePlugin extends Plugin {
                     }
                     Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     getProxy().getPluginManager().registerListener(this, listener);
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    EventListener annotation = listenerClass.getAnnotation(EventListener.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
@@ -113,6 +116,11 @@ public abstract class BungeePlugin extends Plugin {
                     }
                     BungeeCommand bungeeCommand = (BungeeCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
                     bungeeCommand.register(this);
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    Command annotation = commandClass.getAnnotation(Command.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }

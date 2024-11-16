@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @AutoTask(
     rules = {
-        @TaskRule(lifeCycle = LifeCycle.INIT)
+        @TaskRule(lifeCycle = LifeCycle.LOAD)
     }
 )
 public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandManager<VelocityPlugin, Command, Command> {

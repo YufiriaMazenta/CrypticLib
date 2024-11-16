@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 @AutoTask(
-    rules = @TaskRule(lifeCycle = LifeCycle.INIT)
+    rules = @TaskRule(lifeCycle = LifeCycle.LOAD)
 )
 public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Player>, VelocityLifeCycleTask {
 

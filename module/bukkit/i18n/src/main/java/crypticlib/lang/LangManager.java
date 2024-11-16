@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @AutoTask(
     rules = {
-        @TaskRule(lifeCycle = LifeCycle.LOAD),
+        @TaskRule(lifeCycle = LifeCycle.ENABLE, priority = Integer.MIN_VALUE),
         @TaskRule(lifeCycle = LifeCycle.RELOAD),
         @TaskRule(lifeCycle = LifeCycle.DISABLE)
     }
