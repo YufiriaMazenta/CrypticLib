@@ -185,7 +185,7 @@ public interface CommandHandler<CommandSender> {
         }
         subcommands().forEach(
             (key, subcommand) -> {
-                StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- &r", "");
+                StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- ", "");
                 subNameJoiner.add(subcommand.commandInfo().name());
                 for (String alias : subcommand.commandInfo().aliases()) {
                     subNameJoiner.add(alias);
@@ -193,7 +193,7 @@ public interface CommandHandler<CommandSender> {
                 description.add(subNameJoiner.toString());
                 String subUsage = subcommand.commandInfo().usage();
                 if (subUsage != null && !subUsage.isEmpty()) {
-                    description.add(" - &r" + subUsage);
+                    description.add("   " + subUsage);
                 }
                 String subDesc = subcommand.commandInfo().description();
                 if (subDesc == null || subDesc.isEmpty()) {
