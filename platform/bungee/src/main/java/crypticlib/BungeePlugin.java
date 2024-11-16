@@ -18,6 +18,7 @@ import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Ref;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -28,50 +29,17 @@ public abstract class BungeePlugin extends Plugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BungeeConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final Map<LifeCycle, List<BungeeLifeCycleTaskWrapper>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
     public BungeePlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
     public final void onLoad() {
-        lifeCycleTaskMap.clear();
-        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
-            taskClass -> {
-                try {
-                    if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
-                        return;
-                    }
-                    BungeeLifeCycleTask task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
-                    if (annotation == null) {
-                        return;
-                    }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle lifeCycle = taskRule.lifeCycle();
-                        BungeeLifeCycleTaskWrapper wrapper = new BungeeLifeCycleTaskWrapper(task, taskRule.priority());
-                        if (lifeCycleTaskMap.containsKey(lifeCycle)) {
-                            lifeCycleTaskMap.get(lifeCycle).add(wrapper);
-                        } else {
-                            List<BungeeLifeCycleTaskWrapper> taskWrappers = new CopyOnWriteArrayList<>();
-                            taskWrappers.add(wrapper);
-                            lifeCycleTaskMap.put(lifeCycle, taskWrappers);
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        lifeCycleTaskMap.forEach((lifeCycle, taskWrappers) -> {
-            taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
-        });
-
         PermInfo.PERM_MANAGER = BungeePermManager.INSTANCE;
-
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
@@ -128,12 +96,12 @@ public abstract class BungeePlugin extends Plugin {
         );
         enable();
         runLifeCycleTasks(LifeCycle.ENABLE);
+        getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE));
     }
 
     @Override
     public final void onDisable() {
         runLifeCycleTasks(LifeCycle.DISABLE);
-        lifeCycleTaskMap.clear();
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         getProxy().getScheduler().cancel(this);
@@ -186,9 +154,40 @@ public abstract class BungeePlugin extends Plugin {
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<BungeeLifeCycleTaskWrapper> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
-        if (lifeCycleTasks != null) {
-            lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
+        List<BungeeLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
+        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+            taskClass -> {
+                try {
+                    if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
+                        return;
+                    }
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (annotation == null) {
+                        return;
+                    }
+                    for (TaskRule taskRule : annotation.rules()) {
+                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
+                        int priority = taskRule.priority();
+                        if (annotationLifeCycle.equals(lifeCycle)) {
+                            BungeeLifeCycleTask task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                            BungeeLifeCycleTaskWrapper wrapper = new BungeeLifeCycleTaskWrapper(task, priority);
+                            taskWrappers.add(wrapper);
+                            return;
+                        }
+                    }
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        taskWrappers.sort(Comparator.comparingInt(BungeeLifeCycleTaskWrapper::priority));
+        for (BungeeLifeCycleTaskWrapper taskWrapper : taskWrappers) {
+            taskWrapper.run(this, lifeCycle);
         }
     }
 

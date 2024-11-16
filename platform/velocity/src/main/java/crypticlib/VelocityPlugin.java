@@ -22,11 +22,11 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class VelocityPlugin {
 
@@ -35,7 +35,6 @@ public abstract class VelocityPlugin {
     protected final Path dataDirectory;
     protected final PluginContainer pluginContainer;
     protected final ProxyServer proxyServer;
-    protected final Map<LifeCycle, List<VelocityLifeCycleTaskWrapper>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final Map<String, VelocityConfigContainer> configContainerMap = new ConcurrentHashMap<>();
 
     public VelocityPlugin(Logger logger, ProxyServer proxyServer, PluginContainer pluginContainer, Path dataDirectory) {
@@ -46,43 +45,11 @@ public abstract class VelocityPlugin {
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Subscribe
     public final void onProxyInitialization(ProxyInitializeEvent event) {
-        //Load 阶段
-        lifeCycleTaskMap.clear();
-        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
-            taskClass -> {
-                try {
-                    if (!VelocityLifeCycleTask.class.isAssignableFrom(taskClass)) {
-                        return;
-                    }
-                    VelocityLifeCycleTask task = (VelocityLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
-                    if (annotation == null) {
-                        return;
-                    }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle lifeCycle = taskRule.lifeCycle();
-                        VelocityLifeCycleTaskWrapper wrapper = new VelocityLifeCycleTaskWrapper(task, taskRule.priority());
-                        if (lifeCycleTaskMap.containsKey(lifeCycle)) {
-                            lifeCycleTaskMap.get(lifeCycle).add(wrapper);
-                        } else {
-                            List<VelocityLifeCycleTaskWrapper> taskWrappers = new CopyOnWriteArrayList<>();
-                            taskWrappers.add(wrapper);
-                            lifeCycleTaskMap.put(lifeCycle, taskWrappers);
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        lifeCycleTaskMap.forEach((lifeCycle, taskWrappers) -> {
-            taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
-        });
-
         PermInfo.PERM_MANAGER = VelocityPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -136,12 +103,12 @@ public abstract class VelocityPlugin {
         );
         enable();
         runLifeCycleTasks(LifeCycle.ENABLE);
+        proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE)).schedule();
     }
 
     @Subscribe
     public final void onProxyShutdown(ProxyShutdownEvent event) {
         runLifeCycleTasks(LifeCycle.DISABLE);
-        lifeCycleTaskMap.clear();
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
         for (ScheduledTask scheduledTask : proxyServer.getScheduler().tasksByPlugin(this)) {
@@ -182,9 +149,40 @@ public abstract class VelocityPlugin {
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<VelocityLifeCycleTaskWrapper> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
-        if (lifeCycleTasks != null) {
-            lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
+        List<VelocityLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
+        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+            taskClass -> {
+                try {
+                    if (!VelocityLifeCycleTask.class.isAssignableFrom(taskClass)) {
+                        return;
+                    }
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (annotation == null) {
+                        return;
+                    }
+                    for (TaskRule taskRule : annotation.rules()) {
+                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
+                        int priority = taskRule.priority();
+                        if (annotationLifeCycle.equals(lifeCycle)) {
+                            VelocityLifeCycleTask task = (VelocityLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                            VelocityLifeCycleTaskWrapper wrapper = new VelocityLifeCycleTaskWrapper(task, priority);
+                            taskWrappers.add(wrapper);
+                            return;
+                        }
+                    }
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        taskWrappers.sort(Comparator.comparingInt(VelocityLifeCycleTaskWrapper::priority));
+        for (VelocityLifeCycleTaskWrapper taskWrapper : taskWrappers) {
+            taskWrapper.run(this, lifeCycle);
         }
     }
 

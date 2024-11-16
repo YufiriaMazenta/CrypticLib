@@ -18,58 +18,26 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<String, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
-    protected final Map<LifeCycle, List<BukkitLifeCycleTaskWrapper>> lifeCycleTaskMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
     public BukkitPlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
     public final void onLoad() {
-        lifeCycleTaskMap.clear();
-        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
-            taskClass -> {
-                try {
-                    if (!BukkitLifeCycleTask.class.isAssignableFrom(taskClass)) {
-                        return;
-                    }
-                    BukkitLifeCycleTask task = (BukkitLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
-                    if (annotation == null) {
-                        return;
-                    }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle lifeCycle = taskRule.lifeCycle();
-                        BukkitLifeCycleTaskWrapper wrapper = new BukkitLifeCycleTaskWrapper(task, taskRule.priority());
-                        if (lifeCycleTaskMap.containsKey(lifeCycle)) {
-                            lifeCycleTaskMap.get(lifeCycle).add(wrapper);
-                        } else {
-                            List<BukkitLifeCycleTaskWrapper> taskWrappers = new CopyOnWriteArrayList<>();
-                            taskWrappers.add(wrapper);
-                            lifeCycleTaskMap.put(lifeCycle, taskWrappers);
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    throwable.printStackTrace();
-                }
-            }
-        );
-        lifeCycleTaskMap.forEach((lifeCycle, taskWrappers) -> {
-            taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
-        });
-
         PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
@@ -127,12 +95,14 @@ public abstract class BukkitPlugin extends JavaPlugin {
         );
         enable();
         runLifeCycleTasks(LifeCycle.ENABLE);
+        CrypticLibBukkit.scheduler().runTask(this, () -> {
+            runLifeCycleTasks(LifeCycle.ACTIVE);
+        });
     }
 
     @Override
     public final void onDisable() {
         runLifeCycleTasks(LifeCycle.DISABLE);
-        lifeCycleTaskMap.clear();
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.platform().scheduler().cancelTasks(this);
@@ -189,9 +159,40 @@ public abstract class BukkitPlugin extends JavaPlugin {
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<BukkitLifeCycleTaskWrapper> lifeCycleTasks = lifeCycleTaskMap.get(lifeCycle);
-        if (lifeCycleTasks != null) {
-            lifeCycleTasks.forEach(it -> it.run(this, lifeCycle));
+        List<BukkitLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
+        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+            taskClass -> {
+                try {
+                    if (!BukkitLifeCycleTask.class.isAssignableFrom(taskClass)) {
+                        return;
+                    }
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (annotation == null) {
+                        return;
+                    }
+                    for (TaskRule taskRule : annotation.rules()) {
+                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
+                        int priority = taskRule.priority();
+                        if (annotationLifeCycle.equals(lifeCycle)) {
+                            BukkitLifeCycleTask task = (BukkitLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                            BukkitLifeCycleTaskWrapper wrapper = new BukkitLifeCycleTaskWrapper(task, priority);
+                            taskWrappers.add(wrapper);
+                            return;
+                        }
+                    }
+                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    if (!annotation.ignoreClassNotFound()) {
+                        e.printStackTrace();
+                    }
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            }
+        );
+        taskWrappers.sort(Comparator.comparingInt(BukkitLifeCycleTaskWrapper::priority));
+        for (BukkitLifeCycleTaskWrapper taskWrapper : taskWrappers) {
+            taskWrapper.run(this, lifeCycle);
         }
     }
 
