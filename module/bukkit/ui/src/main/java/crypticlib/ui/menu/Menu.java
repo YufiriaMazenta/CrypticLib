@@ -185,6 +185,39 @@ public class Menu implements InventoryHolder {
     }
 
     /**
+     * 更新一个字符对应的所有图标
+     * 只有当页面已经打开才有效
+     */
+    public void updateIcons(char iconKey) {
+        if (inventoryCache == null)
+            return;
+        List<Integer> slots = getSlots(iconKey);
+        if (slots == null || slots.isEmpty()) {
+            return;
+        }
+        for (Integer slot : slots) {
+            Icon icon = slotMap.get(slot);
+            if (icon != null) {
+                inventoryCache.setItem(slot, icon.display());
+            }
+        }
+    }
+
+    /**
+     * 更新一个图标
+     * 只有当页面已经打开才有效
+     * @param slot 更新的图标位置
+     */
+    public void updateIcon(int slot) {
+        if (inventoryCache == null)
+            return;
+        Icon icon = slotMap.get(slot);
+        if (icon != null) {
+            inventoryCache.setItem(slot, icon.display());
+        }
+    }
+
+    /**
      * 当页面开始绘制前会调用此方法
      */
     public void beforeDraw() {}
