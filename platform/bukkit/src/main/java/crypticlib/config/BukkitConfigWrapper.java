@@ -23,31 +23,31 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
 
     @Override
     public boolean contains(String key) {
-        return config.contains(key);
+        return config().contains(key);
     }
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
         synchronized (lock) {
-            config.set(key, object);
+            config().set(key, object);
         }
     }
 
     @Override
     public void setComments(@NotNull String key, @Nullable List<String> comments) {
-        synchronized (this) {
+        synchronized (lock) {
             if (MinecraftVersion.current().before(MinecraftVersion.V1_18_1)) {
                 //1.18.1以下不支持注释
                 return;
             }
-            config.setComments(key, comments);
+            config().setComments(key, comments);
         }
     }
 
     @Override
     public @Nullable List<String> getComments(@NotNull String key) {
         if (MinecraftVersion.current().afterOrEquals(MinecraftVersion.V1_18_1)) {
-            return config.getComments(key);
+            return config().getComments(key);
         } else {
             return new ArrayList<>();
         }
@@ -63,7 +63,7 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
     public void saveConfig() {
         synchronized (lock) {
             try {
-                config.save(configFile);
+                config().save(configFile);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
