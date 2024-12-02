@@ -122,7 +122,7 @@ public abstract class ConfigWrapper<C> {
         return configFile;
     }
 
-    private @Nullable InputStream getResource(@NotNull String filename) {
+    protected @Nullable InputStream getResource(@NotNull String filename) {
         try {
             URL url = this.getClass().getClassLoader().getResource(filename);
             if (url == null) {

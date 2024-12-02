@@ -25,13 +25,13 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
 
     @Override
     public boolean contains(String key) {
-        return config.contains(key);
+        return config().contains(key);
     }
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
         synchronized (lock) {
-            config.set(key, object);
+            config().set(key, object);
         }
     }
 
@@ -68,9 +68,9 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
         synchronized (lock) {
             try {
                 if (FileHelper.isYamlFile(path)) {
-                    ConfigurationProvider.getProvider(YamlConfiguration.class).save(config, configFile);
+                    ConfigurationProvider.getProvider(YamlConfiguration.class).save(config(), configFile);
                 } else if (FileHelper.isJsonFile(path)) {
-                    ConfigurationProvider.getProvider(JsonConfiguration.class).save(config, configFile);
+                    ConfigurationProvider.getProvider(JsonConfiguration.class).save(config(), configFile);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();

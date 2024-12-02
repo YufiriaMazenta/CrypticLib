@@ -23,13 +23,13 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
 
     @Override
     public boolean contains(String key) {
-        return config.contains(key);
+        return config().contains(key);
     }
 
     @Override
     public void set(@NotNull String key, @Nullable Object object) {
         synchronized (lock) {
-            config.set(key, object);
+            config().set(key, object);
         }
     }
 
@@ -37,12 +37,12 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
     public void setComments(@NotNull String key, @Nullable List<String> comments) {
         if (comments == null || comments.isEmpty())
             return;
-        config.setComment(key, CommentLoader.commentList2JsonArray(comments));
+        config().setComment(key, CommentLoader.commentList2JsonArray(comments));
     }
 
     @Override
     public @Nullable List<String> getComments(@NotNull String key) {
-        String commentJsonArray = config.getComment(key);
+        String commentJsonArray = config().getComment(key);
         if (commentJsonArray == null)
             return null;
         return CommentLoader.loadCommentList(commentJsonArray);
@@ -62,7 +62,7 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
         synchronized (lock) {
             FormatDetector.registerExtension("yaml", YamlFormat.defaultInstance());
             FormatDetector.registerExtension("yml", YamlFormat.defaultInstance());
-            config.save();
+            config().save();
         }
     }
 
