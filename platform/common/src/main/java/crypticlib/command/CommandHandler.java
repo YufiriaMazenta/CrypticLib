@@ -166,7 +166,7 @@ public interface CommandHandler<CommandSender> {
      *
      * @return 转换完成的介绍
      */
-    default List<String> toDescriptions() {
+    default List<String> toDescriptions(CommandSender commandSender) {
         List<String> description = new ArrayList<>();
 
         StringJoiner nameJoiner = new StringJoiner(" | ", "&7", ":");
@@ -185,6 +185,10 @@ public interface CommandHandler<CommandSender> {
         }
         subcommands().forEach(
             (key, subcommand) -> {
+                PermInfo permission = subcommand.permission();
+                if (permission != null && !PermInfo.PERM_MANAGER.hasPermission(commandSender, permission.permission())) {
+                    return;
+                }
                 StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- ", "");
                 subNameJoiner.add(subcommand.commandInfo().name());
                 for (String alias : subcommand.commandInfo().aliases()) {

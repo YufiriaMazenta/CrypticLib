@@ -32,7 +32,7 @@ public class VelocitySubcommand extends AbstractSubcommand<CommandSource> {
 
     @Override
     public void sendDescriptions(CommandSource commandSource) {
-        List<String> descriptions = toDescriptions();
+        List<String> descriptions = toDescriptions(commandSource);
         for (String description : descriptions) {
             VelocityMsgSender.INSTANCE.sendMsg(commandSource, description);
         }
