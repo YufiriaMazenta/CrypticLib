@@ -85,7 +85,7 @@ public enum LangManager implements BukkitLifeCycleTask {
                 continue;
             }
             //获取对应的翻译文本进行替换
-            LangEntry<?> langEntry = getLangEntry(split[0], String.join("", Arrays.copyOfRange(split, 1, split.length)));
+            LangEntry<?> langEntry = getLangEntry(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
             //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
             if (!(langEntry instanceof StringLangEntry)) {
                 result.append(langKey);
