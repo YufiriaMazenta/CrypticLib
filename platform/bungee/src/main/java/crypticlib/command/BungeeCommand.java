@@ -66,7 +66,7 @@ public class BungeeCommand extends Command implements CommandHandler<CommandSend
 
     @Override
     public void sendDescriptions(CommandSender commandSender) {
-        List<String> descriptions = toDescriptions();
+        List<String> descriptions = toDescriptions(commandSender);
         for (String description : descriptions) {
             BungeeMsgSender.INSTANCE.sendMsg(commandSender, description);
         }

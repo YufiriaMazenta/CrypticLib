@@ -88,7 +88,7 @@ public class BukkitSubcommand extends AbstractSubcommand<CommandSender> {
 
     @Override
     public void sendDescriptions(CommandSender commandSender) {
-        List<String> descriptions = toDescriptions();
+        List<String> descriptions = toDescriptions(commandSender);
         for (String description : descriptions) {
             BukkitMsgSender.INSTANCE.sendMsg(commandSender, description);
         }
