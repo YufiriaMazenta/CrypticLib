@@ -66,6 +66,9 @@ public enum LangManager implements BukkitLifeCycleTask {
      * @return 替换完成的文本
      */
     public String replaceLang(String originStr, CommandSender sender) {
+        if (originStr == null) {
+            return null;
+        }
         Matcher matcher = langReplacePattern.matcher(originStr);
         //使用 StringBuilder 来构建替换后的字符串
         StringBuilder result = new StringBuilder();
