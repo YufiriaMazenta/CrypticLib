@@ -82,17 +82,17 @@ public enum LangManager implements BukkitLifeCycleTask {
             String[] split = langKey.split(":");
             if (split.length < 2) {
                 result.append(langKey);
-                continue;
-            }
-            //获取对应的翻译文本进行替换
-            LangEntry<?> langEntry = getLangEntry(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
-            //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
-            if (!(langEntry instanceof StringLangEntry)) {
-                result.append(langKey);
             } else {
-                StringLangEntry stringLangEntry = (StringLangEntry) langEntry;
-                String replacement = sender instanceof Player ? stringLangEntry.value((Player) sender) : stringLangEntry.value();
-                result.append(replacement);
+                //获取对应的翻译文本进行替换
+                LangEntry<?> langEntry = getLangEntry(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
+                //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
+                if (!(langEntry instanceof StringLangEntry)) {
+                    result.append(langKey);
+                } else {
+                    StringLangEntry stringLangEntry = (StringLangEntry) langEntry;
+                    String replacement = sender instanceof Player ? stringLangEntry.value((Player) sender) : stringLangEntry.value();
+                    result.append(replacement);
+                }
             }
 
             //更新lastEnd以跳过已处理的匹配项
