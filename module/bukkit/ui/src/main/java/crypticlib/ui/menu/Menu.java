@@ -125,6 +125,7 @@ public class Menu implements InventoryHolder {
                     layoutSlotMap.get(key).add(slot);
                 }
                 Icon icon = layout.layoutMap().get(key).get();
+                icon.setParsePlayer(player);
                 preProcessIconWhenUpdateLayout(slot, icon);
                 slotMap.put(slot, icon);
             }
