@@ -237,12 +237,16 @@ public class Menu implements InventoryHolder {
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
             if (meta != null) {
-                meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, meta.getDisplayName())));
-                List<String> lore = meta.getLore();
-                if (lore != null) {
-                    lore.replaceAll(source -> BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, source)));
+                if (meta.hasDisplayName()) {
+                    meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, meta.getDisplayName())));
                 }
-                meta.setLore(lore);
+                if (meta.hasLore()) {
+                    List<String> lore = meta.getLore();
+                    if (lore != null) {
+                        lore.replaceAll(source -> BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, source)));
+                    }
+                    meta.setLore(lore);
+                }
                 display.setItemMeta(meta);
             }
             inventory.setItem(slot, display);
