@@ -1,10 +1,9 @@
 package crypticlib.ui.display;
 
 import crypticlib.util.ItemHelper;
-import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +14,10 @@ public class Icon {
 
     private ItemStack display;
     private Consumer<InventoryClickEvent> clickAction;
+    /**
+     * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在updateLayout阶段preProcessIconWhenUpdateLayout方法触发前赋值
+     */
+    private @Nullable Player parsePlayer;
 
     public Icon(@NotNull IconDisplay iconDisplay) {
         this.display = iconDisplay.display();
@@ -87,6 +90,15 @@ public class Icon {
 
     public Icon setLore(List<String> lore) {
         ItemHelper.setLore(display, lore);
+        return this;
+    }
+
+    public @Nullable Player parsePlayer() {
+        return parsePlayer;
+    }
+
+    public Icon setParsePlayer(@Nullable Player parsePlayer) {
+        this.parsePlayer = parsePlayer;
         return this;
     }
 
