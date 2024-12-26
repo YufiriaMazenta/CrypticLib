@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly("com.velocitypowered:velocity-api:3.3.0-SNAPSHOT")
+    compileOnly("com.velocity:velocity:3.4.0")
     compileOnly("org.yaml:snakeyaml:1.33")
     compileOnly("com.electronwill.night-config:core:3.6.7")
     implementation(project(":platform:common"))
