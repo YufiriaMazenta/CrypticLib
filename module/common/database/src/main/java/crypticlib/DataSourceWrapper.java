@@ -7,14 +7,14 @@ import org.jetbrains.annotations.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class DataSource {
+public class DataSourceWrapper {
 
     private HikariConfig hikariConfig;
     private HikariDataSource dataSource;
 
-    public DataSource() {}
+    public DataSourceWrapper() {}
 
-    public DataSource(HikariConfig hikariConfig) {
+    public DataSourceWrapper(HikariConfig hikariConfig) {
         this.hikariConfig = hikariConfig;
     }
 
@@ -52,12 +52,20 @@ public class DataSource {
         return hikariConfig;
     }
 
-    public DataSource setHikariConfig(HikariConfig hikariConfig, boolean reloadDataSource) {
+    public DataSourceWrapper setHikariConfig(HikariConfig hikariConfig, boolean reloadDataSource) {
         this.hikariConfig = hikariConfig;
         if (reloadDataSource) {
             loadDataSource();
         }
         return this;
+    }
+
+    public void close() {
+        dataSource.close();
+    }
+
+    public HikariDataSource dataSource() {
+        return dataSource;
     }
 
 }
