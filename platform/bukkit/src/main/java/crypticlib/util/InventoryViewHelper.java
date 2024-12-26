@@ -151,7 +151,7 @@ public class InventoryViewHelper {
     /**
      * 获取正在查看此窗口的玩家
      */
-    public static HumanEntity getPlayer(Object inventoryView) {
+    public static HumanEntity getViewingPlayer(Object inventoryView) {
         return (HumanEntity) ReflectionHelper.invokeMethod(inventoryViewGetPlayerMethod, inventoryView);
     }
 
@@ -179,7 +179,7 @@ public class InventoryViewHelper {
     /**
      * 获取此窗口的类型
      */
-    public static InventoryType getType(Object inventoryView) {
+    public static InventoryType getInventoryType(Object inventoryView) {
         return (InventoryType) ReflectionHelper.invokeMethod(inventoryViewGetTypeMethod, inventoryView);
     }
 
