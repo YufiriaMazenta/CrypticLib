@@ -33,7 +33,7 @@ Velocity
 <dependencies>
     <dependency>
         <groupId>com.crypticlib</groupId>
-        <artifactId>CrypticLib</artifactId>
+        <artifactId>所需模块</artifactId>
         <version>${version}</version>
     </dependency>
 </dependencies>
@@ -51,7 +51,7 @@ repositories {
 
 ```kotlin
 dependencies {
-    implementation("com.crypticlib:CrypticLib:${version}")
+    implementation("com.crypticlib:所需模块:${version}")
 }
 ```
 
@@ -68,6 +68,6 @@ repositories {
 
 ```groovy
 dependencies {
-    implementation 'com.crypticlib:CrypticLib:${version}'
+    implementation 'com.crypticlib:所需模块:${version}'
 }
 ```
