@@ -86,7 +86,7 @@ public class Conversation {
     }
 
     public void handleInput(String input) {
-        CrypticLibBukkit.platform().scheduler().runTask(plugin, () -> {
+        CrypticLibBukkit.platform().scheduler().sync(() -> {
             if (input.equalsIgnoreCase(cancelInput)) {
                 end();
                 return;

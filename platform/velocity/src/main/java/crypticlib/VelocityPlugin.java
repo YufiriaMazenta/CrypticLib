@@ -182,7 +182,7 @@ public abstract class VelocityPlugin {
         );
         taskWrappers.sort(Comparator.comparingInt(VelocityLifeCycleTaskWrapper::priority));
         for (VelocityLifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.run(this, lifeCycle);
+            taskWrapper.runLifecycleTask(this, lifeCycle);
         }
     }
 

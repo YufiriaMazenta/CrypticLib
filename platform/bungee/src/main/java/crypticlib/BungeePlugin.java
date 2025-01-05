@@ -17,13 +17,11 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Ref;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class BungeePlugin extends Plugin {
 
@@ -187,7 +185,7 @@ public abstract class BungeePlugin extends Plugin {
         );
         taskWrappers.sort(Comparator.comparingInt(BungeeLifeCycleTaskWrapper::priority));
         for (BungeeLifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.run(this, lifeCycle);
+            taskWrapper.runLifecycleTask(this, lifeCycle);
         }
     }
 

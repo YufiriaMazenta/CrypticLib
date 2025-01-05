@@ -223,4 +223,8 @@ public class ReflectionHelper {
         PLUGIN_INSTANCE = pluginInstance;
     }
 
+    public static Object getPluginInstance() {
+        return PLUGIN_INSTANCE;
+    }
+
 }

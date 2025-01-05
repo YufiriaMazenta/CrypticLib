@@ -95,7 +95,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         );
         enable();
         runLifeCycleTasks(LifeCycle.ENABLE);
-        CrypticLibBukkit.scheduler().runTask(this, () -> {
+        CrypticLibBukkit.scheduler().sync(() -> {
             runLifeCycleTasks(LifeCycle.ACTIVE);
         });
     }
@@ -105,7 +105,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         runLifeCycleTasks(LifeCycle.DISABLE);
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
-        CrypticLibBukkit.platform().scheduler().cancelTasks(this);
+        CrypticLibBukkit.platform().scheduler().cancelTasks();
         disable();
     }
 
@@ -192,7 +192,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         );
         taskWrappers.sort(Comparator.comparingInt(BukkitLifeCycleTaskWrapper::priority));
         for (BukkitLifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.run(this, lifeCycle);
+            taskWrapper.runLifecycleTask(this, lifeCycle);
         }
     }
 

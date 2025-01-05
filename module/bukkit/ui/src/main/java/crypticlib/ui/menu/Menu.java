@@ -1,10 +1,12 @@
 package crypticlib.ui.menu;
 
+import crypticlib.CrypticLibBukkit;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
 import crypticlib.util.InventoryViewHelper;
+import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -16,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,6 +77,19 @@ public class Menu implements InventoryHolder {
             this.inventoryCache = getInventory();
         player.openInventory(inventoryCache);
         return this;
+    }
+
+    /**
+     * 异步计算页面,然后为玩家打开页面
+     */
+    public void openMenuAsync() {
+        Plugin plugin = (Plugin) ReflectionHelper.getPluginInstance();
+        CrypticLibBukkit.scheduler().async(() -> {
+            if (this.inventoryCache == null) {
+                this.inventoryCache = getInventory();
+            }
+            CrypticLibBukkit.scheduler().sync(() -> player.openInventory(inventoryCache));
+        });
     }
 
     /**

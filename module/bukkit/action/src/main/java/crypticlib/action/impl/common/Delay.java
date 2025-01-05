@@ -32,7 +32,7 @@ public class Delay extends BaseAction {
 
     @Override
     public void run(Player player, Plugin plugin) {
-        CrypticLibBukkit.platform().scheduler().runTaskLater(plugin, () -> {
+        CrypticLibBukkit.platform().scheduler().syncLater(() -> {
             runNext(player, plugin);
         }, delayTick);
     }
