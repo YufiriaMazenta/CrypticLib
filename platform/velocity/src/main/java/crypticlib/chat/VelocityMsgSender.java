@@ -135,7 +135,7 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     }
 
     @Override
-    public void run(VelocityPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(VelocityPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = plugin;
     }
 
