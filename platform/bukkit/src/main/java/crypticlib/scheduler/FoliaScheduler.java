@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  * Folia平台的调度器
  */
 @AutoTask(
-    rules = @TaskRule(lifeCycle = LifeCycle.LOAD)
+    rules = @TaskRule(lifeCycle = LifeCycle.INIT)
 )
 public enum FoliaScheduler implements IScheduler, BukkitLifeCycleTask {
 
@@ -100,7 +100,7 @@ public enum FoliaScheduler implements IScheduler, BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+    public void run(Plugin plugin, LifeCycle lifeCycle) {
         this.plugin = plugin;
     }
     

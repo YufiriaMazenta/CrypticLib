@@ -108,7 +108,7 @@ public enum LangManager implements BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+    public void run(Plugin plugin, LifeCycle lifeCycle) {
         switch (lifeCycle) {
             case ENABLE:
                 PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(

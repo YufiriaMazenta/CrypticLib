@@ -2,7 +2,8 @@ package crypticlib.perm;
 
 import net.md_5.bungee.api.CommandSender;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public enum BungeePermManager implements PermManager {
