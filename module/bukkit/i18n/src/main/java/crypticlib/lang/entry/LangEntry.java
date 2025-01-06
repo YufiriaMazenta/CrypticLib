@@ -1,6 +1,5 @@
 package crypticlib.lang.entry;
 
-import crypticlib.chat.BukkitMsgSender;
 import crypticlib.lang.LangEntryContainer;
 import crypticlib.util.LocaleHelper;
 import org.bukkit.command.CommandSender;

@@ -57,7 +57,7 @@ public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandMana
     }
 
     @Override
-    public void lifecycle(VelocityPlugin plugin, LifeCycle lifeCycle) {
+    public void run(VelocityPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = plugin;
     }
 

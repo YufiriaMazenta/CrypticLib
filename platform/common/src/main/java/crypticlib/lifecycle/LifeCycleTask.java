@@ -2,6 +2,6 @@ package crypticlib.lifecycle;
 
 public interface LifeCycleTask<Plugin> {
 
-    void lifecycle(Plugin plugin, LifeCycle lifeCycle);
+    void run(Plugin plugin, LifeCycle lifeCycle);
 
 }

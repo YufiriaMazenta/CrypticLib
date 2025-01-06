@@ -1,7 +1,6 @@
 package crypticlib.config.node.impl.velocity;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
-import com.electronwill.nightconfig.core.Config;
 import crypticlib.config.node.VelocityConfigNode;
 import org.jetbrains.annotations.NotNull;
 

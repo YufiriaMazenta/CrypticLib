@@ -6,7 +6,6 @@ import com.electronwill.nightconfig.core.io.ConfigWriter;
 import com.electronwill.nightconfig.core.io.WritingException;
 import com.electronwill.nightconfig.core.io.WritingMode;
 import com.google.gson.Gson;
-import crypticlib.chat.VelocityMsgSender;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.*;
@@ -14,7 +13,8 @@ import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.Writer;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Electronwill, YufiriaMazenta

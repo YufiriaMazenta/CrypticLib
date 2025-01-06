@@ -2,7 +2,6 @@ package crypticlib.action.impl;
 
 
 import crypticlib.action.Action;
-import crypticlib.action.BaseAction;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 

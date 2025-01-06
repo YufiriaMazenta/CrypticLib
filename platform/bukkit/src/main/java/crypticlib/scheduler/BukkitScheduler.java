@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * Bukkit平台的调度器
  */
 @AutoTask(
-    rules = @TaskRule(lifeCycle = LifeCycle.LOAD)
+    rules = @TaskRule(lifeCycle = LifeCycle.INIT)
 )
 public enum BukkitScheduler implements IScheduler, BukkitLifeCycleTask {
 
@@ -90,7 +90,7 @@ public enum BukkitScheduler implements IScheduler, BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+    public void run(Plugin plugin, LifeCycle lifeCycle) {
         this.plugin = plugin;
     }
     
