@@ -69,7 +69,7 @@ subprojects {
             }
             val path = project.path
             val name = when  {
-                arrayOf(":module:bukkit", ":module:common",":module:bungee", ":module:Velocity").contains(path) -> {
+                arrayOf(":module:bukkit", ":module:common",":module:bungee", ":module:velocity").contains(path) -> {
                     path.substring(1)
                 }
                 path.startsWith(":module:") -> {
