@@ -26,6 +26,7 @@ public enum ActionCompiler {
         regAction("subtitle", Subtitle::new);
         regAction("actionbar", ActionBar::new);
         regAction("delay", Delay::new);
+        regAction("runIf", RunIf::new);
     }
 
     /**

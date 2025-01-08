@@ -5,11 +5,11 @@ import java.text.ParseException;
 
 public class StringHelper {
 
-    private static final NumberFormat numberFormat = NumberFormat.getInstance();
+    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
 
     public static boolean isNumber(String text) {
         try {
-            numberFormat.parse(text);
+            NUMBER_FORMAT.parse(text);
             return true;
         } catch (ParseException e) {
             return false;
@@ -18,7 +18,7 @@ public class StringHelper {
 
     public static Number toNumber(String text) {
         try {
-            return numberFormat.parse(text);
+            return NUMBER_FORMAT.parse(text);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
