@@ -57,6 +57,7 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
         Command command = registeredCommands.get(commandName);
         if (command == null)
             return null;
+        serverCommandMap.getKnownCommands().remove(commandName);
         command.unregister(serverCommandMap);
         registeredCommands.remove(commandName);
         return command;
