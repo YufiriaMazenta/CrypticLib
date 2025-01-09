@@ -14,7 +14,7 @@ public enum VelocityPermManager implements PermManager {
 
     @Override
     public VelocityPermManager regPerm(PermInfo permission) {
-        if (permission == null || permission.permission().isEmpty())
+        if (permission == null || permission.permission() == null || permission.permission().isEmpty())
             return this;
         if (Objects.requireNonNull(permission.permDef()) == PermDef.TRUE) {
             permissions.put(permission.permission(), permission);

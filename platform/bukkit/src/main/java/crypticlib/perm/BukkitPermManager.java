@@ -11,7 +11,7 @@ public enum BukkitPermManager implements PermManager {
 
     @Override
     public BukkitPermManager regPerm(PermInfo permission) {
-        if (permission == null || permission.permission().isEmpty())
+        if (permission == null || permission.permission() == null || permission.permission().isEmpty())
             return this;
         Permission permissionObj = Bukkit.getPluginManager().getPermission(permission.permission());
         PermissionDefault permissionDefault = PermissionDefault.valueOf(permission.permDef().name().toUpperCase());

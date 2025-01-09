@@ -13,7 +13,7 @@ public enum BungeePermManager implements PermManager {
 
     @Override
     public BungeePermManager regPerm(PermInfo permission) {
-        if (permission == null || permission.permission().isEmpty())
+        if (permission == null || permission.permission() == null || permission.permission().isEmpty())
             return this;
         if (Objects.requireNonNull(permission.permDef()) == PermDef.TRUE) {
             permissions.put(permission.permission(), permission);
