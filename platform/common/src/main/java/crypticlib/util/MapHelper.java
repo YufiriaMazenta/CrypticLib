@@ -9,11 +9,11 @@ import java.util.regex.Pattern;
 
 public class MapHelper {
 
-    private static final Pattern KEY_VALUE_TEXT_PATTERN = Pattern.compile("(\"[^\"]*\"|[^:,{]*):(\"[^\"]*\"|[^,{}]*)");
+    private static final Pattern KEY_VALUE_TEXT_PATTERN = Pattern.compile("(\"[^\"]*\"|'[^']*'|[^:,{]*):(\"[^\"]*\"|'[^']*'|[^,{}]*)");
 
     /**
      * 用于将形如{a:b,c:d}这样的键值对文本转化为map
-     * 支持用""包裹值以兼容更多字符,例如{a:" ab: ", b:c}
+     * 支持用""或''包裹值以兼容更多字符,例如{a:" ab: ", b:'c'}
      * 文本可以没有{}包裹
      * 格式错误时,将会抛出{@link KeyValueTextParseException}
      *
@@ -42,8 +42,8 @@ public class MapHelper {
             String key = matcher.group(1).trim();
             String value = matcher.group(2).trim();
 
-            //若值被引号包裹,去掉引号
-            if (value.startsWith("\"") && value.endsWith("\"")) {
+            //若值被引号包裹,去掉引号(支持双引号和单引号)
+            if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
                 value = value.substring(1, value.length() - 1);
             }
 
