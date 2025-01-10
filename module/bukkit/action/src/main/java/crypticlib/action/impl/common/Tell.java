@@ -28,7 +28,7 @@ public class Tell extends BaseAction {
     public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
         String message = this.message;
         if (argPreprocessor != null) {
-            message = argPreprocessor.apply(toActionStr());
+            message = argPreprocessor.apply(message);
         }
         if (player == null) {
             BukkitMsgSender.INSTANCE.info(message);
