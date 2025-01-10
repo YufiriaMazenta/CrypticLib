@@ -25,7 +25,7 @@ import java.util.function.Function;
  */
 public class RunIf extends BaseAction {
 
-    private String condition;
+    private final String condition;
     private final Action action;
     private final Condition conditionType;
 
@@ -48,6 +48,7 @@ public class RunIf extends BaseAction {
 
     @Override
     public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        String condition = this.condition;
         if (argPreprocessor != null) {
             condition = argPreprocessor.apply(condition);
         }

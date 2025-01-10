@@ -14,7 +14,7 @@ import java.util.function.Function;
 
 public class Command extends BaseAction {
 
-    public String command;
+    public final String command;
 
     public Command(String command) {
         this.command = Objects.requireNonNull(command);
@@ -27,6 +27,7 @@ public class Command extends BaseAction {
 
     @Override
     public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        String command = this.command;
         if (argPreprocessor != null) {
             command = argPreprocessor.apply(command);
         }

@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 public class ActionBar extends BaseAction {
 
-    public String message;
+    public final String message;
 
     public ActionBar(String message) {
         this.message = Objects.requireNonNull(message);
@@ -25,6 +25,7 @@ public class ActionBar extends BaseAction {
 
     @Override
     public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        String message = this.message;
         if (argPreprocessor != null) {
             message = argPreprocessor.apply(toActionStr());
         }

@@ -13,7 +13,7 @@ import java.util.function.Function;
 
 public class Title extends BaseAction {
 
-    public String message;
+    public final String message;
 
     public Title(String message) {
         this.message = Objects.requireNonNull(message);
@@ -26,6 +26,7 @@ public class Title extends BaseAction {
 
     @Override
     public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        String message = this.message;
         if (argPreprocessor != null) {
             message = argPreprocessor.apply(toActionStr());
         }

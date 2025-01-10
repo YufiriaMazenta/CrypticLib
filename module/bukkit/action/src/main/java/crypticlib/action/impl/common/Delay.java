@@ -14,7 +14,7 @@ import java.util.function.Function;
 public class Delay extends BaseAction {
 
     private Integer delayTick;
-    private String delayTickStr;
+    private final String delayTickStr;
 
     public Delay(String delayTickStr) {
         this.delayTickStr = delayTickStr;
