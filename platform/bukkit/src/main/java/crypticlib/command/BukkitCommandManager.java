@@ -98,6 +98,9 @@ public enum BukkitCommandManager implements CommandManager<Plugin, TabExecutor, 
         return registeredCommands;
     }
 
+    /**
+     * 同步命令,会刷新控制台与玩家的命令列表,一般在动态注册/卸载命令后调用
+     */
     public void syncCommands() {
         ReflectionHelper.invokeMethod(serverSyncCommandsMethod, Bukkit.getServer());
     }
