@@ -7,9 +7,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class Command extends BaseAction {
 
@@ -25,11 +26,14 @@ public class Command extends BaseAction {
     }
 
     @Override
-    public void run(Player player, @NotNull Plugin plugin, Map<String, String> args) {
-        String command = BukkitTextProcessor.placeholder(player, StringHelper.replaceStrings(this.command, args));
+    public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        if (argPreprocessor != null) {
+            command = argPreprocessor.apply(command);
+        }
+        command = BukkitTextProcessor.placeholder(player, command);
         if (player != null)
             Bukkit.dispatchCommand(player, command);
-        runNext(player, plugin, args);
+        runNext(player, plugin, argPreprocessor);
     }
 
 }

@@ -11,10 +11,12 @@ import crypticlib.util.StringHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * 使用placeholderapi解析condition,决定是否执行动作
@@ -23,7 +25,7 @@ import java.util.Objects;
  */
 public class RunIf extends BaseAction {
 
-    private final String condition;
+    private String condition;
     private final Action action;
     private final Condition conditionType;
 
@@ -45,12 +47,14 @@ public class RunIf extends BaseAction {
     }
 
     @Override
-    public void run(Player player, @NotNull Plugin plugin, Map<String, String> args) {
-        String condition = StringHelper.replaceStrings(this.condition, args);
-        if (conditionType.test(player, condition)) {
-            action.run(player, plugin, args);
+    public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        if (argPreprocessor != null) {
+            condition = argPreprocessor.apply(condition);
         }
-        runNext(player, plugin, args);
+        if (conditionType.test(player, condition)) {
+            action.run(player, plugin, argPreprocessor);
+        }
+        runNext(player, plugin, argPreprocessor);
     }
 
 }

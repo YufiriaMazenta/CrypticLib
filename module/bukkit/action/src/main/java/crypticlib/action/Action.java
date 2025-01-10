@@ -5,7 +5,7 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 动作接口
@@ -19,13 +19,13 @@ public interface Action {
      */
     String toActionStr();
 
-    void run(@Nullable Player player, @NotNull Plugin plugin, @Nullable Map<String, String> args);
+    void run(@Nullable Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor);
 
     Action next();
 
-    default void runNext(@Nullable Player player, @NotNull Plugin plugin, @Nullable Map<String, String> args) {
+    default void runNext(@Nullable Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
         if (next() != null)
-            next().run(player, plugin, args);
+            next().run(player, plugin, argPreprocessor);
     }
 
     Action setNext(Action next);

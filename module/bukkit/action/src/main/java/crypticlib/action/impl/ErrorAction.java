@@ -4,8 +4,9 @@ import crypticlib.action.BaseAction;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.function.Function;
 
 public class ErrorAction extends BaseAction {
 
@@ -21,8 +22,8 @@ public class ErrorAction extends BaseAction {
     }
 
     @Override
-    public void run(Player executor, @NotNull Plugin plugin, Map<String, String> args) {
-        runNext(executor, plugin, args);
+    public void run(Player executor, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
+        runNext(executor, plugin, argPreprocessor);
     }
 
 }

@@ -6,9 +6,10 @@ import crypticlib.util.StringHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class Delay extends BaseAction {
 
@@ -35,13 +36,15 @@ public class Delay extends BaseAction {
     }
 
     @Override
-    public void run(Player player, @NotNull Plugin plugin, Map<String, String> args) {
+    public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
         if (delayTick == null) {
-            String delayTickStr = StringHelper.replaceStrings(this.delayTickStr, args);
-            delayTick = Integer.parseInt(Objects.requireNonNull(delayTickStr));
+            if (argPreprocessor != null) {
+                String delayTickStr = argPreprocessor.apply(this.delayTickStr);
+                delayTick = Integer.parseInt(Objects.requireNonNull(delayTickStr));
+            }
         }
         CrypticLibBukkit.platform().scheduler().syncLater(() -> {
-            runNext(player, plugin, args);
+            runNext(player, plugin, argPreprocessor);
         }, delayTick);
     }
 

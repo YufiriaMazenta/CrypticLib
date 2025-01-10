@@ -5,8 +5,9 @@ import crypticlib.action.Action;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 空动作
@@ -19,7 +20,7 @@ public class EmptyAction implements Action {
     }
 
     @Override
-    public void run(Player player, @NotNull Plugin plugin, Map<String, String> args) {
+    public void run(Player player, @NotNull Plugin plugin, @Nullable Function<String, String> argPreprocessor) {
 
     }
 
