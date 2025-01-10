@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -20,9 +21,7 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
             return;
         if (msg == null)
             return;
-        for (String formatStr : replaceMap.keySet()) {
-            msg = msg.replace(formatStr, replaceMap.get(formatStr));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         if (receiver instanceof Player)
             msg = BukkitTextProcessor.placeholder((Player) receiver, msg);
         sendMsg(receiver, BukkitTextProcessor.toComponent(BukkitTextProcessor.color(msg)));
@@ -50,10 +49,8 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
         if (subTitle == null) {
             subTitle = "";
         }
-        for (String key : replaceMap.keySet()) {
-            title = title.replace(key, replaceMap.get(key));
-            subTitle = subTitle.replace(key, replaceMap.get(key));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subTitle = StringHelper.replaceStrings(subTitle, replaceMap);
         title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, title));
         subTitle = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, subTitle));
         player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
@@ -73,18 +70,14 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void sendActionBar(Player player, String text, Map<String, String> replaceMap) {
-        for (String formatStr : replaceMap.keySet()) {
-            text = text.replace(formatStr, replaceMap.get(formatStr));
-        }
+        text = StringHelper.replaceStrings(text, replaceMap);
         text = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, text));
         sendActionBar(player, BukkitTextProcessor.toComponent(text));
     }
 
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            msg = msg.replace(replace, replaceMap.get(replace));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendMsg(player, msg);
         }
@@ -93,9 +86,7 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            msg = msg.replace(replace, replaceMap.get(replace));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendActionBar(player, msg);
         }
@@ -103,10 +94,8 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            title = title.replace(replace, replaceMap.get(replace));
-            subtitle = subtitle.replace(replace, replaceMap.get(replace));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
@@ -114,10 +103,8 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            title = title.replace(replace, replaceMap.get(replace));
-            subtitle = subtitle.replace(replace, replaceMap.get(replace));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(player, title, subtitle);
         }

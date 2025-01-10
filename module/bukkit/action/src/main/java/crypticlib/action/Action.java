@@ -2,6 +2,10 @@ package crypticlib.action;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 /**
  * 动作接口
@@ -15,13 +19,13 @@ public interface Action {
      */
     String toActionStr();
 
-    void run(Player player, Plugin plugin);
+    void run(@Nullable Player player, @NotNull Plugin plugin, @Nullable Map<String, String> args);
 
     Action next();
 
-    default void runNext(Player player, Plugin plugin) {
+    default void runNext(@Nullable Player player, @NotNull Plugin plugin, @Nullable Map<String, String> args) {
         if (next() != null)
-            next().run(player, plugin);
+            next().run(player, plugin, args);
     }
 
     Action setNext(Action next);

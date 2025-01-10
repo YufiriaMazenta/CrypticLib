@@ -1,7 +1,10 @@
 package crypticlib.util;
 
+import org.jetbrains.annotations.Contract;
+
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Map;
 
 public class StringHelper {
 
@@ -22,6 +25,22 @@ public class StringHelper {
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String replaceStrings(String originText, Map<String, String> replacements) {
+        if (replacements == null || replacements.isEmpty()) {
+            return originText;
+        }
+        if (originText == null) {
+            return null;
+        }
+        if (originText.isEmpty()) {
+            return originText;
+        }
+        for (String replaceKey : replacements.keySet()) {
+            originText = originText.replace(replaceKey, replacements.get(replaceKey));
+        }
+        return originText;
     }
 
 }

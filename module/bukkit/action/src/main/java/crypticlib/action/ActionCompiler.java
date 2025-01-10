@@ -38,22 +38,27 @@ public enum ActionCompiler {
         if (actionStr == null || actionStr.isEmpty()) {
             return new EmptyAction();
         }
-        int index = actionStr.indexOf(" ");
-        if (index < 0) {
-            if (actionSupplierMap.containsKey(actionStr)) {
-                return actionSupplierMap.get(actionStr).apply(null);
+        try {
+            int index = actionStr.indexOf(" ");
+            if (index < 0) {
+                if (actionSupplierMap.containsKey(actionStr)) {
+                    return actionSupplierMap.get(actionStr).apply(null);
+                } else {
+                    BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
+                    return new ErrorAction(actionStr);
+                }
             } else {
-                BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
-                return new ErrorAction(actionStr);
+                String token = actionStr.substring(0, index);
+                if (actionSupplierMap.containsKey(token)) {
+                    return actionSupplierMap.get(token).apply(actionStr.substring(index + 1));
+                } else {
+                    BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
+                    return new ErrorAction(actionStr);
+                }
             }
-        } else {
-            String token = actionStr.substring(0, index);
-            if (actionSupplierMap.containsKey(token)) {
-                return actionSupplierMap.get(token).apply(actionStr.substring(index + 1));
-            } else {
-                BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
-                return new ErrorAction(actionStr);
-            }
+        } catch (Throwable throwable) {
+            BukkitMsgSender.INSTANCE.info("&cError when compile action: " + actionStr);
+            return new ErrorAction(actionStr);
         }
     }
 

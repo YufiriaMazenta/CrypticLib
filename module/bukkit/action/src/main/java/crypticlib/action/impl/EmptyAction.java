@@ -4,6 +4,9 @@ package crypticlib.action.impl;
 import crypticlib.action.Action;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
 
 /**
  * 空动作
@@ -16,7 +19,7 @@ public class EmptyAction implements Action {
     }
 
     @Override
-    public void run(Player player, Plugin plugin) {
+    public void run(Player player, @NotNull Plugin plugin, Map<String, String> args) {
 
     }
 

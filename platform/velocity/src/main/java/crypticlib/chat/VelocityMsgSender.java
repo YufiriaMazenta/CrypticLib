@@ -7,6 +7,7 @@ import crypticlib.lifecycle.AutoTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.lifecycle.VelocityLifeCycleTask;
+import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.util.Ticks;
@@ -27,9 +28,7 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     public void sendMsg(CommandSource receiver, String msg, @NotNull Map<String, String> replaceMap) {
         if (receiver == null)
             return;
-        for (String key : replaceMap.keySet()) {
-            msg = msg.replace(key, replaceMap.get(key));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         Component component = VelocityTextProcessor.toComponent(msg);
         receiver.sendMessage(component);
     }
@@ -80,18 +79,14 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     public void sendActionBar(Player player, String text, Map<String, String> replaceMap) {
         if (player == null)
             return;
-        for (String formatStr : replaceMap.keySet()) {
-            text = text.replace(formatStr, replaceMap.get(formatStr));
-        }
+        text = StringHelper.replaceStrings(text, replaceMap);
         Component component = VelocityTextProcessor.toComponent(text);
         player.sendActionBar(component);
     }
 
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
-        for (String formatStr : replaceMap.keySet()) {
-            msg = msg.replace(formatStr, replaceMap.get(formatStr));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         Component component = VelocityTextProcessor.toComponent(msg);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
             player.sendMessage(component);
@@ -100,9 +95,7 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
 
     @Override
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
-        for (String formatStr : replaceMap.keySet()) {
-            msg = msg.replace(formatStr, replaceMap.get(formatStr));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         Component component = VelocityTextProcessor.toComponent(msg);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
             player.sendActionBar(component);
@@ -127,9 +120,7 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        for (String formatStr : replaceMap.keySet()) {
-            msg = msg.replace(formatStr, replaceMap.get(formatStr));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         Component component = VelocityTextProcessor.toComponent(msg);
         plugin.proxyServer().getConsoleCommandSource().sendMessage(component);
     }
@@ -140,10 +131,8 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     }
 
     private Title buildTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
-        for (String key : replaceMap.keySet()) {
-            title = title.replace(key, replaceMap.get(key));
-            subtitle = subtitle.replace(key, replaceMap.get(key));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         Component titleComponent = VelocityTextProcessor.toComponent(title);
         Component subTitleComponent = VelocityTextProcessor.toComponent(subtitle);
         return Title.title(titleComponent, subTitleComponent, Title.Times.times(Ticks.duration(fadeIn), Ticks.duration(stay), Ticks.duration(fadeOut)));

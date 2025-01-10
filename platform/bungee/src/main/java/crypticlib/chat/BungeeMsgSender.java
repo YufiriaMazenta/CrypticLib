@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.ProxyServer;
@@ -20,9 +21,7 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
             return;
         if (msg == null)
             return;
-        for (String formatStr : replaceMap.keySet()) {
-            msg = msg.replace(formatStr, replaceMap.get(formatStr));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         sendMsg(receiver, BungeeTextProcessor.toComponent(BungeeTextProcessor.color(msg)));
     }
 
@@ -48,10 +47,8 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
         if (subTitle == null) {
             subTitle = "";
         }
-        for (String key : replaceMap.keySet()) {
-            title = title.replace(key, replaceMap.get(key));
-            subTitle = subTitle.replace(key, replaceMap.get(key));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subTitle = StringHelper.replaceStrings(subTitle, replaceMap);
         title = BungeeTextProcessor.color(title);
         subTitle = BungeeTextProcessor.color(subTitle);
         ProxyServer.getInstance().createTitle()
@@ -79,18 +76,14 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     public void sendActionBar(ProxiedPlayer player, String text, Map<String, String> replaceMap) {
         if (player == null)
             return;
-        for (String formatStr : replaceMap.keySet()) {
-            text = text.replace(formatStr, replaceMap.get(formatStr));
-        }
+        text = StringHelper.replaceStrings(text, replaceMap);
         text = BungeeTextProcessor.color(text);
         sendActionBar(player, BungeeTextProcessor.toComponent(text));
     }
 
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            msg = msg.replace(replace, replaceMap.get(replace));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendMsg(player, msg);
         }
@@ -99,9 +92,7 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            msg = msg.replace(replace, replaceMap.get(replace));
-        }
+        msg = StringHelper.replaceStrings(msg, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendActionBar(player, msg);
         }
@@ -109,10 +100,8 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            title = title.replace(replace, replaceMap.get(replace));
-            subtitle = subtitle.replace(replace, replaceMap.get(replace));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
         }
@@ -120,10 +109,8 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap) {
-        for (String replace : replaceMap.keySet()) {
-            title = title.replace(replace, replaceMap.get(replace));
-            subtitle = subtitle.replace(replace, replaceMap.get(replace));
-        }
+        title = StringHelper.replaceStrings(title, replaceMap);
+        subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendTitle(player, title, subtitle);
         }
