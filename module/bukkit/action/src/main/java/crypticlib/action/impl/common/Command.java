@@ -32,8 +32,9 @@ public class Command extends BaseAction {
             command = argPreprocessor.apply(command);
         }
         command = BukkitTextProcessor.placeholder(player, command);
-        if (player != null)
+        if (player != null) {
             Bukkit.dispatchCommand(player, command);
+        }
         runNext(player, plugin, argPreprocessor);
     }
 

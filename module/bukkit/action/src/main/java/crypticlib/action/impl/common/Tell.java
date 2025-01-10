@@ -30,7 +30,11 @@ public class Tell extends BaseAction {
         if (argPreprocessor != null) {
             message = argPreprocessor.apply(toActionStr());
         }
-        BukkitMsgSender.INSTANCE.sendMsg(player, message);
+        if (player == null) {
+            BukkitMsgSender.INSTANCE.info(message);
+        } else {
+            BukkitMsgSender.INSTANCE.sendMsg(player, message);
+        }
         runNext(player, plugin, argPreprocessor);
     }
 
