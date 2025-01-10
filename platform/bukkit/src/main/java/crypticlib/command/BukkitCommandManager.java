@@ -3,34 +3,38 @@ package crypticlib.command;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandMap;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabExecutor;
+import org.bukkit.command.*;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor, Command> {
+public enum BukkitCommandManager implements CommandManager<Plugin, TabExecutor, PluginCommand> {
 
-    public static final BukkitCommandManager INSTANCE = new BukkitCommandManager();
+    INSTANCE;
 
     private final CommandMap serverCommandMap;
+    private final Map<String, Command> serverCommandMapKnownCommands;
     private final Constructor<?> pluginCommandConstructor;
-    private final Map<String, Command> registeredCommands = new ConcurrentHashMap<>();
+    private final Map<String, PluginCommand> registeredCommands = new ConcurrentHashMap<>();
+    private final Method serverSyncCommandsMethod;
 
     BukkitCommandManager() {
         Method getCommandMapMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "getCommandMap");
         serverCommandMap = (CommandMap) ReflectionHelper.invokeMethod(getCommandMapMethod, Bukkit.getServer());
+        Field knownCommandsField = ReflectionHelper.getDeclaredField(SimpleCommandMap.class, "knownCommands");
+        serverCommandMapKnownCommands = ReflectionHelper.getDeclaredFieldObj(knownCommandsField, serverCommandMap);
         pluginCommandConstructor = ReflectionHelper.getDeclaredConstructor(PluginCommand.class, String.class, Plugin.class);
+        serverSyncCommandsMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "syncCommands");
     }
 
     @Override
-    public Command register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
+    public PluginCommand register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
         PluginCommand pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
         pluginCommand.setAliases(commandInfo.aliases());
         String description = commandInfo.description();
@@ -53,12 +57,25 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
      * @return 被注销的命令，若为null即不存在此命令
      */
     @Override
-    public Command unregister(String commandName) {
-        Command command = registeredCommands.get(commandName);
+    public PluginCommand unregister(String commandName) {
+        PluginCommand command = registeredCommands.get(commandName);
         if (command == null)
             return null;
-        serverCommandMap.getKnownCommands().remove(commandName);
         command.unregister(serverCommandMap);
+
+        //先移除不带命名空间的
+        serverCommandMapKnownCommands.remove(commandName);
+        for (String alias : command.getAliases()) {
+            serverCommandMapKnownCommands.remove(alias);
+        }
+
+        //再移除带命名空间的
+        String commandNamespace = command.getPlugin().getName().toLowerCase(Locale.ENGLISH);
+        serverCommandMapKnownCommands.remove(commandNamespace + ":" + commandName.toLowerCase(Locale.ENGLISH));
+        for (String alias : command.getAliases()) {
+            serverCommandMapKnownCommands.remove(commandNamespace + ":" + alias);
+        }
+
         registeredCommands.remove(commandName);
         return command;
     }
@@ -77,8 +94,12 @@ public class BukkitCommandManager implements CommandManager<Plugin, TabExecutor,
     }
 
     @Override
-    public Map<String, Command> registeredCommands() {
+    public Map<String, PluginCommand> registeredCommands() {
         return registeredCommands;
+    }
+
+    public void syncCommands() {
+        ReflectionHelper.invokeMethod(serverSyncCommandsMethod, Bukkit.getServer());
     }
 
 }

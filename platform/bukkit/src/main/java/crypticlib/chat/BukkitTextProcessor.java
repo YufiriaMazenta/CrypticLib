@@ -1,6 +1,8 @@
 package crypticlib.chat;
 
 import crypticlib.MinecraftVersion;
+import crypticlib.util.EntityHelper;
+import crypticlib.util.MaterialHelper;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.*;
@@ -22,7 +24,6 @@ import java.util.regex.Pattern;
 /**
  * 文本处理器
  */
-@SuppressWarnings("removal")
 public class BukkitTextProcessor {
 
     private static final Pattern colorPattern = Pattern.compile("&#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})");
@@ -207,7 +208,7 @@ public class BukkitTextProcessor {
      * @return 对应的Bungee翻译聊天组件
      */
     public static TranslatableComponent toTranslatableComponent(@NotNull EntityType entityType) {
-        return new TranslatableComponent(entityType.getTranslationKey());
+        return new TranslatableComponent(EntityHelper.getTranslationKey(entityType));
     }
 
     /**
@@ -227,7 +228,7 @@ public class BukkitTextProcessor {
      * @return 对应的Bungee翻译聊天组件
      */
     public static TranslatableComponent toTranslatableComponent(@NotNull Material material) {
-        return new TranslatableComponent(material.getTranslationKey());
+        return new TranslatableComponent(MaterialHelper.getTranslationKey(material));
     }
 
     /**
@@ -237,7 +238,7 @@ public class BukkitTextProcessor {
      * @return 对应的Bungee翻译聊天组件
      */
     public static TranslatableComponent toTranslatableComponent(@NotNull ItemStack itemStack) {
-        return new TranslatableComponent(itemStack.getTranslationKey());
+        return new TranslatableComponent(MaterialHelper.getTranslationKey(itemStack.getType()));
     }
 
     public static HoverEvent hoverText(String text) {
