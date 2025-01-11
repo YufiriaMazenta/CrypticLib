@@ -4,9 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.bukkit.configuration.ConfigurationSection;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,27 +42,6 @@ public class JsonHelper {
      */
     public static JsonArray str2JsonArray(String str) {
         return gson.fromJson(str, JsonArray.class);
-    }
-
-    /**
-     * 将yaml config转化为json对象
-     * 需要注意,yaml config本身对于数字类型的保存有误差
-     *
-     * @param configurationSection yaml的config section
-     * @return 转化完毕的json对象
-     */
-    public static JsonObject configSection2Json(ConfigurationSection configurationSection) {
-        return gson.fromJson(gson.toJson(YamlConfigHelper.configSection2Map(configurationSection)), JsonObject.class);
-    }
-
-    /**
-     * 将yaml config中读取到的list转化为json数组
-     *
-     * @param list 原始数组
-     * @return 转化完毕的json数组
-     */
-    public static JsonArray configList2JsonArray(List<?> list) {
-        return gson.fromJson(gson.toJson(YamlConfigHelper.configList2List(list)), JsonArray.class);
     }
 
     /**
