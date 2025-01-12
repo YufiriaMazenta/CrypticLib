@@ -5,19 +5,28 @@ import net.md_5.bungee.api.ProxyServer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class BungeeVersion {
+public enum BungeeVersion {
+
+    CURRENT(getCurrentVersion()),
+    V1_13(11300),
+    V1_14(11400),
+    V1_15(11500),
+    V1_16(11600),
+    V1_17(11700),
+    V1_18(11800),
+    V1_19(11900),
+    V1_20(12000),
+    V1_21(12100);
 
     private final int version;
 
-    private BungeeVersion(int version) {
+    BungeeVersion(int version) {
         this.version = version;
-        versionMap.put(version, this);
     }
 
     public int version() {
         return version;
     }
-
 
     /**
      * 判断当前的版本是否低于一个版本
@@ -55,36 +64,11 @@ public class BungeeVersion {
         return this.version >= version.version;
     }
 
-    private static final Map<Integer, BungeeVersion> versionMap = new ConcurrentHashMap<>();
-    private static BungeeVersion current;
-
-    public static final BungeeVersion V1_13 = new BungeeVersion(11300);
-
-    public static final BungeeVersion V1_14 = new BungeeVersion(11400);
-
-    public static final BungeeVersion V1_15 = new BungeeVersion(11500);
-
-    public static final BungeeVersion V1_16 = new BungeeVersion(11600);
-
-    public static final BungeeVersion V1_17 = new BungeeVersion(11700);
-
-    public static final BungeeVersion V1_18 = new BungeeVersion(11800);
-
-    public static final BungeeVersion V1_19 = new BungeeVersion(11900);
-
-    public static final BungeeVersion V1_20 = new BungeeVersion(12000);
-
-    public static final BungeeVersion V1_21 = new BungeeVersion(12100);
-
-
     public static BungeeVersion current() {
-        if (current == null) {
-            loadCurrentVersion();
-        }
-        return current;
+        return CURRENT;
     }
 
-    private static void loadCurrentVersion() {
+    private static int getCurrentVersion() {
         //获取游戏版本
         String versionStr = ProxyServer.getInstance().getGameVersion();
         //拿到支持的最后一个版本
@@ -95,17 +79,13 @@ public class BungeeVersion {
             versionStr = versionStr.substring(0, versionStr.indexOf("-"));
         }
         String[] split = versionStr.split("\\.");
-        int BungeeVersion;
-        BungeeVersion = 0;
-        BungeeVersion += (Integer.parseInt(split[0]) * 10000);
-        BungeeVersion += (Integer.parseInt(split[1]) * 100);
+        int bungeeVersion;
+        bungeeVersion = 0;
+        bungeeVersion += (Integer.parseInt(split[0]) * 10000);
+        bungeeVersion += (Integer.parseInt(split[1]) * 100);
         if (split.length > 2)
-            BungeeVersion += Integer.parseInt(split[2]);
-        if (!versionMap.containsKey(BungeeVersion)) {
-            current = new BungeeVersion(BungeeVersion);
-        } else {
-            current = versionMap.get(BungeeVersion);
-        }
+            bungeeVersion += Integer.parseInt(split[2]);
+        return bungeeVersion;
     }
     
 }

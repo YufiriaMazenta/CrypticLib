@@ -2,16 +2,62 @@ package crypticlib;
 
 import org.bukkit.Bukkit;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+public enum MinecraftVersion {
 
-public class MinecraftVersion {
+    CURRENT(getCurrentVersion()),
+
+    V1_13(11300),
+    V1_13_1(11301),
+    V1_13_2(11302),
+
+    V1_14(11400),
+    V1_14_1(11401),
+    V1_14_2(11402),
+    V1_14_3(11403),
+    V1_14_4(11404),
+
+    V1_15(11500),
+    V1_15_1(11501),
+    V1_15_2(11502),
+
+    V1_16(11600),
+    V1_16_1(11601),
+    V1_16_2(11602),
+    V1_16_3(11603),
+    V1_16_4(11604),
+    V1_16_5(11605),
+
+    V1_17(11700),
+    V1_17_1(11701),
+
+    V1_18(11800),
+    V1_18_1(11801),
+    V1_18_2(11802),
+
+    V1_19(11900),
+    V1_19_1(11901),
+    V1_19_2(11902),
+    V1_19_3(11903),
+    V1_19_4(11904),
+
+    V1_20(12000),
+    V1_20_1(12001),
+    V1_20_2(12002),
+    V1_20_3(12003),
+    V1_20_4(12004),
+    V1_20_5(12005),
+    V1_20_6(12006),
+
+    V1_21(12100),
+    V1_21_1(12101),
+    V1_21_2(12102),
+    V1_21_3(12103),
+    V1_21_4(12104);
 
     private final int version;
 
-    private MinecraftVersion(int version) {
+    MinecraftVersion(int version) {
         this.version = version;
-        versionMap.put(version, this);
     }
 
     public int version() {
@@ -54,66 +100,12 @@ public class MinecraftVersion {
         return this.version >= version.version;
     }
 
-    private static final Map<Integer, MinecraftVersion> versionMap = new ConcurrentHashMap<>();
-    private static MinecraftVersion current;
-
-    public static final MinecraftVersion V1_13 = new MinecraftVersion(11300);
-    public static final MinecraftVersion V1_13_1 = new MinecraftVersion(11301);
-    public static final MinecraftVersion V1_13_2 = new MinecraftVersion(11302);
-
-    public static final MinecraftVersion V1_14 = new MinecraftVersion(11400);
-    public static final MinecraftVersion V1_14_1 = new MinecraftVersion(11401);
-    public static final MinecraftVersion V1_14_2 = new MinecraftVersion(11402);
-    public static final MinecraftVersion V1_14_3 = new MinecraftVersion(11403);
-    public static final MinecraftVersion V1_14_4 = new MinecraftVersion(11404);
-
-    public static final MinecraftVersion V1_15 = new MinecraftVersion(11500);
-    public static final MinecraftVersion V1_15_1 = new MinecraftVersion(11501);
-    public static final MinecraftVersion V1_15_2 = new MinecraftVersion(11502);
-
-    public static final MinecraftVersion V1_16 = new MinecraftVersion(11600);
-    public static final MinecraftVersion V1_16_1 = new MinecraftVersion(11601);
-    public static final MinecraftVersion V1_16_2 = new MinecraftVersion(11602);
-    public static final MinecraftVersion V1_16_3 = new MinecraftVersion(11603);
-    public static final MinecraftVersion V1_16_4 = new MinecraftVersion(11604);
-    public static final MinecraftVersion V1_16_5 = new MinecraftVersion(11605);
-
-    public static final MinecraftVersion V1_17 = new MinecraftVersion(11700);
-    public static final MinecraftVersion V1_17_1 = new MinecraftVersion(11701);
-
-    public static final MinecraftVersion V1_18 = new MinecraftVersion(11800);
-    public static final MinecraftVersion V1_18_1 = new MinecraftVersion(11801);
-    public static final MinecraftVersion V1_18_2 = new MinecraftVersion(11802);
-
-    public static final MinecraftVersion V1_19 = new MinecraftVersion(11900);
-    public static final MinecraftVersion V1_19_1 = new MinecraftVersion(11901);
-    public static final MinecraftVersion V1_19_2 = new MinecraftVersion(11902);
-    public static final MinecraftVersion V1_19_3 = new MinecraftVersion(11903);
-    public static final MinecraftVersion V1_19_4 = new MinecraftVersion(11904);
-
-    public static final MinecraftVersion V1_20 = new MinecraftVersion(12000);
-    public static final MinecraftVersion V1_20_1 = new MinecraftVersion(12001);
-    public static final MinecraftVersion V1_20_2 = new MinecraftVersion(12002);
-    public static final MinecraftVersion V1_20_3 = new MinecraftVersion(12003);
-    public static final MinecraftVersion V1_20_4 = new MinecraftVersion(12004);
-    public static final MinecraftVersion V1_20_5 = new MinecraftVersion(12005);
-    public static final MinecraftVersion V1_20_6 = new MinecraftVersion(12006);
-
-    public static final MinecraftVersion V1_21 = new MinecraftVersion(12100);
-    public static final MinecraftVersion V1_21_1 = new MinecraftVersion(12101);
-    public static final MinecraftVersion V1_21_2 = new MinecraftVersion(12102);
-    public static final MinecraftVersion V1_21_3 = new MinecraftVersion(12103);
-    public static final MinecraftVersion V1_21_4 = new MinecraftVersion(12104);
-
     public static MinecraftVersion current() {
-        if (current == null) {
-            loadCurrentVersion();
-        }
-        return current;
+        return CURRENT;
     }
 
-    private static void loadCurrentVersion() {
-        //获取游戏版本
+    private static int getCurrentVersion() {
+        //获取当前的游戏版本
         String versionStr = Bukkit.getBukkitVersion();
         if (versionStr.contains("-")) {
             versionStr = versionStr.substring(0, versionStr.indexOf("-"));
@@ -125,11 +117,7 @@ public class MinecraftVersion {
         minecraftVersion += (Integer.parseInt(split[1]) * 100);
         if (split.length > 2)
             minecraftVersion += Integer.parseInt(split[2]);
-        if (!versionMap.containsKey(minecraftVersion)) {
-            current = new MinecraftVersion(minecraftVersion);
-        } else {
-            current = versionMap.get(minecraftVersion);
-        }
+        return minecraftVersion;
     }
 
 }
