@@ -38,9 +38,9 @@ public enum BungeeVersion {
     }
 
     /**
-     * 判断当前的版本是否最高是一个版本，即低于或等于此版本
+     * 判断当前的版本是否不高于一个版本，即低于或等于此版本
      * @param version 用于比较的版本
-     * @return 是否最高是此版本
+     * @return 是否不高于此版本
      */
     public boolean beforeOrEquals(BungeeVersion version) {
         return this.version <= version.version;
@@ -56,12 +56,21 @@ public enum BungeeVersion {
     }
 
     /**
-     * 判断当前的版本是否最少是一个版本，即高于或等于此版本
+     * 判断当前的版本是否不低于一个版本，即高于或等于此版本
      * @param version 用于比较的版本
-     * @return 是否最少是此版本
+     * @return 是否不低于此版本
      */
     public boolean afterOrEquals(BungeeVersion version) {
         return this.version >= version.version;
+    }
+
+    /**
+     * 判断当前的版本是否处于一个版本,即等于此版本
+     * @param version 用于比较的版本
+     * @return 是否处于一个版本
+     */
+    public boolean equals(BungeeVersion version) {
+        return this.version == version.version;
     }
 
     public static BungeeVersion current() {
