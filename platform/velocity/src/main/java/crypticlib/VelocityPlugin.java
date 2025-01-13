@@ -4,8 +4,11 @@ import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import com.velocitypowered.api.scheduler.Scheduler;
 import crypticlib.command.VelocityCommand;
 import crypticlib.command.VelocityCommandManager;
 import crypticlib.command.annotation.Command;
@@ -22,10 +25,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class VelocityPlugin {
@@ -146,6 +146,30 @@ public abstract class VelocityPlugin {
 
     public File dataFolder() {
         return dataDirectory.toFile();
+    }
+
+    public Scheduler getScheduler() {
+        return proxyServer.getScheduler();
+    }
+
+    public Optional<Player> getPlayerOpt(UUID uuid) {
+        return proxyServer.getPlayer(uuid);
+    }
+
+    public Optional<Player> getPlayerOpt(String name) {
+        return proxyServer.getPlayer(name);
+    }
+
+    public Collection<Player> getAllPlayers() {
+        return proxyServer.getAllPlayers();
+    }
+
+    public Optional<RegisteredServer> getServerOpt(String name) {
+        return proxyServer.getServer(name);
+    }
+
+    public Collection<RegisteredServer> getAllServers() {
+        return proxyServer.getAllServers();
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
