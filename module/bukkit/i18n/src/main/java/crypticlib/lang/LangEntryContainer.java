@@ -3,7 +3,7 @@ package crypticlib.lang;
 import com.google.common.base.Charsets;
 import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.lang.entry.LangEntry;
-import crypticlib.util.FileHelper;
+import crypticlib.util.IOHelper;
 import crypticlib.util.LocaleHelper;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -85,10 +85,10 @@ public class LangEntryContainer {
         langConfigWrapperMap.clear();
         File folder = new File(plugin.getDataFolder(), langFileFolder);
         //如果语言文件夹为空，防止出现NullPointerException，需要生成默认语言文件
-        List<File> yamlFiles = FileHelper.allYamlFiles(folder);
+        List<File> yamlFiles = IOHelper.allYamlFiles(folder);
         if (yamlFiles.isEmpty()) {
             saveDefLangFiles();
-            yamlFiles = FileHelper.allYamlFiles(folder);
+            yamlFiles = IOHelper.allYamlFiles(folder);
         }
 
         for (File langFile : yamlFiles) {

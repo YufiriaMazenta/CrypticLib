@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public interface MsgSender<Receiver, Component, Player> {
-    
+
     /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量
      *
@@ -152,6 +152,11 @@ public interface MsgSender<Receiver, Component, Player> {
 
     void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap);
 
+    /**
+     * 向后台发送一条DEBUG文本
+     *
+     * @param msg        发送的文本
+     */
     default void debug(String msg) {
         debug(msg, new HashMap<>());
     }
@@ -163,7 +168,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param replaceMap 需要替换的文本
      */
     default void debug(String msg, Map<String, String> replaceMap) {
-        if (CrypticLib.DEBUG) {
+        if (CrypticLib.debug()) {
             info("[DEBUG] | " + msg, replaceMap);
         }
     }

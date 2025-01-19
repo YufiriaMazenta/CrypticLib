@@ -9,6 +9,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import com.velocitypowered.api.scheduler.Scheduler;
+import crypticlib.chat.VelocityMsgSender;
 import crypticlib.command.VelocityCommand;
 import crypticlib.command.VelocityCommandManager;
 import crypticlib.command.annotation.Command;
@@ -20,6 +21,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.PermInfo;
 import crypticlib.perm.VelocityPermManager;
+import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.slf4j.Logger;
 
@@ -45,6 +47,7 @@ public abstract class VelocityPlugin {
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
+        IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

@@ -2,7 +2,7 @@ package crypticlib.action.impl.common;
 
 import crypticlib.action.BaseAction;
 import crypticlib.chat.BukkitMsgSender;
-import crypticlib.util.StringHelper;
+import crypticlib.util.IOHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +31,7 @@ public class Tell extends BaseAction {
             message = argPreprocessor.apply(message);
         }
         if (player == null) {
-            BukkitMsgSender.INSTANCE.info(message);
+            IOHelper.info(message);
         } else {
             BukkitMsgSender.INSTANCE.sendMsg(player, message);
         }

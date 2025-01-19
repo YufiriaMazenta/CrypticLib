@@ -1,6 +1,6 @@
 package crypticlib.config;
 
-import crypticlib.util.FileHelper;
+import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -104,7 +104,7 @@ public abstract class ConfigWrapper<C> {
                         input.close();
                     }
                 } catch (NullPointerException | IllegalArgumentException | IOException e) {
-                    FileHelper.createNewFile(configFile);
+                    IOHelper.createNewFile(configFile);
                 }
             }
         }

@@ -1,6 +1,6 @@
 package crypticlib.config;
 
-import crypticlib.util.FileHelper;
+import crypticlib.util.IOHelper;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -50,9 +50,9 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
     public void reloadConfig() {
         saveDefaultConfigFile();
         try {
-            if (FileHelper.isYamlFile(path)) {
+            if (IOHelper.isYamlFile(configFile)) {
                 config = ConfigurationProvider.getProvider(YamlConfiguration.class).load(configFile);
-            } else if (FileHelper.isJsonFile(path)) {
+            } else if (IOHelper.isJsonFile(configFile)) {
                 //json配置只在1.15以上可用
                 config = ConfigurationProvider.getProvider(JsonConfiguration.class).load(configFile);
             } else {
@@ -67,9 +67,9 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
     public void saveConfig() {
         synchronized (lock) {
             try {
-                if (FileHelper.isYamlFile(path)) {
+                if (IOHelper.isYamlFile(configFile)) {
                     ConfigurationProvider.getProvider(YamlConfiguration.class).save(config(), configFile);
-                } else if (FileHelper.isJsonFile(path)) {
+                } else if (IOHelper.isJsonFile(configFile)) {
                     ConfigurationProvider.getProvider(JsonConfiguration.class).save(config(), configFile);
                 }
             } catch (IOException ex) {

@@ -1,5 +1,6 @@
 package crypticlib;
 
+import crypticlib.chat.BukkitMsgSender;
 import crypticlib.command.BukkitCommand;
 import crypticlib.command.BukkitCommandManager;
 import crypticlib.command.annotation.Command;
@@ -11,6 +12,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -33,6 +35,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public BukkitPlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+        IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
