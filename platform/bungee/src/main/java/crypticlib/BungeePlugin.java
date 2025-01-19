@@ -12,6 +12,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.resource.ResourceLoader;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.plugin.Listener;
@@ -35,6 +36,7 @@ public abstract class BungeePlugin extends Plugin {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
         IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
+        ResourceLoader.downloadResources(getDataFolder());
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

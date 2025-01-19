@@ -21,6 +21,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.PermInfo;
 import crypticlib.perm.VelocityPermManager;
+import crypticlib.resource.ResourceLoader;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.slf4j.Logger;
@@ -48,6 +49,7 @@ public abstract class VelocityPlugin {
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
         IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
+        ResourceLoader.downloadResources(dataDirectory.toFile());
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

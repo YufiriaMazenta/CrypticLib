@@ -12,6 +12,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.resource.ResourceLoader;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
@@ -36,6 +37,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
         IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
+        ResourceLoader.downloadResources(getDataFolder());
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
