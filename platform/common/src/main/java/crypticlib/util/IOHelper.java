@@ -123,12 +123,18 @@ public class IOHelper {
 
     /**
      * 复制文件
+     *
      * @param from 原始文件
      * @param to 复制结果
      */
     @NotNull
     public static File copyFile(File from, File to) {
-        try (FileInputStream fileIn = new FileInputStream(from); FileOutputStream fileOut = new FileOutputStream(to); FileChannel channelIn = fileIn.getChannel(); FileChannel channelOut = fileOut.getChannel()) {
+        try (
+            FileInputStream fileIn = new FileInputStream(from);
+            FileOutputStream fileOut = new FileOutputStream(to);
+            FileChannel channelIn = fileIn.getChannel();
+            FileChannel channelOut = fileOut.getChannel()
+        ) {
             channelIn.transferTo(0, channelIn.size(), channelOut);
         } catch (IOException t) {
             t.printStackTrace();
