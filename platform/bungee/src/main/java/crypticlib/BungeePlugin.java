@@ -35,14 +35,15 @@ public abstract class BungeePlugin extends Plugin {
     public BungeePlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+        CrypticLib.setPluginName(getDescription().getName());
         IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
-        ResourceLoader.downloadResources(getDataFolder());
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BungeePermManager.INSTANCE;
+        ResourceLoader.downloadResources(getDataFolder());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);

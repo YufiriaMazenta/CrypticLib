@@ -2,6 +2,7 @@ package crypticlib.chat;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
+import crypticlib.CrypticLib;
 import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.AutoTask;
 import crypticlib.lifecycle.LifeCycle;
@@ -120,6 +121,7 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
+        msg = "[" + CrypticLib.pluginName() + "] " + msg;
         msg = StringHelper.replaceStrings(msg, replaceMap);
         Component component = VelocityTextProcessor.toComponent(msg);
         plugin.proxyServer().getConsoleCommandSource().sendMessage(component);

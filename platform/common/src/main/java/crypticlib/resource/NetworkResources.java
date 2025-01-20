@@ -8,8 +8,8 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface OnlineResources {
+public @interface NetworkResources {
 
-    OnlineResource[] resources();
+    NetworkResource[] resources();
 
 }

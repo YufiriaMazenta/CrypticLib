@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import crypticlib.CrypticLib;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -112,6 +113,7 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
+        msg = "[" + CrypticLib.pluginName() + "]" + msg;
         sendMsg(Bukkit.getConsoleSender(), msg, replaceMap);
     }
 

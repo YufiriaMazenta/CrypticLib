@@ -3,6 +3,7 @@ package crypticlib;
 public class CrypticLib {
 
     private static boolean debug = false;
+    private static String pluginName;
 
     /**
      * 获取是否启用了调试模式
@@ -18,6 +19,14 @@ public class CrypticLib {
      */
     public static void setDebug(boolean debug) {
         CrypticLib.debug = debug;
+    }
+
+    public static String pluginName() {
+        return pluginName;
+    }
+
+    public static void setPluginName(String pluginName) {
+        CrypticLib.pluginName = pluginName;
     }
 
 }

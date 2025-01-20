@@ -36,14 +36,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public BukkitPlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
+        CrypticLib.setPluginName(getDescription().getName());
         IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
-        ResourceLoader.downloadResources(getDataFolder());
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
+        ResourceLoader.downloadResources(getDataFolder());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);

@@ -8,10 +8,10 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface OnlineResource {
+public @interface NetworkResource {
 
     /**
-     * 下载链接,将会按照顺序尝试下载,如果全部下载失败且{@link OnlineResource#throwIfFailed()}为true,将会卸载插件,否则打印报错
+     * 下载链接,将会按照顺序尝试下载,如果全部下载失败且{@link NetworkResource#throwIfFailed()}为true,将会卸载插件,否则打印报错
      */
     String[] downloadUrl();
 
@@ -24,5 +24,10 @@ public @interface OnlineResource {
      * 若此资源加载失败,是否卸载插件
      */
     boolean throwIfFailed() default false;
+
+    /**
+     * 如果文件已经存在,是否下载替换
+     */
+    boolean downloadIfExist() default false;
 
 }

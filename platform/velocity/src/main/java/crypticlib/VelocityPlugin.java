@@ -48,14 +48,15 @@ public abstract class VelocityPlugin {
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
+        CrypticLib.setPluginName(pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId()));
         IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
-        ResourceLoader.downloadResources(dataDirectory.toFile());
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Subscribe
     public final void onProxyInitialization(ProxyInitializeEvent event) {
         PermInfo.PERM_MANAGER = VelocityPermManager.INSTANCE;
+        ResourceLoader.downloadResources(dataFolder());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
