@@ -40,22 +40,22 @@ public enum FoliaScheduler implements IScheduler, BukkitLifeCycleTask {
 
     @Override
     public ITaskWrapper syncLater(@NotNull Runnable task, long delayTicks) {
-        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, runnableToConsumer(task), delayTicks));
+        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, runnableToConsumer(task), toSafeTick(delayTicks)));
     }
 
     @Override
     public ITaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
-        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runDelayed(plugin, runnableToConsumer(task), delayTicks * 50, TimeUnit.MILLISECONDS));
+        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runDelayed(plugin, runnableToConsumer(task), toSafeTick(delayTicks) * 50, TimeUnit.MILLISECONDS));
     }
 
     @Override
     public ITaskWrapper syncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, runnableToConsumer(task), delayTicks, periodTicks));
+        return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, runnableToConsumer(task), toSafeTick(delayTicks), toSafeTick(periodTicks)));
     }
 
     @Override
     public ITaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runAtFixedRate(plugin, runnableToConsumer(task), delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS));
+        return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runAtFixedRate(plugin, runnableToConsumer(task), toSafeTick(delayTicks) * 50, toSafeTick(periodTicks) * 50, TimeUnit.MILLISECONDS));
     }
 
     @Override
@@ -66,12 +66,12 @@ public enum FoliaScheduler implements IScheduler, BukkitLifeCycleTask {
 
     @Override
     public ITaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
-        return new FoliaTaskWrapper(entity.getScheduler().runDelayed(plugin, runnableToConsumer(task), retriedTask, delayTicks));
+        return new FoliaTaskWrapper(entity.getScheduler().runDelayed(plugin, runnableToConsumer(task), retriedTask, toSafeTick(delayTicks)));
     }
 
     @Override
     public ITaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(entity.getScheduler().runAtFixedRate(plugin, runnableToConsumer(task), retriedTask, delayTicks, periodTicks));
+        return new FoliaTaskWrapper(entity.getScheduler().runAtFixedRate(plugin, runnableToConsumer(task), retriedTask, toSafeTick(delayTicks), toSafeTick(periodTicks)));
     }
 
     @Override
@@ -81,12 +81,12 @@ public enum FoliaScheduler implements IScheduler, BukkitLifeCycleTask {
 
     @Override
     public ITaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
-        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runDelayed(plugin, location, runnableToConsumer(task), delayTicks));
+        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runDelayed(plugin, location, runnableToConsumer(task), toSafeTick(delayTicks)));
     }
 
     @Override
     public ITaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
-        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runAtFixedRate(plugin, location, runnableToConsumer(task), delayTicks, periodTicks));
+        return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runAtFixedRate(plugin, location, runnableToConsumer(task), toSafeTick(delayTicks), toSafeTick(periodTicks)));
     }
 
     @Override
@@ -97,6 +97,10 @@ public enum FoliaScheduler implements IScheduler, BukkitLifeCycleTask {
 
     private Consumer<ScheduledTask> runnableToConsumer(Runnable runnable) {
         return (final ScheduledTask task) -> runnable.run();
+    }
+
+    private long toSafeTick(long originTick) {
+        return originTick > 0 ? originTick : 1;
     }
 
     @Override
