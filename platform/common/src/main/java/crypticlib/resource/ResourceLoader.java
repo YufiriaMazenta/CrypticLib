@@ -27,11 +27,15 @@ public class ResourceLoader {
         return resources;
     }
 
-    public static void downloadResources(File folder) {
+    public static void downloadResources(File pluginDataFolder) {
+        List<NetworkResource> networkResources = loadResources();
+        if (networkResources.isEmpty()) {
+            return;
+        }
         IOHelper.info("Resources downloaded in " + FunctionExecutor.execute(() -> {
             IOHelper.info("Downloading resources...");
-            loadResources().forEach(resource -> {
-                File out = new File(folder, resource.filePath());
+            networkResources.forEach(resource -> {
+                File out = new File(pluginDataFolder, resource.filePath());
                 //如果文件已经存在且NetworkResource.downloadIfExist为false,不再下载
                 if (out.exists() && !resource.downloadIfExist()) {
                     return;
@@ -45,7 +49,7 @@ public class ResourceLoader {
                         success = true;
                         break;
                     } catch (IOException e) {
-                        IOHelper.debug("[CrypticLib] Failed to download file from url " + url);
+                        IOHelper.debug("&cFailed to download file from url " + url);
                         if (CrypticLib.debug()) {
                             e.printStackTrace();
                         }
@@ -55,8 +59,10 @@ public class ResourceLoader {
                     if (resource.throwIfFailed()) {
                         throw new ResourceLoadException(resource.filePath());
                     } else {
-                        IOHelper.info("&c[CrypticLib] Download resource failed: " + resource.filePath());
+                        IOHelper.info("&cDownload resource" + resource.filePath() + "failed.");
                     }
+                } else {
+                    IOHelper.info("Download resource " + resource.filePath() + " success.");
                 }
             });
         }) + " ms.");
