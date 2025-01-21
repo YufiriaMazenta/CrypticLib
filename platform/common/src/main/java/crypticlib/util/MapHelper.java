@@ -13,7 +13,7 @@ public class MapHelper {
 
     /**
      * 用于将形如{a:b,c:d}这样的键值对文本转化为map
-     * 支持用""或''包裹值以兼容更多字符,例如{a:" ab: ", b:'c'}
+     * 支持用""或''包裹以兼容更多字符,例如{"a":" ab: ", b:'c'}
      * 文本可以没有{}包裹
      * 格式错误时,将会抛出{@link KeyValueTextParseException}
      *
@@ -39,13 +39,8 @@ public class MapHelper {
 
         //逐一处理每个键值对
         while (matcher.find()) {
-            String key = matcher.group(1).trim();
-            String value = matcher.group(2).trim();
-
-            //若值被引号包裹,去掉引号(支持双引号和单引号)
-            if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
-                value = value.substring(1, value.length() - 1);
-            }
+            String key = unwrapStr(matcher.group(1).trim());
+            String value = unwrapStr(matcher.group(2).trim());
 
             //进行格式检查,确保键值对的格式有效
             if (key.isEmpty()) {
@@ -92,13 +87,8 @@ public class MapHelper {
 
         //遍历map, 构建每个键值对
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-
-            //处理值是否带有引号,若值中有空格或特殊字符,添加引号
-            if (value.contains(" ") || value.contains(",") || value.contains(":")) {
-                value = "\"" + value + "\"";
-            }
+            String key = wrapStr(entry.getKey());
+            String value = wrapStr(entry.getValue());
 
             result.append(key).append(":").append(value).append(", ");
         }
@@ -110,6 +100,27 @@ public class MapHelper {
         result.append("}");
 
         return result.toString();
+    }
+
+    /**
+     * 包装字符串,给字符串加上""包裹
+     * @param originStr 原始字符串
+     * @return 包装完的字符串
+     */
+    private static String wrapStr(String originStr) {
+        return "\"" + originStr + "\"";
+    }
+
+    /**
+     * 解包字符串,去除包裹字符串的""或''
+     * @param wrappedStr 被包裹的字符串
+     * @return 解包完的字符串
+     */
+    private static String unwrapStr(String wrappedStr) {
+        if ((wrappedStr.startsWith("\"") && wrappedStr.endsWith("\"")) || (wrappedStr.startsWith("'") && wrappedStr.endsWith("'"))) {
+            wrappedStr = wrappedStr.substring(1, wrappedStr.length() - 1);
+        }
+        return wrappedStr;
     }
 
     public static class KeyValueTextParseException extends RuntimeException {
