@@ -13,13 +13,13 @@ import java.util.concurrent.Future;
 /**
  * Bukkit平台的一些方法集成
  */
-public enum BukkitPlatform implements Platform {
+public enum BukkitPlatform implements IPlatform {
 
     INSTANCE;
 
     @Override
     @NotNull
-    public Platform.PlatformType type() {
+    public IPlatform.PlatformType type() {
         return PlatformType.BUKKIT;
     }
 

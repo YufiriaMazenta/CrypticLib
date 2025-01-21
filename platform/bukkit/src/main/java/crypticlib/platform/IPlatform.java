@@ -11,7 +11,7 @@ import java.util.concurrent.Future;
 /**
  * 平台接口
  */
-public interface Platform {
+public interface IPlatform {
 
     /**
      * 获取平台的类型
@@ -19,7 +19,7 @@ public interface Platform {
      * @return 平台的类型
      */
     @NotNull
-    Platform.PlatformType type();
+    IPlatform.PlatformType type();
 
     /**
      * 获取平台对应的调度器

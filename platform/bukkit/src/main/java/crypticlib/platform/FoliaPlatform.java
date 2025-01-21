@@ -12,13 +12,13 @@ import java.util.concurrent.Future;
 /**
  * Folia平台的一些方法集成
  */
-public enum FoliaPlatform implements Platform {
+public enum FoliaPlatform implements IPlatform {
 
     INSTANCE;
 
     @Override
     @NotNull
-    public Platform.PlatformType type() {
+    public IPlatform.PlatformType type() {
         return PlatformType.FOLIA;
     }
 

@@ -3,13 +3,13 @@ package crypticlib;
 import crypticlib.platform.BukkitPlatform;
 import crypticlib.platform.FoliaPlatform;
 import crypticlib.platform.PaperPlatform;
-import crypticlib.platform.Platform;
+import crypticlib.platform.IPlatform;
 import crypticlib.scheduler.IScheduler;
 import org.jetbrains.annotations.NotNull;
 
 public class CrypticLibBukkit {
 
-    private static Platform platform;
+    private static IPlatform platform;
 
     static {
         loadPlatform();
@@ -21,7 +21,7 @@ public class CrypticLibBukkit {
      * @return 当前运行的平台实例
      */
     @NotNull
-    public static Platform platform() {
+    public static IPlatform platform() {
         return platform;
     }
 
@@ -43,11 +43,11 @@ public class CrypticLibBukkit {
     }
 
     public static boolean isFolia() {
-        return platform.type().equals(Platform.PlatformType.FOLIA);
+        return platform.type().equals(IPlatform.PlatformType.FOLIA);
     }
 
     public static boolean isPaper() {
-        return platform.type().equals(Platform.PlatformType.PAPER) || platform.type().equals(Platform.PlatformType.FOLIA);
+        return platform.type().equals(IPlatform.PlatformType.PAPER) || platform.type().equals(IPlatform.PlatformType.FOLIA);
     }
 
 }

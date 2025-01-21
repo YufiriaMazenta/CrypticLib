@@ -12,13 +12,13 @@ import java.util.concurrent.Future;
 /**
  * Paper平台的一些方法集成
  */
-public enum PaperPlatform implements Platform {
+public enum PaperPlatform implements IPlatform {
 
     INSTANCE;
 
     @Override
     @NotNull
-    public Platform.PlatformType type() {
+    public IPlatform.PlatformType type() {
         return PlatformType.PAPER;
     }
 
