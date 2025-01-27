@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -101,15 +102,26 @@ public class StoredMenu extends Menu {
 
     @Override
     public void onDrag(InventoryDragEvent event) {
-        if (event.getWhoClicked().getInventory().equals(event.getInventory()))
-            return;
-        for (Integer slot : event.getInventorySlots()) {
-            ItemStack current = event.getInventory().getItem(slot);
-            if (event.getOldCursor().isSimilar(current)) {
-                event.setCancelled(true);
-                return;
+        //判断拖拽操作是否在顶部UI进行
+        boolean rawSlotsInTopInv = false;
+        for (Integer rawSlot : event.getRawSlots()) {
+            Inventory inventory = event.getView().getInventory(rawSlot);
+            if (Objects.equals(inventory, event.getView().getTopInventory())) {
+                rawSlotsInTopInv = true;
             }
         }
+
+        //如果包含顶部UI,将进行判断
+        if (rawSlotsInTopInv) {
+            for (Integer slot : event.getInventorySlots()) {
+                //不允许对已有图标槽位的拖拽
+                if (slotMap.containsKey(slot)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+        }
+
         refreshStoredItems(event.getInventory());
     }
 
