@@ -129,8 +129,14 @@ public abstract class VelocityPlugin {
 
     public void disable() {}
 
+    /**
+     * 插件重载时执行的方法,会在LifecycleTask之前执行
+     */
+    public void reload() {}
+
     public final void reloadPlugin() {
         reloadConfig();
+        reload();
         runLifeCycleTasks(LifeCycle.RELOAD);
     }
 
