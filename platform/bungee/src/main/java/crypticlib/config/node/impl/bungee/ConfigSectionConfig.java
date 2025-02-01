@@ -4,14 +4,21 @@ import crypticlib.config.node.BungeeConfigNode;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 public class ConfigSectionConfig extends BungeeConfigNode<Configuration> {
 
     public ConfigSectionConfig(@NotNull String key) {
-        this(key, new Configuration());
+        this(key, new HashMap<>());
     }
 
-    public ConfigSectionConfig(@NotNull String key, @NotNull Configuration def) {
-        super(key, def);
+    public ConfigSectionConfig(@NotNull String key, @NotNull Map<String, Object> def) {
+        super(key, new Configuration());
+        for (Map.Entry<String, Object> entry : def.entrySet()) {
+            this.def.set(entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
