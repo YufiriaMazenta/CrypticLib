@@ -1,5 +1,6 @@
 package crypticlib.util;
 
+import crypticlib.CrypticLib;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -192,22 +193,17 @@ public class ReflectionHelper {
                 try {
                     //尝试获取名为INSTANCE的静态变量，判断是否为该类的实例，若是则用作其实例
                     Field instanceField = ReflectionHelper.getDeclaredField(clazz, "INSTANCE");
-                    if (Modifier.isStatic(instanceField.getModifiers())) {
-                        if (instanceField.getType().equals(clazz)) {
-                            object = (T) instanceField.get(clazz);
-                        } else {
-                            object = ReflectionHelper.newDeclaredInstance(clazz, objects);
-                        }
+                    if (Modifier.isStatic(instanceField.getModifiers()) && instanceField.getType().equals(clazz)) {
+                        object = getDeclaredFieldObj(instanceField, null);
                     } else {
                         object = ReflectionHelper.newDeclaredInstance(clazz, objects);
                     }
                 } catch (RuntimeException e) {
                     //当没有INSTANCE名字的变量时，则新建一个对象
                     object = ReflectionHelper.newDeclaredInstance(clazz, objects);
-                } catch (IllegalAccessException e) {
-                    //当抛出此错误时，新建一个对象，并打印错误信息
-                    e.printStackTrace();
-                    object = ReflectionHelper.newDeclaredInstance(clazz, objects);
+                    if (CrypticLib.debug()) {
+                        e.printStackTrace();
+                    }
                 }
             }
             singletonObjectMap.put(clazz, object);
