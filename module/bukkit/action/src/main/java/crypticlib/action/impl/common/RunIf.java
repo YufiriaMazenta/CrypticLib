@@ -5,9 +5,8 @@ import crypticlib.action.ActionCompiler;
 import crypticlib.action.BaseAction;
 import crypticlib.action.condition.Condition;
 import crypticlib.action.condition.ConditionFactory;
-import crypticlib.action.condition.PlaceholderAPICondition;
+import crypticlib.action.condition.CommonCondition;
 import crypticlib.util.MapHelper;
-import crypticlib.util.StringHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -32,8 +31,8 @@ public class RunIf extends BaseAction {
 
     public RunIf(String args) {
         Map<String, String> map = MapHelper.keyValueText2Map(Objects.requireNonNull(args));
-        this.condition = map.getOrDefault("condition", "true");
-        this.conditionType = ConditionFactory.INSTANCE.getConditionOpt(map.get("condition_type")).orElse(PlaceholderAPICondition.INSTANCE);
+        this.condition = map.getOrDefault("condition", "false");
+        this.conditionType = ConditionFactory.INSTANCE.getConditionOpt(map.get("condition_type")).orElse(CommonCondition.INSTANCE);
         if (map.containsKey("action")) {
             this.action = ActionCompiler.INSTANCE.compile(map.get("action"));
         } else {
