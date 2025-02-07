@@ -1,6 +1,7 @@
 package crypticlib.action.condition;
 
 import crypticlib.chat.BukkitTextProcessor;
+import crypticlib.util.IOHelper;
 import crypticlib.util.StringHelper;
 import org.bukkit.OfflinePlayer;
 
@@ -50,6 +51,7 @@ public class CommonConditionComparator {
         String left = parsed.left();
         String operator = parsed.operator();
         String right = parsed.right();
+        IOHelper.debug("Comparing condition: left=" + left + ", operator=" + operator + ", right=" + right);
 
         // 判断是否为数值类型
         boolean isLeftNumber = StringHelper.isNumber(left);
