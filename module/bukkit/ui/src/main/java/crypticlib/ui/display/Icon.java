@@ -18,7 +18,7 @@ public class Icon {
     protected ItemStack display;
     protected Consumer<InventoryClickEvent> clickAction;
     /**
-     * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在updateLayout阶段preProcessIconWhenUpdateLayout方法触发前赋值
+     * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在{@link crypticlib.ui.menu.Menu#preProcessIconWhenDraw}前赋值
      */
     private @Nullable UUID parsePlayerId;
 

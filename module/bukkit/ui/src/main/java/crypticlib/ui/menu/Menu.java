@@ -72,9 +72,9 @@ public class Menu implements InventoryHolder {
      * @return 页面本身
      */
     public Menu openMenu() {
+        if (inventoryCache == null)
+            this.inventoryCache = getInventory();
         playerOpt().ifPresent(player -> {
-            if (inventoryCache == null)
-                this.inventoryCache = getInventory();
             player.openInventory(inventoryCache);
         });
         return this;
@@ -147,7 +147,6 @@ public class Menu implements InventoryHolder {
                     layoutSlotMap.get(key).add(slot);
                 }
                 Icon icon = layout.layoutMap().get(key).get();
-                icon.setParsePlayerId(playerId);
                 preProcessIconWhenUpdateLayout(slot, icon);
                 slotMap.put(slot, icon);
             }
@@ -259,6 +258,7 @@ public class Menu implements InventoryHolder {
             if (icon == null) {
                 return;
             }
+            icon.setParsePlayerId(playerId);
             preProcessIconWhenDraw(slot, icon);
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
