@@ -81,11 +81,15 @@ public class StoredMenu extends Menu {
             returnItems[i] = item;
             i++;
         }
+        Player player = player();
+        if (player == null) {
+            return;
+        }
         HashMap<Integer, ItemStack> failedItems = player.getInventory().addItem(returnItems);
         if (failedItems.isEmpty())
             return;
         for (ItemStack item : failedItems.values()) {
-            player().getWorld().dropItem(player().getLocation(), item);
+            player.getWorld().dropItem(player.getLocation(), item);
         }
         storedItems.clear();
     }

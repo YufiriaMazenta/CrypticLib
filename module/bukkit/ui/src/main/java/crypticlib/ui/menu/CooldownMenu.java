@@ -34,7 +34,7 @@ public class CooldownMenu extends Menu {
         long cooldown = cooldownTick * 50L - (current - lastClick);
         if (cooldown > 0) {
             BukkitMsgSender.INSTANCE.sendMsg(
-                player,
+                player(),
                 String.format(
                     cooldownMessage, cooldown / 1000.0
                 )

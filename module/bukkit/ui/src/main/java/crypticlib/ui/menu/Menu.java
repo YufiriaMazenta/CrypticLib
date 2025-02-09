@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 public class Menu implements InventoryHolder {
 
     protected final Map<Integer, Icon> slotMap;
-    protected final Player player;
+    protected final UUID playerId;
     protected MenuDisplay display;
     protected final Map<Character, List<Integer>> layoutSlotMap;
     protected Inventory inventoryCache;
@@ -41,7 +41,7 @@ public class Menu implements InventoryHolder {
     }
 
     public Menu(@NotNull Player player, @NotNull MenuDisplay display) {
-        this.player = player;
+        this.playerId = player.getUniqueId();
         this.display = display;
         this.slotMap = new LinkedHashMap<>();
         this.layoutSlotMap = new LinkedHashMap<>();
@@ -72,9 +72,11 @@ public class Menu implements InventoryHolder {
      * @return 页面本身
      */
     public Menu openMenu() {
-        if (inventoryCache == null)
-            this.inventoryCache = getInventory();
-        player.openInventory(inventoryCache);
+        playerOpt().ifPresent(player -> {
+            if (inventoryCache == null)
+                this.inventoryCache = getInventory();
+            player.openInventory(inventoryCache);
+        });
         return this;
     }
 
@@ -88,7 +90,11 @@ public class Menu implements InventoryHolder {
             if (this.inventoryCache == null) {
                 this.inventoryCache = getInventory();
             }
-            CrypticLibBukkit.scheduler().sync(() -> player.openInventory(inventoryCache));
+            CrypticLibBukkit.scheduler().sync(() -> {
+                playerOpt().ifPresent(player -> {
+                    player.openInventory(inventoryCache);
+                });
+            });
         });
     }
 
@@ -141,7 +147,7 @@ public class Menu implements InventoryHolder {
                     layoutSlotMap.get(key).add(slot);
                 }
                 Icon icon = layout.layoutMap().get(key).get();
-                icon.setParsePlayer(player);
+                icon.setParsePlayerId(playerId);
                 preProcessIconWhenUpdateLayout(slot, icon);
                 slotMap.put(slot, icon);
             }
@@ -176,6 +182,10 @@ public class Menu implements InventoryHolder {
      * 刷新页面标题，若玩家未打开此页面，则无效
      */
     public void updateMenuTitle() {
+        Player player = player();
+        if (player == null) {
+            return;
+        }
         Object inventoryView = InventoryViewHelper.getOpenInventory(player);
         Inventory topInventory = InventoryViewHelper.getTopInventory(player);
         if (topInventory.getHolder() != null && topInventory.getHolder() instanceof Menu) {
@@ -252,14 +262,15 @@ public class Menu implements InventoryHolder {
             preProcessIconWhenDraw(slot, icon);
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
+            Player iconParsePlayer = icon.parsePlayer().orElse(null);
             if (meta != null) {
                 if (meta.hasDisplayName()) {
-                    meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, meta.getDisplayName())));
+                    meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, meta.getDisplayName())));
                 }
                 if (meta.hasLore()) {
                     List<String> lore = meta.getLore();
                     if (lore != null) {
-                        lore.replaceAll(source -> BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, source)));
+                        lore.replaceAll(source -> BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, source)));
                     }
                     meta.setLore(lore);
                 }
@@ -334,12 +345,24 @@ public class Menu implements InventoryHolder {
      * @return 解析完成的标题
      */
     public String formattedTitle() {
-        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, display.title()));
+        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player(), display.title()));
     }
 
-    @NotNull
+    @Deprecated
+    @Nullable
     public Player player() {
-        return player;
+        return playerOpt().orElse(null);
+    }
+
+    /**
+     * 获取打开该页面的玩家,除非玩家离线,否则不会为null
+     */
+    public Optional<@Nullable Player> playerOpt() {
+        return Optional.ofNullable(Bukkit.getPlayer(playerId));
+    }
+
+    public UUID playerId() {
+        return playerId;
     }
 
     @NotNull

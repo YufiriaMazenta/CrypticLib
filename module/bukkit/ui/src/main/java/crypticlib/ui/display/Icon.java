@@ -1,6 +1,7 @@
 package crypticlib.ui.display;
 
 import crypticlib.util.ItemHelper;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -8,16 +9,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class Icon {
 
-    private ItemStack display;
-    private Consumer<InventoryClickEvent> clickAction;
+    protected ItemStack display;
+    protected Consumer<InventoryClickEvent> clickAction;
     /**
      * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在updateLayout阶段preProcessIconWhenUpdateLayout方法触发前赋值
      */
-    private @Nullable Player parsePlayer;
+    private @Nullable UUID parsePlayerId;
 
     public Icon(@NotNull IconDisplay iconDisplay) {
         this.display = iconDisplay.display();
@@ -93,13 +96,20 @@ public class Icon {
         return this;
     }
 
-    public @Nullable Player parsePlayer() {
-        return parsePlayer;
+    public @Nullable UUID parsePlayerId() {
+        return parsePlayerId;
     }
 
-    public Icon setParsePlayer(@Nullable Player parsePlayer) {
-        this.parsePlayer = parsePlayer;
+    public Icon setParsePlayerId(@Nullable UUID parsePlayerId) {
+        this.parsePlayerId = parsePlayerId;
         return this;
+    }
+
+    public Optional<Player> parsePlayer() {
+        if (parsePlayerId == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(Bukkit.getPlayer(parsePlayerId));
     }
 
 }
