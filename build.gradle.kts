@@ -4,7 +4,7 @@ rootProject.group = "com.crypticlib"
 rootProject.version = "1.11.1"
 //当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
 
-var repositoryUrl = "http://repo.crypticlib.com:8081/repository/"
+var repositoryUrl = "https://repo.crypticlib.com:8081/repository/"
 repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
     repositoryUrl.plus("maven-snapshots/")
 } else {
@@ -35,11 +35,9 @@ subprojects {
         maven("https://r.irepo.space/maven/")
         maven("https://repo.codemc.io/repository/nms/")
         maven("https://libraries.minecraft.net")
-        maven("http://repo.crypticlib.com:8081/repository/maven-public/") {
-            isAllowInsecureProtocol = true
-        }
-        mavenCentral()
+        maven("https://repo.crypticlib.com:8081/repository/maven-public/")
         maven("https://jitpack.io")
+        mavenCentral()
     }
     dependencies {
         compileOnly("org.jetbrains:annotations:24.0.1")
