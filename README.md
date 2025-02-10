@@ -24,7 +24,7 @@ Velocity
 <repositories>
 	<repository>
 	    <id>crypticlib</id>
-	    <url>http://repo.crypticlib.com:8081/repository/maven-public/</url>
+	    <url>https://repo.crypticlib.com:8081/repository/maven-public/</url>
 	</repository>
 </repositories>
 ```
@@ -43,9 +43,7 @@ Velocity
 
 ```kotlin
 repositories {
-    maven("http://repo.crypticlib.com:8081/repository/maven-public/") {
-        isAllowInsecureProtocol = true
-    }
+    maven("https://repo.crypticlib.com:8081/repository/maven-public/")
 }
 ```
 
@@ -60,8 +58,7 @@ dependencies {
 ```groovy
 repositories {
     maven {
-        url = "http://repo.crypticlib.com:8081/repository/maven-public/"
-        allowInsecureProtocol = true
+        url = "https://repo.crypticlib.com:8081/repository/maven-public/"
     }
 }
 ```
