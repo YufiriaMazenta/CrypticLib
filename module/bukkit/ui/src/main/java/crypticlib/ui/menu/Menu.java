@@ -262,7 +262,7 @@ public class Menu implements InventoryHolder {
             preProcessIconWhenDraw(slot, icon);
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
-            Player iconParsePlayer = icon.parsePlayer().orElse(null);
+            Player iconParsePlayer = icon.parsePlayerOpt().orElse(null);
             if (meta != null) {
                 if (meta.hasDisplayName()) {
                     meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, meta.getDisplayName())));

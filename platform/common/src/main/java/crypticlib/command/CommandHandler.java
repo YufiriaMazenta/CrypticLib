@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * CrypticLib提供的底层命令接口

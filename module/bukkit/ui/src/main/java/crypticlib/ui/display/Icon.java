@@ -105,11 +105,16 @@ public class Icon {
         return this;
     }
 
-    public Optional<Player> parsePlayer() {
+    public Optional<Player> parsePlayerOpt() {
         if (parsePlayerId == null) {
             return Optional.empty();
         }
         return Optional.ofNullable(Bukkit.getPlayer(parsePlayerId));
+    }
+
+    @Deprecated
+    public @Nullable Player parsePlayer() {
+        return parsePlayerOpt().orElse(null);
     }
 
 }
