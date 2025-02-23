@@ -64,25 +64,17 @@ public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSou
 
     @Override
     public boolean hasPermission(Invocation invocation) {
+        if (hasPermission(invocation.source()))
+            return true;
         PermInfo permInfo = commandInfo.permission();
         if (permInfo == null)
             return true;
-        if (permInfo.hasPermission(invocation.source())) {
-            return true;
-        }
+        //检查权限默认值,如果权限默认为true且玩家对于该权限的状态不为false,返回true
         Tristate tristate = invocation.source().getPermissionValue(permInfo.permission());
         return permInfo.permDef().equals(PermDef.TRUE) && tristate != Tristate.FALSE;
     }
 
-    @Override
-    public void registerPerms() {
-        CommandHandler.super.registerPerms();
-        PermInfo permission = commandInfo.permission();
-        if (permission != null)
-            permission.register();
-    }
-
-    public void register(@NotNull VelocityPlugin plugin) {
+    public final void register(@NotNull VelocityPlugin plugin) {
         if (registered)
             throw new UnsupportedOperationException("Cannot register a command repeatedly");
         registered = true;
@@ -92,17 +84,18 @@ public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSou
     }
 
     @Override
-    public VelocityCommand regSub(@NotNull AbstractSubcommand<CommandSource> subcommandHandler) {
+    public final VelocityCommand regSub(@NotNull AbstractSubcommand<CommandSource> subcommandHandler) {
         return (VelocityCommand) CommandHandler.super.regSub(subcommandHandler);
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public final @NotNull CommandInfo commandInfo() {
         return commandInfo;
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubcommand<CommandSource>> subcommands() {
+    public final @NotNull Map<String, AbstractSubcommand<CommandSource>> subcommands() {
         return subcommands;
     }
+
 }

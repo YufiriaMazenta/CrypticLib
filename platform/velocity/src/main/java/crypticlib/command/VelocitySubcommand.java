@@ -38,4 +38,28 @@ public class VelocitySubcommand extends AbstractSubcommand<CommandSource> {
         }
     }
 
+    @Override
+    public final VelocitySubcommand regSub(@NotNull AbstractSubcommand<CommandSource> subcommandHandler) {
+        return (VelocitySubcommand) super.regSub(subcommandHandler);
+    }
+
+    @Override
+    public final VelocitySubcommand setName(String name) {
+        return (VelocitySubcommand) super.setName(name);
+    }
+
+    @Override
+    public final VelocitySubcommand setPermission(@NotNull String permission) {
+        return (VelocitySubcommand) super.setPermission(permission);
+    }
+
+    @Override
+    public final VelocitySubcommand setPermission(@Nullable PermInfo permission) {
+        return (VelocitySubcommand) super.setPermission(permission);
+    }
+
+    @Override
+    public final VelocitySubcommand setAliases(@NotNull List<String> aliases) {
+        return (VelocitySubcommand) super.setAliases(aliases);
+    }
 }

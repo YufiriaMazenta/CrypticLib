@@ -48,30 +48,22 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     }
 
     @Override
-    public BukkitCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
+    public final BukkitCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         return (BukkitCommand) CommandHandler.super.regSub(subcommandHandler);
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
+    public final @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
         return subcommands;
     }
     
-    public void register(@NotNull Plugin plugin) {
+    public final void register(@NotNull Plugin plugin) {
         if (registered)
             throw new UnsupportedOperationException("Cannot register a command repeatedly");
         registered = true;
         scanSubCommands();
         registerPerms();
         BukkitCommandManager.INSTANCE.register(plugin, commandInfo, this);
-    }
-
-    @Override
-    public void registerPerms() {
-        CommandHandler.super.registerPerms();
-        PermInfo permission = commandInfo.permission();
-        if (permission != null)
-            permission.register();
     }
 
     @Override
@@ -83,7 +75,7 @@ public class BukkitCommand implements CommandHandler<CommandSender>, TabExecutor
     }
 
     @Override
-    public CommandInfo commandInfo() {
+    public final @NotNull CommandInfo commandInfo() {
         return commandInfo;
     }
 

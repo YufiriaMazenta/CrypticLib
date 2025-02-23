@@ -54,7 +54,7 @@ public abstract class AbstractSubcommand<CommandSender> implements CommandHandle
      * @return 子命令的名字
      */
     @NotNull
-    public String name() {
+    public final String name() {
         return subcommandInfo.name();
     }
 
@@ -64,7 +64,7 @@ public abstract class AbstractSubcommand<CommandSender> implements CommandHandle
     }
 
     @Nullable
-    public PermInfo permission() {
+    public final PermInfo permission() {
         return subcommandInfo.permission();
     }
 
@@ -84,7 +84,7 @@ public abstract class AbstractSubcommand<CommandSender> implements CommandHandle
      * @return 子命令的别名
      */
     @NotNull
-    public List<String> aliases() {
+    public final List<String> aliases() {
         return subcommandInfo.aliases();
     }
 
@@ -99,7 +99,7 @@ public abstract class AbstractSubcommand<CommandSender> implements CommandHandle
     }
 
     @Override
-    public @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
+    public final @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
         return subcommands;
     }
 
@@ -108,15 +108,8 @@ public abstract class AbstractSubcommand<CommandSender> implements CommandHandle
         return (AbstractSubcommand<CommandSender>) CommandHandler.super.regSub(subcommandHandler);
     }
 
-    public void registerPerms() {
-        CommandHandler.super.registerPerms();
-        PermInfo permission = permission();
-        if (permission != null)
-            permission.register();
-    }
-
     @Override
-    public CommandInfo commandInfo() {
+    public final @NotNull CommandInfo commandInfo() {
         return subcommandInfo;
     }
 

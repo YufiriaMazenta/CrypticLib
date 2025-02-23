@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.BiFunction;
 
 /**
  * CrypticLib提供的底层命令接口
@@ -70,11 +69,8 @@ public interface CommandHandler<CommandSender> {
         }
         //执行对应的子命令
         AbstractSubcommand<CommandSender> subcommand = subcommands().get(args.get(0));
-        if (subcommand != null) {
-            PermInfo perm = subcommand.permission();
-            if (perm == null || perm.hasPermission(sender)) {
-                subcommand.onCommand(sender, args.subList(1, args.size()));
-            }
+        if (subcommand != null && subcommand.hasPermission(sender)) {
+            subcommand.onCommand(sender, args.subList(1, args.size()));
         }
     }
 
@@ -99,25 +95,17 @@ public interface CommandHandler<CommandSender> {
             if (args.size() > 1) {
                 AbstractSubcommand<CommandSender> subcommand = subcommands().get(args.get(0));
                 if (subcommand != null) {
-                    PermInfo perm = subcommand.permission();
-                    if (perm != null) {
-                        if (perm.hasPermission(sender))
-                            return subcommand.onTabComplete(sender, args.subList(1, args.size()));
-                        else
-                            return Collections.singletonList("");
-                    } else {
+                    if (subcommand.hasPermission(sender)) {
                         return subcommand.onTabComplete(sender, args.subList(1, args.size()));
+                    } else {
+                        return Collections.singletonList("");
                     }
                 }
                 return Collections.singletonList("");
             }
             for (String arg : subcommands().keySet()) {
                 AbstractSubcommand<CommandSender> subcommand = subcommands().get(arg);
-                PermInfo perm = subcommand.permission();
-                if (perm != null) {
-                    if (perm.hasPermission(sender))
-                        arguments.add(arg);
-                } else {
+                if (subcommand.hasPermission(sender)) {
                     arguments.add(arg);
                 }
             }
@@ -130,9 +118,14 @@ public interface CommandHandler<CommandSender> {
     }
 
     default void registerPerms() {
+        //扫描子命令,注册子命令所需权限
         for (AbstractSubcommand<CommandSender> commandTreeNode : subcommands().values()) {
             commandTreeNode.registerPerms();
         }
+        //注册自己的权限节点
+        PermInfo permission = commandInfo().permission();
+        if (permission != null)
+            permission.register();
     }
 
     default void scanSubCommands() {
@@ -186,8 +179,7 @@ public interface CommandHandler<CommandSender> {
         }
         subcommands().forEach(
             (key, subcommand) -> {
-                PermInfo permission = subcommand.permission();
-                if (permission != null && !PermInfo.PERM_MANAGER.hasPermission(commandSender, permission.permission())) {
+                if (!subcommand.hasPermission(commandSender)) {
                     return;
                 }
                 StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- ", "");
@@ -212,6 +204,18 @@ public interface CommandHandler<CommandSender> {
 
     void sendDescriptions(CommandSender commandSender);
 
-    CommandInfo commandInfo();
+    @NotNull CommandInfo commandInfo();
+
+    /**
+     * 检查执行者是否有权限
+     * @param sender 执行者
+     * @return 是否有此命令节点的权限
+     */
+    default boolean hasPermission(CommandSender sender) {
+        PermInfo permission = commandInfo().permission();
+        if (permission == null)
+            return true;
+        return permission.hasPermission(sender);
+    }
 
 }

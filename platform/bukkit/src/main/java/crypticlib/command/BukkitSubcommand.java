@@ -32,58 +32,34 @@ public class BukkitSubcommand extends AbstractSubcommand<CommandSender> {
     }
 
     @Override
-    public BukkitSubcommand setName(String name) {
+    public final BukkitSubcommand setName(String name) {
         return (BukkitSubcommand) super.setName(name);
     }
 
     @Override
-    public @NotNull String name() {
-        return super.name();
-    }
-
-    @Override
-    public @Nullable PermInfo permission() {
-        return super.permission();
-    }
-
-    @Override
-    public BukkitSubcommand setPermission(@NotNull String permission) {
+    public final BukkitSubcommand setPermission(@NotNull String permission) {
         return (BukkitSubcommand) super.setPermission(permission);
     }
 
     @Override
-    public BukkitSubcommand setPermission(@Nullable PermInfo permission) {
+    public final BukkitSubcommand setPermission(@Nullable PermInfo permission) {
         return (BukkitSubcommand) super.setPermission(permission);
     }
 
     @Override
-    public @NotNull List<String> aliases() {
-        return super.aliases();
-    }
-
-    @Override
-    public BukkitSubcommand setAliases(@NotNull List<String> aliases) {
+    public final BukkitSubcommand setAliases(@NotNull List<String> aliases) {
         return (BukkitSubcommand) super.setAliases(aliases);
     }
 
-    @Override
-    public @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
-        return super.subcommands();
-    }
 
     @Override
-    public BukkitSubcommand addAliases(@NotNull String alias) {
+    public final BukkitSubcommand addAliases(@NotNull String alias) {
         return (BukkitSubcommand) super.addAliases(alias);
     }
 
     @Override
-    public BukkitSubcommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
+    public final BukkitSubcommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
         return (BukkitSubcommand) super.regSub(subcommandHandler);
-    }
-
-    @Override
-    public void registerPerms() {
-        super.registerPerms();
     }
 
     @Override
