@@ -262,15 +262,14 @@ public class Menu implements InventoryHolder {
             preProcessIconWhenDraw(slot, icon);
             ItemStack display = icon.display().clone();
             ItemMeta meta = display.getItemMeta();
-            Player iconParsePlayer = icon.parsePlayerOpt().orElse(null);
             if (meta != null) {
                 if (meta.hasDisplayName()) {
-                    meta.setDisplayName(BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, meta.getDisplayName())));
+                    meta.setDisplayName(parseIconText(meta.getDisplayName(), icon));
                 }
                 if (meta.hasLore()) {
                     List<String> lore = meta.getLore();
                     if (lore != null) {
-                        lore.replaceAll(source -> BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, source)));
+                        lore.replaceAll(source -> parseIconText(source, icon));
                     }
                     meta.setLore(lore);
                 }
@@ -279,6 +278,15 @@ public class Menu implements InventoryHolder {
             inventory.setItem(slot, display);
         });
         onDrawCompleted();
+    }
+
+    /**
+     * 用于解析页面图标上的文本,之所以抽象为一个方法是为了方便继承者重写方法以改变图标上文本的解析逻辑
+     * @return 解析后的文本
+     */
+    public String parseIconText(String originText, Icon icon) {
+        Player iconParsePlayer = icon.parsePlayerOpt().orElse(null);
+        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, originText));
     }
 
     /**
@@ -292,10 +300,6 @@ public class Menu implements InventoryHolder {
      * 当页面图标完成绘制时调用此方法
      */
     public void onDrawCompleted() {}
-
-    public @NotNull Map<Integer, Icon> slotMap() {
-        return slotMap;
-    }
 
     /**
      * 获取此字符在页面上的所有位置
@@ -341,13 +345,17 @@ public class Menu implements InventoryHolder {
     }
 
     /**
-     * 获取解析后的标题,UI的最终标题将会使用此方法的结果进行显示
+     * 获取处理格式后的标题,UI的最终标题将会使用此方法的结果
+     * 可以继承重写以改变页面上显示的标题
      * @return 解析完成的标题
      */
     public String formattedTitle() {
         return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player(), display.title()));
     }
 
+    /**
+     * 获取打开此页面的玩家,除非玩家离线,否则不会为null
+     */
     @Deprecated
     @Nullable
     public Player player() {
@@ -361,21 +369,41 @@ public class Menu implements InventoryHolder {
         return Optional.ofNullable(Bukkit.getPlayer(playerId));
     }
 
+    /**
+     * 获取此页面的图标映射map
+     */
+    public @NotNull Map<Integer, Icon> slotMap() {
+        return slotMap;
+    }
+
+    /**
+     * 获取打开此页面的玩家的UUID
+     */
     public UUID playerId() {
         return playerId;
     }
 
+    /**
+     * 获取此页面的展示内容
+     */
     @NotNull
     public MenuDisplay display() {
         return display;
     }
 
+    /**
+     * 设置此页面的展示内容
+     */
     public Menu setDisplay(@NotNull MenuDisplay display) {
         this.display = display;
         updateLayout();
         return this;
     }
 
+    /**
+     * 获取此页面的容器缓存
+     * 当页面还没有打开(执行{@link Menu#openMenu()}或{@link Menu#openMenuAsync()}前)时为空
+     */
     @Nullable
     public Inventory inventoryCache() {
         return inventoryCache;
