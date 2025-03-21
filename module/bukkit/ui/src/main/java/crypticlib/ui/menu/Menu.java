@@ -17,7 +17,6 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -147,7 +146,7 @@ public class Menu implements InventoryHolder {
                     layoutSlotMap.get(key).add(slot);
                 }
                 Icon icon = layout.layoutMap().get(key).get();
-                preProcessIconWhenUpdateLayout(slot, icon);
+                preprocessIconWhenUpdateLayout(slot, icon);
                 slotMap.put(slot, icon);
             }
         }
@@ -159,7 +158,7 @@ public class Menu implements InventoryHolder {
      * @param slot 此Icon所处的slot
      * @param icon 预处理的Icon
      */
-    public void preProcessIconWhenUpdateLayout(Integer slot, @NotNull Icon icon) {}
+    public void preprocessIconWhenUpdateLayout(Integer slot, @NotNull Icon icon) {}
 
     /**
      * 当页面布局更新完毕时调用
@@ -259,34 +258,11 @@ public class Menu implements InventoryHolder {
                 return;
             }
             icon.setParsePlayerId(playerId);
-            preProcessIconWhenDraw(slot, icon);
-            ItemStack display = icon.display().clone();
-            ItemMeta meta = display.getItemMeta();
-            if (meta != null) {
-                if (meta.hasDisplayName()) {
-                    meta.setDisplayName(parseIconText(meta.getDisplayName(), icon));
-                }
-                if (meta.hasLore()) {
-                    List<String> lore = meta.getLore();
-                    if (lore != null) {
-                        lore.replaceAll(source -> parseIconText(source, icon));
-                    }
-                    meta.setLore(lore);
-                }
-                display.setItemMeta(meta);
-            }
+            preprocessIconWhenDraw(slot, icon);
+            ItemStack display = icon.display();
             inventory.setItem(slot, display);
         });
         onDrawCompleted();
-    }
-
-    /**
-     * 用于解析页面图标上的文本,之所以抽象为一个方法是为了方便继承者重写方法以改变图标上文本的解析逻辑
-     * @return 解析后的文本
-     */
-    public String parseIconText(String originText, Icon icon) {
-        Player iconParsePlayer = icon.parsePlayerOpt().orElse(null);
-        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, originText));
     }
 
     /**
@@ -294,7 +270,7 @@ public class Menu implements InventoryHolder {
      * @param slot icon所处的slot
      * @param icon 要处理的icon
      */
-    public void preProcessIconWhenDraw(Integer slot, @NotNull Icon icon) {}
+    public void preprocessIconWhenDraw(Integer slot, @NotNull Icon icon) {}
 
     /**
      * 当页面图标完成绘制时调用此方法

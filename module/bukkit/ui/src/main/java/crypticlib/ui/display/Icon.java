@@ -1,10 +1,12 @@
 package crypticlib.ui.display;
 
+import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.ItemHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +20,7 @@ public class Icon {
     protected ItemStack display;
     protected Consumer<InventoryClickEvent> clickAction;
     /**
-     * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在{@link crypticlib.ui.menu.Menu#preProcessIconWhenDraw}前赋值
+     * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在{@link crypticlib.ui.menu.Menu#preprocessIconWhenDraw}前赋值
      */
     private @Nullable UUID parsePlayerId;
 
@@ -58,11 +60,26 @@ public class Icon {
     }
 
     /**
-     * 图标的展示物品
+     * 获取图标的展示物品,返回的物品应当完成文本中变量/颜色等内容的解析
      *
      * @return 图标的展示物品
      */
     public ItemStack display() {
+        ItemStack display = this.display.clone();
+        ItemMeta meta = display.getItemMeta();
+        if (meta != null) {
+            if (meta.hasDisplayName()) {
+                meta.setDisplayName(parseIconText(meta.getDisplayName()));
+            }
+            if (meta.hasLore()) {
+                List<String> lore = meta.getLore();
+                if (lore != null) {
+                    lore.replaceAll(this::parseIconText);
+                }
+                meta.setLore(lore);
+            }
+            display.setItemMeta(meta);
+        }
         return display;
     }
 
@@ -115,6 +132,15 @@ public class Icon {
     @Deprecated
     public @Nullable Player parsePlayer() {
         return parsePlayerOpt().orElse(null);
+    }
+
+    /**
+     * 用于解析页面图标上的文本,之所以抽象为一个方法是为了方便继承者重写方法以改变图标上文本的解析逻辑
+     * @return 解析后的文本
+     */
+    public String parseIconText(String originText) {
+        Player iconParsePlayer = parsePlayer();
+        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, originText));
     }
 
 }
