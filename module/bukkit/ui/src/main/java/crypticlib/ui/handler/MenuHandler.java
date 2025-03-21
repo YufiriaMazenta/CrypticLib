@@ -1,9 +1,15 @@
 package crypticlib.ui.handler;
 
+import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycle;
+import crypticlib.lifecycle.TaskRule;
 import crypticlib.listener.EventListener;
 import crypticlib.ui.menu.Menu;
 import crypticlib.ui.menu.StoredMenu;
+import crypticlib.ui.util.MenuHelper;
 import crypticlib.util.InventoryViewHelper;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -14,12 +20,13 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.plugin.Plugin;
 
 @EventListener
-public enum MenuHandler implements Listener {
+@AutoTask(rules = {@TaskRule(lifeCycle = LifeCycle.DISABLE)})
+public enum MenuHandler implements Listener, BukkitLifeCycleTask {
 
     INSTANCE;
-
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClickMenu(InventoryClickEvent event) {
@@ -61,6 +68,18 @@ public enum MenuHandler implements Listener {
         InventoryHolder topInvHolder = InventoryViewHelper.getTopInventory(player).getHolder();
         if (topInvHolder instanceof StoredMenu) {
             ((StoredMenu) topInvHolder).refreshStoredItems(event.getPlayer().getInventory()).returnStoredItems();
+        }
+    }
+
+    @Override
+    public void run(Plugin plugin, LifeCycle lifeCycle) {
+        //当插件disable时,关闭所有正在使用的页面
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Menu menu = MenuHelper.getPlayerMenu(player);
+            if (menu == null) {
+                continue;
+            }
+            player.closeInventory();
         }
     }
 
