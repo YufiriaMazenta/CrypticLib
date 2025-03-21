@@ -3,6 +3,7 @@ package crypticlib.ui.menu;
 import crypticlib.chat.BukkitMsgSender;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
+import crypticlib.util.InventoryViewHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
@@ -21,7 +22,7 @@ public class CooldownMenu extends Menu {
 
     @Override
     public Icon onClick(int slot, InventoryClickEvent event) {
-        if (!event.getView().getTopInventory().equals(event.getClickedInventory())) {
+        if (!InventoryViewHelper.getTopInventory(event).equals(event.getClickedInventory())) {
             event.setCancelled(true);
             return null;
         }
