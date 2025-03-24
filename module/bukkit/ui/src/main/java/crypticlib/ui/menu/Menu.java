@@ -6,6 +6,7 @@ import crypticlib.scheduler.task.ITaskWrapper;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
+import crypticlib.ui.util.MenuHelper;
 import crypticlib.util.InventoryViewHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -184,11 +185,12 @@ public class Menu implements InventoryHolder {
         if (player == null) {
             return;
         }
-        Object inventoryView = InventoryViewHelper.getOpenInventory(player);
-        Inventory topInventory = InventoryViewHelper.getTopInventory(player);
-        if (topInventory.getHolder() != null && topInventory.getHolder() instanceof Menu) {
-            InventoryViewHelper.setTitle(inventoryView, parsedMenuTitle());
-        }
+        MenuHelper.getOpeningMenu(player).ifPresent(
+            menu -> {
+                Object inventoryView = InventoryViewHelper.getOpenInventory(player);
+                InventoryViewHelper.setTitle(inventoryView, parsedMenuTitle());
+            }
+        );
     }
 
     /**
