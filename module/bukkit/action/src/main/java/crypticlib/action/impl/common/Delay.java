@@ -43,9 +43,14 @@ public class Delay extends BaseAction {
                 delayTick = Integer.parseInt(Objects.requireNonNull(delayTickStr));
             }
         }
-        CrypticLibBukkit.platform().scheduler().syncLater(() -> {
+        Runnable actionTask = () -> {
             runNext(player, plugin, argPreprocessor);
-        }, delayTick);
+        };
+        if (player != null) {
+            CrypticLibBukkit.scheduler().runOnEntityLater(player, actionTask, actionTask, delayTick);
+        } else {
+            CrypticLibBukkit.scheduler().syncLater(actionTask, delayTick);
+        }
     }
 
 }
