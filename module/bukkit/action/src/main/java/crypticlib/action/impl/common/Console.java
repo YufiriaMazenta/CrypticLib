@@ -1,5 +1,6 @@
 package crypticlib.action.impl.common;
 
+import crypticlib.CrypticLibBukkit;
 import crypticlib.action.BaseAction;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.StringHelper;
@@ -32,7 +33,15 @@ public class Console extends BaseAction {
             command = argPreprocessor.apply(command);
         }
         command = BukkitTextProcessor.placeholder(player, command);
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        if (CrypticLibBukkit.isFolia()) {
+            String finalCommand = command;
+            CrypticLibBukkit.scheduler().sync(() -> {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCommand);
+            });
+        } else {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+        }
+
         runNext(player, plugin, argPreprocessor);
     }
 
