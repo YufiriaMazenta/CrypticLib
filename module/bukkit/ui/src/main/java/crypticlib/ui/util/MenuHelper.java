@@ -2,12 +2,10 @@ package crypticlib.ui.util;
 
 import crypticlib.ui.menu.Menu;
 import crypticlib.util.InventoryViewHelper;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 

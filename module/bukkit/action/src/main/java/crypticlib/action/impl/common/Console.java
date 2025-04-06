@@ -3,7 +3,6 @@ package crypticlib.action.impl.common;
 import crypticlib.CrypticLibBukkit;
 import crypticlib.action.BaseAction;
 import crypticlib.chat.BukkitTextProcessor;
-import crypticlib.util.StringHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;

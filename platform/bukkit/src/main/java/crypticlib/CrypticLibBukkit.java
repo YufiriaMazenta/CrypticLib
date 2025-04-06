@@ -2,8 +2,8 @@ package crypticlib;
 
 import crypticlib.platform.BukkitPlatform;
 import crypticlib.platform.FoliaPlatform;
-import crypticlib.platform.PaperPlatform;
 import crypticlib.platform.IPlatform;
+import crypticlib.platform.PaperPlatform;
 import crypticlib.scheduler.IScheduler;
 import org.jetbrains.annotations.NotNull;
 

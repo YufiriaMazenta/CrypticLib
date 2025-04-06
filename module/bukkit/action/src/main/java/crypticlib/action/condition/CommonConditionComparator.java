@@ -1,9 +1,7 @@
 package crypticlib.action.condition;
 
-import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.IOHelper;
 import crypticlib.util.StringHelper;
-import org.bukkit.OfflinePlayer;
 
 import java.util.Arrays;
 import java.util.Comparator;

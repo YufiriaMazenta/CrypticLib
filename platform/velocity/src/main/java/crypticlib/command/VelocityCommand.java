@@ -40,17 +40,18 @@ public final class VelocityCommand implements SimpleCommand {
 
     @Override
     public boolean hasPermission(Invocation invocation) {
-        if (commandTree.hasPermission(commandSource2Invoker(invocation.source())))
+        CommandSource commandSource = invocation.source();
+        if (commandTree.hasPermission(commandSource2Invoker(commandSource)))
             return true;
         PermInfo permInfo = commandTree.commandInfo().permission();
         if (permInfo == null)
             return true;
         //检查权限默认值,如果权限默认为true且玩家对于该权限的状态不为false,返回true
-        Tristate tristate = invocation.source().getPermissionValue(permInfo.permission());
+        Tristate tristate = commandSource.getPermissionValue(permInfo.permission());
         return permInfo.permDef().equals(PermDef.TRUE) && tristate != Tristate.FALSE;
     }
 
-    private VelocityCommandInvoker commandSource2Invoker(CommandSource source) {
+    private CommandInvoker commandSource2Invoker(CommandSource source) {
         if (source instanceof Player) {
             return new VelocityPlayerCommandInvoker((Player) source);
         } else {

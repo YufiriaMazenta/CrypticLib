@@ -2,7 +2,6 @@ package crypticlib.action.impl.common;
 
 import crypticlib.CrypticLibBukkit;
 import crypticlib.action.BaseAction;
-import crypticlib.util.StringHelper;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;

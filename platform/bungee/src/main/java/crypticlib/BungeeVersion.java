@@ -2,9 +2,6 @@ package crypticlib;
 
 import net.md_5.bungee.api.ProxyServer;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 public enum BungeeVersion {
 
     CURRENT(getCurrentVersion()),

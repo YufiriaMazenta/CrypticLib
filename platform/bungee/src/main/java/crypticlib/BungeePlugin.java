@@ -2,8 +2,6 @@ package crypticlib;
 
 import crypticlib.chat.BungeeMsgSender;
 import crypticlib.command.BungeeCommandManager;
-import crypticlib.command.CommandInfo;
-import crypticlib.command.CommandInvoker;
 import crypticlib.command.CommandTree;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.BungeeConfigContainer;

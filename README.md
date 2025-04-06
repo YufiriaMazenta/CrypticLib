@@ -18,7 +18,9 @@ Velocity
 
 参考 https://github.com/YufiriaMazenta/CrypticLibExample
 
-#### pom.xml
+#### 示例
+
+pom.xml
 
 ```xml
 <repositories>
@@ -39,7 +41,7 @@ Velocity
 </dependencies>
 ```
 
-#### build.gradle.kts
+build.gradle.kts
 
 ```kotlin
 repositories {
@@ -53,7 +55,7 @@ dependencies {
 }
 ```
 
-#### build.gradle
+build.gradle
 
 ```groovy
 repositories {

@@ -5,7 +5,6 @@ import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class ConfigSectionConfig extends BungeeConfigNode<Configuration> {
