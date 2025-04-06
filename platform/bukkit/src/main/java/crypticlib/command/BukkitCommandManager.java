@@ -1,5 +1,9 @@
 package crypticlib.command;
 
+import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycle;
+import crypticlib.lifecycle.TaskRule;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
@@ -14,10 +18,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public enum BukkitCommandManager implements CommandManager<Plugin, TabExecutor, PluginCommand> {
+@AutoTask(rules = @TaskRule(lifeCycle = LifeCycle.INIT))
+public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCommand>, BukkitLifeCycleTask {
 
     INSTANCE;
 
+    private Plugin pluginInstance;
     private final CommandMap serverCommandMap;
     private final Map<String, Command> serverCommandMapKnownCommands;
     private final Constructor<?> pluginCommandConstructor;
@@ -34,8 +40,8 @@ public enum BukkitCommandManager implements CommandManager<Plugin, TabExecutor, 
     }
 
     @Override
-    public PluginCommand register(@NotNull Plugin plugin, @NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
-        PluginCommand pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), plugin);
+    public PluginCommand register(@NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
+        PluginCommand pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), pluginInstance);
         pluginCommand.setAliases(commandInfo.aliases());
         String description = commandInfo.description();
         pluginCommand.setDescription(description == null ? "" : description);
@@ -46,9 +52,16 @@ public enum BukkitCommandManager implements CommandManager<Plugin, TabExecutor, 
         pluginCommand.setUsage(usage == null ? "" : usage)  ;
         pluginCommand.setExecutor(commandExecutor);
         pluginCommand.setTabCompleter(commandExecutor);
-        serverCommandMap.register(plugin.getName(), pluginCommand);
+        serverCommandMap.register(pluginInstance.getName(), pluginCommand);
         registeredCommands.put(commandInfo.name(), pluginCommand);
         return pluginCommand;
+    }
+
+    @Override
+    public PluginCommand register(CommandTree commandTree) {
+        CommandInfo commandInfo = commandTree.commandInfo();
+        TabExecutor commandExecutor = new BukkitCommand(commandTree);
+        return register(commandInfo, commandExecutor);
     }
 
     /**
@@ -103,6 +116,11 @@ public enum BukkitCommandManager implements CommandManager<Plugin, TabExecutor, 
      */
     public void syncCommands() {
         ReflectionHelper.invokeMethod(serverSyncCommandsMethod, Bukkit.getServer());
+    }
+
+    @Override
+    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+        this.pluginInstance = plugin;
     }
 
 }

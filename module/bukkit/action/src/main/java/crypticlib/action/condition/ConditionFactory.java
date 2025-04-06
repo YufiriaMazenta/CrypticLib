@@ -46,7 +46,7 @@ public enum ConditionFactory implements BukkitLifeCycleTask {
     }
 
     @Override
-    public void run(Plugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
         registerCondition(CommonCondition.INSTANCE);
     }
 }

@@ -14,10 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @AutoTask(
     rules = {
-        @TaskRule(lifeCycle = LifeCycle.LOAD)
+        @TaskRule(lifeCycle = LifeCycle.INIT)
     }
 )
-public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandManager<VelocityPlugin, Command, Command> {
+public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandManager<Command, Command> {
 
     INSTANCE;
 
@@ -25,7 +25,7 @@ public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandMana
     private final Map<String, Command> registeredCommands = new ConcurrentHashMap<>();
 
     @Override
-    public Command register(@NotNull VelocityPlugin plugin, @NotNull CommandInfo commandInfo, @NotNull Command command) {
+    public Command register(@NotNull CommandInfo commandInfo, @NotNull Command command) {
         com.velocitypowered.api.command.CommandManager commandManager = plugin.proxyServer().getCommandManager();
         commandManager.register(
             commandManager.metaBuilder(commandInfo.name())
@@ -36,6 +36,13 @@ public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandMana
         );
         registeredCommands.put(commandInfo.name(), command);
         return command;
+    }
+
+    @Override
+    public Command register(CommandTree commandTree) {
+        CommandInfo commandInfo = commandTree.commandInfo();
+        Command command = new VelocityCommand(commandTree);
+        return register(commandInfo, command);
     }
 
     @Override
@@ -57,7 +64,7 @@ public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandMana
     }
 
     @Override
-    public void run(VelocityPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(VelocityPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = plugin;
     }
 

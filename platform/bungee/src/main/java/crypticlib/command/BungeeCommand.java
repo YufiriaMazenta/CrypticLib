@@ -1,82 +1,40 @@
 package crypticlib.command;
 
-import crypticlib.chat.BungeeMsgSender;
-import crypticlib.perm.PermInfo;
 import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.api.plugin.TabExecutor;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * CrypticLib提供的插件命令类，用于注册插件命令
- */
-public class BungeeCommand extends Command implements CommandHandler<CommandSender>, TabExecutor {
+public final class BungeeCommand extends Command implements TabExecutor {
 
-    protected final Map<String, AbstractSubcommand<CommandSender>> subcommands = new ConcurrentHashMap<>();
-    protected CommandInfo commandInfo;
-    protected Boolean registered = false;
+    private final CommandTree commandTree;
 
-    public BungeeCommand(CommandInfo commandInfo) {
-        super(commandInfo.name(), commandInfo.permission() != null ? commandInfo.permission().permission() : null, commandInfo.aliases().toArray(new String[]{}));
-        this.commandInfo = commandInfo;
+    public BungeeCommand(CommandTree commandTree) {
+        super(
+            commandTree.commandInfo.name(),
+            commandTree.commandInfo.permission() != null ? commandTree.commandInfo.permission().permission() : null, commandTree.commandInfo.aliases().toArray(new String[]{})
+        );
+        this.commandTree = commandTree;
     }
 
     @Override
-    public final void onCommand(CommandSender sender, List<String> args) {
-        CommandHandler.super.onCommand(sender, args);
+    public void execute(CommandSender sender, String[] args) {
+        commandTree.onCommand(commandSender2Invoker(sender), Arrays.asList(args));
     }
 
     @Override
-    public final List<String> onTabComplete(CommandSender sender, List<String> args) {
-        return CommandHandler.super.onTabComplete(sender, args);
+    public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
+        return commandTree.onTabComplete(commandSender2Invoker(sender), Arrays.asList(args));
     }
 
-    @Override
-    public final BungeeCommand regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
-        return (BungeeCommand) CommandHandler.super.regSub(subcommandHandler);
-    }
-
-    @Override
-    public final @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
-        return subcommands;
-    }
-    
-    public final void register(@NotNull Plugin plugin) {
-        if (registered)
-            throw new UnsupportedOperationException("Cannot register a command repeatedly");
-        registered = true;
-        scanSubCommands();
-        registerPerms();
-        BungeeCommandManager.INSTANCE.register(plugin, commandInfo, this);
-    }
-
-    @Override
-    public void sendDescriptions(CommandSender commandSender) {
-        List<String> descriptions = toDescriptions(commandSender);
-        for (String description : descriptions) {
-            BungeeMsgSender.INSTANCE.sendMsg(commandSender, description);
+    private CommandInvoker commandSender2Invoker(CommandSender sender) {
+        if (sender instanceof ProxiedPlayer) {
+            return new BungeePlayerCommandInvoker((ProxiedPlayer) sender);
+        } else {
+            return new BungeeCommandInvoker(sender);
         }
-    }
-
-    @Override
-    public final @NotNull CommandInfo commandInfo() {
-        return commandInfo;
-    }
-
-    @Override
-    public final void execute(CommandSender sender, String[] args) {
-        onCommand(sender, Arrays.asList(args));
-    }
-
-    @Override
-    public final Iterable<String> onTabComplete(CommandSender sender, String[] args) {
-        return onTabComplete(sender, Arrays.asList(args));
     }
 
 }

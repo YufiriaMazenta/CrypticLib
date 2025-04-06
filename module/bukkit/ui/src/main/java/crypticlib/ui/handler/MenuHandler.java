@@ -60,7 +60,7 @@ public enum MenuHandler implements Listener, BukkitLifeCycleTask {
     }
 
     @Override
-    public void run(Plugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
         //当插件disable时,关闭所有正在使用的页面
         for (Player player : Bukkit.getOnlinePlayers()) {
             MenuHelper.getOpeningMenu(player).ifPresent(

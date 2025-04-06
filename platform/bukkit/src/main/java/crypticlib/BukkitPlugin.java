@@ -1,8 +1,8 @@
 package crypticlib;
 
 import crypticlib.chat.BukkitMsgSender;
-import crypticlib.command.BukkitCommand;
 import crypticlib.command.BukkitCommandManager;
+import crypticlib.command.CommandTree;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.BukkitConfigContainer;
 import crypticlib.config.BukkitConfigWrapper;
@@ -37,6 +37,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
         CrypticLib.setPluginName(getDescription().getName());
+        CrypticLib.setCommandManager(BukkitCommandManager.INSTANCE);
         IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
@@ -84,11 +85,11 @@ public abstract class BukkitPlugin extends JavaPlugin {
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
                 try {
-                    if (!BukkitCommand.class.isAssignableFrom(commandClass)) {
+                    if (!CommandTree.class.isAssignableFrom(commandClass)) {
                         return;
                     }
-                    BukkitCommand bukkitCommand = (BukkitCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
-                    bukkitCommand.register(this);
+                    CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
+                    commandTree.register();
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     Command annotation = commandClass.getAnnotation(Command.class);
                     if (!annotation.ignoreClassNotFound()) {

@@ -3,8 +3,8 @@ package crypticlib.perm;
 public class PermInfo {
 
     public static PermManager PERM_MANAGER;
-    private String permission;
-    private PermDef permDef;
+    private final String permission;
+    private final PermDef permDef;
 
     public PermInfo(String permission) {
         this(permission, PermDef.OP);
@@ -19,18 +19,8 @@ public class PermInfo {
         return permission;
     }
 
-    public PermInfo setPermission(String permission) {
-        this.permission = permission;
-        return this;
-    }
-
     public PermDef permDef() {
         return permDef;
-    }
-
-    public PermInfo setPermDef(PermDef permDef) {
-        this.permDef = permDef;
-        return this;
     }
 
     public void register() {

@@ -11,15 +11,15 @@ import java.util.Objects;
 public class CommandInfo {
 
     @NotNull
-    private String name;
+    private final String name;
     @Nullable
-    private PermInfo permission;
+    private final PermInfo permission;
     @NotNull
     private final List<String> aliases = new ArrayList<>();
     @Nullable
-    private String description;
+    private final String description;
     @Nullable
-    private String usage;
+    private final String usage;
 
     public CommandInfo(@NotNull String name) {
         this(name, (PermInfo) null);
@@ -54,24 +54,9 @@ public class CommandInfo {
         return name;
     }
 
-    public CommandInfo setName(@NotNull String name) {
-        this.name = name;
-        return this;
-    }
-
     @Nullable
     public PermInfo permission() {
         return permission;
-    }
-
-    public CommandInfo setPermission(@NotNull String permission) {
-        this.permission = new PermInfo(permission);
-        return this;
-    }
-
-    public CommandInfo setPermission(@Nullable PermInfo permission) {
-        this.permission = permission;
-        return this;
     }
 
     @NotNull
@@ -90,19 +75,9 @@ public class CommandInfo {
         return description;
     }
 
-    public CommandInfo setDescription(@Nullable String description) {
-        this.description = description;
-        return this;
-    }
-
     @Nullable
     public String usage() {
         return usage;
-    }
-
-    public CommandInfo setUsage(@NotNull String usage) {
-        this.usage = usage;
-        return this;
     }
 
     public static Builder builder() {

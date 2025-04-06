@@ -90,7 +90,7 @@ public enum BukkitScheduler implements IScheduler, BukkitLifeCycleTask {
     }
 
     @Override
-    public void run(Plugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
         this.plugin = plugin;
     }
     

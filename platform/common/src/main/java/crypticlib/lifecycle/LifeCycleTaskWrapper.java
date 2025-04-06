@@ -11,7 +11,7 @@ public abstract class LifeCycleTaskWrapper<Plugin> {
     }
 
     public void runLifecycleTask(Plugin plugin, LifeCycle lifeCycle) {
-        lifeCycleTask.run(plugin, lifeCycle);
+        lifeCycleTask.lifecycle(plugin, lifeCycle);
     }
 
     public int priority() {

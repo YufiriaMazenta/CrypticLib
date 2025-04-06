@@ -3,70 +3,46 @@ package crypticlib.command;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.permission.Tristate;
-import crypticlib.VelocityPlugin;
-import crypticlib.chat.VelocityMsgSender;
+import com.velocitypowered.api.proxy.Player;
 import crypticlib.perm.PermDef;
 import crypticlib.perm.PermInfo;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSource>  {
+public final class VelocityCommand implements SimpleCommand {
 
-    protected final Map<String, AbstractSubcommand<CommandSource>> subcommands = new ConcurrentHashMap<>();
-    protected CommandInfo commandInfo;
-    protected Boolean registered = false;
+    private final CommandTree commandTree;
 
-    public VelocityCommand(CommandInfo commandInfo) {
-        this.commandInfo = commandInfo;
+    public VelocityCommand(CommandTree commandTree) {
+        this.commandTree = commandTree;
     }
 
     @Override
-    public final void execute(Invocation invocation) {
+    public void execute(Invocation invocation) {
         List<String> arguments = Arrays.asList(invocation.arguments());
-        onCommand(invocation.source(), arguments);
+        commandTree.onCommand(commandSource2Invoker(invocation.source()), arguments);
     }
 
     @Override
-    public final void onCommand(CommandSource sender, List<String> args) {
-        CommandHandler.super.onCommand(sender, args);
-    }
-
-    @Override
-    public final List<String> suggest(Invocation invocation) {
+    public List<String> suggest(Invocation invocation) {
         List<String> arguments = Arrays.asList(invocation.arguments());
-        return onTabComplete(invocation.source(), arguments);
+        return commandTree.onTabComplete(commandSource2Invoker(invocation.source()), arguments);
     }
 
     @Override
-    public final CompletableFuture<List<String>> suggestAsync(Invocation invocation) {
+    public CompletableFuture<List<String>> suggestAsync(Invocation invocation) {
         CompletableFuture<List<String>> future = new CompletableFuture<>();
         future.complete(suggest(invocation));
         return future;
     }
 
     @Override
-    public final List<String> onTabComplete(CommandSource sender, List<String> args) {
-        return CommandHandler.super.onTabComplete(sender, args);
-    }
-
-    @Override
-    public void sendDescriptions(CommandSource commandSource) {
-        List<String> descriptions = toDescriptions(commandSource);
-        for (String description : descriptions) {
-            VelocityMsgSender.INSTANCE.sendMsg(commandSource, description);
-        }
-    }
-
-    @Override
     public boolean hasPermission(Invocation invocation) {
-        if (hasPermission(invocation.source()))
+        if (commandTree.hasPermission(commandSource2Invoker(invocation.source())))
             return true;
-        PermInfo permInfo = commandInfo.permission();
+        PermInfo permInfo = commandTree.commandInfo().permission();
         if (permInfo == null)
             return true;
         //检查权限默认值,如果权限默认为true且玩家对于该权限的状态不为false,返回true
@@ -74,28 +50,12 @@ public class VelocityCommand implements SimpleCommand, CommandHandler<CommandSou
         return permInfo.permDef().equals(PermDef.TRUE) && tristate != Tristate.FALSE;
     }
 
-    public final void register(@NotNull VelocityPlugin plugin) {
-        if (registered)
-            throw new UnsupportedOperationException("Cannot register a command repeatedly");
-        registered = true;
-        scanSubCommands();
-        registerPerms();
-        VelocityCommandManager.INSTANCE.register(plugin, commandInfo, this);
-    }
-
-    @Override
-    public final VelocityCommand regSub(@NotNull AbstractSubcommand<CommandSource> subcommandHandler) {
-        return (VelocityCommand) CommandHandler.super.regSub(subcommandHandler);
-    }
-
-    @Override
-    public final @NotNull CommandInfo commandInfo() {
-        return commandInfo;
-    }
-
-    @Override
-    public final @NotNull Map<String, AbstractSubcommand<CommandSource>> subcommands() {
-        return subcommands;
+    private VelocityCommandInvoker commandSource2Invoker(CommandSource source) {
+        if (source instanceof Player) {
+            return new VelocityPlayerCommandInvoker((Player) source);
+        } else {
+            return new VelocityCommandInvoker(source);
+        }
     }
 
 }

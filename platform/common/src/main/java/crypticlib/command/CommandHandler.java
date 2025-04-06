@@ -1,6 +1,5 @@
 package crypticlib.command;
 
-import crypticlib.command.annotation.Subcommand;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
 import org.jetbrains.annotations.NotNull;
@@ -11,9 +10,8 @@ import java.util.*;
 
 /**
  * CrypticLib提供的底层命令接口
- * @param <CommandSender> 命令执行者类型
  */
-public interface CommandHandler<CommandSender> {
+public interface CommandHandler {
 
     /**
      * 命令默认执行的方法，当未输入参数或者没有子命令时执行
@@ -21,7 +19,7 @@ public interface CommandHandler<CommandSender> {
      * @param sender 执行者
      * @param args   参数
      */
-    default void execute(@NotNull CommandSender sender, @NotNull List<String> args) {
+    default void execute(@NotNull CommandInvoker sender, @NotNull List<String> args) {
         sendDescriptions(sender);
     }
 
@@ -29,7 +27,7 @@ public interface CommandHandler<CommandSender> {
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
      * @return 此命令的补全参数内容
      */
-    default @Nullable List<String> tab(@NotNull CommandSender sender, @NotNull List<String> args) {
+    default @Nullable List<String> tab(@NotNull CommandInvoker sender, @NotNull List<String> args) {
         return null;
     }
 
@@ -38,19 +36,19 @@ public interface CommandHandler<CommandSender> {
      *
      * @return 命令的子命令表
      */
-    default @NotNull Map<String, AbstractSubcommand<CommandSender>> subcommands() {
+    default @NotNull Map<String, CommandNode> subcommands() {
         return new HashMap<>();
     }
 
     /**
      * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
      *
-     * @param subcommandHandler 注册的命令
+     * @param commandNodeHandler 注册的命令
      */
-    default CommandHandler<?> regSub(@NotNull AbstractSubcommand<CommandSender> subcommandHandler) {
-        subcommands().put(subcommandHandler.name(), subcommandHandler);
-        for (String alias : subcommandHandler.aliases()) {
-            subcommands().put(alias, subcommandHandler);
+    default CommandHandler regSub(@NotNull CommandNode commandNodeHandler) {
+        subcommands().put(commandNodeHandler.commandInfo().name(), commandNodeHandler);
+        for (String alias : commandNodeHandler.commandInfo.aliases()) {
+            subcommands().put(alias, commandNodeHandler);
         }
         return this;
     }
@@ -61,16 +59,16 @@ public interface CommandHandler<CommandSender> {
      * @param sender 发送此命令的人
      * @param args   发送时的参数
      */
-    default void onCommand(CommandSender sender, List<String> args) {
+    default void onCommand(CommandInvoker sender, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
             execute(sender, args);
             return;
         }
         //执行对应的子命令
-        AbstractSubcommand<CommandSender> subcommand = subcommands().get(args.get(0));
-        if (subcommand != null && subcommand.hasPermission(sender)) {
-            subcommand.onCommand(sender, args.subList(1, args.size()));
+        CommandNode commandNode = subcommands().get(args.get(0));
+        if (commandNode != null && commandNode.hasPermission(sender)) {
+            commandNode.onCommand(sender, args.subList(1, args.size()));
         }
     }
 
@@ -81,7 +79,7 @@ public interface CommandHandler<CommandSender> {
      * @param args   参数列表
      * @return 返回的tab列表内容
      */
-    default List<String> onTabComplete(CommandSender sender, List<String> args) {
+    default List<String> onTabComplete(CommandInvoker sender, List<String> args) {
         List<String> arguments;
         List<String> tab = tab(sender, args);
         if (tab == null) {
@@ -93,10 +91,10 @@ public interface CommandHandler<CommandSender> {
         //尝试获取子命令的补全内容
         if (!subcommands().isEmpty()) {
             if (args.size() > 1) {
-                AbstractSubcommand<CommandSender> subcommand = subcommands().get(args.get(0));
-                if (subcommand != null) {
-                    if (subcommand.hasPermission(sender)) {
-                        return subcommand.onTabComplete(sender, args.subList(1, args.size()));
+                CommandNode commandNode = subcommands().get(args.get(0));
+                if (commandNode != null) {
+                    if (commandNode.hasPermission(sender)) {
+                        return commandNode.onTabComplete(sender, args.subList(1, args.size()));
                     } else {
                         return Collections.singletonList("");
                     }
@@ -104,8 +102,8 @@ public interface CommandHandler<CommandSender> {
                 return Collections.singletonList("");
             }
             for (String arg : subcommands().keySet()) {
-                AbstractSubcommand<CommandSender> subcommand = subcommands().get(arg);
-                if (subcommand.hasPermission(sender)) {
+                CommandNode commandNode = subcommands().get(arg);
+                if (commandNode.hasPermission(sender)) {
                     arguments.add(arg);
                 }
             }
@@ -119,7 +117,7 @@ public interface CommandHandler<CommandSender> {
 
     default void registerPerms() {
         //扫描子命令,注册子命令所需权限
-        for (AbstractSubcommand<CommandSender> commandTreeNode : subcommands().values()) {
+        for (CommandNode commandTreeNode : subcommands().values()) {
             commandTreeNode.registerPerms();
         }
         //注册自己的权限节点
@@ -131,17 +129,17 @@ public interface CommandHandler<CommandSender> {
     default void scanSubCommands() {
         //先注册自己的子命令
         for (Field field : this.getClass().getDeclaredFields()) {
-            if (!field.isAnnotationPresent(Subcommand.class))
+            if (!field.isAnnotationPresent(crypticlib.command.annotation.Subcommand.class))
                 continue;
-            if (AbstractSubcommand.class.isAssignableFrom(field.getType())) {
-                AbstractSubcommand<CommandSender> subcommand = ReflectionHelper.getDeclaredFieldObj(field, this);
-                this.regSub(subcommand);
+            if (CommandNode.class.isAssignableFrom(field.getType())) {
+                CommandNode commandNode = ReflectionHelper.getDeclaredFieldObj(field, this);
+                this.regSub(commandNode);
             }
         }
 
         //再注册子命令的子命令
-        for (AbstractSubcommand<CommandSender> subcommand : subcommands().values()) {
-            subcommand.scanSubCommands();
+        for (CommandNode commandNode : subcommands().values()) {
+            commandNode.scanSubCommands();
         }
     }
 
@@ -160,7 +158,7 @@ public interface CommandHandler<CommandSender> {
      *
      * @return 转换完成的介绍
      */
-    default List<String> toDescriptions(CommandSender commandSender) {
+    default List<String> toDescriptions(CommandInvoker CommandInvoker) {
         List<String> description = new ArrayList<>();
 
         StringJoiner nameJoiner = new StringJoiner(" | ", "&7", ":");
@@ -179,7 +177,7 @@ public interface CommandHandler<CommandSender> {
         }
         subcommands().forEach(
             (key, subcommand) -> {
-                if (!subcommand.hasPermission(commandSender)) {
+                if (!subcommand.hasPermission(CommandInvoker)) {
                     return;
                 }
                 StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- ", "");
@@ -202,7 +200,7 @@ public interface CommandHandler<CommandSender> {
         return description;
     }
 
-    void sendDescriptions(CommandSender commandSender);
+    void sendDescriptions(CommandInvoker CommandInvoker);
 
     @NotNull CommandInfo commandInfo();
 
@@ -211,7 +209,7 @@ public interface CommandHandler<CommandSender> {
      * @param sender 执行者
      * @return 是否有此命令节点的权限
      */
-    default boolean hasPermission(CommandSender sender) {
+    default boolean hasPermission(CommandInvoker sender) {
         PermInfo permission = commandInfo().permission();
         if (permission == null)
             return true;

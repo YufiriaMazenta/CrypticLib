@@ -10,7 +10,7 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import com.velocitypowered.api.scheduler.Scheduler;
 import crypticlib.chat.VelocityMsgSender;
-import crypticlib.command.VelocityCommand;
+import crypticlib.command.CommandTree;
 import crypticlib.command.VelocityCommandManager;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.ConfigHandler;
@@ -49,6 +49,7 @@ public abstract class VelocityPlugin {
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
         CrypticLib.setPluginName(pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId()));
+        CrypticLib.setCommandManager(VelocityCommandManager.INSTANCE);
         IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
@@ -92,11 +93,11 @@ public abstract class VelocityPlugin {
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
                 try {
-                    if (!VelocityCommand.class.isAssignableFrom(commandClass)) {
+                    if (!CommandTree.class.isAssignableFrom(commandClass)) {
                         return;
                     }
-                    VelocityCommand command = (VelocityCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
-                    command.register(this);
+                    CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
+                    commandTree.register();
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     Command annotation = commandClass.getAnnotation(Command.class);
                     if (!annotation.ignoreClassNotFound()) {

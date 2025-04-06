@@ -1,8 +1,10 @@
 package crypticlib;
 
 import crypticlib.chat.BungeeMsgSender;
-import crypticlib.command.BungeeCommand;
 import crypticlib.command.BungeeCommandManager;
+import crypticlib.command.CommandInfo;
+import crypticlib.command.CommandInvoker;
+import crypticlib.command.CommandTree;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.BungeeConfigContainer;
 import crypticlib.config.BungeeConfigWrapper;
@@ -36,6 +38,7 @@ public abstract class BungeePlugin extends Plugin {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
         CrypticLib.setPluginName(getDescription().getName());
+        CrypticLib.setCommandManager(BungeeCommandManager.INSTANCE);
         IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
@@ -83,11 +86,11 @@ public abstract class BungeePlugin extends Plugin {
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
                 try {
-                    if (!BungeeCommand.class.isAssignableFrom(commandClass)) {
+                    if (!CommandTree.class.isAssignableFrom(commandClass)) {
                         return;
                     }
-                    BungeeCommand bungeeCommand = (BungeeCommand) ReflectionHelper.getSingletonClassInstance(commandClass);
-                    bungeeCommand.register(this);
+                    CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
+                    commandTree.register();
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     Command annotation = commandClass.getAnnotation(Command.class);
                     if (!annotation.ignoreClassNotFound()) {
