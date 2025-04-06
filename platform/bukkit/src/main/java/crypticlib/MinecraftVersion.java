@@ -52,7 +52,8 @@ public enum MinecraftVersion {
     V1_21_1(12101),
     V1_21_2(12102),
     V1_21_3(12103),
-    V1_21_4(12104);
+    V1_21_4(12104),
+    V1_21_5(12105);
 
     private final int version;
 
