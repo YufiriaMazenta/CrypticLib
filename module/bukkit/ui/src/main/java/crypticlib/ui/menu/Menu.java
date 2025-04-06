@@ -2,7 +2,7 @@ package crypticlib.ui.menu;
 
 import crypticlib.CrypticLibBukkit;
 import crypticlib.chat.BukkitTextProcessor;
-import crypticlib.scheduler.task.ITaskWrapper;
+import crypticlib.scheduler.task.TaskWrapper;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
@@ -85,7 +85,7 @@ public class Menu implements InventoryHolder {
      *
      * @return 执行异步操作的任务
      */
-    public ITaskWrapper openMenuAsync() {
+    public TaskWrapper openMenuAsync() {
         return CrypticLibBukkit.scheduler().async(() -> {
             if (this.inventoryCache == null) {
                 this.inventoryCache = getInventory();

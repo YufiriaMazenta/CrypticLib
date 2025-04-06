@@ -5,7 +5,7 @@ import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.scheduler.task.BukkitTaskWrapper;
-import crypticlib.scheduler.task.ITaskWrapper;
+import crypticlib.scheduler.task.TaskWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -18,69 +18,69 @@ import org.jetbrains.annotations.NotNull;
 @AutoTask(
     rules = @TaskRule(lifeCycle = LifeCycle.INIT)
 )
-public enum BukkitScheduler implements IScheduler, BukkitLifeCycleTask {
+public enum BukkitScheduler implements Scheduler, BukkitLifeCycleTask {
 
     INSTANCE;
     
     private Plugin plugin;
 
     @Override
-    public ITaskWrapper sync(@NotNull Runnable task) {
+    public TaskWrapper sync(@NotNull Runnable task) {
         return new BukkitTaskWrapper(Bukkit.getScheduler().runTask(plugin, task));
     }
 
     @Override
-    public ITaskWrapper async(@NotNull Runnable task) {
+    public TaskWrapper async(@NotNull Runnable task) {
         return new BukkitTaskWrapper(Bukkit.getScheduler().runTaskAsynchronously(plugin, task));
     }
 
     @Override
-    public ITaskWrapper syncLater(@NotNull Runnable task, long delayTicks) {
+    public TaskWrapper syncLater(@NotNull Runnable task, long delayTicks) {
         return new BukkitTaskWrapper(Bukkit.getScheduler().runTaskLater(plugin, task, delayTicks));
     }
 
     @Override
-    public ITaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
+    public TaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
         return new BukkitTaskWrapper(Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, task, delayTicks));
     }
 
     @Override
-    public ITaskWrapper syncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
+    public TaskWrapper syncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         return new BukkitTaskWrapper(Bukkit.getScheduler().runTaskTimer(plugin, task, delayTicks, periodTicks));
     }
 
     @Override
-    public ITaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
+    public TaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         return new BukkitTaskWrapper(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, task, delayTicks, periodTicks));
     }
 
     @Override
-    public ITaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
+    public TaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
         return sync(task);
     }
 
     @Override
-    public ITaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
+    public TaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
         return syncLater(task, delayTicks);
     }
 
     @Override
-    public ITaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
+    public TaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
         return syncTimer(task, delayTicks, periodTicks);
     }
 
     @Override
-    public ITaskWrapper runOnLocation(Location location, Runnable task) {
+    public TaskWrapper runOnLocation(Location location, Runnable task) {
         return sync(task);
     }
 
     @Override
-    public ITaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
+    public TaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
         return syncLater(task, delayTicks);
     }
 
     @Override
-    public ITaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
+    public TaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
         return syncTimer(task, delayTicks, periodTicks);
     }
 

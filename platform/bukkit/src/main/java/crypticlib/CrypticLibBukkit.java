@@ -1,18 +1,18 @@
 package crypticlib;
 
-import crypticlib.platform.BukkitPlatform;
-import crypticlib.platform.FoliaPlatform;
-import crypticlib.platform.IPlatform;
-import crypticlib.platform.PaperPlatform;
-import crypticlib.scheduler.IScheduler;
+import crypticlib.platformadapter.BukkitPlatformAdapter;
+import crypticlib.platformadapter.FoliaPlatformAdapter;
+import crypticlib.platformadapter.PlatformAdapter;
+import crypticlib.platformadapter.PaperPlatformAdapter;
+import crypticlib.scheduler.Scheduler;
 import org.jetbrains.annotations.NotNull;
 
 public class CrypticLibBukkit {
 
-    private static IPlatform platform;
+    private static PlatformAdapter platformAdapter;
 
     static {
-        loadPlatform();
+        loadPlatformAdapter();
     }
 
     /**
@@ -21,33 +21,33 @@ public class CrypticLibBukkit {
      * @return 当前运行的平台实例
      */
     @NotNull
-    public static IPlatform platform() {
-        return platform;
+    public static PlatformAdapter platformAdapter() {
+        return platformAdapter;
     }
 
     @NotNull
-    public static IScheduler scheduler() {
-        return platform().scheduler();
+    public static Scheduler scheduler() {
+        return platformAdapter().scheduler();
     }
 
-    private static void loadPlatform() {
+    private static void loadPlatformAdapter() {
         try {
             Class<?> pluginMetaClass = Class.forName("io.papermc.paper.plugin.configuration.PluginMeta");
             pluginMetaClass.getMethod("isFoliaSupported");
-            platform = FoliaPlatform.INSTANCE;
+            platformAdapter = FoliaPlatformAdapter.INSTANCE;
         } catch (ClassNotFoundException e) {
-            platform = BukkitPlatform.INSTANCE;
+            platformAdapter = BukkitPlatformAdapter.INSTANCE;
         } catch (NoSuchMethodException e) {
-            platform = PaperPlatform.INSTANCE;
+            platformAdapter = PaperPlatformAdapter.INSTANCE;
         }
     }
 
     public static boolean isFolia() {
-        return platform.type().equals(IPlatform.PlatformType.FOLIA);
+        return platformAdapter.type().equals(PlatformAdapter.PlatformType.FOLIA);
     }
 
     public static boolean isPaper() {
-        return platform.type().equals(IPlatform.PlatformType.PAPER) || platform.type().equals(IPlatform.PlatformType.FOLIA);
+        return platformAdapter.type().equals(PlatformAdapter.PlatformType.PAPER) || platformAdapter.type().equals(PlatformAdapter.PlatformType.FOLIA);
     }
 
 }

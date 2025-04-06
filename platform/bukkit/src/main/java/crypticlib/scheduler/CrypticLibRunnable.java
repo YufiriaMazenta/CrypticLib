@@ -1,76 +1,76 @@
 package crypticlib.scheduler;
 
 import crypticlib.CrypticLibBukkit;
-import crypticlib.scheduler.task.ITaskWrapper;
+import crypticlib.scheduler.task.TaskWrapper;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 
 public abstract class CrypticLibRunnable implements Runnable {
 
-    protected ITaskWrapper taskWrapper;
+    protected TaskWrapper taskWrapper;
 
     @Override
     public abstract void run();
 
-    public ITaskWrapper sync() {
+    public TaskWrapper sync() {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().sync(this));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().sync(this));
     }
 
-    public ITaskWrapper syncLater(long delayTicks) {
+    public TaskWrapper syncLater(long delayTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().syncLater(this, delayTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().syncLater(this, delayTicks));
     }
 
-    public ITaskWrapper syncTimer(long delayTicks, long periodTicks) {
+    public TaskWrapper syncTimer(long delayTicks, long periodTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().syncTimer(this, delayTicks, periodTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().syncTimer(this, delayTicks, periodTicks));
     }
 
-    public ITaskWrapper async(Plugin plugin) {
+    public TaskWrapper async(Plugin plugin) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().async(this));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().async(this));
     }
 
-    public ITaskWrapper asyncLater(long delayTicks) {
+    public TaskWrapper asyncLater(long delayTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().asyncLater(this, delayTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().asyncLater(this, delayTicks));
     }
 
-    public ITaskWrapper asyncTimer(long delayTicks, long periodTicks) {
+    public TaskWrapper asyncTimer(long delayTicks, long periodTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().asyncTimer(this, delayTicks, periodTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().asyncTimer(this, delayTicks, periodTicks));
     }
 
-    public ITaskWrapper runOnLocation(Location location) {
+    public TaskWrapper runOnLocation(Location location) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().runOnLocation(location, this));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().runOnLocation(location, this));
     }
 
-    public ITaskWrapper runOnLocationLater(Location location, long delayTicks) {
+    public TaskWrapper runOnLocationLater(Location location, long delayTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().runOnLocationLater(location, this, delayTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().runOnLocationLater(location, this, delayTicks));
     }
 
-    public ITaskWrapper runOnLocationTimer(Location location, long delayTicks, long periodTicks) {
+    public TaskWrapper runOnLocationTimer(Location location, long delayTicks, long periodTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().runOnLocationTimer(location, this, delayTicks, periodTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().runOnLocationTimer(location, this, delayTicks, periodTicks));
     }
 
-    public ITaskWrapper runOnEntity(Entity entity) {
+    public TaskWrapper runOnEntity(Entity entity) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().runOnEntity(entity, this, this));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().runOnEntity(entity, this, this));
     }
 
-    public ITaskWrapper runOnEntityLater(Entity entity, long delayTicks) {
+    public TaskWrapper runOnEntityLater(Entity entity, long delayTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().runOnEntityLater(entity, this, this, delayTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().runOnEntityLater(entity, this, this, delayTicks));
     }
 
-    public ITaskWrapper runOnEntityTimer(Entity entity, long delayTicks, long periodTicks) {
+    public TaskWrapper runOnEntityTimer(Entity entity, long delayTicks, long periodTicks) {
         checkTaskNotNull();
-        return setTaskWrapper(CrypticLibBukkit.platform().scheduler().runOnEntityTimer(entity, this, this, delayTicks, periodTicks));
+        return setTaskWrapper(CrypticLibBukkit.scheduler().runOnEntityTimer(entity, this, this, delayTicks, periodTicks));
     }
 
     public void cancel() {
@@ -86,7 +86,7 @@ public abstract class CrypticLibRunnable implements Runnable {
         return this.taskWrapper.isCancelled();
     }
 
-    protected ITaskWrapper setTaskWrapper(ITaskWrapper taskWrapper) {
+    protected TaskWrapper setTaskWrapper(TaskWrapper taskWrapper) {
         this.taskWrapper = taskWrapper;
         return this.taskWrapper;
     }

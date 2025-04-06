@@ -4,7 +4,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-public class BukkitTaskWrapper implements ITaskWrapper {
+public class BukkitTaskWrapper implements TaskWrapper {
 
     private final BukkitTask bukkitTask;
 

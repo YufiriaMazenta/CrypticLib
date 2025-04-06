@@ -20,10 +20,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BungeePlugin extends Plugin {
@@ -83,6 +80,10 @@ public abstract class BungeePlugin extends Plugin {
         );
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
+                Command annotation = commandClass.getAnnotation(Command.class);
+                if (!Arrays.asList(annotation.platforms()).contains(PlatformSide.BUNGEE)) {
+                    return;
+                }
                 try {
                     if (!CommandTree.class.isAssignableFrom(commandClass)) {
                         return;
@@ -90,7 +91,6 @@ public abstract class BungeePlugin extends Plugin {
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                    Command annotation = commandClass.getAnnotation(Command.class);
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();
                     }

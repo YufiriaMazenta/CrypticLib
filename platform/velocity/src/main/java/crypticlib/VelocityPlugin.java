@@ -92,6 +92,10 @@ public abstract class VelocityPlugin {
 
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
+                Command annotation = commandClass.getAnnotation(Command.class);
+                if (!Arrays.asList(annotation.platforms()).contains(PlatformSide.VELOCITY)) {
+                    return;
+                }
                 try {
                     if (!CommandTree.class.isAssignableFrom(commandClass)) {
                         return;
@@ -99,7 +103,6 @@ public abstract class VelocityPlugin {
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                    Command annotation = commandClass.getAnnotation(Command.class);
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();
                     }

@@ -1,6 +1,6 @@
-package crypticlib.platform;
+package crypticlib.platformadapter;
 
-import crypticlib.scheduler.IScheduler;
+import crypticlib.scheduler.Scheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.Future;
 
 /**
- * 平台接口
+ * Bukkit平台接口
  */
-public interface IPlatform {
+public interface PlatformAdapter {
 
     /**
      * 获取平台的类型
@@ -19,7 +19,7 @@ public interface IPlatform {
      * @return 平台的类型
      */
     @NotNull
-    IPlatform.PlatformType type();
+    PlatformAdapter.PlatformType type();
 
     /**
      * 获取平台对应的调度器
@@ -27,7 +27,7 @@ public interface IPlatform {
      * @return 平台对应的调度器
      */
     @NotNull
-    IScheduler scheduler();
+    Scheduler scheduler();
 
     /**
      * 将实体传送至一个坐标

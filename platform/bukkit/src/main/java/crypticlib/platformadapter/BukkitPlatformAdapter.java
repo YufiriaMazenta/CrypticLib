@@ -1,7 +1,7 @@
-package crypticlib.platform;
+package crypticlib.platformadapter;
 
 import crypticlib.scheduler.BukkitScheduler;
-import crypticlib.scheduler.IScheduler;
+import crypticlib.scheduler.Scheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -13,19 +13,19 @@ import java.util.concurrent.Future;
 /**
  * Bukkit平台的一些方法集成
  */
-public enum BukkitPlatform implements IPlatform {
+public enum BukkitPlatformAdapter implements PlatformAdapter {
 
     INSTANCE;
 
     @Override
     @NotNull
-    public IPlatform.PlatformType type() {
+    public PlatformAdapter.PlatformType type() {
         return PlatformType.BUKKIT;
     }
 
     @Override
     @NotNull
-    public IScheduler scheduler() {
+    public Scheduler scheduler() {
         return BukkitScheduler.INSTANCE;
     }
 

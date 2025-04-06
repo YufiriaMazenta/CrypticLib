@@ -3,7 +3,7 @@ package crypticlib.scheduler.task;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-public interface ITaskWrapper {
+public interface TaskWrapper {
 
     /**
      * 取消此任务

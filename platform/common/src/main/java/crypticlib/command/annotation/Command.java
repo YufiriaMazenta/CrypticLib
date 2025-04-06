@@ -1,5 +1,7 @@
 package crypticlib.command.annotation;
 
+import crypticlib.PlatformSide;
+
 import java.lang.annotation.*;
 
 /**
@@ -16,5 +18,10 @@ public @interface Command {
      * 若为false,将会打印报错堆栈信息
      */
     boolean ignoreClassNotFound() default true;
+
+    /**
+     * 命令所属的平台，若不包含当前平台，将不会注册命令
+     */
+    PlatformSide[] platforms() default {PlatformSide.BUKKIT, PlatformSide.BUNGEE, PlatformSide.VELOCITY};
 
 }

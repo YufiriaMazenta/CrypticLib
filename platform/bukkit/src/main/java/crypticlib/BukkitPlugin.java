@@ -21,10 +21,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class BukkitPlugin extends JavaPlugin {
@@ -84,6 +81,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
         );
         pluginScanner.getAnnotatedClasses(Command.class).forEach(
             commandClass -> {
+                Command annotation = commandClass.getAnnotation(Command.class);
+                if (!Arrays.asList(annotation.platforms()).contains(PlatformSide.BUKKIT)) {
+                    return;
+                }
                 try {
                     if (!CommandTree.class.isAssignableFrom(commandClass)) {
                         return;
@@ -91,7 +92,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                    Command annotation = commandClass.getAnnotation(Command.class);
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();
                     }
@@ -112,7 +112,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
         runLifeCycleTasks(LifeCycle.DISABLE);
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
-        CrypticLibBukkit.platform().scheduler().cancelTasks();
+        CrypticLibBukkit.scheduler().cancelTasks();
         disable();
     }
 
