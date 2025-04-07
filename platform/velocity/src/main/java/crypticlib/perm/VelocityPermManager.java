@@ -22,14 +22,6 @@ public enum VelocityPermManager implements PermManager {
         return this;
     }
 
-    @Override
-    public boolean hasPermission(Object sender, String permission) {
-        if (sender instanceof CommandSource) {
-            return ((CommandSource) sender).hasPermission(permission);
-        }
-        return false;
-    }
-
     public Map<String, PermInfo> permissions() {
         return permissions;
     }

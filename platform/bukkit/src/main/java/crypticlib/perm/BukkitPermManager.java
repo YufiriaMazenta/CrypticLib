@@ -25,12 +25,4 @@ public enum BukkitPermManager implements PermManager {
         return this;
     }
 
-    @Override
-    public boolean hasPermission(Object sender, String permission) {
-        if (sender instanceof Permissible) {
-            return ((Permissible) sender).hasPermission(permission);
-        }
-        return false;
-    }
-
 }

@@ -7,6 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * CrypticLib提供的命令树类,用于注册根命令
+ */
 public class CommandTree extends CommandNode {
 
     private boolean registered = false;
@@ -32,8 +35,8 @@ public class CommandTree extends CommandNode {
     }
 
     @Override
-    public CommandTree regSub(@NotNull CommandNode commandNodeHandler) {
-        return (CommandTree) super.regSub(commandNodeHandler);
+    public CommandTree regSub(@NotNull CommandNode commandNode) {
+        return (CommandTree) super.regSub(commandNode);
     }
 
     public final void register() {

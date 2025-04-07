@@ -1,6 +1,8 @@
 package crypticlib.command;
 
+import crypticlib.command.annotation.Subcommand;
 import crypticlib.perm.PermInfo;
+import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,12 +45,12 @@ public interface CommandHandler {
     /**
      * 注册一条新的子命令，注册相同的子命令会按照注册顺序最后注册的生效
      *
-     * @param commandNodeHandler 注册的命令
+     * @param commandNode 注册的命令
      */
-    default CommandHandler regSub(@NotNull CommandNode commandNodeHandler) {
-        subcommands().put(commandNodeHandler.commandInfo().name(), commandNodeHandler);
-        for (String alias : commandNodeHandler.commandInfo.aliases()) {
-            subcommands().put(alias, commandNodeHandler);
+    default CommandHandler regSub(@NotNull CommandNode commandNode) {
+        subcommands().put(commandNode.commandInfo().name(), commandNode);
+        for (String alias : commandNode.commandInfo().aliases()) {
+            subcommands().put(alias, commandNode);
         }
         return this;
     }
@@ -129,7 +131,7 @@ public interface CommandHandler {
     default void scanSubCommands() {
         //先注册自己的子命令
         for (Field field : this.getClass().getDeclaredFields()) {
-            if (!field.isAnnotationPresent(crypticlib.command.annotation.Subcommand.class))
+            if (!field.isAnnotationPresent(Subcommand.class))
                 continue;
             if (CommandNode.class.isAssignableFrom(field.getType())) {
                 CommandNode commandNode = ReflectionHelper.getDeclaredFieldObj(field, this);
@@ -206,14 +208,14 @@ public interface CommandHandler {
 
     /**
      * 检查执行者是否有权限
-     * @param sender 执行者
+     * @param invoker 执行者
      * @return 是否有此命令节点的权限
      */
-    default boolean hasPermission(CommandInvoker sender) {
+    default boolean hasPermission(CommandInvoker invoker) {
         PermInfo permission = commandInfo().permission();
         if (permission == null)
             return true;
-        return permission.hasPermission(sender);
+        return permission.hasPermission(invoker);
     }
 
 }

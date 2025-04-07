@@ -21,14 +21,6 @@ public enum BungeePermManager implements PermManager {
         return this;
     }
 
-    @Override
-    public boolean hasPermission(Object sender, String permission) {
-        if (sender instanceof CommandSender) {
-            return ((CommandSender) sender).hasPermission(permission);
-        }
-        return false;
-    }
-
     public Map<String, PermInfo> permissions() {
         return permissions;
     }

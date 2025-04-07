@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * CrypticLib提供的命令节点类
+ * CrypticLib提供的命令节点类,用于注册子命令
  */
 public class CommandNode implements CommandHandler {
 
@@ -62,8 +62,8 @@ public class CommandNode implements CommandHandler {
     }
 
     @Override
-    public CommandNode regSub(@NotNull CommandNode commandNodeHandler) {
-        return (CommandNode) CommandHandler.super.regSub(commandNodeHandler);
+    public CommandNode regSub(@NotNull CommandNode commandNode) {
+        return (CommandNode) CommandHandler.super.regSub(commandNode);
     }
 
     @Override
