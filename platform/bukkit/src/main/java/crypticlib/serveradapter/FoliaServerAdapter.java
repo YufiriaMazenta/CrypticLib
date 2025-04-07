@@ -1,6 +1,6 @@
-package crypticlib.platformadapter;
+package crypticlib.serveradapter;
 
-import crypticlib.scheduler.BukkitScheduler;
+import crypticlib.scheduler.FoliaScheduler;
 import crypticlib.scheduler.Scheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -10,32 +10,32 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.Future;
 
 /**
- * Paper平台的一些方法集成
+ * Folia平台的一些方法集成
  */
-public enum PaperPlatformAdapter implements PlatformAdapter {
+public enum FoliaServerAdapter implements ServerAdapter {
 
     INSTANCE;
 
     @Override
     @NotNull
-    public PlatformAdapter.PlatformType type() {
-        return PlatformType.PAPER;
+    public ServerAdapter.ServerType type() {
+        return ServerType.FOLIA;
     }
 
     @Override
     @NotNull
     public Scheduler scheduler() {
-        return BukkitScheduler.INSTANCE;
+        return FoliaScheduler.INSTANCE;
     }
 
     @Override
     public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
-        return BukkitPlatformAdapter.INSTANCE.teleportEntity(entity, location, cause);
+        return entity.teleportAsync(location, cause);
     }
 
     @Override
     public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location) {
-        return BukkitPlatformAdapter.INSTANCE.teleportEntity(entity, location);
+        return teleportEntity(entity, location, PlayerTeleportEvent.TeleportCause.PLUGIN);
     }
 
     @Override
@@ -50,7 +50,7 @@ public enum PaperPlatformAdapter implements PlatformAdapter {
 
     @Override
     public boolean isFolia() {
-        return false;
+        return true;
     }
 
 }

@@ -1,4 +1,4 @@
-package crypticlib.platformadapter;
+package crypticlib.serveradapter;
 
 import crypticlib.scheduler.Scheduler;
 import org.bukkit.Location;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.Future;
 
 /**
- * Bukkit平台接口
+ * Bukkit服务端适配接口
  */
-public interface PlatformAdapter {
+public interface ServerAdapter {
 
     /**
      * 获取平台的类型
@@ -19,7 +19,7 @@ public interface PlatformAdapter {
      * @return 平台的类型
      */
     @NotNull
-    PlatformAdapter.PlatformType type();
+    ServerAdapter.ServerType type();
 
     /**
      * 获取平台对应的调度器
@@ -55,7 +55,7 @@ public interface PlatformAdapter {
     /**
      * 平台的类型
      */
-    enum PlatformType {
+    enum ServerType {
         BUKKIT, PAPER, FOLIA;
     }
 

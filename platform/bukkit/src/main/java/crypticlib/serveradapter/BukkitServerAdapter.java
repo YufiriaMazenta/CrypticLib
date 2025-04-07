@@ -1,4 +1,4 @@
-package crypticlib.platformadapter;
+package crypticlib.serveradapter;
 
 import crypticlib.scheduler.BukkitScheduler;
 import crypticlib.scheduler.Scheduler;
@@ -13,14 +13,14 @@ import java.util.concurrent.Future;
 /**
  * Bukkit平台的一些方法集成
  */
-public enum BukkitPlatformAdapter implements PlatformAdapter {
+public enum BukkitServerAdapter implements ServerAdapter {
 
     INSTANCE;
 
     @Override
     @NotNull
-    public PlatformAdapter.PlatformType type() {
-        return PlatformType.BUKKIT;
+    public ServerAdapter.ServerType type() {
+        return ServerType.BUKKIT;
     }
 
     @Override
