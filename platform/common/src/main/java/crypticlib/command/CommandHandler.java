@@ -18,18 +18,18 @@ public interface CommandHandler {
     /**
      * 命令默认执行的方法，当未输入参数或者没有子命令时执行
      *
-     * @param sender 执行者
+     * @param invoker 执行者
      * @param args   参数
      */
-    default void execute(@NotNull CommandInvoker sender, @NotNull List<String> args) {
-        sendDescriptions(sender);
+    default void execute(@NotNull CommandInvoker invoker, @NotNull List<String> args) {
+        sendDescriptions(invoker);
     }
 
     /**
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
      * @return 此命令的补全参数内容
      */
-    default @Nullable List<String> tab(@NotNull CommandInvoker sender, @NotNull List<String> args) {
+    default @Nullable List<String> tab(@NotNull CommandInvoker invoker, @NotNull List<String> args) {
         return null;
     }
 
@@ -58,32 +58,32 @@ public interface CommandHandler {
     /**
      * 执行此命令
      *
-     * @param sender 发送此命令的人
+     * @param invoker 发送此命令的人
      * @param args   发送时的参数
      */
-    default void onCommand(CommandInvoker sender, List<String> args) {
+    default void onCommand(CommandInvoker invoker, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
-            execute(sender, args);
+            execute(invoker, args);
             return;
         }
         //执行对应的子命令
         CommandNode commandNode = subcommands().get(args.get(0));
-        if (commandNode != null && commandNode.hasPermission(sender)) {
-            commandNode.onCommand(sender, args.subList(1, args.size()));
+        if (commandNode != null && commandNode.hasPermission(invoker)) {
+            commandNode.onCommand(invoker, args.subList(1, args.size()));
         }
     }
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
      *
-     * @param sender 按下TAB的玩家或者控制台
+     * @param invoker 按下TAB的玩家或者控制台
      * @param args   参数列表
      * @return 返回的tab列表内容
      */
-    default List<String> onTabComplete(CommandInvoker sender, List<String> args) {
+    default List<String> onTabComplete(CommandInvoker invoker, List<String> args) {
         List<String> arguments;
-        List<String> tab = tab(sender, args);
+        List<String> tab = tab(invoker, args);
         if (tab == null) {
             arguments = new ArrayList<>();
         } else {
@@ -95,8 +95,8 @@ public interface CommandHandler {
             if (args.size() > 1) {
                 CommandNode commandNode = subcommands().get(args.get(0));
                 if (commandNode != null) {
-                    if (commandNode.hasPermission(sender)) {
-                        return commandNode.onTabComplete(sender, args.subList(1, args.size()));
+                    if (commandNode.hasPermission(invoker)) {
+                        return commandNode.onTabComplete(invoker, args.subList(1, args.size()));
                     } else {
                         return Collections.singletonList("");
                     }
@@ -105,7 +105,7 @@ public interface CommandHandler {
             }
             for (String arg : subcommands().keySet()) {
                 CommandNode commandNode = subcommands().get(arg);
-                if (commandNode.hasPermission(sender)) {
+                if (commandNode.hasPermission(invoker)) {
                     arguments.add(arg);
                 }
             }
