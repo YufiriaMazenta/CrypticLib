@@ -19,32 +19,32 @@ import java.util.List;
  */
 public abstract class ParticleObject {
 
-    private Location origin;
+    protected Location origin;
 
-    private ShowType showType = ShowType.NONE;
-    private TaskWrapper task;
-    private long period;
-    private boolean running = false;
+    protected ShowType showType = ShowType.NONE;
+    protected TaskWrapper showTask;
+    protected long period;
+    protected boolean running = false;
 
-    private Particle particle = Particle.VILLAGER_HAPPY;
-    private int count = 1;
-    private double offsetX = 0;
-    private double offsetY = 0;
-    private double offsetZ = 0;
-    private double extra = 0;
-    private Object data = null;
-    private Color color;
-    private Entity entity;
+    protected Particle particle = Particle.VILLAGER_HAPPY;
+    protected int count = 1;
+    protected double offsetX = 0;
+    protected double offsetY = 0;
+    protected double offsetZ = 0;
+    protected double extra = 0;
+    protected Object data = null;
+    protected Color color;
+    protected Entity entity;
     /**
      * X的变化量
      */
-    private double incrementX;
-    private double incrementY;
-    private double incrementZ;
+    protected double incrementX;
+    protected double incrementY;
+    protected double incrementZ;
     /**
      * 表示该特效对象所拥有的矩阵
      */
-    private Matrix matrix;
+    protected Matrix matrix;
 
     /**
      * 将计算好的粒子展示位置以列表的方式返回
@@ -67,7 +67,7 @@ public abstract class ParticleObject {
         // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
         CrypticLibBukkit.scheduler().syncLater(() -> {
             running = true;
-            task = CrypticLibBukkit.scheduler().syncTimer(() -> {
+            showTask = CrypticLibBukkit.scheduler().syncTimer(() -> {
                 if (!running) {
                     return;
                 }
@@ -86,7 +86,7 @@ public abstract class ParticleObject {
         // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
         CrypticLibBukkit.scheduler().syncLater(() -> {
             running = true;
-            task = CrypticLibBukkit.scheduler().asyncTimer(() -> {
+            showTask = CrypticLibBukkit.scheduler().asyncTimer(() -> {
                 if (!running) {
                     return;
                 }
@@ -115,7 +115,7 @@ public abstract class ParticleObject {
         // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
         CrypticLibBukkit.scheduler().syncLater(() -> {
             running = true;
-            task = CrypticLibBukkit.scheduler().syncTimer(() -> {
+            showTask = CrypticLibBukkit.scheduler().syncTimer(() -> {
                 if (!running) {
                     return;
                 }
@@ -143,7 +143,7 @@ public abstract class ParticleObject {
         // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
         CrypticLibBukkit.scheduler().syncLater(() -> {
             running = true;
-            task = CrypticLibBukkit.scheduler().asyncTimer(() -> {
+            showTask = CrypticLibBukkit.scheduler().asyncTimer(() -> {
                 if (!running) {
                     return;
                 }
@@ -157,9 +157,9 @@ public abstract class ParticleObject {
      * 将正在展示或播放的特效关闭
      */
     public void turnOffTask() {
-        if (task != null) {
+        if (showTask != null) {
             running = false;
-            task.cancel();
+            showTask.cancel();
             setShowType(ShowType.NONE);
         }
     }
