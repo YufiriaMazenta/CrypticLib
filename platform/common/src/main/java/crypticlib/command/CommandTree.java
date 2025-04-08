@@ -14,8 +14,8 @@ public class CommandTree extends CommandNode {
 
     private boolean registered = false;
 
-    public CommandTree(@NotNull CommandInfo subcommandInfo) {
-        super(subcommandInfo);
+    public CommandTree(@NotNull CommandInfo commandInfo) {
+        super(commandInfo);
     }
 
     public CommandTree(@NotNull String name) {
