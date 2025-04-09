@@ -607,11 +607,6 @@ public abstract class ParticleObject {
      * @param data     特殊粒子属性
      */
     public void spawnParticle(Location location, Particle particle, int count, double offsetX, double offsetY, double offsetZ, double extra, Object data) {
-        if (!running) {
-            //如果不在运行,不生成粒子
-            return;
-        }
-
         Location showLocation = location;
         if (hasMatrix()) {
             Vector vector = location.clone().subtract(originLocation).toVector();
@@ -642,11 +637,6 @@ public abstract class ParticleObject {
     }
 
     public void spawnColorParticle(Location location, int r, int g, int b) {
-        if (!running) {
-            //如果不在运行,不生成粒子
-            return;
-        }
-
         Location showLocation = location;
         if (hasMatrix()) {
             Vector vector = location.clone().subtract(originLocation).toVector();
