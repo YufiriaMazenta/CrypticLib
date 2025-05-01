@@ -15,7 +15,7 @@ public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapp
 
     @Override
     public void reload() {
-        configWrapper.reloadConfig();
+//        configWrapper.reloadConfig(); 不再由ConfigContainer进行重载
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;

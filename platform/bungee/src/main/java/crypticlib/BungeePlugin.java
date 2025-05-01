@@ -26,7 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class BungeePlugin extends Plugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
-    protected final Map<String, BungeeConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<Class<?>, BungeeConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<String, BungeeConfigWrapper> configWrapperMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
     public BungeePlugin() {
@@ -48,9 +49,9 @@ public abstract class BungeePlugin extends Plugin {
                 String path = configHandler.path();
                 if (!path.endsWith(".yml") && !path.endsWith(".yaml") && !path.endsWith(".json"))
                     path += ".yml";
-                BungeeConfigWrapper configWrapper = new BungeeConfigWrapper(this, path);
+                BungeeConfigWrapper configWrapper = getConfigWrapperOrCreate(path);
                 BungeeConfigContainer configContainer = new BungeeConfigContainer(configClass, configWrapper);
-                configContainerMap.put(path, configContainer);
+                configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
             }
         );
@@ -144,8 +145,8 @@ public abstract class BungeePlugin extends Plugin {
     }
     
     public final @NotNull Configuration getConfig() {
-        if (configContainerMap.containsKey(defaultConfigFileName)) {
-            return configContainerMap.get(defaultConfigFileName).configWrapper().config();
+        if (configWrapperMap.containsKey(defaultConfigFileName)) {
+            return configWrapperMap.get(defaultConfigFileName).config();
         }
         throw new UnsupportedOperationException("No default config file");
     }
@@ -155,15 +156,51 @@ public abstract class BungeePlugin extends Plugin {
     }
     
     public final void saveDefaultConfig() {
-        BungeeConfigContainer defConfig = new BungeeConfigContainer(this.getClass(), new BungeeConfigWrapper(this, defaultConfigFileName));
+        BungeeConfigContainer defConfig = new BungeeConfigContainer(this.getClass(), getConfigWrapperOrCreate(defaultConfigFileName));
         defConfig.reload();
-        configContainerMap.put(defaultConfigFileName, defConfig);
+        configContainerMap.put(this.getClass(), defConfig);
     }
 
     public final void reloadConfig() {
+        configWrapperMap.forEach((path, wrapper) -> wrapper.reloadConfig());
         configContainerMap.forEach((path, container) -> container.reload());
     }
 
+    /**
+     * 获取插件的配置文件
+     * @param path 配置文件相对于插件文件夹的路径
+     */
+    public final Optional<BungeeConfigWrapper> getConfigWrapper(String path) {
+        return Optional.ofNullable(configWrapperMap.get(path));
+    }
+
+    /**
+     * 获取插件的配置文件,如果不存在时会创建文件
+     * @param path 配置文件相对于插件文件夹的路径
+     */
+    public final BungeeConfigWrapper getConfigWrapperOrCreate(String path) {
+        Optional<BungeeConfigWrapper> configWrapperOpt = getConfigWrapper(path);
+        return configWrapperOpt.orElseGet(() -> {
+            if (!path.endsWith(".yml") && !path.endsWith(".yaml") && !path.endsWith(".json")) {
+                throw new UnsupportedOperationException("Bungee only support yaml or json config");
+            }
+            BungeeConfigWrapper configWrapper = new BungeeConfigWrapper(this, path);
+            configWrapperMap.put(path, configWrapper);
+            return configWrapper;
+        });
+    }
+
+    /**
+     * 删除插件缓存的一个配置文件
+     * 被删除的配置文件将不会在reload时自动重载
+     * 请谨慎操作
+     * @param path 配置文件相对于插件文件夹的路径
+     * @return 被删除掉的配置文件包装
+     */
+    public final BungeeConfigWrapper removeConfigWrapper(String path) {
+        return configWrapperMap.remove(path);
+    }
+    
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
         List<BungeeLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(

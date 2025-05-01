@@ -38,7 +38,8 @@ public abstract class VelocityPlugin {
     protected final Path dataDirectory;
     protected final PluginContainer pluginContainer;
     protected final ProxyServer proxyServer;
-    protected final Map<String, VelocityConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<Class<?>, VelocityConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<String, VelocityConfigWrapper> configWrapperMap = new ConcurrentHashMap<>();
 
     public VelocityPlugin(Logger logger, ProxyServer proxyServer, PluginContainer pluginContainer, Path dataDirectory) {
         this.logger = logger;
@@ -64,9 +65,9 @@ public abstract class VelocityPlugin {
                 String path = configHandler.path();
                 if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
                     path += ".yml";
-                VelocityConfigWrapper configWrapper = new VelocityConfigWrapper(this, path);
+                VelocityConfigWrapper configWrapper = getConfigWrapperOrCreate(path);
                 VelocityConfigContainer configContainer = new VelocityConfigContainer(configClass, configWrapper);
-                configContainerMap.put(configClass.getName(), configContainer);
+                configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
             }
         );
@@ -145,6 +146,7 @@ public abstract class VelocityPlugin {
     }
 
     public final void reloadConfig() {
+        configWrapperMap.forEach((path, wrapper) -> wrapper.reloadConfig());
         configContainerMap.forEach((path, container) -> container.reload());
     }
 
@@ -187,7 +189,42 @@ public abstract class VelocityPlugin {
     public Collection<RegisteredServer> getAllServers() {
         return proxyServer.getAllServers();
     }
+    
+    /**
+     * 获取插件的配置文件
+     * @param path 配置文件相对于插件文件夹的路径
+     */
+    public final Optional<VelocityConfigWrapper> getConfigWrapper(String path) {
+        return Optional.ofNullable(configWrapperMap.get(path));
+    }
 
+    /**
+     * 获取插件的配置文件,如果不存在时会创建文件
+     * @param path 配置文件相对于插件文件夹的路径
+     */
+    public final VelocityConfigWrapper getConfigWrapperOrCreate(String path) {
+        Optional<VelocityConfigWrapper> configWrapperOpt = getConfigWrapper(path);
+        return configWrapperOpt.orElseGet(() -> {
+            if (!path.endsWith(".yml") && !path.endsWith(".yaml")) {
+                throw new UnsupportedOperationException("Velocity only support yaml config");
+            }
+            VelocityConfigWrapper configWrapper = new VelocityConfigWrapper(this, path);
+            configWrapperMap.put(path, configWrapper);
+            return configWrapper;
+        });
+    }
+
+    /**
+     * 删除插件缓存的一个配置文件
+     * 被删除的配置文件将不会在reload时自动重载
+     * 请谨慎操作
+     * @param path 配置文件相对于插件文件夹的路径
+     * @return 被删除掉的配置文件包装
+     */
+    public final VelocityConfigWrapper removeConfigWrapper(String path) {
+        return configWrapperMap.remove(path);
+    }
+    
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
         List<VelocityLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
         pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(

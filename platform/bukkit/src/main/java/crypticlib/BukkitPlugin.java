@@ -27,7 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class BukkitPlugin extends JavaPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
-    protected final Map<String, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<Class<?>, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
+    protected final Map<String, BukkitConfigWrapper> configWrapperMap = new ConcurrentHashMap<>();
     protected final String defaultConfigFileName = "config.yml";
 
     public BukkitPlugin() {
@@ -49,9 +50,9 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 String path = configHandler.path();
                 if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
                     path += ".yml";
-                BukkitConfigWrapper configWrapper = new BukkitConfigWrapper(this, path);
+                BukkitConfigWrapper configWrapper = getConfigWrapperOrCreate(path);
                 BukkitConfigContainer configContainer = new BukkitConfigContainer(configClass, configWrapper);
-                configContainerMap.put(path, configContainer);
+                configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
             }
         );
@@ -148,8 +149,8 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final @NotNull FileConfiguration getConfig() {
-        if (configContainerMap.containsKey(defaultConfigFileName)) {
-            return configContainerMap.get(defaultConfigFileName).configWrapper().config();
+        if (configWrapperMap.containsKey(defaultConfigFileName)) {
+            return configWrapperMap.get(defaultConfigFileName).config();
         }
         throw new UnsupportedOperationException("No default config file");
     }
@@ -161,14 +162,50 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     @Override
     public final void saveDefaultConfig() {
-        BukkitConfigContainer defConfig = new BukkitConfigContainer(this.getClass(), new BukkitConfigWrapper(this, defaultConfigFileName));
+        BukkitConfigContainer defConfig = new BukkitConfigContainer(this.getClass(), getConfigWrapperOrCreate(defaultConfigFileName));
         defConfig.reload();
-        configContainerMap.put(defaultConfigFileName, defConfig);
+        configContainerMap.put(this.getClass(), defConfig);
     }
 
     @Override
     public final void reloadConfig() {
+        configWrapperMap.forEach((path, wrapper) -> wrapper.reloadConfig());
         configContainerMap.forEach((path, container) -> container.reload());
+    }
+
+    /**
+     * 获取插件的配置文件
+     * @param path 配置文件相对于插件文件夹的路径
+     */
+    public final Optional<BukkitConfigWrapper> getConfigWrapper(String path) {
+        return Optional.ofNullable(configWrapperMap.get(path));
+    }
+
+    /**
+     * 获取插件的配置文件,如果不存在时会创建文件
+     * @param path 配置文件相对于插件文件夹的路径
+     */
+    public final BukkitConfigWrapper getConfigWrapperOrCreate(String path) {
+        Optional<BukkitConfigWrapper> configWrapperOpt = getConfigWrapper(path);
+        return configWrapperOpt.orElseGet(() -> {
+            if (!path.endsWith(".yml") && !path.endsWith(".yaml")) {
+                throw new UnsupportedOperationException("Bukkit only support yaml config");
+            }
+            BukkitConfigWrapper configWrapper = new BukkitConfigWrapper(this, path);
+            configWrapperMap.put(path, configWrapper);
+            return configWrapper;
+        });
+    }
+
+    /**
+     * 删除插件缓存的一个配置文件
+     * 被删除的配置文件将不会在reload时自动重载
+     * 请谨慎操作
+     * @param path 配置文件相对于插件文件夹的路径
+     * @return 被删除掉的配置文件包装
+     */
+    public final BukkitConfigWrapper removeConfigWrapper(String path) {
+        return configWrapperMap.remove(path);
     }
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
