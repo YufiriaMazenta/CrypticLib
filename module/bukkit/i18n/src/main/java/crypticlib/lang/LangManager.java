@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,12 +41,41 @@ public enum LangManager implements BukkitLifeCycleTask {
         folderLangEntryMap.remove(container.langFileFolder());
     }
 
+    /**
+     * 获取一个字符串类型语言对象
+     * @param langFileFolder 该语言对象所属的语言文件夹
+     * @param key 该语言对象的key
+     */
     @Nullable
-    public LangEntry<?> getLangEntry(@NotNull String langFileFolder, @NotNull String key) {
+    public StringLangEntry getStringLangEntry(@NotNull String langFileFolder, @NotNull String key) {
         Map<String, LangEntry<?>> langEntryMap = folderLangEntryMap.get(langFileFolder);
         if (langEntryMap == null)
             return null;
-        return langEntryMap.get(key);
+        LangEntry<?> langEntry = langEntryMap.get(key);
+        if (!(langEntry instanceof StringLangEntry)) {
+            return null;
+        }
+        return (StringLangEntry) langEntry;
+    }
+
+    /**
+     * 获取一个字符串类型语言对象,或者创建一个新的字符串语言对象
+     * @param langFileFolder 该语言对象所属的语言文件夹,如果没有对应文件夹,将不会进行创建并返回null
+     * @param key 该语言对象的key
+     */
+    @Nullable
+    public StringLangEntry getStringLangEntryOrAdd(@NotNull String langFileFolder, @NotNull String key) {
+        StringLangEntry stringLangEntry = getStringLangEntry(langFileFolder, key);
+        if (stringLangEntry != null) {
+            return stringLangEntry;
+        }
+        if (!langEntryContainerMap.containsKey(langFileFolder)) {
+            return null;
+        }
+        LangEntryContainer langEntryContainer = langEntryContainerMap.get(langFileFolder);
+        stringLangEntry = new StringLangEntry(key);
+        langEntryContainer.addExtraStringLang(stringLangEntry);
+        return stringLangEntry;
     }
 
     public void putLangEntry(@NotNull String langFileFolder, @NotNull LangEntry<?> entry) {
@@ -57,6 +87,14 @@ public enum LangManager implements BukkitLifeCycleTask {
             folderLangEntryMap.put(langFileFolder, langEntryMap);
         }
         langEntryMap.put(entry.key(), entry);
+    }
+
+    public void removeLangEntry(@NotNull String langFileFolder, @NotNull String key) {
+        Map<String, LangEntry<?>> langEntryMap;
+        if (folderLangEntryMap.containsKey(langFileFolder)) {
+            langEntryMap = folderLangEntryMap.get(langFileFolder);
+            langEntryMap.remove(key);
+        }
     }
 
     /**
@@ -87,12 +125,11 @@ public enum LangManager implements BukkitLifeCycleTask {
                 result.append(langKey);
             } else {
                 //获取对应的翻译文本进行替换
-                LangEntry<?> langEntry = getLangEntry(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
+                StringLangEntry stringLangEntry = getStringLangEntryOrAdd(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
                 //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
-                if (!(langEntry instanceof StringLangEntry)) {
+                if (stringLangEntry == null) {
                     result.append(langKey);
                 } else {
-                    StringLangEntry stringLangEntry = (StringLangEntry) langEntry;
                     String replacement = sender instanceof Player ? stringLangEntry.value((Player) sender) : stringLangEntry.value();
                     result.append(replacement);
                 }
