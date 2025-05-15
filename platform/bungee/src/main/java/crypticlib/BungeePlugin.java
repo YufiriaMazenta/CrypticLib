@@ -46,6 +46,10 @@ public abstract class BungeePlugin extends Plugin {
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
+                if (!Arrays.asList(configHandler.platforms()).contains(PlatformSide.BUNGEE)) {
+                    return;
+                }
+
                 String path = configHandler.path();
                 if (!path.endsWith(".yml") && !path.endsWith(".yaml") && !path.endsWith(".json"))
                     path += ".yml";

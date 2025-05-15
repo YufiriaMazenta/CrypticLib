@@ -1,5 +1,6 @@
 package crypticlib.config;
 
+import crypticlib.PlatformSide;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.*;
@@ -10,5 +11,7 @@ import java.lang.annotation.*;
 public @interface ConfigHandler {
 
     @NotNull String path();
+
+    @NotNull PlatformSide[] platforms() default {PlatformSide.BUKKIT, PlatformSide.BUNGEE, PlatformSide.VELOCITY};
 
 }

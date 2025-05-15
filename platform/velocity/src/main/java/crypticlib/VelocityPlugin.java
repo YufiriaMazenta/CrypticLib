@@ -62,6 +62,10 @@ public abstract class VelocityPlugin {
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
+                if (!Arrays.asList(configHandler.platforms()).contains(PlatformSide.VELOCITY)) {
+                    return;
+                }
+
                 String path = configHandler.path();
                 if (!path.endsWith(".yml") && !path.endsWith(".yaml"))
                     path += ".yml";
