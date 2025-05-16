@@ -113,7 +113,7 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        msg = "[" + CrypticLib.pluginName() + "] " + msg;
+        msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
         sendMsg(Bukkit.getConsoleSender(), msg, replaceMap);
     }
 

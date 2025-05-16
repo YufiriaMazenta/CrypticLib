@@ -121,7 +121,7 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        msg = "[" + CrypticLib.pluginName() + "] " + msg;
+        msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
         msg = StringHelper.replaceStrings(msg, replaceMap);
         Component component = VelocityTextProcessor.toComponent(msg);
         plugin.proxyServer().getConsoleCommandSource().sendMessage(component);
