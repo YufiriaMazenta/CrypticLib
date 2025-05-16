@@ -246,18 +246,25 @@ public abstract class VelocityPlugin {
                         int priority = taskRule.priority();
                         if (annotationLifeCycle.equals(lifeCycle)) {
                             VelocityLifeCycleTask task = (VelocityLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                            VelocityLifeCycleTaskWrapper wrapper = new VelocityLifeCycleTaskWrapper(task, priority);
+                            List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
+                            List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
+                            VelocityLifeCycleTaskWrapper wrapper = new VelocityLifeCycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
                             taskWrappers.add(wrapper);
                             return;
                         }
                     }
-                } catch (ClassNotFoundException | NoClassDefFoundError e) {
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
-                    if (!annotation.ignoreClassNotFound()) {
-                        e.printStackTrace();
-                    }
                 } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
+                    if (ignoreExceptions.contains(throwable.getClass())) {
+                        return;
+                    }
+                    List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
+                    if (printExceptions.contains(throwable.getClass())) {
+                        throwable.printStackTrace();
+                        return;
+                    }
+                    throw new RuntimeException(throwable);
                 }
             }
         );

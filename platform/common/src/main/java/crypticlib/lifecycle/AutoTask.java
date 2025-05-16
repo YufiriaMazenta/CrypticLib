@@ -10,10 +10,15 @@ public @interface AutoTask {
     TaskRule[] rules();
 
     /**
-     * 新建实例时是否无视ClassNotFoundException和NoClassDefFoundError
-     * 若为true,遇到上述异常将不会打印报错
-     * 若为false,将会打印报错堆栈信息
+     * 应该忽视掉的异常
+     * 此项中的异常发生时，将静默处理
      */
-    boolean ignoreClassNotFound() default true;
+    Class<? extends Throwable>[] ignoreExceptions() default {ClassNotFoundException.class, NoClassDefFoundError.class};
+
+    /**
+     * 应该打印出来的异常
+     * 此项中的异常发生时，将打印该异常，并且不抛出错误
+     */
+    Class<? extends Throwable>[] printExceptions() default {};
 
 }
