@@ -268,11 +268,6 @@ public class IOHelper {
             Path folderPath = folder.toPath();
             Path filePath = file.toPath();
 
-            //检查是否同根路径
-            if (!folderPath.getRoot().equals(filePath.getRoot())) {
-                return filePath;  //不同磁盘直接返回绝对路径
-            }
-
             return folderPath.relativize(filePath);
         } catch (IllegalArgumentException e) {
             //路径无效或无法计算相对路径时回退
