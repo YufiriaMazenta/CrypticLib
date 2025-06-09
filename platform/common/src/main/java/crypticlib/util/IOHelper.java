@@ -11,6 +11,8 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -243,6 +245,39 @@ public class IOHelper {
             throw new UnsupportedOperationException("MsgSender is already set");
         }
         IOHelper.msgSender = msgSender;
+    }
+
+    /**
+     * 获取某文件相对某文件夹的相对路径名字
+     * @param folder 文件夹
+     * @param file 文件
+     * @return
+     */
+    public static String getRelativeFileName(@NotNull File folder, @NotNull File file) {
+        return getRelativePath(folder, file).toString().replace('\\', '/');
+    }
+
+    /**
+     * 获取某文件相对某文件夹的相对路径
+     * @param folder 文件夹
+     * @param file 文件
+     * @return
+     */
+    public static Path getRelativePath(@NotNull File folder, @NotNull File file) {
+        try {
+            Path folderPath = folder.toPath();
+            Path filePath = file.toPath();
+
+            //检查是否同根路径
+            if (!folderPath.getRoot().equals(filePath.getRoot())) {
+                return filePath;  //不同磁盘直接返回绝对路径
+            }
+
+            return folderPath.relativize(filePath);
+        } catch (IllegalArgumentException e) {
+            //路径无效或无法计算相对路径时回退
+            return file.toPath();
+        }
     }
 
 }

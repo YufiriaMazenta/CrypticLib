@@ -1,8 +1,11 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "1.13.4.1"
-//当全项目重构时更新大版本号,当添加模块或有较大更改时更新子版本号,当bug修复和功能补充时更新小版本号
+rootProject.version = "1.13.5.0"
+//全项目重构时更新大版本号
+//添加模块或有较大更改时更新次版本号
+//有API变动(新增/删除/更改声明)时更新修订号
+//仅内部修改,例如BUG修复时更新额外版本号
 
 var repositoryUrl = "https://repo.crypticlib.com:8081/repository/"
 repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
