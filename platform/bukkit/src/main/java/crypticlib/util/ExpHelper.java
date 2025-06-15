@@ -80,18 +80,18 @@ public class ExpHelper {
     }
 
     /**
-     * 更改玩家当前的经验值，会重新计算玩家的等级
-     * @param player
-     * @param exp
+     * 增加玩家当前的经验值，会重新计算玩家的等级
+     * @param player 要更改的玩家
+     * @param addExp 要更改的经验值，最终结果为玩家当前经验值+更改经验值，当为负数时，会减少玩家经验
      */
-    public static void changeExp(Player player, int exp) {
-        exp += getPlayerExp(player);
+    public static void addExp(Player player, int addExp) {
+        addExp += getPlayerExp(player);
 
-        if (exp < 0) {
-            exp = 0;
+        if (addExp < 0) {
+            addExp = 0;
         }
 
-        double levelAndExp = getLevelFromExp(exp);
+        double levelAndExp = getLevelFromExp(addExp);
         int level = (int) levelAndExp;
         player.setLevel(level);
         player.setExp((float) (levelAndExp - level));
