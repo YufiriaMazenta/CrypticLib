@@ -172,7 +172,10 @@ public class Menu implements InventoryHolder {
      */
     public void updateMenuIcons() {
         if (inventoryCache != null) {
-            inventoryCache.clear();
+            //只把有按钮的槽位清空
+            slotMap.forEach((slot, icon) -> {
+                inventoryCache.setItem(slot, new ItemStack(Material.AIR));
+            });
             draw(inventoryCache);
         }
     }
