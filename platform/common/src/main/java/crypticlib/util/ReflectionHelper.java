@@ -18,7 +18,16 @@ public class ReflectionHelper {
 
     private final static Map<String, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<>();
+    private final static Field FIELD_CLASS_MODIFIERS_FIELD;
     private static Object PLUGIN_INSTANCE = null;
+
+    static {
+        try {
+            FIELD_CLASS_MODIFIERS_FIELD = Field.class.getDeclaredField("modifiers");
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
         Field cacheField = getFieldCache(clazz, fieldName);
@@ -85,6 +94,87 @@ public class ReflectionHelper {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 修改一个变量的值
+     * @param field 变量
+     * @param owner 所属对象
+     * @param value 新的值
+     * @param <T> 变量的类型
+     */
+    public static <T> void setFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) {
+        try {
+            field.set(owner, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 修改一个私有变量的值
+     * @param field 变量
+     * @param owner 所属对象
+     * @param value 新的值
+     * @param <T> 变量的类型
+     */
+    public static <T> void setDeclaredFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) {
+        try {
+            field.setAccessible(true);
+            field.set(owner, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 修改一个final变量的值
+     * @param field 变量
+     * @param owner 所属对象
+     * @param value 新的值
+     * @param <T> 变量的类型
+     */
+    public static <T> void setFinalFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) {
+        try {
+            int originalModifiers = field.getModifiers();
+            removeFinalModifier(field);
+            field.set(owner, value);
+            restoreFinalModifier(field, originalModifiers);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 修改一个私有final变量的值
+     * @param field 变量
+     * @param owner 所属对象
+     * @param value 新的值
+     * @param <T> 变量的类型
+     */
+    public static <T> void setDeclaredFinalFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) {
+        try {
+            int originalModifiers = field.getModifiers();
+            removeFinalModifier(field);
+            field.setAccessible(true);
+            field.set(owner, value);
+            restoreFinalModifier(field, originalModifiers);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void removeFinalModifier(Field field) throws IllegalAccessException {
+        FIELD_CLASS_MODIFIERS_FIELD.setAccessible(true);
+        // 移除 final 标志位
+        int currentModifiers = FIELD_CLASS_MODIFIERS_FIELD.getInt(field);
+        FIELD_CLASS_MODIFIERS_FIELD.setInt(field, currentModifiers & ~Modifier.FINAL);
+    }
+
+    private static void restoreFinalModifier(Field field, int originalModifiers) throws IllegalAccessException {
+        FIELD_CLASS_MODIFIERS_FIELD.setAccessible(true);
+        // 恢复原始修饰符
+        FIELD_CLASS_MODIFIERS_FIELD.setInt(field, originalModifiers);
     }
 
     public static Method getMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) {
