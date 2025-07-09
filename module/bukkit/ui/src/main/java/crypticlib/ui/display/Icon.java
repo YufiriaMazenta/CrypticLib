@@ -1,5 +1,6 @@
 package crypticlib.ui.display;
 
+import crypticlib.DataHolder;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.ItemHelper;
 import org.bukkit.Bukkit;
@@ -11,11 +12,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-public class Icon {
+public class Icon implements DataHolder {
 
     protected ItemStack display;
     protected Consumer<InventoryClickEvent> clickAction;
@@ -23,6 +26,7 @@ public class Icon {
      * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在{@link crypticlib.ui.menu.Menu#preprocessIconWhenDraw}前赋值
      */
     private @Nullable UUID parsePlayerId;
+    protected final Map<String, Object> dataMap = new ConcurrentHashMap<>();
 
     public Icon(@NotNull IconDisplay iconDisplay) {
         this.display = iconDisplay.display();
@@ -141,6 +145,35 @@ public class Icon {
     public String parseIconText(String originText) {
         Player iconParsePlayer = parsePlayer();
         return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, originText));
+    }
+
+    @Override
+    public Map<String, Object> allData() {
+        return dataMap;
+    }
+
+    @Override
+    public void setAllData(Map<String, Object> data) {
+        this.dataMap.clear();
+        this.dataMap.putAll(data);
+    }
+
+    @Override
+    public Optional<Object> getData(String key) {
+        if (dataMap.containsKey(key)) {
+            return Optional.ofNullable(dataMap.get(key));
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Object putData(String key, Object value) {
+        return dataMap.put(key, value);
+    }
+
+    @Override
+    public void clearData() {
+        dataMap.clear();
     }
 
 }

@@ -1,6 +1,7 @@
 package crypticlib.ui.menu;
 
 import crypticlib.CrypticLibBukkit;
+import crypticlib.DataHolder;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.scheduler.task.TaskWrapper;
 import crypticlib.ui.display.Icon;
@@ -22,15 +23,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class Menu implements InventoryHolder {
+public class Menu implements InventoryHolder, DataHolder {
 
     protected final Map<Integer, Icon> slotMap;
     protected final UUID playerId;
     protected MenuDisplay display;
     protected final Map<Character, List<Integer>> layoutSlotMap;
-    protected Inventory inventoryCache;
+    protected @Nullable Inventory inventoryCache;
+    protected final Map<String, Object> dataMap = new ConcurrentHashMap<>();
 
     public Menu(@NotNull Player player) {
         this(player, new MenuDisplay());
@@ -388,6 +391,35 @@ public class Menu implements InventoryHolder {
     @Nullable
     public Inventory inventoryCache() {
         return inventoryCache;
+    }
+
+    @Override
+    public Map<String, Object> allData() {
+        return dataMap;
+    }
+
+    @Override
+    public void setAllData(Map<String, Object> data) {
+        this.dataMap.clear();
+        this.dataMap.putAll(data);
+    }
+
+    @Override
+    public Optional<Object> getData(String key) {
+        if (dataMap.containsKey(key)) {
+            return Optional.ofNullable(dataMap.get(key));
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Object putData(String key, Object value) {
+        return dataMap.put(key, value);
+    }
+
+    @Override
+    public void clearData() {
+        dataMap.clear();
     }
 
 }
