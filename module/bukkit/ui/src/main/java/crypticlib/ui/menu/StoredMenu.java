@@ -107,9 +107,9 @@ public class StoredMenu extends Menu {
     @Override
     public void onDrag(InventoryDragEvent event) {
         //判断拖拽操作是否在顶部UI进行
+        Object inventoryView = InventoryViewHelper.getInventoryView(event);
         boolean rawSlotsInTopInv = false;
         for (Integer rawSlot : event.getRawSlots()) {
-            Object inventoryView = InventoryViewHelper.getInventoryView(event);
             Inventory inventory = InventoryViewHelper.getInventory(inventoryView, rawSlot);
             if (Objects.equals(inventory, InventoryViewHelper.getTopInventory(event))) {
                 rawSlotsInTopInv = true;
