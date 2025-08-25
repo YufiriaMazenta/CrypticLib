@@ -46,4 +46,9 @@ public class CooldownMenu extends Menu {
         return slotMap.get(slot).onClick(event);
     }
 
+    @Override
+    public CooldownMenu setDisplay(@NotNull MenuDisplay display) {
+        return (CooldownMenu) super.setDisplay(display);
+    }
+
 }

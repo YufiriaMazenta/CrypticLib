@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Menu implements InventoryHolder, DataHolder {
@@ -72,31 +73,37 @@ public class Menu implements InventoryHolder, DataHolder {
 
     /**
      * 为玩家打开页面
-     * @return 页面本身
+     * @return 页面打开的结果
      */
-    public Menu openMenu() {
+    public MenuOpenResult openMenu() {
         if (inventoryCache == null)
             this.inventoryCache = getInventory();
-        playerOpt().ifPresent(player -> {
-            player.openInventory(inventoryCache);
-        });
-        return this;
+        Optional<@Nullable Player> playerOpt = playerOpt();
+        if (!playerOpt.isPresent()) {
+            return MenuOpenResult.PLAYER_OFFLINE;
+        }
+        playerOpt.get().openInventory(inventoryCache);
+        return MenuOpenResult.SUCCESS;
     }
 
     /**
      * 异步渲染页面,然后为玩家打开页面
      *
-     * @return 执行异步操作的任务
+     * @param callback 页面打开后要进行的操作,如果成功打开,结果将为true,失败(例如玩家离线)将为false
      */
-    public TaskWrapper openMenuAsync() {
-        return CrypticLibBukkit.scheduler().async(() -> {
+    public void openMenuAsync(Consumer<MenuOpenResult> callback) {
+        CrypticLibBukkit.scheduler().async(() -> {
             if (this.inventoryCache == null) {
                 this.inventoryCache = getInventory();
             }
             CrypticLibBukkit.scheduler().sync(() -> {
-                playerOpt().ifPresent(player -> {
-                    player.openInventory(inventoryCache);
-                });
+                Optional<@Nullable Player> playerOpt = playerOpt();
+                if (!playerOpt.isPresent()) {
+                    callback.accept(MenuOpenResult.PLAYER_OFFLINE);
+                    return;
+                }
+                playerOpt.get().openInventory(inventoryCache);
+                callback.accept(MenuOpenResult.SUCCESS);
             });
         });
     }
@@ -420,6 +427,13 @@ public class Menu implements InventoryHolder, DataHolder {
     @Override
     public void clearData() {
         dataMap.clear();
+    }
+
+    public enum MenuOpenResult {
+
+        SUCCESS,
+        PLAYER_OFFLINE
+
     }
 
 }

@@ -95,11 +95,6 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public StoredMenu openMenu() {
-        return (StoredMenu) super.openMenu();
-    }
-
-    @Override
     public StoredMenu setDisplay(@NotNull MenuDisplay display) {
         return (StoredMenu) super.setDisplay(display);
     }
