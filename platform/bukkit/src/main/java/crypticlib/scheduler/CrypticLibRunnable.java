@@ -28,7 +28,7 @@ public abstract class CrypticLibRunnable implements Runnable {
         return setTaskWrapper(CrypticLibBukkit.scheduler().syncTimer(this, delayTicks, periodTicks));
     }
 
-    public TaskWrapper async(Plugin plugin) {
+    public TaskWrapper async() {
         checkTaskNotNull();
         return setTaskWrapper(CrypticLibBukkit.scheduler().async(this));
     }
