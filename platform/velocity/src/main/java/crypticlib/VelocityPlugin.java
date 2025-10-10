@@ -75,7 +75,7 @@ public abstract class VelocityPlugin {
                 configContainer.reload();
             }
         );
-        load();
+        whenLoad();
         runLifeCycleTasks(LifeCycle.LOAD);
 
         //Enable 阶段
@@ -116,7 +116,7 @@ public abstract class VelocityPlugin {
                 }
             }
         );
-        enable();
+        whenEnable();
         runLifeCycleTasks(LifeCycle.ENABLE);
         proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE)).schedule();
     }
@@ -129,23 +129,23 @@ public abstract class VelocityPlugin {
         for (ScheduledTask scheduledTask : proxyServer.getScheduler().tasksByPlugin(this)) {
             scheduledTask.cancel();
         }
-        disable();
+        whenDisable();
     }
 
-    public void load() {}
+    public void whenLoad() {}
 
-    public void enable() {}
+    public void whenEnable() {}
 
-    public void disable() {}
+    public void whenDisable() {}
 
     /**
      * 插件重载时执行的方法,会在LifecycleTask之前执行
      */
-    public void reload() {}
+    public void whenReload() {}
 
     public final void reloadPlugin() {
         reloadConfig();
-        reload();
+        whenReload();
         runLifeCycleTasks(LifeCycle.RELOAD);
     }
 

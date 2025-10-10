@@ -59,7 +59,7 @@ public abstract class BungeePlugin extends Plugin {
                 configContainer.reload();
             }
         );
-        load();
+        whenLoad();
         runLifeCycleTasks(LifeCycle.LOAD);
     }
 
@@ -104,7 +104,7 @@ public abstract class BungeePlugin extends Plugin {
                 }
             }
         );
-        enable();
+        whenEnable();
         runLifeCycleTasks(LifeCycle.ENABLE);
         getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE));
     }
@@ -115,36 +115,36 @@ public abstract class BungeePlugin extends Plugin {
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         getProxy().getScheduler().cancel(this);
-        disable();
+        whenDisable();
     }
     
     /**
      * 插件开始加载时执行的方法
      */
-    public void load() {
+    public void whenLoad() {
 
     }
 
     /**
      * 插件开始启用时执行的方法
      */
-    public void enable() {
+    public void whenEnable() {
     }
 
     /**
      * 插件卸载时执行的方法
      */
-    public void disable() {
+    public void whenDisable() {
     }
 
     /**
      * 插件重载时执行的方法,会在LifecycleTask之前执行
      */
-    public void reload() {}
+    public void whenReload() {}
 
     public final void reloadPlugin() {
         reloadConfig();
-        reload();
+        whenReload();
         runLifeCycleTasks(LifeCycle.RELOAD);
     }
     
