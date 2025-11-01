@@ -214,13 +214,13 @@ public abstract class BukkitPlugin extends JavaPlugin {
 
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
         List<BukkitLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
-        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+        pluginScanner.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
             taskClass -> {
                 try {
                     if (!BukkitLifeCycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
                     if (annotation == null) {
                         return;
                     }
@@ -237,7 +237,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                         }
                     }
                 } catch (Throwable throwable) {
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
                     List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
                     if (ignoreExceptions.contains(throwable.getClass())) {
                         return;

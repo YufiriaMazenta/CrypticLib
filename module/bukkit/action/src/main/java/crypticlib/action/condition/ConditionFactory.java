@@ -1,6 +1,6 @@
 package crypticlib.action.condition;
 
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-@AutoTask(rules = @TaskRule(lifeCycle = LifeCycle.ENABLE, priority = Integer.MIN_VALUE))
+@LifeCycleTaskSettings(rules = @TaskRule(lifeCycle = LifeCycle.ENABLE, priority = Integer.MIN_VALUE))
 public enum ConditionFactory implements BukkitLifeCycleTask {
 
     INSTANCE;

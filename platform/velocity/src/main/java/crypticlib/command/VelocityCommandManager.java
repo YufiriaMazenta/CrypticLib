@@ -2,7 +2,7 @@ package crypticlib.command;
 
 import com.velocitypowered.api.command.Command;
 import crypticlib.VelocityPlugin;
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.lifecycle.VelocityLifeCycleTask;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@AutoTask(
+@LifeCycleTaskSettings(
     rules = {
         @TaskRule(lifeCycle = LifeCycle.INIT)
     }

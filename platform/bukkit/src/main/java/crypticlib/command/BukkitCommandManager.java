@@ -1,6 +1,6 @@
 package crypticlib.command;
 
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
@@ -18,7 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@AutoTask(rules = @TaskRule(lifeCycle = LifeCycle.INIT))
+@LifeCycleTaskSettings(rules = @TaskRule(lifeCycle = LifeCycle.INIT))
 public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCommand>, BukkitLifeCycleTask {
 
     INSTANCE;

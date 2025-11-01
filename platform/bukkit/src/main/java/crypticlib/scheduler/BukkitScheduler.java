@@ -1,6 +1,6 @@
 package crypticlib.scheduler;
 
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Bukkit平台的调度器
  */
-@AutoTask(
+@LifeCycleTaskSettings(
     rules = @TaskRule(lifeCycle = LifeCycle.INIT)
 )
 public enum BukkitScheduler implements Scheduler, BukkitLifeCycleTask {

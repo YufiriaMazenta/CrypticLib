@@ -3,7 +3,7 @@ package crypticlib.lang;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lang.entry.LangEntry;
 import crypticlib.lang.entry.StringLangEntry;
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
@@ -16,11 +16,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@AutoTask(
+@LifeCycleTaskSettings(
     rules = {
         @TaskRule(lifeCycle = LifeCycle.ENABLE, priority = Integer.MIN_VALUE),
         @TaskRule(lifeCycle = LifeCycle.RELOAD),

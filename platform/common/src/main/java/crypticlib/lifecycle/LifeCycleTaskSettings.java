@@ -5,8 +5,12 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface AutoTask {
+public @interface LifeCycleTaskSettings {
 
+    /**
+     * 用于标记该生命周期任务的执行规则
+     * @return
+     */
     TaskRule[] rules();
 
     /**

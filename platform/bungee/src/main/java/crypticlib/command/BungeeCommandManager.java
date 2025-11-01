@@ -1,6 +1,6 @@
 package crypticlib.command;
 
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.BungeeLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@AutoTask(
+@LifeCycleTaskSettings(
     rules = @TaskRule(lifeCycle = LifeCycle.INIT)
 )
 public enum BungeeCommandManager implements CommandManager<Command, Command>, BungeeLifeCycleTask {

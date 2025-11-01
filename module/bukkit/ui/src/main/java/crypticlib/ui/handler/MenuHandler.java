@@ -1,6 +1,6 @@
 package crypticlib.ui.handler;
 
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.BukkitLifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
@@ -22,7 +22,7 @@ import org.bukkit.plugin.Plugin;
 import java.util.Objects;
 
 @EventListener
-@AutoTask(rules = {@TaskRule(lifeCycle = LifeCycle.DISABLE)})
+@LifeCycleTaskSettings(rules = {@TaskRule(lifeCycle = LifeCycle.DISABLE)})
 public enum MenuHandler implements Listener, BukkitLifeCycleTask {
 
     INSTANCE;

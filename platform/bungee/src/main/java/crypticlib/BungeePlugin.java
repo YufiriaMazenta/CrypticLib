@@ -207,13 +207,13 @@ public abstract class BungeePlugin extends Plugin {
     
     private void runLifeCycleTasks(LifeCycle lifeCycle) {
         List<BungeeLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
-        pluginScanner.getAnnotatedClasses(AutoTask.class).forEach(
+        pluginScanner.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
             taskClass -> {
                 try {
                     if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
                     if (annotation == null) {
                         return;
                     }
@@ -230,7 +230,7 @@ public abstract class BungeePlugin extends Plugin {
                         }
                     }
                 } catch (Throwable throwable) {
-                    AutoTask annotation = taskClass.getAnnotation(AutoTask.class);
+                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
                     List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
                     if (ignoreExceptions.contains(throwable.getClass())) {
                         return;

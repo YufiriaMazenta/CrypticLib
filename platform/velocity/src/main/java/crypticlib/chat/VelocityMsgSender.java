@@ -4,7 +4,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import crypticlib.CrypticLib;
 import crypticlib.VelocityPlugin;
-import crypticlib.lifecycle.AutoTask;
+import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.lifecycle.VelocityLifeCycleTask;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-@AutoTask(
+@LifeCycleTaskSettings(
     rules = @TaskRule(lifeCycle = LifeCycle.LOAD)
 )
 public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Player>, VelocityLifeCycleTask {
