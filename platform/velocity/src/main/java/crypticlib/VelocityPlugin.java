@@ -73,6 +73,7 @@ public abstract class VelocityPlugin {
                 VelocityConfigContainer configContainer = new VelocityConfigContainer(configClass, configWrapper);
                 configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
+                IOHelper.debug("Loaded config file: " + path);
             }
         );
         whenLoad();
@@ -84,6 +85,7 @@ public abstract class VelocityPlugin {
                 try {
                     Object listener = ReflectionHelper.getSingletonClassInstance(listenerClass);
                     proxyServer.getEventManager().register(this, listener);
+                    IOHelper.debug("Registered listener for class: " + listenerClass.getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     EventListener annotation = listenerClass.getAnnotation(EventListener.class);
                     if (!annotation.ignoreClassNotFound()) {
@@ -107,6 +109,7 @@ public abstract class VelocityPlugin {
                     }
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
+                    IOHelper.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();

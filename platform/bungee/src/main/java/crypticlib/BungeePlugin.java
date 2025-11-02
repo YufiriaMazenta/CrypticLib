@@ -57,6 +57,7 @@ public abstract class BungeePlugin extends Plugin {
                 BungeeConfigContainer configContainer = new BungeeConfigContainer(configClass, configWrapper);
                 configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
+                IOHelper.debug("Loaded config file: " + path);
             }
         );
         whenLoad();
@@ -73,6 +74,7 @@ public abstract class BungeePlugin extends Plugin {
                     }
                     Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     getProxy().getPluginManager().registerListener(this, listener);
+                    IOHelper.debug("Registered listener for class: " + listenerClass.getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     EventListener annotation = listenerClass.getAnnotation(EventListener.class);
                     if (!annotation.ignoreClassNotFound()) {
@@ -95,6 +97,7 @@ public abstract class BungeePlugin extends Plugin {
                     }
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
+                    IOHelper.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();

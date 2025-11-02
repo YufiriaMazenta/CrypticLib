@@ -58,6 +58,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 BukkitConfigContainer configContainer = new BukkitConfigContainer(configClass, configWrapper);
                 configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
+                IOHelper.debug("Loaded config file: " + path);
             }
         );
         whenLoad();
@@ -74,6 +75,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     }
                     Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     Bukkit.getPluginManager().registerEvents(listener, this);
+                    IOHelper.debug("Registered listener for class: " + listenerClass.getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     EventListener annotation = listenerClass.getAnnotation(EventListener.class);
                     if (!annotation.ignoreClassNotFound()) {
@@ -96,6 +98,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
                     }
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
+                    IOHelper.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();

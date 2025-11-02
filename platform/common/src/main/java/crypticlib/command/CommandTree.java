@@ -12,8 +12,6 @@ import java.util.List;
  */
 public class CommandTree extends CommandNode {
 
-    private boolean registered = false;
-
     public CommandTree(@NotNull CommandInfo commandInfo) {
         super(commandInfo);
     }
@@ -40,12 +38,9 @@ public class CommandTree extends CommandNode {
     }
 
     public final void register() {
-        if (registered)
-            throw new UnsupportedOperationException("Cannot register a command repeatedly");
         scanSubCommands();
         registerPerms();
         CrypticLib.commandManager().register(this);
-        registered = true;
     }
     
 }

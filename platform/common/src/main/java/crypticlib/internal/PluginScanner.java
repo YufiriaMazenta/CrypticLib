@@ -1,5 +1,6 @@
 package crypticlib.internal;
 
+import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -47,6 +48,7 @@ public enum PluginScanner {
                         .replace('/', '.')
                         .substring(0, entry.getName().length() - 6);
                     Class<?> clazz = classLoader.loadClass(className);
+                    IOHelper.debug("Loaded class: " + className);
                     pluginClassMap.put(className, clazz);
                     //添加注解缓存
                     for (Annotation annotation : clazz.getAnnotations()) {
