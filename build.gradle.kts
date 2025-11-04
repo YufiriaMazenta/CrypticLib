@@ -1,7 +1,7 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "1.13.13.1"
+rootProject.version = "1.13.14.0"
 //全项目重构时更新大版本号
 //添加模块或有较大更改时更新次版本号
 //有API变动(新增/删除/更改声明)时更新修订号

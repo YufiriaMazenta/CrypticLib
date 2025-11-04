@@ -12,7 +12,6 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
-import crypticlib.resource.ResourceLoader;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
@@ -43,7 +42,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
-        ResourceLoader.downloadResources(getDataFolder());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);

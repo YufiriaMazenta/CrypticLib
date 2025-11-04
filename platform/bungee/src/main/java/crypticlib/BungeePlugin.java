@@ -12,7 +12,6 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermInfo;
-import crypticlib.resource.ResourceLoader;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.plugin.Listener;
@@ -42,7 +41,6 @@ public abstract class BungeePlugin extends Plugin {
     @Override
     public final void onLoad() {
         PermInfo.PERM_MANAGER = BungeePermManager.INSTANCE;
-        ResourceLoader.downloadResources(getDataFolder());
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
