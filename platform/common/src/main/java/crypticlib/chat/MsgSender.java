@@ -168,7 +168,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param replaceMap 需要替换的文本
      */
     default void debug(String msg, Map<String, String> replaceMap) {
-        if (CrypticLib.debug()) {
+        if (CrypticLib.debug) {
             info("[DEBUG] | " + msg, replaceMap);
         }
     }

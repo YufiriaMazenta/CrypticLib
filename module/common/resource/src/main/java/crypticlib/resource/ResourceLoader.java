@@ -50,7 +50,7 @@ public class ResourceLoader {
                         break;
                     } catch (IOException e) {
                         IOHelper.debug("&cFailed to download file from url " + url);
-                        if (CrypticLib.debug()) {
+                        if (CrypticLib.debug) {
                             e.printStackTrace();
                         }
                     }

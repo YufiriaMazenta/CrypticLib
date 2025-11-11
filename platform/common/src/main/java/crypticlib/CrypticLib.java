@@ -1,43 +1,29 @@
 package crypticlib;
 
 import crypticlib.command.CommandManager;
+import crypticlib.internal.CrypticLibPlugin;
+
+import java.util.Objects;
 
 public class CrypticLib {
 
-    private static boolean debug = false;
-    private static String pluginName;
-    private static CommandManager<?, ?> commandManager;
+    public static boolean debug = false;
+    private static CrypticLibPlugin crypticLibPlugin;
 
-    /**
-     * 获取是否启用了调试模式
-     * @return 是否启用了调试模式
-     */
-    public static boolean debug() {
-        return debug;
-    }
-
-    /**
-     * 设置是否启用调试模式
-     * @param debug 是否启用debug
-     */
-    public static void setDebug(boolean debug) {
-        CrypticLib.debug = debug;
+    public static void init(CrypticLibPlugin plugin) {
+        if (crypticLibPlugin != null) {
+            throw new UnsupportedOperationException("CrypticLib is already init");
+        }
+        Objects.requireNonNull(plugin);
+        crypticLibPlugin = plugin;
     }
 
     public static String pluginName() {
-        return pluginName;
-    }
-
-    public static void setPluginName(String pluginName) {
-        CrypticLib.pluginName = pluginName;
+        return crypticLibPlugin.pluginName();
     }
 
     public static CommandManager<?, ?> commandManager() {
-        return commandManager;
-    }
-
-    public static void setCommandManager(CommandManager<?, ?> commandManager) {
-        CrypticLib.commandManager = commandManager;
+        return crypticLibPlugin.commandManager();
     }
 
 }

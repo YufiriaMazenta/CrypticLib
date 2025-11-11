@@ -10,12 +10,14 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import com.velocitypowered.api.scheduler.Scheduler;
 import crypticlib.chat.VelocityMsgSender;
+import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
 import crypticlib.command.VelocityCommandManager;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.VelocityConfigContainer;
 import crypticlib.config.VelocityConfigWrapper;
+import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
@@ -48,8 +50,22 @@ public abstract class VelocityPlugin {
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.setPluginName(pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId()));
-        CrypticLib.setCommandManager(VelocityCommandManager.INSTANCE);
+        CrypticLib.init(new CrypticLibPlugin() {
+            @Override
+            public String pluginName() {
+                return pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId());
+            }
+
+            @Override
+            public CommandManager<?, ?> commandManager() {
+                return VelocityCommandManager.INSTANCE;
+            }
+
+            @Override
+            public PlatformSide platform() {
+                return PlatformSide.VELOCITY;
+            }
+        });
         IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }

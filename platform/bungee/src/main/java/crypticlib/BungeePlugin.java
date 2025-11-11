@@ -2,11 +2,13 @@ package crypticlib;
 
 import crypticlib.chat.BungeeMsgSender;
 import crypticlib.command.BungeeCommandManager;
+import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.BungeeConfigContainer;
 import crypticlib.config.BungeeConfigWrapper;
 import crypticlib.config.ConfigHandler;
+import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
@@ -32,8 +34,22 @@ public abstract class BungeePlugin extends Plugin {
     public BungeePlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.setPluginName(getDescription().getName());
-        CrypticLib.setCommandManager(BungeeCommandManager.INSTANCE);
+        CrypticLib.init(new CrypticLibPlugin() {
+            @Override
+            public String pluginName() {
+                return getDescription().getName();
+            }
+
+            @Override
+            public CommandManager<?, ?> commandManager() {
+                return BungeeCommandManager.INSTANCE;
+            }
+
+            @Override
+            public PlatformSide platform() {
+                return PlatformSide.BUNGEE;
+            }
+        });
         IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }

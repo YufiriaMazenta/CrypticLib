@@ -2,11 +2,13 @@ package crypticlib;
 
 import crypticlib.chat.BukkitMsgSender;
 import crypticlib.command.BukkitCommandManager;
+import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.BukkitConfigContainer;
 import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.config.ConfigHandler;
+import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
@@ -33,8 +35,22 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public BukkitPlugin() {
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.setPluginName(getDescription().getName());
-        CrypticLib.setCommandManager(BukkitCommandManager.INSTANCE);
+        CrypticLib.init(new CrypticLibPlugin() {
+            @Override
+            public String pluginName() {
+                return getDescription().getName();
+            }
+
+            @Override
+            public CommandManager<?, ?> commandManager() {
+                return BukkitCommandManager.INSTANCE;
+            }
+
+            @Override
+            public PlatformSide platform() {
+                return PlatformSide.BUKKIT;
+            }
+        });
         IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
