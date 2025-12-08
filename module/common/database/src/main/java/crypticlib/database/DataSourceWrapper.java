@@ -61,7 +61,9 @@ public class DataSourceWrapper {
     }
 
     public void close() {
-        dataSource.close();
+        if (dataSource != null) {
+            dataSource.close();
+        }
     }
 
     public HikariDataSource dataSource() {
