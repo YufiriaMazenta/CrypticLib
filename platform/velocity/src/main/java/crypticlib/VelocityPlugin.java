@@ -47,6 +47,7 @@ public abstract class VelocityPlugin {
         this.proxyServer = proxyServer;
         this.pluginContainer = pluginContainer;
         this.dataDirectory = dataDirectory;
+        IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
@@ -66,7 +67,6 @@ public abstract class VelocityPlugin {
                 return PlatformSide.VELOCITY;
             }
         });
-        IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

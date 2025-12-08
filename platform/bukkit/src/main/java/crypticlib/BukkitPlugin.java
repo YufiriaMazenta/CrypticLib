@@ -33,6 +33,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     protected final String defaultConfigFileName = "config.yml";
 
     public BukkitPlugin() {
+        IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
         CrypticLib.init(new CrypticLibPlugin() {
@@ -51,7 +52,6 @@ public abstract class BukkitPlugin extends JavaPlugin {
                 return PlatformSide.BUKKIT;
             }
         });
-        IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

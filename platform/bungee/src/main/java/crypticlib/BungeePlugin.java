@@ -32,6 +32,7 @@ public abstract class BungeePlugin extends Plugin {
     protected final String defaultConfigFileName = "config.yml";
 
     public BungeePlugin() {
+        IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
         CrypticLib.init(new CrypticLibPlugin() {
@@ -50,7 +51,6 @@ public abstract class BungeePlugin extends Plugin {
                 return PlatformSide.BUNGEE;
             }
         });
-        IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 
