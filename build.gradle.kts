@@ -1,13 +1,13 @@
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 java.targetCompatibility = JavaVersion.VERSION_1_8
 rootProject.group = "com.crypticlib"
-rootProject.version = "1.13.15.2"
+rootProject.version = "1.13.16.0"
 //全项目重构时更新大版本号
 //添加模块或有较大更改时更新次版本号
 //有API变动(新增/删除/更改声明)时更新修订号
 //仅内部修改,例如BUG修复时更新额外版本号
 
-var repositoryUrl = "https://repo.crypticlib.com:8081/repository/"
+var repositoryUrl = "http://110.42.10.241:8082/repository/"
 repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
     repositoryUrl.plus("maven-snapshots/")
 } else {
@@ -38,7 +38,11 @@ subprojects {
         maven("https://r.irepo.space/maven/")
         maven("https://repo.codemc.io/repository/nms/")
         maven("https://libraries.minecraft.net")
-        maven("https://repo.crypticlib.com:8081/repository/maven-public/")
+//        maven("https://repo.crypticlib.com:8081/repository/maven-public/")
+        //CrypticLib
+        maven("http://110.42.10.241:8082/repository/maven-public/") {
+            isAllowInsecureProtocol = true
+        }
         maven("https://jitpack.io")
         mavenCentral()
     }
