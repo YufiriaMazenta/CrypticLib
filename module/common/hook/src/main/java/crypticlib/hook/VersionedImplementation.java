@@ -3,21 +3,22 @@ package crypticlib.hook;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public final class VersionedImplementation<T> {
 
     private final @NotNull String minimumVersion;
 
-    private final @NotNull T instance;
+    private final @NotNull Supplier<T> instanceSupplier;
 
     public VersionedImplementation(
         @NotNull String minimumVersion,
-        @NotNull T instance
+        @NotNull Supplier<T> instanceSupplier
     ) {
         this.minimumVersion = minimumVersion;
-        this.instance = instance;
+        this.instanceSupplier = instanceSupplier;
         Objects.requireNonNull(minimumVersion);
-        Objects.requireNonNull(instance);
+        Objects.requireNonNull(instanceSupplier);
     }
 
     public String minimumVersion() {
@@ -25,6 +26,7 @@ public final class VersionedImplementation<T> {
     }
 
     public T instance() {
-        return instance;
+        return instanceSupplier.get();
     }
+
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public abstract class AbstractHook<T> {
 
@@ -22,12 +23,12 @@ public abstract class AbstractHook<T> {
 
     public AbstractHook<T> register(
         String minimumVersion,
-        T implementation
+        Supplier<T> implementationSupplier
     ) {
         implementations.add(
             new VersionedImplementation<>(
                 minimumVersion,
-                implementation
+                implementationSupplier
             )
         );
 
