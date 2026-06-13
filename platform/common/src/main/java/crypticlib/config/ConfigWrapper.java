@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
 
@@ -84,26 +85,24 @@ public abstract class ConfigWrapper<C> {
     public void saveDefaultConfigFile() {
         synchronized (this) {
             if (!configFile.exists()) {
-                try {
+
+                try(FileOutputStream output = new FileOutputStream(configFile);
+                    InputStream input = getResource(path)) {
+                    //尝试从插件本体中释放文件
                     File folder = configFile.getParentFile();
                     if (!folder.exists()) {
                         folder.mkdirs();
                     }
-                    if (!configFile.exists()) {
-                        FileOutputStream output = new FileOutputStream(configFile);
-                        InputStream input = getResource(path);
-                        if (input == null)
-                            throw new NullPointerException();
-                        Objects.requireNonNull(output, "out");
-                        byte[] buffer = new byte[8192];
-                        int read;
-                        while ((read = input.read(buffer, 0, 8192)) >= 0) {
-                            output.write(buffer, 0, read);
-                        }
-                        output.close();
-                        input.close();
+                    if (input == null)
+                        throw new NullPointerException();
+                    Objects.requireNonNull(output, "out");
+                    byte[] buffer = new byte[8192];
+                    int read;
+                    while ((read = input.read(buffer, 0, 8192)) >= 0) {
+                        output.write(buffer, 0, read);
                     }
                 } catch (NullPointerException | IllegalArgumentException | IOException e) {
+                    //如果上面的操作发生异常,则新建一个空文件
                     IOHelper.createNewFile(configFile);
                 }
             }
@@ -137,6 +136,21 @@ public abstract class ConfigWrapper<C> {
             }
         } catch (IOException var4) {
             return null;
+        }
+    }
+
+    /**
+     * 删除这个配置文件所对应的文件,如果删除失败,则会打印错误消息
+     */
+    public boolean deleteConfigFile() {
+        synchronized (this) {
+            try {
+                Files.delete(this.configFile.toPath());
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
         }
     }
 
