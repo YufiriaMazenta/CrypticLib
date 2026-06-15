@@ -127,10 +127,12 @@ public class IOHelper {
      * 复制文件
      *
      * @param from 原始文件
-     * @param to 复制结果
+     * @param to   复制结果
+     * @return 复制后的文件
+     * @throws IOException 复制失败时抛出
      */
     @NotNull
-    public static File copyFile(File from, File to) {
+    public static File copyFile(File from, File to) throws IOException {
         try (
             FileInputStream fileIn = new FileInputStream(from);
             FileOutputStream fileOut = new FileOutputStream(to);
@@ -138,11 +140,13 @@ public class IOHelper {
             FileChannel channelOut = fileOut.getChannel()
         ) {
             channelIn.transferTo(0, channelIn.size(), channelOut);
-        } catch (IOException t) {
-            t.printStackTrace();
+        } catch (IOException e) {
+            to.delete();  // 清理不完整的文件
+            throw e;
         }
         return to;
     }
+
 
     /**
      * 下载文件

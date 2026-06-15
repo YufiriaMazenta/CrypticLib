@@ -67,7 +67,8 @@ public enum PluginScanner {
                 } else {
                     //TODO 考虑是否要存储文件
                 }
-            } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
+            } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                IOHelper.debug("Failed to load class: " + e.getCause());
             } catch (Throwable throwable) {
                 throw new RuntimeException(throwable);
             }
@@ -84,7 +85,7 @@ public enum PluginScanner {
         List<Class<T>> subClasses = new ArrayList<>();
         pluginClassMap.forEach((name, cachedClass) -> {
             if (clazz.isAssignableFrom(cachedClass)) {
-                subClasses.add(clazz);
+                subClasses.add((Class<T>) cachedClass);
             }
         });
         return subClasses;

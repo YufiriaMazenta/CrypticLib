@@ -85,7 +85,6 @@ public abstract class ConfigWrapper<C> {
     public void saveDefaultConfigFile() {
         synchronized (this) {
             if (!configFile.exists()) {
-
                 try(FileOutputStream output = new FileOutputStream(configFile);
                     InputStream input = getResource(path)) {
                     //尝试从插件本体中释放文件
