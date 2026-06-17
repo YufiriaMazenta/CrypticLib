@@ -3,7 +3,6 @@ package crypticlib.ui.menu;
 import crypticlib.CrypticLibBukkit;
 import crypticlib.DataHolder;
 import crypticlib.chat.BukkitTextProcessor;
-import crypticlib.scheduler.task.TaskWrapper;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
@@ -260,14 +259,14 @@ public class Menu implements InventoryHolder, DataHolder {
     /**
      * 当页面开始绘制前会调用此方法
      */
-    public void beforeDraw() {}
+    public void beforeDraw(Inventory inventory) {}
 
     /**
      * 绘制页面
      * @param inventory 要进行绘制的Inventory
      */
     protected void draw(Inventory inventory) {
-        beforeDraw();
+        beforeDraw(inventory);
         slotMap.forEach((slot, icon) -> {
             if (icon == null) {
                 return;
@@ -277,7 +276,7 @@ public class Menu implements InventoryHolder, DataHolder {
             ItemStack display = icon.display();
             inventory.setItem(slot, display);
         });
-        onDrawCompleted();
+        onDrawCompleted(inventory);
     }
 
     /**
@@ -290,7 +289,7 @@ public class Menu implements InventoryHolder, DataHolder {
     /**
      * 当页面图标完成绘制时调用此方法
      */
-    public void onDrawCompleted() {}
+    public void onDrawCompleted(Inventory inventory) {}
 
     /**
      * 获取此字符在页面上的所有位置
