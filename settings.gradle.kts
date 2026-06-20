@@ -12,5 +12,5 @@ include(
 include(
     "module:common:database",
     "module:common:resource",
-    "module:common:hook"
+    "module:common:compat"
 )

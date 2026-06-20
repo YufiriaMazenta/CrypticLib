@@ -1,4 +1,4 @@
-package crypticlib.hook;
+package crypticlib.compat;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -8,20 +8,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class AbstractHook<T> {
+public abstract class AbstractCompat<T> {
 
-    protected @NotNull Class<T> hookClass;
+    protected @NotNull Class<T> compatInterfaceClass;
     protected @NotNull VersionComparator versionComparator;
     protected final List<VersionedImplementation<T>> implementations = new ArrayList<>();
 
-    public AbstractHook(@NotNull Class<T> hookClass, @NotNull VersionComparator versionComparator) {
-        this.hookClass = hookClass;
+    public AbstractCompat(@NotNull Class<T> compatInterfaceClass, @NotNull VersionComparator versionComparator) {
+        this.compatInterfaceClass = compatInterfaceClass;
         this.versionComparator = versionComparator;
-        Objects.requireNonNull(hookClass);
+        Objects.requireNonNull(compatInterfaceClass);
         Objects.requireNonNull(versionComparator);
     }
 
-    public AbstractHook<T> register(
+    public AbstractCompat<T> register(
         String minimumVersion,
         Supplier<T> implementationSupplier
     ) {

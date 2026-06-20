@@ -1,4 +1,4 @@
-package crypticlib.hook;
+package crypticlib.compat;
 
 public interface VersionComparator {
 

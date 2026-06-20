@@ -1,4 +1,4 @@
-package crypticlib.hook;
+package crypticlib.compat;
 
 import org.jetbrains.annotations.NotNull;
 
