@@ -6,6 +6,7 @@ include(
     "module:bukkit:conversation",
     "module:bukkit:i18n",
     "module:bukkit:particle",
+    "module:bukkit:action",
     "module:bukkit:script"
 )
 include(
