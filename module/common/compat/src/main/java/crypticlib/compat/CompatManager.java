@@ -4,34 +4,32 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class CompatManager {
+public enum CompatManager {
 
-    private static final Map<Class<?>, AbstractCompat<?>> COMPAT_MAP = new ConcurrentHashMap<>();
+    INSTANCE;
 
-    private CompatManager() {
-        throw new UnsupportedOperationException();
-    }
+    private static final Map<Class<?>, Compat<?>> COMPAT_MAP = new ConcurrentHashMap<>();
 
-    public static void register(AbstractCompat<?> compat) {
+    public static void register(Compat<?> compat) {
         if (COMPAT_MAP.putIfAbsent(
             compat.compatInterfaceClass,
             compat
         ) != null) {
             throw new IllegalStateException(
-                "Compatibility already registered: "
+                "Compat already registered: "
                     + compat.compatInterfaceClass.getName()
             );
         }
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Optional<AbstractCompat<T>> getCompat(Class<T> hookClass) {
+    public static <T> Optional<Compat<T>> getCompat(Class<T> hookClass) {
         return Optional.ofNullable(
-            (AbstractCompat<T>) COMPAT_MAP.get(hookClass)
+            (Compat<T>) COMPAT_MAP.get(hookClass)
         );
     }
 
-    public static <T> Optional<T> getImplementation(Class<T> hookClass, String version) {
+    public static <T> Optional<T> findImplementation(Class<T> hookClass, String version) {
         return getCompat(hookClass)
             .flatMap(
                 hook -> hook.findImplementation(version)

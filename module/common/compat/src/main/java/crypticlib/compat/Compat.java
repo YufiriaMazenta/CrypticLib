@@ -8,20 +8,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class AbstractCompat<T> {
+public class Compat<T> {
 
     protected @NotNull Class<T> compatInterfaceClass;
     protected @NotNull VersionComparator versionComparator;
     protected final List<VersionedImplementation<T>> implementations = new ArrayList<>();
 
-    public AbstractCompat(@NotNull Class<T> compatInterfaceClass, @NotNull VersionComparator versionComparator) {
+    public Compat(@NotNull Class<T> compatInterfaceClass, @NotNull VersionComparator versionComparator) {
         this.compatInterfaceClass = compatInterfaceClass;
         this.versionComparator = versionComparator;
         Objects.requireNonNull(compatInterfaceClass);
         Objects.requireNonNull(versionComparator);
     }
 
-    public AbstractCompat<T> register(
+    public Compat<T> register(
         String minimumVersion,
         Supplier<T> implementationSupplier
     ) {
