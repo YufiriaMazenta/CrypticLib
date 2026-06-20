@@ -1,5 +1,6 @@
 package crypticlib.script.vm;
 
+import crypticlib.CrypticLibBukkit;
 import crypticlib.script.ScriptContext;
 import crypticlib.script.ScriptException;
 import crypticlib.script.ScriptValue;
@@ -24,6 +25,7 @@ public class ScriptVM {
     private final Deque<ScriptValue> stack = new ArrayDeque<>();
     private int pc;
     private boolean returned;
+    private boolean paused;
 
     public ScriptVM(CompiledScript script, ScriptContext context) {
         this.script = script;
@@ -38,9 +40,27 @@ public class ScriptVM {
         stack.clear();
         pc = 0;
         returned = false;
+        paused = false;
+        return runLoop();
+    }
+
+    /**
+     * 从当前状态恢复执行（用于 delay 后续恢复）
+     * @return 执行结果（栈顶值）
+     */
+    public ScriptValue resume() {
+        returned = false;
+        paused = false;
+        return runLoop();
+    }
+
+    /**
+     * 核心执行循环
+     */
+    private ScriptValue runLoop() {
         List<Instruction> instructions = script.instructions();
 
-        while (pc < instructions.size() && !returned) {
+        while (pc < instructions.size() && !returned && !paused) {
             Instruction inst = instructions.get(pc);
             pc++;
             OpCode op = inst.opCode();
@@ -96,6 +116,27 @@ public class ScriptVM {
     }
 
     /**
+     * 中断执行并调度延迟恢复
+     * @param delayTicks 延迟 tick 数
+     */
+    public void pauseAndScheduleResume(long delayTicks) {
+        paused = true;
+        CrypticLibBukkit.scheduler().syncLater(this::resume, delayTicks);
+    }
+
+    public boolean isPaused() {
+        return paused;
+    }
+
+    public Deque<ScriptValue> stack() {
+        return stack;
+    }
+
+    public ScriptContext context() {
+        return context;
+    }
+
+    /**
      * 提前返回（供 return 函数调用）
      */
     public void doReturn(ScriptValue value) {
@@ -117,7 +158,10 @@ public class ScriptVM {
             throw new ScriptException("Unknown function: " + funcName + " at line " + inst.line());
         }
 
-        ScriptValue result = func.execute(context, args);
-        stack.push(result == null ? ScriptValue.nil() : result);
+        ScriptValue result = func.execute(context, this, args);
+        if (!paused) {
+            stack.push(result == null ? ScriptValue.nil() : result);
+        }
     }
+
 }

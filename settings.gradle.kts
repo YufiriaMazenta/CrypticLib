@@ -4,7 +4,6 @@ include("platform:common", "platform:bukkit", "platform:bungee", "platform:veloc
 include(
     "module:bukkit:ui",
     "module:bukkit:conversation",
-    "module:bukkit:action",
     "module:bukkit:i18n",
     "module:bukkit:particle",
     "module:bukkit:script"
