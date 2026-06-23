@@ -1,8 +1,11 @@
 package crypticlib.ui.display;
 
+import crypticlib.MinecraftVersion;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,43 +16,11 @@ public class IconDisplay {
     protected @NotNull Material material;
     protected @Nullable String name;
     protected @Nullable List<String> lore;
-    protected @Nullable Integer customModelData;
-    //内部参数,请勿随意修改
-    protected @Nullable ItemStack display;
+    protected @Nullable @ApiStatus.AvailableSince("1.14") Integer customModelData;
+    protected @Nullable @ApiStatus.AvailableSince("1.21.2") NamespacedKey itemModel;
 
     public IconDisplay(@NotNull Material material) {
-        this(material, null, null, null);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable List<String> lore, @Nullable Integer customModelData) {
-        this(material, null, lore, customModelData);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable String name, @Nullable Integer customModelData) {
-        this(material, name, null, customModelData);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable Integer customModelData) {
-        this(material, null, null, customModelData);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable List<String> lore) {
-        this(material, null, lore, null);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable String name) {
-        this(material, name, null, null);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable String name, @Nullable List<String> lore) {
-        this(material, name, lore, null);
-    }
-
-    public IconDisplay(@NotNull Material material, @Nullable String name, @Nullable List<String> lore, @Nullable Integer customModelData) {
         this.material = material;
-        this.name = name;
-        this.lore = lore;
-        this.customModelData = customModelData;
     }
 
     public @NotNull Material material() {
@@ -79,20 +50,26 @@ public class IconDisplay {
         return this;
     }
 
+    @ApiStatus.AvailableSince("1.14")
     public Integer customModelData() {
         return customModelData;
     }
 
+    @ApiStatus.AvailableSince("1.14")
     public IconDisplay setCustomModelData(@Nullable Integer customModelData) {
         this.customModelData = customModelData;
         return this;
     }
 
-    public @NotNull ItemStack display() {
-        if (display == null) {
-            display = toItemStack();
-        }
-        return display;
+    @ApiStatus.AvailableSince("1.21.2")
+    public @Nullable NamespacedKey itemModel() {
+        return itemModel;
+    }
+
+    @ApiStatus.AvailableSince("1.21.2")
+    public IconDisplay setItemModel(@Nullable NamespacedKey itemModel) {
+        this.itemModel = itemModel;
+        return this;
     }
 
     public @NotNull ItemStack toItemStack() {
@@ -113,8 +90,14 @@ public class IconDisplay {
             itemMeta.setDisplayName(name);
         if (lore != null)
             itemMeta.setLore(lore);
-        if (customModelData != null)
-            itemMeta.setCustomModelData(customModelData);
+        MinecraftVersion current = MinecraftVersion.current();
+        if (current.afterOrEquals(MinecraftVersion.V1_14)) {
+            if (customModelData != null)
+                itemMeta.setCustomModelData(customModelData);
+        }
+        if (current.afterOrEquals(MinecraftVersion.V1_21_2)) {
+            itemMeta.setItemModel(itemModel);
+        }
         itemStack.setItemMeta(itemMeta);
         return itemStack;
     }

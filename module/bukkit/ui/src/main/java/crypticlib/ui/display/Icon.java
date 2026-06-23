@@ -29,7 +29,7 @@ public class Icon implements DataHolder {
     protected final Map<String, Object> dataMap = new ConcurrentHashMap<>();
 
     public Icon(@NotNull IconDisplay iconDisplay) {
-        this.display = iconDisplay.display();
+        this.display = iconDisplay.toItemStack();
     }
 
     public Icon(@NotNull ItemStack display) {
