@@ -26,7 +26,7 @@ pom.xml
 <repositories>
 	<repository>
 	    <id>crypticlib</id>
-	    <url>https://repo.crypticlib.com:8081/repository/maven-public/</url>
+	    <url>http://110.42.10.241:8082/repository/maven-public/</url>
 	</repository>
 </repositories>
 ```
@@ -45,7 +45,10 @@ build.gradle.kts
 
 ```kotlin
 repositories {
-    maven("https://repo.crypticlib.com:8081/repository/maven-public/")
+    //CrypticLib
+    maven("http://110.42.10.241:8082/repository/maven-public/") {
+        isAllowInsecureProtocol = true
+    }
 }
 ```
 

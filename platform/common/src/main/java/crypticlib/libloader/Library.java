@@ -9,9 +9,18 @@ import java.util.Map;
 
 public class Library {
 
-    private final String repository;
-    private final String dependency;
+    public static final String REPOSITORY_MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2/";
+    public static final String REPOSITORY_MAVEN_CENTRAL_MIRROR_ALI = "https://maven.aliyun.com/repository/public";
+    public static final String REPOSITORY_JITPACK = "https://jitpack.io";
+    public static final String REPOSITORY_SONATYPE = "https://oss.sonatype.org/content/groups/public/";
+
+    private final @NotNull String repository;
+    private final @NotNull String dependency;
     private final Map<String, String> relocate;
+
+    public Library(@NotNull String dependency) {
+        this(REPOSITORY_MAVEN_CENTRAL, dependency, null);
+    }
 
     public Library(@NotNull String repository, @NotNull String dependency) {
         this(repository, dependency, null);

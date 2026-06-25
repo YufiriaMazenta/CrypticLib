@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +26,7 @@ public class PomParser {
         String pomUrl = repositoryUrl + groupIdPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".pom";
 
         try (InputStream is = new URL(pomUrl).openStream()) {
-            String pomContent = new String(readAllBytes(is), "UTF-8");
+            String pomContent = new String(readAllBytes(is), StandardCharsets.UTF_8);
             Map<String, String> properties = parseProperties(pomContent);
             properties.put("project.version", version);
             properties.put("project.groupId", groupId);
@@ -156,7 +157,7 @@ public class PomParser {
         String parentPomUrl = repositoryUrl + parentGroupIdPath + "/" + parentArtifactId + "/" + parentVersion + "/" + parentArtifactId + "-" + parentVersion + ".pom";
 
         try (InputStream is = new URL(parentPomUrl).openStream()) {
-            return new String(readAllBytes(is), "UTF-8");
+            return new String(readAllBytes(is), StandardCharsets.UTF_8);
         } catch (IOException e) {
             return null;
         }
