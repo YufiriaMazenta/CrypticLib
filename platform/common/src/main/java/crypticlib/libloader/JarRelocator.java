@@ -34,7 +34,12 @@ public class JarRelocator {
              JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(output))) {
             for (JarEntry entry : jarFile.stream().toArray(JarEntry[]::new)) {
                 String name = entry.getName();
-                String mappedName = remapper.map(name.substring(0, name.length() - 6).replace('/', '.')).replace('.', '/') + ".class";
+                String mappedName;
+                if (name.endsWith(".class")) {
+                    mappedName = remapper.map(name.substring(0, name.length() - 6).replace('/', '.')).replace('.', '/') + ".class";
+                } else {
+                    mappedName = name;
+                }
                 jarOutputStream.putNextEntry(new JarEntry(mappedName));
                 if (name.endsWith(".class")) {
                     try (InputStream is = jarFile.getInputStream(entry)) {
@@ -44,10 +49,25 @@ public class JarRelocator {
                         classReader.accept(classVisitor, 0);
                         jarOutputStream.write(classWriter.toByteArray());
                     }
+                } else {
+                    try (InputStream is = jarFile.getInputStream(entry)) {
+                        byte[] bytes = readAllBytes(is);
+                        jarOutputStream.write(bytes);
+                    }
                 }
                 jarOutputStream.closeEntry();
             }
         }
+    }
+
+    private static byte[] readAllBytes(InputStream is) throws IOException {
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        while ((bytesRead = is.read(buffer)) != -1) {
+            bos.write(buffer, 0, bytesRead);
+        }
+        return bos.toByteArray();
     }
 
     private static class RelocateRemapper extends Remapper {

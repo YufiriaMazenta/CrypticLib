@@ -1,11 +1,11 @@
 package crypticlib.libloader;
 
+import crypticlib.CrypticLib;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -28,14 +28,13 @@ public class BootLoader {
     private static final byte[] OLD_PREFIX = OLD_PREFIX_STR.getBytes(StandardCharsets.UTF_8);
     private static final byte[] NEW_PREFIX = NEW_PREFIX_STR.getBytes(StandardCharsets.UTF_8);
 
-    private static URLClassLoader asmClassLoader;
     private static Class<?> relocatedJarRelocatorClass;
 
     public static synchronized ClassLoader getAsmClassLoader() {
-        if (asmClassLoader == null) {
+        if (AsmClassLoader.getInstance() == null) {
             initAsm();
         }
-        return asmClassLoader;
+        return AsmClassLoader.getInstance();
     }
 
     public static void relocate(File input, File output, Map<String, String> relocation) {
@@ -54,35 +53,34 @@ public class BootLoader {
     }
 
     private static synchronized void initAsm() {
-        if (asmClassLoader != null) {
+        if (AsmClassLoader.getInstance() != null) {
             return;
         }
         try {
-            File libDir = new File("libs");
-            if (!libDir.exists()) {
-                libDir.mkdirs();
+            String groupIdPath = ASM_GROUP.replace('.', '/');
+            File asmDir = new File("plugins/" + CrypticLib.pluginName() + "/libs/" + groupIdPath);
+            if (!asmDir.exists()) {
+                asmDir.mkdirs();
             }
 
-            File asmCoreJar = downloadArtifact(libDir, ASM_ARTIFACT_CORE);
-            File asmCommonsJar = downloadArtifact(libDir, ASM_ARTIFACT_COMMONS);
+            File asmCoreJar = downloadArtifact(asmDir, ASM_ARTIFACT_CORE);
+            File asmCommonsJar = downloadArtifact(asmDir, ASM_ARTIFACT_COMMONS);
 
-            File relocatedCore = relocateJarBytes(libDir, asmCoreJar, ASM_ARTIFACT_CORE);
-            File relocatedCommons = relocateJarBytes(libDir, asmCommonsJar, ASM_ARTIFACT_COMMONS);
+            File relocatedCore = relocateJarBytes(asmDir, asmCoreJar, ASM_ARTIFACT_CORE);
+            File relocatedCommons = relocateJarBytes(asmDir, asmCommonsJar, ASM_ARTIFACT_COMMONS);
 
-            URLClassLoader loader = new URLClassLoader(
+            AsmClassLoader.init(
                 new URL[]{relocatedCore.toURI().toURL(), relocatedCommons.toURI().toURL()},
                 BootLoader.class.getClassLoader()
             );
 
-            loadJarRelocatorClass(loader);
-
-            asmClassLoader = loader;
+            loadJarRelocatorClass(AsmClassLoader.getInstance());
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize ASM", e);
         }
     }
 
-    private static void loadJarRelocatorClass(ClassLoader asmLoader) throws Exception {
+    private static void loadJarRelocatorClass(AsmClassLoader asmLoader) throws Exception {
         String classResourcePath = "/" + JarRelocator.class.getName().replace('.', '/') + ".class";
         try (InputStream is = BootLoader.class.getResourceAsStream(classResourcePath)) {
             if (is == null) {
@@ -90,18 +88,17 @@ public class BootLoader {
             }
             byte[] classBytes = readAllBytes(is);
             byte[] relocatedBytes = relocateClassBytes(classBytes);
+            relocatedJarRelocatorClass = asmLoader.defineClassPublic(JarRelocator.class.getName(), relocatedBytes);
+        }
 
-            Method defineClass = ClassLoader.class.getDeclaredMethod(
-                "defineClass", String.class, byte[].class, int.class, int.class
-            );
-            defineClass.setAccessible(true);
-            relocatedJarRelocatorClass = (Class<?>) defineClass.invoke(
-                asmLoader,
-                JarRelocator.class.getName(),
-                relocatedBytes,
-                0,
-                relocatedBytes.length
-            );
+        String innerClassResourcePath = "/" + JarRelocator.class.getName().replace('.', '/') + "$RelocateRemapper.class";
+        try (InputStream is = BootLoader.class.getResourceAsStream(innerClassResourcePath)) {
+            if (is == null) {
+                throw new RuntimeException("Cannot find JarRelocator$RelocateRemapper class resource");
+            }
+            byte[] classBytes = readAllBytes(is);
+            byte[] relocatedBytes = relocateClassBytes(classBytes);
+            asmLoader.defineClassPublic(JarRelocator.class.getName() + "$RelocateRemapper", relocatedBytes);
         }
     }
 
@@ -155,27 +152,61 @@ public class BootLoader {
 
     private static byte[] relocateClassBytes(byte[] classBytes) {
         byte[] result = Arrays.copyOf(classBytes, classBytes.length);
-        int oldLen = OLD_PREFIX.length;
+        if (result.length < 10 || result[0] != (byte) 0xCA || result[1] != (byte) 0xFE) {
+            return result;
+        }
 
-        for (int i = 0; i <= result.length - oldLen; i++) {
-            if (matchesAt(result, i, OLD_PREFIX)) {
-                System.arraycopy(NEW_PREFIX, 0, result, i, NEW_PREFIX.length);
-                i += oldLen - 1;
+        int pos = 8;
+        int constantPoolCount = ((result[pos] & 0xFF) << 8) | (result[pos + 1] & 0xFF);
+        pos += 2;
+
+        for (int i = 1; i < constantPoolCount; i++) {
+            int tag = result[pos] & 0xFF;
+            switch (tag) {
+                case 1:
+                    int length = ((result[pos + 1] & 0xFF) << 8) | (result[pos + 2] & 0xFF);
+                    int strStart = pos + 3;
+                    String utf8 = new String(result, strStart, length, StandardCharsets.UTF_8);
+                    if (utf8.contains(OLD_PREFIX_STR)) {
+                        String newUtf8 = utf8.replace(OLD_PREFIX_STR, NEW_PREFIX_STR).replace(OLD_PREFIX_STR.replace('/', '.'), NEW_PREFIX_STR.replace('/', '.'));
+                        byte[] newBytes = newUtf8.getBytes(StandardCharsets.UTF_8);
+                        if (newBytes.length == length) {
+                            System.arraycopy(newBytes, 0, result, strStart, length);
+                        }
+                    }
+                    pos += 3 + length;
+                    break;
+                case 7:
+                case 8:
+                case 16:
+                case 19:
+                case 20:
+                    pos += 3;
+                    break;
+                case 9:
+                case 10:
+                case 11:
+                case 3:
+                case 4:
+                case 12:
+                case 17:
+                case 18:
+                    pos += 5;
+                    break;
+                case 5:
+                case 6:
+                    pos += 9;
+                    i++;
+                    break;
+                case 15:
+                    pos += 4;
+                    break;
+                default:
+                    pos += 3;
+                    break;
             }
         }
         return result;
-    }
-
-    private static boolean matchesAt(byte[] data, int offset, byte[] pattern) {
-        if (offset + pattern.length > data.length) {
-            return false;
-        }
-        for (int i = 0; i < pattern.length; i++) {
-            if (data[offset + i] != pattern[i]) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static String relocateEntryName(String name) {
