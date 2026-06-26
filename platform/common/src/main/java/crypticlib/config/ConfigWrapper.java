@@ -1,5 +1,6 @@
 package crypticlib.config;
 
+import crypticlib.CrypticLib;
 import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -87,13 +88,14 @@ public abstract class ConfigWrapper<C> {
     public void saveDefaultConfigFile() {
         synchronized (this) {
             if (!configFile.exists()) {
+                File folder = configFile.getParentFile();
+                //尝试从插件本体中释放文件
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
+                IOHelper.createNewFile(configFile);
                 try(FileOutputStream output = new FileOutputStream(configFile);
                     InputStream input = getResource(path)) {
-                    //尝试从插件本体中释放文件
-                    File folder = configFile.getParentFile();
-                    if (!folder.exists()) {
-                        folder.mkdirs();
-                    }
                     if (input == null)
                         throw new NullPointerException();
                     Objects.requireNonNull(output, "out");
@@ -103,8 +105,9 @@ public abstract class ConfigWrapper<C> {
                         output.write(buffer, 0, read);
                     }
                 } catch (NullPointerException | IllegalArgumentException | IOException e) {
-                    //如果上面的操作发生异常,则新建一个空文件
-                    IOHelper.createNewFile(configFile);
+                    if (CrypticLib.debug) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
