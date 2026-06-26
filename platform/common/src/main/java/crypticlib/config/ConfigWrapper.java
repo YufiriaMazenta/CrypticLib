@@ -33,6 +33,7 @@ public abstract class ConfigWrapper<C> {
     public ConfigWrapper(@NotNull File dataFolder, @NotNull String path) {
         this.path = path;
         this.configFile = new File(dataFolder, path);
+        reloadConfig();
     }
 
     /**
@@ -43,6 +44,7 @@ public abstract class ConfigWrapper<C> {
     public ConfigWrapper(@NotNull File file) {
         this.configFile = file;
         this.path = file.getPath();
+        reloadConfig();
     }
 
     /**
