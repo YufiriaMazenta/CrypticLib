@@ -35,8 +35,12 @@ public enum BuiltinScriptModule implements ScriptModule {
     private ScriptValue command(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.of(false);
         Player player = ctx.player();
-        String cmd = BukkitTextProcessor.placeholder(player, args[0].asString());
-        return ScriptValue.of(Bukkit.dispatchCommand(player, cmd));
+        StringBuilder sb = new StringBuilder();
+        for (ScriptValue arg : args) {
+            sb.append(arg.asString());
+        }
+        String cmd = BukkitTextProcessor.placeholder(player, sb.toString());
+        return ScriptValue.of(Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
     }
 
     private ScriptValue console(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
@@ -49,7 +53,11 @@ public enum BuiltinScriptModule implements ScriptModule {
     private ScriptValue tell(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.nil();
         Player player = ctx.player();
-        String msg = BukkitTextProcessor.placeholder(player, args[0].asString());
+        StringBuilder sb = new StringBuilder();
+        for (ScriptValue arg : args) {
+            sb.append(arg.asString());
+        }
+        String msg = BukkitTextProcessor.placeholder(player, sb.toString());
         BukkitMsgSender.INSTANCE.sendMsg(player, msg);
         return ScriptValue.nil();
     }
@@ -57,7 +65,11 @@ public enum BuiltinScriptModule implements ScriptModule {
     private ScriptValue actionbar(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.nil();
         Player player = ctx.player();
-        String msg = BukkitTextProcessor.placeholder(player, args[0].asString());
+        StringBuilder sb = new StringBuilder();
+        for (ScriptValue arg : args) {
+            sb.append(arg.asString());
+        }
+        String msg = BukkitTextProcessor.placeholder(player, sb.toString());
         BukkitMsgSender.INSTANCE.sendActionBar(player, msg);
         return ScriptValue.nil();
     }

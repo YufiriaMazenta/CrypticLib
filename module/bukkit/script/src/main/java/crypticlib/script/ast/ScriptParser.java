@@ -172,7 +172,7 @@ public class ScriptParser {
         if (check(Token.Type.IDENTIFIER)) {
             Token name = advance();
 
-            // 有括号的函数调用 name(...)
+            // 情况1: 有括号的函数调用 name(...)
             if (match(Token.Type.LPAREN)) {
                 List<ASTNode> args = new ArrayList<>();
                 if (!check(Token.Type.RPAREN)) {
@@ -185,10 +185,16 @@ public class ScriptParser {
                 return new ASTNode.FunctionCallNode(name.value(), args, name.line());
             }
 
-            // 裸参数的函数调用
+            // 情况2/3: 判断后面是否跟着可作为参数的 token（STRING/NUMBER/BOOLEAN/IDENTIFIER）
+            // 如果是，收集为裸参数；否则是无参调用
+            // IDENTIFIER 作为参数时会递归解析为函数调用（如 papi "%player_name%"）
             List<ASTNode> args = new ArrayList<>();
             while (isBareArgToken()) {
-                args.add(parseAtom());
+                if (check(Token.Type.IDENTIFIER)) {
+                    args.add(parseCall());
+                } else {
+                    args.add(parseAtom());
+                }
             }
             return new ASTNode.FunctionCallNode(name.value(), args, name.line());
         }
