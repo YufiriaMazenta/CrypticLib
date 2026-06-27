@@ -73,6 +73,7 @@ public class ScriptCompiler {
         if ("&&".equals(node.operator())) {
             // 短路求值: left 为 false 时直接返回 false，不计算 right
             emitNode(node.left());
+            instructions.add(Instruction.of(OpCode.DUP, node.line()));
             int jumpIdx = instructions.size();
             instructions.add(Instruction.jump(OpCode.JUMP_IF_FALSE, 0, node.line()));
             instructions.add(Instruction.of(OpCode.POP, node.line()));
