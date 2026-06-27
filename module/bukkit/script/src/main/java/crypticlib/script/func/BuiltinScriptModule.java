@@ -30,6 +30,8 @@ public enum BuiltinScriptModule implements ScriptModule {
         registry.register("title", this::title);
         registry.register("close-inv", this::closeInv);
         registry.register("delay", this::delay);
+        registry.register("set", this::set);
+        registry.register("context", this::context);
     }
 
     private ScriptValue command(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
@@ -99,6 +101,29 @@ public enum BuiltinScriptModule implements ScriptModule {
         if (ticks <= 0) return ScriptValue.nil();
         vm.pauseAndScheduleResume(ticks);
         return ScriptValue.nil();
+    }
+
+    /**
+     * set("key", value) → 往上下文添加变量
+     */
+    private ScriptValue set(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        if (args.length < 2) return ScriptValue.nil();
+        String key = args[0].asString();
+        ScriptValue value = args[1];
+        ctx.setVariable(key, value);
+        return value;
+    }
+
+    /**
+     * context("key") → 返回上下文变量值
+     * 比较通过脚本运算符实现: context("damage") >= 10
+     */
+    private ScriptValue context(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        if (args.length < 1) return ScriptValue.nil();
+        String key = args[0].asString();
+        ScriptValue var = ctx.getVariable(key);
+        if (var == null) return ScriptValue.nil();
+        return var;
     }
 
 }
