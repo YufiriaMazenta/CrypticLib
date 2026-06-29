@@ -9,6 +9,9 @@ import crypticlib.script.vm.ScriptVM;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.Optional;
+import java.util.StringJoiner;
+
 /**
  * 内置的脚本函数模块
  */
@@ -36,57 +39,78 @@ public enum BuiltinScriptModule implements ScriptModule {
 
     private ScriptValue command(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.of(false);
-        Player player = ctx.player();
-        StringBuilder sb = new StringBuilder();
-        for (ScriptValue arg : args) {
-            sb.append(arg.asString());
+        Optional<Player> playerOptional = ctx.onlinePlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            StringJoiner stringJoiner = new StringJoiner(" ");
+            for (ScriptValue arg : args) {
+                stringJoiner.add(arg.asString());
+            }
+            String cmd = BukkitTextProcessor.placeholder(player, stringJoiner.toString());
+            return ScriptValue.of(Bukkit.dispatchCommand(player, cmd));
         }
-        String cmd = BukkitTextProcessor.placeholder(player, sb.toString());
-        return ScriptValue.of(Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+        return ScriptValue.of(false);
     }
 
     private ScriptValue console(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.of(false);
-        Player player = ctx.player();
-        String cmd = BukkitTextProcessor.placeholder(player, args[0].asString());
-        return ScriptValue.of(Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+        Optional<Player> playerOptional = ctx.onlinePlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            StringJoiner stringJoiner = new StringJoiner(" ");
+            for (ScriptValue arg : args) {
+                stringJoiner.add(arg.asString());
+            }
+            String cmd = BukkitTextProcessor.placeholder(player, stringJoiner.toString());
+            return ScriptValue.of(Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd));
+        }
+        return ScriptValue.of(false);
     }
 
     private ScriptValue tell(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.nil();
-        Player player = ctx.player();
-        StringBuilder sb = new StringBuilder();
-        for (ScriptValue arg : args) {
-            sb.append(arg.asString());
+        Optional<Player> playerOptional = ctx.onlinePlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            StringJoiner stringJoiner = new StringJoiner(" ");
+            for (ScriptValue arg : args) {
+                stringJoiner.add(arg.asString());
+            }
+            String msg = BukkitTextProcessor.placeholder(player, stringJoiner.toString());
+            BukkitMsgSender.INSTANCE.sendMsg(player, msg);
         }
-        String msg = BukkitTextProcessor.placeholder(player, sb.toString());
-        BukkitMsgSender.INSTANCE.sendMsg(player, msg);
         return ScriptValue.nil();
     }
 
     private ScriptValue actionbar(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.nil();
-        Player player = ctx.player();
-        StringBuilder sb = new StringBuilder();
-        for (ScriptValue arg : args) {
-            sb.append(arg.asString());
+        Optional<Player> playerOptional = ctx.onlinePlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            StringJoiner stringJoiner = new StringJoiner(" ");
+            for (ScriptValue arg : args) {
+                stringJoiner.add(arg.asString());
+            }
+            String msg = BukkitTextProcessor.placeholder(player, stringJoiner.toString());
+            BukkitMsgSender.INSTANCE.sendActionBar(player, msg);
         }
-        String msg = BukkitTextProcessor.placeholder(player, sb.toString());
-        BukkitMsgSender.INSTANCE.sendActionBar(player, msg);
         return ScriptValue.nil();
     }
 
     private ScriptValue title(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 1) return ScriptValue.nil();
-        Player player = ctx.player();
-        String titleStr = BukkitTextProcessor.placeholder(player, args[0].asString());
-        String subtitle = args.length > 1 ? BukkitTextProcessor.placeholder(player, args[1].asString()) : "";
-        BukkitMsgSender.INSTANCE.sendTitle(player, titleStr, subtitle, 10, 70, 20);
+        Optional<Player> playerOptional = ctx.onlinePlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            String titleStr = BukkitTextProcessor.placeholder(player, args[0].asString());
+            String subtitle = args.length > 1 ? BukkitTextProcessor.placeholder(player, args[1].asString()) : "";
+            BukkitMsgSender.INSTANCE.sendTitle(player, titleStr, subtitle, 10, 70, 20);
+        }
         return ScriptValue.nil();
     }
 
     private ScriptValue closeInv(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        ctx.player().closeInventory();
+        ctx.onlinePlayer().ifPresent(Player::closeInventory);
         return ScriptValue.nil();
     }
 

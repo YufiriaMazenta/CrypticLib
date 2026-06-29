@@ -1,10 +1,13 @@
 package crypticlib.script;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -15,16 +18,31 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ScriptContext {
 
-    private final Player player;
+    private final UUID playerId;
     private final Map<String, ScriptValue> variables = new ConcurrentHashMap<>();
 
-    public ScriptContext(@NotNull Player player) {
-        this.player = player;
+    public ScriptContext(@NotNull UUID playerId) {
+        this.playerId = playerId;
     }
 
     @NotNull
-    public Player player() {
-        return player;
+    public UUID playerId() {
+        return playerId;
+    }
+
+    /**
+     * 获取在线玩家实例
+     * 如果玩家不在线则返回null
+     */
+    public Optional<Player> onlinePlayer() {
+        Player player = Bukkit.getPlayer(playerId);
+        if (player == null) {
+            return Optional.empty();
+        }
+        if (!player.isOnline()) {
+            return Optional.empty();
+        }
+        return Optional.of(player);
     }
 
     // ---- 变量存取 ----
