@@ -1,5 +1,6 @@
 package crypticlib;
 
+import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ProxyServer;
 
 public enum BungeeVersion {
@@ -90,8 +91,9 @@ public enum BungeeVersion {
         bungeeVersion = 0;
         bungeeVersion += (Integer.parseInt(split[0]) * 10000);
         bungeeVersion += (Integer.parseInt(split[1]) * 100);
-        if (split.length > 2)
+        if (split.length > 2 && StringHelper.isNumber(split[2])) {
             bungeeVersion += Integer.parseInt(split[2]);
+        }
         return bungeeVersion;
     }
     

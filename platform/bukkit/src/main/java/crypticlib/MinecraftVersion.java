@@ -1,6 +1,9 @@
 package crypticlib;
 
+import crypticlib.util.StringHelper;
 import org.bukkit.Bukkit;
+
+import java.text.NumberFormat;
 
 public enum MinecraftVersion {
 
@@ -134,8 +137,9 @@ public enum MinecraftVersion {
         minecraftVersion = 0;
         minecraftVersion += (Integer.parseInt(split[0]) * 10000);
         minecraftVersion += (Integer.parseInt(split[1]) * 100);
-        if (split.length > 2)
+        if (split.length > 2 && StringHelper.isNumber(split[2])) {
             minecraftVersion += Integer.parseInt(split[2]);
+        }
         return minecraftVersion;
     }
 
