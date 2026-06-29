@@ -12,8 +12,6 @@ import java.util.List;
  */
 public class ScriptCompiler {
 
-    private final List<Instruction> instructions = new ArrayList<>();
-
     /**
      * 编译 AST 为指令序列
      * @param name 脚本名称（用于调试）
@@ -21,33 +19,33 @@ public class ScriptCompiler {
      * @return 编译后的脚本
      */
     public CompiledScript compile(String name, ASTNode node) {
-        instructions.clear();
-        emitNode(node);
+        List<Instruction> instructions = new ArrayList<>();
+        emitNode(node, instructions);
         instructions.add(Instruction.of(OpCode.RETURN, 0));
-        return new CompiledScript(name, new ArrayList<>(instructions));
+        return new CompiledScript(name, instructions);
     }
 
-    private void emitNode(ASTNode node) {
+    private void emitNode(ASTNode node, List<Instruction> instructions) {
         if (node instanceof ASTNode.LiteralNode) {
-            emitLiteral((ASTNode.LiteralNode) node);
+            emitLiteral((ASTNode.LiteralNode) node, instructions);
         } else if (node instanceof ASTNode.IdentifierNode) {
-            emitIdentifier((ASTNode.IdentifierNode) node);
+            emitIdentifier((ASTNode.IdentifierNode) node, instructions);
         } else if (node instanceof ASTNode.BinaryOpNode) {
-            emitBinaryOp((ASTNode.BinaryOpNode) node);
+            emitBinaryOp((ASTNode.BinaryOpNode) node, instructions);
         } else if (node instanceof ASTNode.UnaryOpNode) {
-            emitUnaryOp((ASTNode.UnaryOpNode) node);
+            emitUnaryOp((ASTNode.UnaryOpNode) node, instructions);
         } else if (node instanceof ASTNode.FunctionCallNode) {
-            emitFunctionCall((ASTNode.FunctionCallNode) node);
+            emitFunctionCall((ASTNode.FunctionCallNode) node, instructions);
         } else if (node instanceof ASTNode.IfNode) {
-            emitIf((ASTNode.IfNode) node);
+            emitIf((ASTNode.IfNode) node, instructions);
         } else if (node instanceof ASTNode.ReturnNode) {
-            emitReturn((ASTNode.ReturnNode) node);
+            emitReturn((ASTNode.ReturnNode) node, instructions);
         } else if (node instanceof ASTNode.BlockNode) {
-            emitBlock((ASTNode.BlockNode) node);
+            emitBlock((ASTNode.BlockNode) node, instructions);
         }
     }
 
-    private void emitLiteral(ASTNode.LiteralNode node) {
+    private void emitLiteral(ASTNode.LiteralNode node, List<Instruction> instructions) {
         Object val = node.value();
         ScriptValue value;
         if (val instanceof String) {
@@ -64,44 +62,44 @@ public class ScriptCompiler {
         instructions.add(Instruction.push(value, node.line()));
     }
 
-    private void emitIdentifier(ASTNode.IdentifierNode node) {
+    private void emitIdentifier(ASTNode.IdentifierNode node, List<Instruction> instructions) {
         // 标识符作为无参函数调用
         instructions.add(Instruction.call(node.name(), 0, node.line()));
     }
 
-    private void emitBinaryOp(ASTNode.BinaryOpNode node) {
+    private void emitBinaryOp(ASTNode.BinaryOpNode node, List<Instruction> instructions) {
         if ("&&".equals(node.operator())) {
             // 短路求值: left 为 false 时直接返回 false，不计算 right
-            emitNode(node.left());
+            emitNode(node.left(), instructions);
             instructions.add(Instruction.of(OpCode.DUP, node.line()));
             int jumpIdx = instructions.size();
             instructions.add(Instruction.jump(OpCode.JUMP_IF_FALSE, 0, node.line()));
             instructions.add(Instruction.of(OpCode.POP, node.line()));
-            emitNode(node.right());
-            patchJump(jumpIdx);
+            emitNode(node.right(), instructions);
+            patchJump(jumpIdx, instructions);
             return;
         }
 
         if ("||".equals(node.operator())) {
             // 短路求值: left 为 true 时直接返回 true，不计算 right
-            emitNode(node.left());
+            emitNode(node.left(), instructions);
             instructions.add(Instruction.of(OpCode.DUP, node.line()));
             int jumpIdx = instructions.size();
             instructions.add(Instruction.jump(OpCode.JUMP_IF_FALSE, 0, node.line()));
             int skipRightIdx = instructions.size();
             instructions.add(Instruction.jump(OpCode.JUMP, 0, node.line()));
 
-            patchJump(jumpIdx);
+            patchJump(jumpIdx, instructions);
             instructions.add(Instruction.of(OpCode.POP, node.line()));
-            emitNode(node.right());
+            emitNode(node.right(), instructions);
 
-            patchJump(skipRightIdx);
+            patchJump(skipRightIdx, instructions);
             return;
         }
 
         // 其他运算符
-        emitNode(node.left());
-        emitNode(node.right());
+        emitNode(node.left(), instructions);
+        emitNode(node.right(), instructions);
         String op = node.operator();
         OpCode opCode;
         if ("==".equals(op)) {
@@ -122,62 +120,62 @@ public class ScriptCompiler {
         instructions.add(Instruction.of(opCode, node.line()));
     }
 
-    private void emitUnaryOp(ASTNode.UnaryOpNode node) {
-        emitNode(node.operand());
+    private void emitUnaryOp(ASTNode.UnaryOpNode node, List<Instruction> instructions) {
+        emitNode(node.operand(), instructions);
         if ("!".equals(node.operator())) {
             instructions.add(Instruction.of(OpCode.NOT, node.line()));
         }
     }
 
-    private void emitFunctionCall(ASTNode.FunctionCallNode node) {
+    private void emitFunctionCall(ASTNode.FunctionCallNode node, List<Instruction> instructions) {
         for (ASTNode arg : node.args()) {
-            emitNode(arg);
+            emitNode(arg, instructions);
         }
         instructions.add(Instruction.call(node.name(), node.args().size(), node.line()));
     }
 
-    private void emitIf(ASTNode.IfNode node) {
-        emitNode(node.condition());
+    private void emitIf(ASTNode.IfNode node, List<Instruction> instructions) {
+        emitNode(node.condition(), instructions);
 
         int jumpToElseIdx = instructions.size();
         instructions.add(Instruction.jump(OpCode.JUMP_IF_FALSE, 0, node.line()));
 
         for (ASTNode stmt : node.thenBody()) {
-            emitNode(stmt);
+            emitNode(stmt, instructions);
         }
 
         if (!node.elseBody().isEmpty()) {
             int jumpOverElseIdx = instructions.size();
             instructions.add(Instruction.jump(OpCode.JUMP, 0, node.line()));
 
-            patchJump(jumpToElseIdx);
+            patchJump(jumpToElseIdx, instructions);
 
             for (ASTNode stmt : node.elseBody()) {
-                emitNode(stmt);
+                emitNode(stmt, instructions);
             }
 
-            patchJump(jumpOverElseIdx);
+            patchJump(jumpOverElseIdx, instructions);
         } else {
-            patchJump(jumpToElseIdx);
+            patchJump(jumpToElseIdx, instructions);
         }
     }
 
-    private void emitBlock(ASTNode.BlockNode node) {
+    private void emitBlock(ASTNode.BlockNode node, List<Instruction> instructions) {
         for (ASTNode stmt : node.statements()) {
-            emitNode(stmt);
+            emitNode(stmt, instructions);
         }
     }
 
-    private void emitReturn(ASTNode.ReturnNode node) {
+    private void emitReturn(ASTNode.ReturnNode node, List<Instruction> instructions) {
         if (node.value() != null) {
-            emitNode(node.value());
+            emitNode(node.value(), instructions);
         } else {
             instructions.add(Instruction.push(ScriptValue.nil(), node.line()));
         }
         instructions.add(Instruction.of(OpCode.RETURN, node.line()));
     }
 
-    private void patchJump(int instructionIndex) {
+    private void patchJump(int instructionIndex, List<Instruction> instructions) {
         Instruction old = instructions.get(instructionIndex);
         instructions.set(instructionIndex, Instruction.jump(old.opCode(), instructions.size(), old.line()));
     }
