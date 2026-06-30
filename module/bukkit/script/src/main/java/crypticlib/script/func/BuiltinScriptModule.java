@@ -6,6 +6,7 @@ import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.script.ScriptContext;
 import crypticlib.script.ScriptValue;
 import crypticlib.script.vm.ScriptVM;
+import crypticlib.util.IOHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -31,6 +32,7 @@ public enum BuiltinScriptModule implements ScriptModule {
         registry.register("tell", this::tell);
         registry.register("actionbar", this::actionbar);
         registry.register("title", this::title);
+        registry.register("log", this::log);
         registry.register("close-inv", this::closeInv);
         registry.register("delay", this::delay);
         registry.register("set", this::set);
@@ -105,6 +107,21 @@ public enum BuiltinScriptModule implements ScriptModule {
             String titleStr = BukkitTextProcessor.placeholder(player, args[0].asString());
             String subtitle = args.length > 1 ? BukkitTextProcessor.placeholder(player, args[1].asString()) : "";
             BukkitMsgSender.INSTANCE.sendTitle(player, titleStr, subtitle, 10, 70, 20);
+        }
+        return ScriptValue.nil();
+    }
+
+    private ScriptValue log(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        if (args.length < 1) return ScriptValue.nil();
+        Optional<Player> playerOptional = ctx.onlinePlayer();
+        if (playerOptional.isPresent()) {
+            Player player = playerOptional.get();
+            StringJoiner stringJoiner = new StringJoiner(" ");
+            for (ScriptValue arg : args) {
+                stringJoiner.add(arg.asString());
+            }
+            String msg = BukkitTextProcessor.placeholder(player, stringJoiner.toString());
+            IOHelper.info(msg);
         }
         return ScriptValue.nil();
     }
