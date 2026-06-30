@@ -85,7 +85,16 @@ public class ScriptParser {
     }
 
     private ASTNode.IfNode parseIf() {
-        int line = advance().line();
+        return parseIf(true);
+    }
+
+    private ASTNode.IfNode parseIf(boolean consumeKeyword) {
+        int line;
+        if (consumeKeyword) {
+            line = advance().line(); // 消费 "if"
+        } else {
+            line = previous().line(); // "elseif" 已被 match() 消费，取其行号
+        }
         ASTNode condition = parseExpression();
         expectNewlineOrEOF();
 
@@ -93,7 +102,8 @@ public class ScriptParser {
 
         List<ASTNode> elseBody = new ArrayList<>();
         if (match(Token.Type.ELSEIF)) {
-            ASTNode.IfNode elif = parseIf();
+            // elseif → 递归解析为嵌套的 if，放在 else 分支里
+            ASTNode.IfNode elif = parseIf(false);
             elseBody.add(elif);
         } else if (match(Token.Type.ELSE)) {
             expectNewlineOrEOF();
