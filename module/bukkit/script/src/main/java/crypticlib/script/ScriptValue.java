@@ -19,10 +19,6 @@ public abstract class ScriptValue {
         return Bool.of(value);
     }
 
-    public static ScriptValue ofObject(Object object) {
-        return new Obj(object);
-    }
-
     public static ScriptValue nil() {
         return NullValue.NIL;
     }
@@ -140,23 +136,6 @@ public abstract class ScriptValue {
         @Override
         public String toString() {
             return "Bool(" + value + ")";
-        }
-    }
-
-    public static final class Obj extends ScriptValue {
-        private final Object value;
-
-        public Obj(Object value) {
-            this.value = value;
-        }
-
-        public Object value() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return "Obj(" + value + ")";
         }
     }
 
