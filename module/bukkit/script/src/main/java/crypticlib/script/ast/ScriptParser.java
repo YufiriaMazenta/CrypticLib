@@ -169,7 +169,7 @@ public class ScriptParser {
     }
 
     private ASTNode parseUnary() {
-        if (check(Token.Type.IDENTIFIER) && "!".equals(peek().value())) {
+        if (check(Token.Type.NOT)) {
             advance();
             int line = previous().line();
             ASTNode operand = parseUnary();

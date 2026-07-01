@@ -23,6 +23,7 @@ public class Token {
         LTE,        // <=
         AND,        // &&
         OR,         // ||
+        NOT,        // !
 
         // 分隔符
         LPAREN,     // (
