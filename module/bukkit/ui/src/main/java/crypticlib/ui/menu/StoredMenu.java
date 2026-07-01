@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -37,23 +38,23 @@ public class StoredMenu extends Menu {
     }
 
     @Override
-    public Icon onClick(int slot, InventoryClickEvent event) {
+    public Optional<Icon> onClick(int slot, InventoryClickEvent event) {
         InventoryAction action = event.getAction();
         Inventory topInv = InventoryViewHelper.getTopInventory(event);
         if (!topInv.equals(event.getClickedInventory())) {
             if (action.equals(InventoryAction.MOVE_TO_OTHER_INVENTORY) || action.equals(InventoryAction.COLLECT_TO_CURSOR))
                 event.setCancelled(true);
-            return null;
+            return Optional.empty();
         }
         if (!slotMap.containsKey(slot)) {
             if (action.equals(InventoryAction.COLLECT_TO_CURSOR)) {
                 event.setCancelled(true);
             }
-            return null;
+            return Optional.empty();
         }
         event.setCancelled(true);
         refreshStoredItems(event.getClickedInventory());
-        return slotMap.get(slot).onClick(event);
+        return Optional.of(slotMap.get(slot).onClick(event));
     }
 
     public StoredMenu refreshStoredItems(@NotNull Inventory inventory) {
@@ -81,7 +82,7 @@ public class StoredMenu extends Menu {
             returnItems[i] = item;
             i++;
         }
-        Player player = player();
+        Player player = playerOpt().orElse(null);
         if (player == null) {
             return;
         }

@@ -34,7 +34,7 @@ public class ScriptContext {
      * 获取在线玩家实例
      * 如果玩家不在线则返回null
      */
-    public Optional<Player> onlinePlayer() {
+    public Optional<Player> onlinePlayerOpt() {
         Player player = Bukkit.getPlayer(playerId);
         if (player == null) {
             return Optional.empty();

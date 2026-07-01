@@ -50,18 +50,24 @@ public class Menu implements InventoryHolder, DataHolder {
         this.layoutSlotMap = new LinkedHashMap<>();
     }
 
-    public Icon onClick(int slot, InventoryClickEvent event) {
+    /**
+     * 处理点击事件
+     * @param slot 点击的位置
+     * @param event 点击事件
+     * @return 被点击的图标，如果没有则返回 Optional.empty()
+     */
+    public Optional<Icon> onClick(int slot, InventoryClickEvent event) {
         Inventory topInv = InventoryViewHelper.getTopInventory(event);
         if (!topInv.equals(event.getClickedInventory())) {
             event.setCancelled(true);
-            return null;
+            return Optional.empty();
         }
         if (!slotMap.containsKey(slot)) {
             event.setCancelled(true);
-            return null;
+            return Optional.empty();
         }
         event.setCancelled(true);
-        return slotMap.get(slot).onClick(event);
+        return Optional.of(slotMap.get(slot).onClick(event));
     }
 
     public void onDrag(InventoryDragEvent event) {}
@@ -77,7 +83,7 @@ public class Menu implements InventoryHolder, DataHolder {
     public MenuOpenResult openMenu() {
         if (inventoryCache == null)
             this.inventoryCache = getInventory();
-        Optional<@Nullable Player> playerOpt = playerOpt();
+        Optional<Player> playerOpt = playerOpt();
         if (!playerOpt.isPresent()) {
             return MenuOpenResult.PLAYER_OFFLINE;
         }
@@ -88,7 +94,7 @@ public class Menu implements InventoryHolder, DataHolder {
     /**
      * 异步渲染页面,然后为玩家打开页面
      *
-     * @param callback 页面打开后要进行的操作,如果成功打开,结果将为true,失败(例如玩家离线)将为false
+     * @param callback 页面打开后要进行的操作
      */
     public void openMenuAsync(Consumer<MenuOpenResult> callback) {
         CrypticLibBukkit.scheduler().async(() -> {
@@ -96,7 +102,7 @@ public class Menu implements InventoryHolder, DataHolder {
                 this.inventoryCache = getInventory();
             }
             CrypticLibBukkit.scheduler().sync(() -> {
-                Optional<@Nullable Player> playerOpt = playerOpt();
+                Optional<Player> playerOpt = playerOpt();
                 if (!playerOpt.isPresent()) {
                     callback.accept(MenuOpenResult.PLAYER_OFFLINE);
                     return;
@@ -231,7 +237,7 @@ public class Menu implements InventoryHolder, DataHolder {
         if (inventoryCache == null)
             return;
         List<Integer> slots = getSlots(iconKey);
-        if (slots == null || slots.isEmpty()) {
+        if (slots.isEmpty()) {
             return;
         }
         for (Integer slot : slots) {
@@ -294,18 +300,32 @@ public class Menu implements InventoryHolder, DataHolder {
     /**
      * 获取此字符在页面上的所有位置
      * @param key 需要获取的字符
-     * @return 返回的位置列表
+     * @return 返回的位置列表，如果不存在则返回空列表
      */
-    public @Nullable List<Integer> getSlots(Character key) {
-        return layoutSlotMap.get(key);
+    @NotNull
+    public List<Integer> getSlots(Character key) {
+        List<Integer> slots = layoutSlotMap.get(key);
+        return slots != null ? slots : Collections.emptyList();
+    }
+
+    /**
+     * 获取一个位置的图标
+     * @param slot 位置
+     * @return 图标，如果不存在则返回 Optional.empty()
+     */
+    public Optional<Icon> getIconOpt(int slot) {
+        return Optional.ofNullable(slotMap.get(slot));
     }
 
     /**
      * 获取一个位置的图标
      * @param slot 位置
      * @return 图标
+     * @deprecated 使用 {@link #getIconOpt(int)} 代替
      */
-    public @Nullable Icon getIcon(int slot) {
+    @Deprecated
+    @Nullable
+    public Icon getIcon(int slot) {
         return slotMap.get(slot);
     }
 
@@ -340,7 +360,7 @@ public class Menu implements InventoryHolder, DataHolder {
      * @return 解析完成的标题
      */
     public String parsedMenuTitle() {
-        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player(), display.title()));
+        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(playerOpt().orElse(null), display.title()));
     }
 
     /**
@@ -355,7 +375,7 @@ public class Menu implements InventoryHolder, DataHolder {
     /**
      * 获取打开该页面的玩家,除非玩家离线,否则不会为null
      */
-    public Optional<@Nullable Player> playerOpt() {
+    public Optional<Player> playerOpt() {
         return Optional.ofNullable(Bukkit.getPlayer(playerId));
     }
 
@@ -392,7 +412,7 @@ public class Menu implements InventoryHolder, DataHolder {
 
     /**
      * 获取此页面的容器缓存
-     * 当页面还没有打开(执行{@link Menu#openMenu()}或{@link Menu#openMenuAsync()}前)时为空
+     * 当页面还没有打开(执行{@link Menu#openMenu()}或{@link Menu#openMenuAsync(Consumer)}前)时为空
      */
     @Nullable
     public Inventory inventoryCache() {

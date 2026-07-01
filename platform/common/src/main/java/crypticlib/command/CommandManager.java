@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 命令管理器
@@ -28,12 +29,11 @@ public interface CommandManager<Executor, Command> {
     Command register(CommandTree commandTree);
 
     /**
-     * 从服务器中注销一个命令，并返回注销掉的命令，若命令不存在，将会返回null
+     * 从服务器中注销一个命令，并返回注销掉的命令，若命令不存在，将会返回Optional.empty()
      * @param commandName 要注销的命令
-     * @return
+     * @return 被注销的命令
      */
-    @Nullable
-    Command unregister(String commandName);
+    Optional<Command> unregister(String commandName);
 
     /**
      * 注销掉所有通过此接口注册的命令

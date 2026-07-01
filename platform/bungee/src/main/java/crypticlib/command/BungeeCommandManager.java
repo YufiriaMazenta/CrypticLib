@@ -10,6 +10,7 @@ import net.md_5.bungee.api.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @LifeCycleTaskSettings(
@@ -41,16 +42,16 @@ public enum BungeeCommandManager implements CommandManager<Command, Command>, Bu
     /**
      * 注销一个命令
      * @param commandName 命令的名字
-     * @return 被注销的命令，若为null即不存在此命令
+     * @return 被注销的命令，若不存在则返回 Optional.empty()
      */
     @Override
-    public Command unregister(String commandName) {
+    public Optional<Command> unregister(String commandName) {
         Command command = registeredCommands.get(commandName);
         if (command == null)
-            return null;
+            return Optional.empty();
         ProxyServer.getInstance().getPluginManager().unregisterCommand(command);
         registeredCommands.remove(commandName);
-        return command;
+        return Optional.of(command);
     }
 
     /**

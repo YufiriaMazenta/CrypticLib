@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @LifeCycleTaskSettings(rules = @TaskRule(lifeCycle = LifeCycle.INIT))
@@ -67,13 +68,13 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
     /**
      * 注销一个命令
      * @param commandName 命令的名字
-     * @return 被注销的命令，若为null即不存在此命令
+     * @return 被注销的命令，若不存在则返回 Optional.empty()
      */
     @Override
-    public PluginCommand unregister(String commandName) {
+    public Optional<PluginCommand> unregister(String commandName) {
         PluginCommand command = registeredCommands.get(commandName);
         if (command == null)
-            return null;
+            return Optional.empty();
         command.unregister(serverCommandMap);
 
         //先移除不带命名空间的
@@ -90,7 +91,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
         }
 
         registeredCommands.remove(commandName);
-        return command;
+        return Optional.of(command);
     }
 
     /**

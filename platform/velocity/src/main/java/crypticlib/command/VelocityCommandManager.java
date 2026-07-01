@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @LifeCycleTaskSettings(
@@ -46,10 +47,10 @@ public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandMana
     }
 
     @Override
-    public @Nullable Command unregister(String commandName) {
+    public Optional<Command> unregister(String commandName) {
         com.velocitypowered.api.command.CommandManager commandManager = plugin.proxyServer().getCommandManager();
         commandManager.unregister(commandName);
-        return registeredCommands.remove(commandName);
+        return Optional.ofNullable(registeredCommands.remove(commandName));
     }
 
     @Override

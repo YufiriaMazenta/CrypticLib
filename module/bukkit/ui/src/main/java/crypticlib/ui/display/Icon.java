@@ -117,8 +117,8 @@ public class Icon implements DataHolder {
         return this;
     }
 
-    public @Nullable UUID parsePlayerId() {
-        return parsePlayerId;
+    public Optional<UUID> parsePlayerIdOpt() {
+        return Optional.ofNullable(parsePlayerId);
     }
 
     public Icon setParsePlayerId(@Nullable UUID parsePlayerId) {
@@ -143,7 +143,7 @@ public class Icon implements DataHolder {
      * @return 解析后的文本
      */
     public String parseIconText(String originText) {
-        Player iconParsePlayer = parsePlayer();
+        Player iconParsePlayer = parsePlayerOpt().orElse(null);
         return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, originText));
     }
 

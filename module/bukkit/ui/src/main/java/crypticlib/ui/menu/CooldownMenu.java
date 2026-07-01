@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public class CooldownMenu extends Menu {
 
     private final int cooldownTick;
@@ -21,29 +23,29 @@ public class CooldownMenu extends Menu {
     }
 
     @Override
-    public Icon onClick(int slot, InventoryClickEvent event) {
+    public Optional<Icon> onClick(int slot, InventoryClickEvent event) {
         if (!InventoryViewHelper.getTopInventory(event).equals(event.getClickedInventory())) {
             event.setCancelled(true);
-            return null;
+            return Optional.empty();
         }
         if (!slotMap.containsKey(slot)) {
             event.setCancelled(true);
-            return null;
+            return Optional.empty();
         }
         event.setCancelled(true);
         long current = System.currentTimeMillis();
         long cooldown = cooldownTick * 50L - (current - lastClick);
         if (cooldown > 0) {
             BukkitMsgSender.INSTANCE.sendMsg(
-                player(),
+                playerOpt().orElse(null),
                 String.format(
                     cooldownMessage, cooldown / 1000.0
                 )
             );
-            return null;
+            return Optional.empty();
         }
         this.lastClick = current;
-        return slotMap.get(slot).onClick(event);
+        return Optional.of(slotMap.get(slot).onClick(event));
     }
 
     @Override
