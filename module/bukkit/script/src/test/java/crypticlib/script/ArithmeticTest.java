@@ -157,8 +157,7 @@ public class ArithmeticTest {
         ASTNode.BlockNode ast = new ScriptParser(tokens).parse();
         CompiledScript compiled = new ScriptCompiler().compile("test", ast);
 
-        // 创建简单的上下文，支持 return 语句
-        ScriptContext ctx = new ScriptContext() {};
+        ScriptContext ctx = new ScriptContext(java.util.UUID.randomUUID());
 
         // 如果需要注册测试函数
         if (funcName != null) {
