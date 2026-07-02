@@ -143,6 +143,44 @@ public class ScriptVM {
                     stack.push(ScriptValue.of(!popStack("NOT").asBoolean()));
                     break;
                 }
+                case ADD: {
+                    ScriptValue r = popStack("ADD");
+                    ScriptValue l = popStack("ADD");
+                    // 任一侧为字符串时做字符串拼接
+                    if (l.isString() || r.isString()) {
+                        stack.push(ScriptValue.of(l.asString() + r.asString()));
+                    } else {
+                        stack.push(ScriptValue.of(l.asNumber() + r.asNumber()));
+                    }
+                    break;
+                }
+                case SUB: {
+                    ScriptValue r = popStack("SUB");
+                    ScriptValue l = popStack("SUB");
+                    stack.push(ScriptValue.of(l.asNumber() - r.asNumber()));
+                    break;
+                }
+                case MUL: {
+                    ScriptValue r = popStack("MUL");
+                    ScriptValue l = popStack("MUL");
+                    stack.push(ScriptValue.of(l.asNumber() * r.asNumber()));
+                    break;
+                }
+                case DIV: {
+                    ScriptValue r = popStack("DIV");
+                    ScriptValue l = popStack("DIV");
+                    double divisor = r.asNumber();
+                    if (divisor == 0) {
+                        throw new ScriptException("Division by zero at line " + inst.line() + " in script: " + script.sourceName());
+                    }
+                    stack.push(ScriptValue.of(l.asNumber() / divisor));
+                    break;
+                }
+                case NEG: {
+                    ScriptValue operand = popStack("NEG");
+                    stack.push(ScriptValue.of(-operand.asNumber()));
+                    break;
+                }
                 case CALL:
                     executeCall(inst);
                     break;

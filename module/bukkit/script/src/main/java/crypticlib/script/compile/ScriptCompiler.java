@@ -114,6 +114,14 @@ public class ScriptCompiler {
             opCode = OpCode.CMP_LT;
         } else if ("<=".equals(op)) {
             opCode = OpCode.CMP_LTE;
+        } else if ("+".equals(op)) {
+            opCode = OpCode.ADD;
+        } else if ("-".equals(op)) {
+            opCode = OpCode.SUB;
+        } else if ("*".equals(op)) {
+            opCode = OpCode.MUL;
+        } else if ("/".equals(op)) {
+            opCode = OpCode.DIV;
         } else {
             throw new IllegalArgumentException("Unknown operator: " + op);
         }
@@ -124,6 +132,8 @@ public class ScriptCompiler {
         emitNode(node.operand(), instructions);
         if ("!".equals(node.operator())) {
             instructions.add(Instruction.of(OpCode.NOT, node.line()));
+        } else if ("-".equals(node.operator())) {
+            instructions.add(Instruction.of(OpCode.NEG, node.line()));
         }
     }
 
