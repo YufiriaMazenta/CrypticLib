@@ -25,6 +25,9 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "com.github.johnrengelman.shadow")
     version = rootProject.version
+    java {
+        withSourcesJar()
+    }
     repositories {
         mavenLocal()
         maven("https://hub.spigotmc.org/nexus/content/repositories/public/")
@@ -72,6 +75,7 @@ subprojects {
             artifact(tasks["shadowJar"]) {
                 classifier = null
             }
+            artifact(tasks["sourcesJar"])
             val path = project.path
             val name = when  {
                 arrayOf(":module:bukkit", ":module:common",":module:bungee", ":module:velocity").contains(path) -> {

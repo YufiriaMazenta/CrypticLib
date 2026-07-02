@@ -13,7 +13,7 @@ import java.util.List;
  * - 引号字符串: "hello world"
  * - 数字: 123, 3.14, -5
  * - 布尔: true, false
- * - 运算符: == != > >= < <= && ||
+ * - 运算符: == != > >= < <= && || + - * / %
  * - 标识符: perm, command, my_func
  * - 控制流关键字: if, else, elseif, endif
  * - 注释: // 行注释
@@ -156,20 +156,29 @@ public class ScriptLexer {
         }
         String word = source.substring(start, pos);
         Token.Type type;
-        if ("if".equals(word)) {
-            type = Token.Type.IF;
-        } else if ("else".equals(word)) {
-            type = Token.Type.ELSE;
-        } else if ("elseif".equals(word)) {
-            type = Token.Type.ELSEIF;
-        } else if ("endif".equals(word)) {
-            type = Token.Type.ENDIF;
-        } else if ("return".equals(word)) {
-            type = Token.Type.RETURN;
-        } else if ("true".equals(word) || "false".equals(word)) {
-            type = Token.Type.BOOLEAN;
-        } else {
-            type = Token.Type.IDENTIFIER;
+        switch (word) {
+            case "if":
+                type = Token.Type.IF;
+                break;
+            case "else":
+                type = Token.Type.ELSE;
+                break;
+            case "elseif":
+                type = Token.Type.ELSEIF;
+                break;
+            case "endif":
+                type = Token.Type.ENDIF;
+                break;
+            case "return":
+                type = Token.Type.RETURN;
+                break;
+            case "true":
+            case "false":
+                type = Token.Type.BOOLEAN;
+                break;
+            default:
+                type = Token.Type.IDENTIFIER;
+                break;
         }
         tokens.add(new Token(type, word, line));
     }
@@ -192,6 +201,7 @@ public class ScriptLexer {
         if (c == '-') { tokens.add(new Token(Token.Type.MINUS, "-", line)); pos++; return true; }
         if (c == '*') { tokens.add(new Token(Token.Type.MULTIPLY, "*", line)); pos++; return true; }
         if (c == '/') { tokens.add(new Token(Token.Type.DIVIDE, "/", line)); pos++; return true; }
+        if (c == '%') { tokens.add(new Token(Token.Type.MODULO, "%", line)); pos++; return true; }
 
         return false;
     }

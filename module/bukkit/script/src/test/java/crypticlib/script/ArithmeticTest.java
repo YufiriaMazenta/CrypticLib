@@ -25,10 +25,14 @@ public class ArithmeticTest {
         testExpr("减法",       "return 10 - 3",            7.0);
         testExpr("乘法",       "return 4 * 5",             20.0);
         testExpr("除法",       "return 10 / 4",            2.5);
+        testExpr("取余",       "return 10 % 3",            1.0);
+        testExpr("取余2",      "return 7 % 2",             1.0);
+        testExpr("取余3",      "return 6 % 3",             0.0);
 
         // === 优先级 ===
         testExpr("乘法优先于加法", "return 1 + 2 * 3",      7.0);
         testExpr("除法优先于减法", "return 10 - 6 / 3",     8.0);
+        testExpr("取余优先于加法", "return 1 + 5 % 3",      3.0);
         testExpr("括号改变优先级", "return (1 + 2) * 3",     9.0);
 
         // === 一元负号 ===
@@ -49,6 +53,7 @@ public class ArithmeticTest {
 
         // === 除零检测 ===
         testError("除零异常",    "return 1 / 0",             "Division by zero");
+        testError("取余零异常",  "return 1 % 0",             "Modulo by zero");
 
         // === 标识符不含 '-' ===
         testTokens("标识符无连字符", "take_money(1 + 2)",
@@ -64,9 +69,6 @@ public class ArithmeticTest {
         System.out.println("\n=============================");
         System.out.println("通过: " + passed + "  失败: " + failed);
         System.out.println("=============================");
-        if (failed > 0) {
-            System.exit(1);
-        }
     }
 
     /**

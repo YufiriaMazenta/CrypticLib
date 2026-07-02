@@ -176,6 +176,16 @@ public class ScriptVM {
                     stack.push(ScriptValue.of(l.asNumber() / divisor));
                     break;
                 }
+                case MOD: {
+                    ScriptValue r = popStack("MOD");
+                    ScriptValue l = popStack("MOD");
+                    double divisor = r.asNumber();
+                    if (divisor == 0) {
+                        throw new ScriptException("Modulo by zero at line " + inst.line() + " in script: " + script.sourceName());
+                    }
+                    stack.push(ScriptValue.of(l.asNumber() % divisor));
+                    break;
+                }
                 case NEG: {
                     ScriptValue operand = popStack("NEG");
                     stack.push(ScriptValue.of(-operand.asNumber()));

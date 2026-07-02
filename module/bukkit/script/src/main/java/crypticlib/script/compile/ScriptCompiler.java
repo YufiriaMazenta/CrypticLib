@@ -122,6 +122,8 @@ public class ScriptCompiler {
             opCode = OpCode.MUL;
         } else if ("/".equals(op)) {
             opCode = OpCode.DIV;
+        } else if ("%".equals(op)) {
+            opCode = OpCode.MOD;
         } else {
             throw new IllegalArgumentException("Unknown operator: " + op);
         }

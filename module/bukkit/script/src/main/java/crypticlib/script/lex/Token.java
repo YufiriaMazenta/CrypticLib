@@ -1,5 +1,10 @@
 package crypticlib.script.lex;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * 词法分析产出的Token
  */
@@ -30,6 +35,7 @@ public class Token {
         MINUS,      // -
         MULTIPLY,   // *
         DIVIDE,     // /
+        MODULO,     // %
 
         // 分隔符
         LPAREN,     // (
@@ -47,11 +53,14 @@ public class Token {
         NEWLINE,
         EOF;
 
+        private static final Set<Type> OPERATOR_TYPES = Stream.of(
+            EQ, NEQ, GT, GTE, LT, LTE, AND, OR, PLUS, MINUS, MULTIPLY, DIVIDE, MODULO
+        ).collect(Collectors.toSet());
+
         public boolean isOperator() {
-            return this == EQ || this == NEQ || this == GT || this == GTE
-                || this == LT || this == LTE || this == AND || this == OR
-                || this == PLUS || this == MINUS || this == MULTIPLY || this == DIVIDE;
+            return OPERATOR_TYPES.contains(this);
         }
+
     }
 
     private final Type type;
