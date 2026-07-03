@@ -1,11 +1,12 @@
 package crypticlib.command;
 
 import com.velocitypowered.api.command.Command;
+import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.TaskRule;
-import crypticlib.lifecycle.VelocityLifeCycleTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,9 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @LifeCycleTaskSettings(
     rules = {
         @TaskRule(lifeCycle = LifeCycle.INIT)
-    }
+    },
+    platforms = PlatformSide.VELOCITY
 )
-public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandManager<Command, Command> {
+public enum VelocityCommandManager implements LifeCycleTask, CommandManager<Command, Command> {
 
     INSTANCE;
 
@@ -65,8 +67,8 @@ public enum VelocityCommandManager implements VelocityLifeCycleTask, CommandMana
     }
 
     @Override
-    public void lifecycle(VelocityPlugin plugin, LifeCycle lifeCycle) {
-        this.plugin = plugin;
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+        this.plugin = (VelocityPlugin) plugin;
     }
 
 }

@@ -4,7 +4,7 @@ import crypticlib.serveradapter.BukkitServerAdapter;
 import crypticlib.serveradapter.FoliaServerAdapter;
 import crypticlib.serveradapter.ServerAdapter;
 import crypticlib.serveradapter.PaperServerAdapter;
-import crypticlib.scheduler.Scheduler;
+import crypticlib.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.NotNull;
 
 public class CrypticLibBukkit {
@@ -26,7 +26,7 @@ public class CrypticLibBukkit {
     }
 
     @NotNull
-    public static Scheduler scheduler() {
+    public static BukkitScheduler scheduler() {
         return serverAdapter().scheduler();
     }
 

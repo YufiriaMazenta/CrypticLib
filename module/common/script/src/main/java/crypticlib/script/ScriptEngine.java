@@ -1,6 +1,6 @@
 package crypticlib.script;
 
-import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.TaskRule;
@@ -13,7 +13,6 @@ import crypticlib.script.func.ScriptFunctionRegistry;
 import crypticlib.script.func.ScriptModule;
 import crypticlib.script.lex.ScriptLexer;
 import crypticlib.script.lex.Token;
-import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
     @TaskRule(lifeCycle = LifeCycle.ENABLE),
     @TaskRule(lifeCycle = LifeCycle.RELOAD)
 })
-public enum ScriptEngine implements BukkitLifeCycleTask {
+public enum ScriptEngine implements LifeCycleTask {
 
     INSTANCE;
 
@@ -159,7 +158,7 @@ public enum ScriptEngine implements BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
         switch (lifeCycle) {
             case ENABLE:
                 init();

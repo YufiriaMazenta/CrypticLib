@@ -1,7 +1,8 @@
 package crypticlib.ui.handler;
 
+import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.listener.EventListener;
@@ -17,13 +18,12 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.Plugin;
 
 import java.util.Objects;
 
 @EventListener
-@LifeCycleTaskSettings(rules = {@TaskRule(lifeCycle = LifeCycle.DISABLE)})
-public enum MenuHandler implements Listener, BukkitLifeCycleTask {
+@LifeCycleTaskSettings(rules = {@TaskRule(lifeCycle = LifeCycle.DISABLE)}, platforms = PlatformSide.BUKKIT)
+public enum MenuHandler implements Listener, LifeCycleTask {
 
     INSTANCE;
 
@@ -60,7 +60,7 @@ public enum MenuHandler implements Listener, BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
         //当插件disable时,关闭所有正在使用的页面
         for (Player player : Bukkit.getOnlinePlayers()) {
             MenuHelper.getOpeningMenu(player).ifPresent(

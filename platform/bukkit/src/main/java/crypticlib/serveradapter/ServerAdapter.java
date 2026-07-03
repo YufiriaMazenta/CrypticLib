@@ -1,6 +1,6 @@
 package crypticlib.serveradapter;
 
-import crypticlib.scheduler.Scheduler;
+import crypticlib.scheduler.BukkitScheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -27,7 +27,7 @@ public interface ServerAdapter {
      * @return 平台对应的调度器
      */
     @NotNull
-    Scheduler scheduler();
+    BukkitScheduler scheduler();
 
     /**
      * 将实体传送至一个坐标

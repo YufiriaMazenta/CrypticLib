@@ -1,6 +1,7 @@
 package crypticlib;
 
 import crypticlib.chat.BungeeMsgSender;
+import crypticlib.chat.MsgSender;
 import crypticlib.command.BungeeCommandManager;
 import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
@@ -14,6 +15,8 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.scheduler.BungeeScheduler;
+import crypticlib.scheduler.Scheduler;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.plugin.Listener;
@@ -24,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class BungeePlugin extends Plugin {
+public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<Class<?>, BungeeConfigContainer> configContainerMap = new ConcurrentHashMap<>();
@@ -32,26 +35,10 @@ public abstract class BungeePlugin extends Plugin {
     protected final String defaultConfigFileName = "config.yml";
 
     public BungeePlugin() {
-        IOHelper.setMsgSender(BungeeMsgSender.INSTANCE);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.init(new CrypticLibPlugin() {
-            @Override
-            public String pluginName() {
-                return getDescription().getName();
-            }
-
-            @Override
-            public CommandManager<?, ?> commandManager() {
-                return BungeeCommandManager.INSTANCE;
-            }
-
-            @Override
-            public PlatformSide platform() {
-                return PlatformSide.BUNGEE;
-            }
-        });
-        runLifeCycleTasks(LifeCycle.INIT);
+        CrypticLib.init(this);
+        runLifeCycleTasks(this, LifeCycle.INIT);
     }
 
     @Override
@@ -75,7 +62,7 @@ public abstract class BungeePlugin extends Plugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifeCycleTasks(this, LifeCycle.LOAD);
     }
 
     @Override
@@ -122,13 +109,13 @@ public abstract class BungeePlugin extends Plugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(LifeCycle.ENABLE);
-        getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE));
+        runLifeCycleTasks(this, LifeCycle.ENABLE);
+        getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(this, LifeCycle.ACTIVE));
     }
 
     @Override
     public final void onDisable() {
-        runLifeCycleTasks(LifeCycle.DISABLE);
+        runLifeCycleTasks(this, LifeCycle.DISABLE);
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         getProxy().getScheduler().cancel(this);
@@ -162,7 +149,7 @@ public abstract class BungeePlugin extends Plugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(LifeCycle.RELOAD);
+        runLifeCycleTasks(this, LifeCycle.RELOAD);
     }
     
     public final @NotNull Configuration getConfig() {
@@ -221,50 +208,25 @@ public abstract class BungeePlugin extends Plugin {
     public final BungeeConfigWrapper removeConfigWrapper(String path) {
         return configWrapperMap.remove(path);
     }
-    
-    private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<BungeeLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
-        pluginScanner.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
-            taskClass -> {
-                try {
-                    if (!BungeeLifeCycleTask.class.isAssignableFrom(taskClass)) {
-                        return;
-                    }
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
-                    if (annotation == null) {
-                        return;
-                    }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
-                        int priority = taskRule.priority();
-                        if (annotationLifeCycle.equals(lifeCycle)) {
-                            BungeeLifeCycleTask task = (BungeeLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                            List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                            List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                            BungeeLifeCycleTaskWrapper wrapper = new BungeeLifeCycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
-                            taskWrappers.add(wrapper);
-                            return;
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
-                    List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                    if (ignoreExceptions.contains(throwable.getClass())) {
-                        return;
-                    }
-                    List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                    if (printExceptions.contains(throwable.getClass())) {
-                        throwable.printStackTrace();
-                        return;
-                    }
-                    throw new RuntimeException(throwable);
-                }
-            }
-        );
-        taskWrappers.sort(Comparator.comparingInt(BungeeLifeCycleTaskWrapper::priority));
-        for (BungeeLifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.runLifecycleTask(this, lifeCycle);
-        }
+
+    @Override
+    public String pluginName() {
+        return getDescription().getName();
+    }
+
+    @Override
+    public CommandManager<?, ?> commandManager() {
+        return BungeeCommandManager.INSTANCE;
+    }
+
+    @Override
+    public Scheduler scheduler() {
+        return BungeeScheduler.INSTANCE;
+    }
+
+    @Override
+    public MsgSender msgSender() {
+        return BungeeMsgSender.INSTANCE;
     }
 
 }

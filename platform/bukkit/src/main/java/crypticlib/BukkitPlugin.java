@@ -1,6 +1,7 @@
 package crypticlib;
 
 import crypticlib.chat.BukkitMsgSender;
+import crypticlib.chat.MsgSender;
 import crypticlib.command.BukkitCommandManager;
 import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
@@ -14,6 +15,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.scheduler.Scheduler;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
@@ -25,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class BukkitPlugin extends JavaPlugin {
+public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Map<Class<?>, BukkitConfigContainer> configContainerMap = new ConcurrentHashMap<>();
@@ -33,26 +35,10 @@ public abstract class BukkitPlugin extends JavaPlugin {
     protected final String defaultConfigFileName = "config.yml";
 
     public BukkitPlugin() {
-        IOHelper.setMsgSender(BukkitMsgSender.INSTANCE);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.init(new CrypticLibPlugin() {
-            @Override
-            public String pluginName() {
-                return getDescription().getName();
-            }
-
-            @Override
-            public CommandManager<?, ?> commandManager() {
-                return BukkitCommandManager.INSTANCE;
-            }
-
-            @Override
-            public PlatformSide platform() {
-                return PlatformSide.BUKKIT;
-            }
-        });
-        runLifeCycleTasks(LifeCycle.INIT);
+        CrypticLib.init(this);
+        runLifeCycleTasks(this, LifeCycle.INIT);
     }
 
     @Override
@@ -76,7 +62,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifeCycleTasks(this, LifeCycle.LOAD);
     }
 
     @Override
@@ -123,15 +109,15 @@ public abstract class BukkitPlugin extends JavaPlugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(LifeCycle.ENABLE);
+        runLifeCycleTasks(this, LifeCycle.ENABLE);
         CrypticLibBukkit.scheduler().sync(() -> {
-            runLifeCycleTasks(LifeCycle.ACTIVE);
+            runLifeCycleTasks(this, LifeCycle.ACTIVE);
         });
     }
 
     @Override
     public final void onDisable() {
-        runLifeCycleTasks(LifeCycle.DISABLE);
+        runLifeCycleTasks(this, LifeCycle.DISABLE);
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.scheduler().cancelTasks();
@@ -165,7 +151,7 @@ public abstract class BukkitPlugin extends JavaPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(LifeCycle.RELOAD);
+        runLifeCycleTasks(this, LifeCycle.RELOAD);
     }
 
     @Override
@@ -229,49 +215,24 @@ public abstract class BukkitPlugin extends JavaPlugin {
         return configWrapperMap.remove(path);
     }
 
-    private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<BukkitLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
-        pluginScanner.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
-            taskClass -> {
-                try {
-                    if (!BukkitLifeCycleTask.class.isAssignableFrom(taskClass)) {
-                        return;
-                    }
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
-                    if (annotation == null) {
-                        return;
-                    }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
-                        int priority = taskRule.priority();
-                        if (annotationLifeCycle.equals(lifeCycle)) {
-                            BukkitLifeCycleTask task = (BukkitLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                            List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                            List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                            BukkitLifeCycleTaskWrapper wrapper = new BukkitLifeCycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
-                            taskWrappers.add(wrapper);
-                            return;
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
-                    List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                    if (ignoreExceptions.contains(throwable.getClass())) {
-                        return;
-                    }
-                    List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                    if (printExceptions.contains(throwable.getClass())) {
-                        throwable.printStackTrace();
-                        return;
-                    }
-                    throw new RuntimeException(throwable);
-                }
-            }
-        );
-        taskWrappers.sort(Comparator.comparingInt(BukkitLifeCycleTaskWrapper::priority));
-        for (BukkitLifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.runLifecycleTask(this, lifeCycle);
-        }
+    @Override
+    public String pluginName() {
+        return getDescription().getName();
+    }
+
+    @Override
+    public CommandManager<?, ?> commandManager() {
+        return BukkitCommandManager.INSTANCE;
+    }
+
+    @Override
+    public Scheduler scheduler() {
+        return CrypticLibBukkit.scheduler();
+    }
+
+    @Override
+    public MsgSender msgSender() {
+        return BukkitMsgSender.INSTANCE;
     }
 
 }

@@ -4,7 +4,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-public class FoliaTaskWrapper implements TaskWrapper {
+public class FoliaTaskWrapper implements BukkitTaskWrapper {
 
     private final ScheduledTask scheduledTask;
 

@@ -1,10 +1,11 @@
 package crypticlib.lang;
 
+import crypticlib.PlatformSide;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lang.entry.LangEntry;
 import crypticlib.lang.entry.StringLangEntry;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import org.bukkit.command.CommandSender;
@@ -24,9 +25,10 @@ import java.util.regex.Pattern;
         @TaskRule(lifeCycle = LifeCycle.ENABLE, priority = Integer.MIN_VALUE),
         @TaskRule(lifeCycle = LifeCycle.RELOAD),
         @TaskRule(lifeCycle = LifeCycle.DISABLE)
-    }
+    },
+    platforms = PlatformSide.BUKKIT
 )
-public enum LangManager implements BukkitLifeCycleTask {
+public enum LangManager implements LifeCycleTask {
 
     INSTANCE;
     private final Map<String, Map<String, LangEntry<?>>> folderLangEntryMap = new ConcurrentHashMap<>();
@@ -144,15 +146,16 @@ public enum LangManager implements BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
         switch (lifeCycle) {
             case ENABLE:
+                Plugin bukkitPlugin = (Plugin) plugin;
                 PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(
                     langClass -> {
                         LangHandler langHandler = langClass.getAnnotation(LangHandler.class);
                         String langFileFolder = langHandler.langFileFolder();
                         String defLang = langHandler.defLang();
-                        LangEntryContainer container = new LangEntryContainer(plugin, langClass, langFileFolder, defLang);
+                        LangEntryContainer container = new LangEntryContainer(bukkitPlugin, langClass, langFileFolder, defLang);
                         langEntryContainerMap.put(langFileFolder, container);
                         container.reload();
                     }

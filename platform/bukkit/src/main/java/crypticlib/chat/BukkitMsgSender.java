@@ -12,20 +12,21 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, Player> {
+public enum BukkitMsgSender implements MsgSender.ComponentSender<CommandSender, BaseComponent, Player> {
 
     INSTANCE;
 
     @Override
-    public void sendMsg(CommandSender receiver, String msg, @NotNull Map<String, String> replaceMap) {
+    public void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap) {
         if (receiver == null)
             return;
         if (msg == null)
             return;
+        CommandSender sender = (CommandSender) receiver;
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        if (receiver instanceof Player)
-            msg = BukkitTextProcessor.placeholder((Player) receiver, msg);
-        sendMsg(receiver, BukkitTextProcessor.toComponent(BukkitTextProcessor.color(msg)));
+        if (sender instanceof Player)
+            msg = BukkitTextProcessor.placeholder((Player) sender, msg);
+        sendMsg(sender, BukkitTextProcessor.toComponent(BukkitTextProcessor.color(msg)));
     }
 
     @Override
@@ -41,9 +42,10 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+    public void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         if (player == null)
             return;
+        Player bukkitPlayer = (Player) player;
         if (title == null) {
             title = "";
         }
@@ -52,9 +54,9 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
         }
         title = StringHelper.replaceStrings(title, replaceMap);
         subTitle = StringHelper.replaceStrings(subTitle, replaceMap);
-        title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, title));
-        subTitle = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, subTitle));
-        player.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
+        title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(bukkitPlayer, title));
+        subTitle = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(bukkitPlayer, subTitle));
+        bukkitPlayer.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
     }
 
     @Override
@@ -70,10 +72,13 @@ public enum BukkitMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendActionBar(Player player, String text, Map<String, String> replaceMap) {
+    public void sendActionBar(Object player, String text, Map<String, String> replaceMap) {
+        if (player == null)
+            return;
+        Player bukkitPlayer = (Player) player;
         text = StringHelper.replaceStrings(text, replaceMap);
-        text = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, text));
-        sendActionBar(player, BukkitTextProcessor.toComponent(text));
+        text = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(bukkitPlayer, text));
+        sendActionBar(bukkitPlayer, BukkitTextProcessor.toComponent(text));
     }
 
     @Override

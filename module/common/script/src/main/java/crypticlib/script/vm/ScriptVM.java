@@ -1,6 +1,6 @@
 package crypticlib.script.vm;
 
-import crypticlib.CrypticLibBukkit;
+import crypticlib.CrypticLib;
 import crypticlib.script.ScriptContext;
 import crypticlib.script.ScriptException;
 import crypticlib.script.ScriptValue;
@@ -235,7 +235,7 @@ public class ScriptVM {
      */
     public void pauseAndScheduleResume(long delayTicks) {
         paused = true;
-        CrypticLibBukkit.scheduler().syncLater(this::resume, delayTicks);
+        CrypticLib.scheduler().syncLater(this::resume, delayTicks);
     }
 
     public boolean isPaused() {

@@ -2,15 +2,15 @@ package crypticlib.lifecycle;
 
 import java.util.List;
 
-public abstract class LifeCycleTaskWrapper<Plugin> {
+public class LifeCycleTaskWrapper {
 
-    protected final LifeCycleTask<Plugin> lifeCycleTask;
+    protected final LifeCycleTask lifeCycleTask;
     protected final List<Class<? extends Throwable>> ignoreExceptions;
     protected final List<Class<? extends Throwable>> printExceptions;
     protected final int priority;
 
     public LifeCycleTaskWrapper(
-        LifeCycleTask<Plugin> lifeCycleTask,
+        LifeCycleTask lifeCycleTask,
         int priority,
         List<Class<? extends Throwable>> ignoreExceptions,
         List<Class<? extends Throwable>> printExceptions
@@ -21,7 +21,7 @@ public abstract class LifeCycleTaskWrapper<Plugin> {
         this.priority = priority;
     }
 
-    public void runLifecycleTask(Plugin plugin, LifeCycle lifeCycle) {
+    public void runLifecycleTask(Object plugin, LifeCycle lifeCycle) {
         try {
             lifeCycleTask.lifecycle(plugin, lifeCycle);
         } catch (Throwable throwable) {
@@ -40,7 +40,7 @@ public abstract class LifeCycleTaskWrapper<Plugin> {
         return priority;
     }
 
-    public LifeCycleTask<Plugin> lifeCycleTask() {
+    public LifeCycleTask lifeCycleTask() {
         return lifeCycleTask;
     }
 

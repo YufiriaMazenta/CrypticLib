@@ -1,11 +1,12 @@
 package crypticlib.scheduler;
 
+import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.scheduler.task.FoliaTaskWrapper;
-import crypticlib.scheduler.task.TaskWrapper;
+import crypticlib.scheduler.task.BukkitTaskWrapper;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,72 +21,73 @@ import java.util.function.Consumer;
  * Folia平台的调度器
  */
 @LifeCycleTaskSettings(
-    rules = @TaskRule(lifeCycle = LifeCycle.INIT)
+    rules = @TaskRule(lifeCycle = LifeCycle.INIT),
+    platforms = PlatformSide.BUKKIT
 )
-public enum FoliaScheduler implements Scheduler, BukkitLifeCycleTask {
+public enum FoliaScheduler implements BukkitScheduler, LifeCycleTask {
 
     INSTANCE;
 
     private Plugin plugin;
 
     @Override
-    public TaskWrapper sync(@NotNull Runnable task) {
+    public BukkitTaskWrapper sync(@NotNull Runnable task) {
         return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().run(plugin, runnableToConsumer(task)));
     }
 
     @Override
-    public TaskWrapper async(@NotNull Runnable task) {
+    public BukkitTaskWrapper async(@NotNull Runnable task) {
         return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runNow(plugin, runnableToConsumer(task)));
     }
 
     @Override
-    public TaskWrapper syncLater(@NotNull Runnable task, long delayTicks) {
+    public BukkitTaskWrapper syncLater(@NotNull Runnable task, long delayTicks) {
         return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runDelayed(plugin, runnableToConsumer(task), toSafeTick(delayTicks)));
     }
 
     @Override
-    public TaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
+    public BukkitTaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
         return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runDelayed(plugin, runnableToConsumer(task), toSafeTick(delayTicks) * 50, TimeUnit.MILLISECONDS));
     }
 
     @Override
-    public TaskWrapper syncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper syncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         return new FoliaTaskWrapper(Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, runnableToConsumer(task), toSafeTick(delayTicks), toSafeTick(periodTicks)));
     }
 
     @Override
-    public TaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         return new FoliaTaskWrapper(Bukkit.getAsyncScheduler().runAtFixedRate(plugin, runnableToConsumer(task), toSafeTick(delayTicks) * 50, toSafeTick(periodTicks) * 50, TimeUnit.MILLISECONDS));
     }
 
     @Override
-    public TaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
+    public BukkitTaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
         return new FoliaTaskWrapper(entity.getScheduler().run(plugin, runnableToConsumer(task), retriedTask));
     }
 
 
     @Override
-    public TaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
+    public BukkitTaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
         return new FoliaTaskWrapper(entity.getScheduler().runDelayed(plugin, runnableToConsumer(task), retriedTask, toSafeTick(delayTicks)));
     }
 
     @Override
-    public TaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
         return new FoliaTaskWrapper(entity.getScheduler().runAtFixedRate(plugin, runnableToConsumer(task), retriedTask, toSafeTick(delayTicks), toSafeTick(periodTicks)));
     }
 
     @Override
-    public TaskWrapper runOnLocation(Location location, Runnable task) {
+    public BukkitTaskWrapper runOnLocation(Location location, Runnable task) {
         return new FoliaTaskWrapper(Bukkit.getRegionScheduler().run(plugin, location, runnableToConsumer(task)));
     }
 
     @Override
-    public TaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
+    public BukkitTaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
         return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runDelayed(plugin, location, runnableToConsumer(task), toSafeTick(delayTicks)));
     }
 
     @Override
-    public TaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
         return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runAtFixedRate(plugin, location, runnableToConsumer(task), toSafeTick(delayTicks), toSafeTick(periodTicks)));
     }
 
@@ -104,8 +106,8 @@ public enum FoliaScheduler implements Scheduler, BukkitLifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
-        this.plugin = plugin;
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+        this.plugin = (Plugin) plugin;
     }
     
 }

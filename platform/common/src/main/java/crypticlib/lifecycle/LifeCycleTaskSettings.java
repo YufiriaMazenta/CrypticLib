@@ -1,5 +1,7 @@
 package crypticlib.lifecycle;
 
+import crypticlib.PlatformSide;
+
 import java.lang.annotation.*;
 
 @Target(ElementType.TYPE)
@@ -12,6 +14,13 @@ public @interface LifeCycleTaskSettings {
      * @return
      */
     TaskRule[] rules();
+
+    /**
+     * 指定该任务在哪些平台执行
+     * 默认在所有平台都会运行
+     * @return
+     */
+    PlatformSide[] platforms() default { PlatformSide.BUKKIT, PlatformSide.BUNGEE, PlatformSide.VELOCITY };
 
     /**
      * 应该忽视掉的异常

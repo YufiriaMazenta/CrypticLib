@@ -1,10 +1,8 @@
 package crypticlib.scheduler;
 
 import crypticlib.CrypticLibBukkit;
-import crypticlib.scheduler.task.TaskWrapper;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.bukkit.plugin.Plugin;
 
 public abstract class CrypticLibRunnable implements Runnable {
 

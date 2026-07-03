@@ -1,7 +1,7 @@
 package crypticlib.serveradapter;
 
+import crypticlib.scheduler.SpigotScheduler;
 import crypticlib.scheduler.BukkitScheduler;
-import crypticlib.scheduler.Scheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -25,8 +25,8 @@ public enum BukkitServerAdapter implements ServerAdapter {
 
     @Override
     @NotNull
-    public Scheduler scheduler() {
-        return BukkitScheduler.INSTANCE;
+    public BukkitScheduler scheduler() {
+        return SpigotScheduler.INSTANCE;
     }
 
     @Override

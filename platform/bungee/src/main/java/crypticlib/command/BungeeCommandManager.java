@@ -1,7 +1,8 @@
 package crypticlib.command;
 
+import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.BungeeLifeCycleTask;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import net.md_5.bungee.api.ProxyServer;
@@ -14,9 +15,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @LifeCycleTaskSettings(
-    rules = @TaskRule(lifeCycle = LifeCycle.INIT)
+    rules = @TaskRule(lifeCycle = LifeCycle.INIT),
+    platforms = PlatformSide.BUNGEE
 )
-public enum BungeeCommandManager implements CommandManager<Command, Command>, BungeeLifeCycleTask {
+public enum BungeeCommandManager implements CommandManager<Command, Command>, LifeCycleTask {
 
     INSTANCE;
 
@@ -73,8 +75,8 @@ public enum BungeeCommandManager implements CommandManager<Command, Command>, Bu
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
-        this.pluginInstance = plugin;
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+        this.pluginInstance = (Plugin) plugin;
     }
 
 }

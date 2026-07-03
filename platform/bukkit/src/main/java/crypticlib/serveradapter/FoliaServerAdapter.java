@@ -1,7 +1,7 @@
 package crypticlib.serveradapter;
 
 import crypticlib.scheduler.FoliaScheduler;
-import crypticlib.scheduler.Scheduler;
+import crypticlib.scheduler.BukkitScheduler;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -24,7 +24,7 @@ public enum FoliaServerAdapter implements ServerAdapter {
 
     @Override
     @NotNull
-    public Scheduler scheduler() {
+    public BukkitScheduler scheduler() {
         return FoliaScheduler.INSTANCE;
     }
 

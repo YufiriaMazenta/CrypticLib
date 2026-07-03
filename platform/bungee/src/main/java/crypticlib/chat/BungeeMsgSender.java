@@ -12,18 +12,19 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, ProxiedPlayer> {
+public enum BungeeMsgSender implements MsgSender.ComponentSender<CommandSender, BaseComponent, ProxiedPlayer> {
 
     INSTANCE;
 
     @Override
-    public void sendMsg(CommandSender receiver, String msg, @NotNull Map<String, String> replaceMap) {
+    public void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap) {
         if (receiver == null)
             return;
         if (msg == null)
             return;
+        CommandSender sender = (CommandSender) receiver;
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        sendMsg(receiver, BungeeTextProcessor.toComponent(BungeeTextProcessor.color(msg)));
+        sendMsg(sender, BungeeTextProcessor.toComponent(BungeeTextProcessor.color(msg)));
     }
 
     @Override
@@ -39,9 +40,10 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendTitle(ProxiedPlayer player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+    public void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         if (player == null)
             return;
+        ProxiedPlayer bungeePlayer = (ProxiedPlayer) player;
         if (title == null) {
             title = "";
         }
@@ -58,7 +60,7 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
             .fadeIn(fadeIn)
             .fadeOut(fadeOut)
             .stay(stay)
-            .send(player);
+            .send(bungeePlayer);
     }
 
     @Override
@@ -74,12 +76,13 @@ public enum BungeeMsgSender implements MsgSender<CommandSender, BaseComponent, P
     }
 
     @Override
-    public void sendActionBar(ProxiedPlayer player, String text, Map<String, String> replaceMap) {
+    public void sendActionBar(Object player, String text, Map<String, String> replaceMap) {
         if (player == null)
             return;
+        ProxiedPlayer bungeePlayer = (ProxiedPlayer) player;
         text = StringHelper.replaceStrings(text, replaceMap);
         text = BungeeTextProcessor.color(text);
-        sendActionBar(player, BungeeTextProcessor.toComponent(text));
+        sendActionBar(bungeePlayer, BungeeTextProcessor.toComponent(text));
     }
 
     @Override

@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public interface MsgSender<Receiver, Component, Player> {
+public interface MsgSender {
 
     /**
      * 发送文本给一个对象，此文本会处理颜色代码和papi变量
@@ -14,7 +14,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param receiver 发送到的对象
      * @param msg      发送的消息
      */
-    default void sendMsg(Receiver receiver, String msg) {
+    default void sendMsg(Object receiver, String msg) {
         sendMsg(receiver, msg, new HashMap<>());
     }
 
@@ -25,23 +25,7 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param msg        发送的消息
      * @param replaceMap 需要替换的文本
      */
-    void sendMsg(Receiver receiver, String msg, @NotNull Map<String, String> replaceMap);
-
-    /**
-     * 发送多个聊天组件给接收者
-     *
-     * @param receiver       接收者
-     * @param baseComponents bungee聊天组件
-     */
-    void sendMsg(Receiver receiver, @NotNull Component... baseComponents);
-
-    /**
-     * 发送Bungee聊天组件给接收者
-     *
-     * @param receiver      接收者
-     * @param baseComponent bungee聊天组件
-     */
-    void sendMsg(Receiver receiver, @NotNull Component baseComponent);
+    void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap);
 
     /**
      * 给玩家发送Title
@@ -53,11 +37,11 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param stay     Title的停留时间
      * @param fadeOut  Title的淡出时间
      */
-    default void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+    default void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
         sendTitle(player, title, subTitle, fadeIn, stay, fadeOut, new HashMap<>());
     }
 
-    void sendTitle(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap);
+    void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap);
 
     /**
      * 给玩家发送Title
@@ -66,25 +50,9 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param title    发送的Title
      * @param subTitle 发送的Subtitle
      */
-    default void sendTitle(Player player, String title, String subTitle) {
+    default void sendTitle(Object player, String title, String subTitle) {
         sendTitle(player, title, subTitle, 10, 70, 20);
     }
-
-    /**
-     * 给玩家发送Action Bar
-     *
-     * @param player    发送的玩家
-     * @param component 发送的ActionBar聊天组件
-     */
-    void sendActionBar(Player player, Component component);
-
-    /**
-     * 给玩家发送Action Bar
-     *
-     * @param player    发送的玩家
-     * @param components 发送的ActionBar聊天组件
-     */
-    void sendActionBar(Player player, Component... components);
 
     /**
      * 给玩家发送Action Bar消息
@@ -92,11 +60,11 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param player 发送的玩家
      * @param text   发送的ActionBar文本
      */
-    default void sendActionBar(Player player, String text) {
+    default void sendActionBar(Object player, String text) {
         sendActionBar(player, text, new HashMap<>());
     }
 
-    void sendActionBar(Player player, String text, Map<String, String> replaceMap);
+    void sendActionBar(Object player, String text, Map<String, String> replaceMap);
 
     /**
      * 为所有玩家发送一条消息,这条消息会处理颜色代码和PlaceholderAPI变量
@@ -155,7 +123,7 @@ public interface MsgSender<Receiver, Component, Player> {
     /**
      * 向后台发送一条DEBUG文本
      *
-     * @param msg        发送的文本
+     * @param msg 发送的文本
      */
     default void debug(String msg) {
         debug(msg, new HashMap<>());
@@ -189,5 +157,25 @@ public interface MsgSender<Receiver, Component, Player> {
      * @param replaceMap 需要替换的文本
      */
     void info(String msg, Map<String, String> replaceMap);
+
+    /**
+     * 处理聊天组件的子接口
+     * 提供基于平台Component类型的发送方法
+     *
+     * @param <Receiver> 平台接收者类型
+     * @param <Component> 平台聊天组件类型
+     * @param <Player> 平台玩家类型
+     */
+    interface ComponentSender<Receiver, Component, Player> extends MsgSender {
+
+        void sendMsg(Receiver receiver, @NotNull Component... components);
+
+        void sendMsg(Receiver receiver, @NotNull Component component);
+
+        void sendActionBar(Player player, Component component);
+
+        void sendActionBar(Player player, Component... components);
+
+    }
 
 }

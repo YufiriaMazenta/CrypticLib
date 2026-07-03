@@ -3,11 +3,12 @@ package crypticlib.chat;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import crypticlib.CrypticLib;
+import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.TaskRule;
-import crypticlib.lifecycle.VelocityLifeCycleTask;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -17,21 +18,23 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 
 @LifeCycleTaskSettings(
-    rules = @TaskRule(lifeCycle = LifeCycle.LOAD)
+    rules = @TaskRule(lifeCycle = LifeCycle.LOAD),
+    platforms = PlatformSide.VELOCITY
 )
-public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Player>, VelocityLifeCycleTask {
+public enum VelocityMsgSender implements MsgSender.ComponentSender<CommandSource, Component, Player>, LifeCycleTask {
 
     INSTANCE;
 
     private VelocityPlugin plugin;
 
     @Override
-    public void sendMsg(CommandSource receiver, String msg, @NotNull Map<String, String> replaceMap) {
+    public void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap) {
         if (receiver == null)
             return;
+        CommandSource source = (CommandSource) receiver;
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        Component component = VelocityTextProcessor.toComponent(msg);
-        receiver.sendMessage(component);
+        Component component = VelocityTextProcessor.deserializeLegacyText(msg);
+        source.sendMessage(component);
     }
 
     @Override
@@ -53,11 +56,12 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     }
 
     @Override
-    public void sendTitle(Player player, String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+    public void sendTitle(Object player, String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         if (player == null)
             return;
+        Player velocityPlayer = (Player) player;
         Title titleObj = buildTitle(title, subtitle, fadeIn, stay, fadeOut, replaceMap);
-        player.showTitle(titleObj);
+        velocityPlayer.showTitle(titleObj);
     }
 
     @Override
@@ -77,27 +81,29 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     }
 
     @Override
-    public void sendActionBar(Player player, String text, Map<String, String> replaceMap) {
+    public void sendActionBar(Object player, String text, Map<String, String> replaceMap) {
         if (player == null)
             return;
+        Player velocityPlayer = (Player) player;
         text = StringHelper.replaceStrings(text, replaceMap);
-        Component component = VelocityTextProcessor.toComponent(text);
-        player.sendActionBar(component);
+        Component component = VelocityTextProcessor.deserializeLegacyText(text);
+        velocityPlayer.sendActionBar(component);
     }
 
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        Component component = VelocityTextProcessor.toComponent(msg);
+        Component component = VelocityTextProcessor.deserializeLegacyText(msg);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
             player.sendMessage(component);
         }
+        info(msg);
     }
 
     @Override
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        Component component = VelocityTextProcessor.toComponent(msg);
+        Component component = VelocityTextProcessor.deserializeLegacyText(msg);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
             player.sendActionBar(component);
         }
@@ -123,20 +129,20 @@ public enum VelocityMsgSender implements MsgSender<CommandSource, Component, Pla
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        Component component = VelocityTextProcessor.toComponent(msg);
+        Component component = VelocityTextProcessor.deserializeLegacyText(msg);
         plugin.proxyServer().getConsoleCommandSource().sendMessage(component);
     }
 
     @Override
-    public void lifecycle(VelocityPlugin plugin, LifeCycle lifeCycle) {
-        this.plugin = plugin;
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+        this.plugin = (VelocityPlugin) plugin;
     }
 
     private Title buildTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
-        Component titleComponent = VelocityTextProcessor.toComponent(title);
-        Component subTitleComponent = VelocityTextProcessor.toComponent(subtitle);
+        Component titleComponent = VelocityTextProcessor.deserializeLegacyText(title);
+        Component subTitleComponent = VelocityTextProcessor.deserializeLegacyText(subtitle);
         return Title.title(titleComponent, subTitleComponent, Title.Times.times(Ticks.duration(fadeIn), Ticks.duration(stay), Ticks.duration(fadeOut)));
     }
 

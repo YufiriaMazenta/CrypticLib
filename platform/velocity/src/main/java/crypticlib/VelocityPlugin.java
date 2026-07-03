@@ -7,8 +7,7 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
-import com.velocitypowered.api.scheduler.ScheduledTask;
-import com.velocitypowered.api.scheduler.Scheduler;
+import crypticlib.chat.MsgSender;
 import crypticlib.chat.VelocityMsgSender;
 import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
@@ -23,6 +22,8 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.PermInfo;
 import crypticlib.perm.VelocityPermManager;
+import crypticlib.scheduler.Scheduler;
+import crypticlib.scheduler.VelocityScheduler;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class VelocityPlugin {
+public abstract class VelocityPlugin implements CrypticLibPlugin {
 
     protected final PluginScanner pluginScanner = PluginScanner.INSTANCE;
     protected final Logger logger;
@@ -47,27 +48,11 @@ public abstract class VelocityPlugin {
         this.proxyServer = proxyServer;
         this.pluginContainer = pluginContainer;
         this.dataDirectory = dataDirectory;
-        IOHelper.setMsgSender(VelocityMsgSender.INSTANCE);
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.init(new CrypticLibPlugin() {
-            @Override
-            public String pluginName() {
-                return pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId());
-            }
-
-            @Override
-            public CommandManager<?, ?> commandManager() {
-                return VelocityCommandManager.INSTANCE;
-            }
-
-            @Override
-            public PlatformSide platform() {
-                return PlatformSide.VELOCITY;
-            }
-        });
-        runLifeCycleTasks(LifeCycle.INIT);
+        CrypticLib.init(this);
+        runLifeCycleTasks(this, LifeCycle.INIT);
     }
 
     @Subscribe
@@ -91,7 +76,7 @@ public abstract class VelocityPlugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifeCycleTasks(this, LifeCycle.LOAD);
 
         //Enable 阶段
         pluginScanner.getAnnotatedClasses(EventListener.class).forEach(
@@ -134,18 +119,16 @@ public abstract class VelocityPlugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(LifeCycle.ENABLE);
-        proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE)).schedule();
+        runLifeCycleTasks(this, LifeCycle.ENABLE);
+        proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(this, LifeCycle.ACTIVE)).schedule();
     }
 
     @Subscribe
     public final void onProxyShutdown(ProxyShutdownEvent event) {
-        runLifeCycleTasks(LifeCycle.DISABLE);
+        runLifeCycleTasks(this, LifeCycle.DISABLE);
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
-        for (ScheduledTask scheduledTask : proxyServer.getScheduler().tasksByPlugin(this)) {
-            scheduledTask.cancel();
-        }
+        scheduler().cancelTasks();
         whenDisable();
     }
 
@@ -163,7 +146,7 @@ public abstract class VelocityPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(LifeCycle.RELOAD);
+        runLifeCycleTasks(this, LifeCycle.RELOAD);
     }
 
     public final void reloadConfig() {
@@ -185,10 +168,6 @@ public abstract class VelocityPlugin {
 
     public File dataFolder() {
         return dataDirectory.toFile();
-    }
-
-    public Scheduler getScheduler() {
-        return proxyServer.getScheduler();
     }
 
     public Optional<Player> getPlayerOpt(UUID uuid) {
@@ -245,50 +224,25 @@ public abstract class VelocityPlugin {
     public final VelocityConfigWrapper removeConfigWrapper(String path) {
         return configWrapperMap.remove(path);
     }
-    
-    private void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<VelocityLifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
-        pluginScanner.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
-            taskClass -> {
-                try {
-                    if (!VelocityLifeCycleTask.class.isAssignableFrom(taskClass)) {
-                        return;
-                    }
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
-                    if (annotation == null) {
-                        return;
-                    }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
-                        int priority = taskRule.priority();
-                        if (annotationLifeCycle.equals(lifeCycle)) {
-                            VelocityLifeCycleTask task = (VelocityLifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
-                            List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                            List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                            VelocityLifeCycleTaskWrapper wrapper = new VelocityLifeCycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
-                            taskWrappers.add(wrapper);
-                            return;
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
-                    List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                    if (ignoreExceptions.contains(throwable.getClass())) {
-                        return;
-                    }
-                    List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                    if (printExceptions.contains(throwable.getClass())) {
-                        throwable.printStackTrace();
-                        return;
-                    }
-                    throw new RuntimeException(throwable);
-                }
-            }
-        );
-        taskWrappers.sort(Comparator.comparingInt(VelocityLifeCycleTaskWrapper::priority));
-        for (VelocityLifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.runLifecycleTask(this, lifeCycle);
-        }
+
+    @Override
+    public String pluginName() {
+        return pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId());
+    }
+
+    @Override
+    public CommandManager<?, ?> commandManager() {
+        return VelocityCommandManager.INSTANCE;
+    }
+
+    @Override
+    public Scheduler scheduler() {
+        return VelocityScheduler.INSTANCE;
+    }
+
+    @Override
+    public MsgSender msgSender() {
+        return VelocityMsgSender.INSTANCE;
     }
 
 }

@@ -1,7 +1,8 @@
 package crypticlib.command;
 
+import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.BukkitLifeCycleTask;
+import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.TaskRule;
 import crypticlib.perm.PermInfo;
@@ -19,8 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@LifeCycleTaskSettings(rules = @TaskRule(lifeCycle = LifeCycle.INIT))
-public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCommand>, BukkitLifeCycleTask {
+@LifeCycleTaskSettings(rules = @TaskRule(lifeCycle = LifeCycle.INIT), platforms = PlatformSide.BUKKIT)
+public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCommand>, LifeCycleTask {
 
     INSTANCE;
 
@@ -120,8 +121,8 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
     }
 
     @Override
-    public void lifecycle(Plugin plugin, LifeCycle lifeCycle) {
-        this.pluginInstance = plugin;
+    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+        this.pluginInstance = (Plugin) plugin;
     }
 
 }

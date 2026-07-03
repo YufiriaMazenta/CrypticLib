@@ -1,6 +1,7 @@
 package crypticlib.util;
 
 import crypticlib.CrypticLib;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -242,7 +243,7 @@ public class ReflectionHelper {
         }
     }
 
-    @Deprecated
+    @ApiStatus.Internal
     public static void setPluginInstance(Object pluginInstance) {
         if (PLUGIN_INSTANCE != null) {
             throw new UnsupportedOperationException("Plugin instance already set");

@@ -4,10 +4,13 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-
-public class VelocityTextProcessor {
+/**
+ * 提供paper端特有的一些文本处理
+ * 主要是AdventureAPI的方法
+ */
+public class PaperTextProcessor {
 
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer
         .builder()

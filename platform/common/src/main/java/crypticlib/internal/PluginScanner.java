@@ -1,6 +1,7 @@
 package crypticlib.internal;
 
 import crypticlib.util.IOHelper;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -25,7 +26,7 @@ public enum PluginScanner {
     private final Map<String, Class<?>> pluginClassMap = new ConcurrentHashMap<>();
     private final Map<Class<? extends Annotation>, List<Class<?>>> annotatedClassesMap = new ConcurrentHashMap<>();
 
-    @Deprecated
+    @ApiStatus.Internal
     public void scanJar(@NotNull File file) {
         try {
             scanJar(new JarFile(file));

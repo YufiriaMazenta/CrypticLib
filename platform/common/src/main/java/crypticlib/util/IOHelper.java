@@ -1,6 +1,6 @@
 package crypticlib.util;
 
-import crypticlib.chat.MsgSender;
+import crypticlib.CrypticLib;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,7 +11,6 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,6 @@ public class IOHelper {
     public static final Pattern JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(json)$");
     public static final Pattern YAML_AND_JSON_FILE_PATTERN = Pattern.compile("^(.*)\\.(yaml|yml|json)$");
     private static final int BUFFER_SIZE = 8192;
-    private static MsgSender<?, ?, ?> msgSender;
 
     /**
      * 获取文件夹下所有的json文件
@@ -212,7 +210,7 @@ public class IOHelper {
      * @param msg 发送的文本
      */
     public static void info(String msg) {
-        msgSender.info(msg);
+        CrypticLib.msgSender().info(msg);
     }
 
     /**
@@ -222,7 +220,7 @@ public class IOHelper {
      * @param replacements 需要替换的文本
      */
     public static void info(String msg, Map<String, String> replacements) {
-        msgSender.info(msg, replacements);
+        CrypticLib.msgSender().info(msg, replacements);
     }
 
     /**
@@ -231,7 +229,7 @@ public class IOHelper {
      * @param msg        发送的文本
      */
     public static void debug(String msg) {
-        msgSender.debug(msg);
+        CrypticLib.msgSender().debug(msg);
     }
 
     /**
@@ -241,14 +239,7 @@ public class IOHelper {
      * @param replacements 需要替换的文本
      */
     public static void debug(String msg, Map<String, String> replacements) {
-        msgSender.debug(msg, replacements);
-    }
-
-    public static void setMsgSender(MsgSender<?, ?, ?> msgSender) {
-        if (IOHelper.msgSender != null) {
-            throw new UnsupportedOperationException("MsgSender is already set");
-        }
-        IOHelper.msgSender = msgSender;
+        CrypticLib.msgSender().debug(msg, replacements);
     }
 
     /**
