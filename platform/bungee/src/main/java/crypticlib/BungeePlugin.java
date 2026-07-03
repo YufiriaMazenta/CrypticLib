@@ -35,9 +35,9 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     protected final String defaultConfigFileName = "config.yml";
 
     public BungeePlugin() {
+        CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.init(this);
         runLifeCycleTasks(this, LifeCycle.INIT);
     }
 

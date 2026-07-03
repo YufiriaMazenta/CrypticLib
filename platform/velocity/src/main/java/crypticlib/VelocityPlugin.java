@@ -48,10 +48,10 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         this.proxyServer = proxyServer;
         this.pluginContainer = pluginContainer;
         this.dataDirectory = dataDirectory;
+        CrypticLib.init(this);
         File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.init(this);
         runLifeCycleTasks(this, LifeCycle.INIT);
     }
 

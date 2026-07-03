@@ -35,9 +35,9 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     protected final String defaultConfigFileName = "config.yml";
 
     public BukkitPlugin() {
+        CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        CrypticLib.init(this);
         runLifeCycleTasks(this, LifeCycle.INIT);
     }
 
