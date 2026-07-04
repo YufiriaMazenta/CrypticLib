@@ -48,7 +48,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendMsg(new BukkitPlayer(player), msg);
+            sendMsg(BukkitPlayer.byPlayer(player), msg);
         }
         info(msg);
     }
@@ -57,7 +57,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendActionBar(new BukkitPlayer(player), msg);
+            sendActionBar(BukkitPlayer.byPlayer(player), msg);
         }
     }
 
@@ -66,7 +66,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendTitle(new BukkitPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
+            sendTitle(BukkitPlayer.byPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
@@ -75,14 +75,14 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendTitle(new BukkitPlayer(player), title, subtitle);
+            sendTitle(BukkitPlayer.byPlayer(player), title, subtitle);
         }
     }
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(new BukkitCommandInvoker(Bukkit.getConsoleSender()), msg, replaceMap);
+        sendMsg(BukkitCommandInvoker.byCommandSender(Bukkit.getConsoleSender()), msg, replaceMap);
     }
 
 }

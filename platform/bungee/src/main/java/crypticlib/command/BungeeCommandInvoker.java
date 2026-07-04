@@ -6,6 +6,7 @@ import crypticlib.chat.BungeeTextProcessor;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -14,7 +15,8 @@ public class BungeeCommandInvoker implements CommandInvoker {
 
     protected final CommandSender platformInvoker;
 
-    public BungeeCommandInvoker(CommandSender platformInvoker) {
+    @ApiStatus.Internal
+    protected BungeeCommandInvoker(CommandSender platformInvoker) {
         this.platformInvoker = platformInvoker;
     }
 
@@ -59,7 +61,11 @@ public class BungeeCommandInvoker implements CommandInvoker {
         if (this instanceof BungeePlayer) {
             return (CommonPlayer) this;
         }
-        return new BungeePlayer((ProxiedPlayer) platformInvoker);
+        return BungeePlayer.byProxiedPlayer((ProxiedPlayer) platformInvoker);
+    }
+
+    public static BungeeCommandInvoker byCommandSender(CommandSender commandSender) {
+        return new BungeeCommandInvoker(commandSender);
     }
 
 }

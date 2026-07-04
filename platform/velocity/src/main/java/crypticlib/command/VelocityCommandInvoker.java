@@ -3,11 +3,13 @@ package crypticlib.command;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import crypticlib.CommonPlayer;
 import crypticlib.VelocityPlayer;
 import crypticlib.chat.VelocityTextProcessor;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -16,7 +18,8 @@ public class VelocityCommandInvoker implements CommandInvoker {
 
     protected final CommandSource platformInvoker;
 
-    public VelocityCommandInvoker(CommandSource platformInvoker) {
+    @ApiStatus.Internal
+    protected VelocityCommandInvoker(CommandSource platformInvoker) {
         this.platformInvoker = platformInvoker;
     }
 
@@ -67,7 +70,11 @@ public class VelocityCommandInvoker implements CommandInvoker {
         if (this instanceof VelocityPlayer) {
             return (CommonPlayer) this;
         }
-        return new VelocityPlayer((Player) platformInvoker);
+        return VelocityPlayer.byPlayer((Player) platformInvoker);
+    }
+
+    public static VelocityCommandInvoker byCommandSource(CommandSource commandSource) {
+        return new VelocityCommandInvoker(commandSource);
     }
 
 }

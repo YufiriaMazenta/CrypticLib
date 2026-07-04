@@ -1,6 +1,7 @@
 package crypticlib;
 
 import crypticlib.command.CommandInvoker;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -9,11 +10,11 @@ import java.util.UUID;
 
 public interface CommonPlayer extends CommandInvoker {
 
-    Object getPlatformPlayer();
+    @Nullable Object getPlatformPlayer();
 
-    UUID getUniqueId();
+    @NotNull UUID getUniqueId();
 
-    Locale getLocale();
+    @NotNull Locale getLocale();
 
     default void sendTitle(@Nullable String title, @Nullable String subtitle) {
         sendTitle(title, subtitle, 10, 70, 20);

@@ -41,7 +41,7 @@ public class StringListLangEntry extends LangEntry<List<String>> {
             lang = value();
         }
         for (String str : lang) {
-            new BukkitCommandInvoker(sender).sendMsg(str, replaceMap);
+            BukkitCommandInvoker.byCommandSender(sender).sendMsg(str, replaceMap);
         }
     }
 

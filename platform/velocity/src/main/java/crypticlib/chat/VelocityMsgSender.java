@@ -69,7 +69,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
-            sendMsg(new VelocityPlayer(player), msg);
+            sendMsg(VelocityPlayer.byPlayer(player), msg);
         }
         info(msg);
     }
@@ -78,7 +78,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
-            sendActionBar(new VelocityPlayer(player), msg);
+            sendActionBar(VelocityPlayer.byPlayer(player), msg);
         }
     }
 
@@ -87,7 +87,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
-            sendTitle(new VelocityPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
+            sendTitle(VelocityPlayer.byPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
@@ -96,14 +96,14 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : plugin.proxyServer().getAllPlayers()) {
-            sendTitle(new VelocityPlayer(player), title, subtitle);
+            sendTitle(VelocityPlayer.byPlayer(player), title, subtitle);
         }
     }
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(new VelocityCommandInvoker(plugin.proxyServer().getConsoleCommandSource()), msg, replaceMap);
+        sendMsg(VelocityCommandInvoker.byCommandSource(plugin.proxyServer().getConsoleCommandSource()), msg, replaceMap);
     }
 
     @Override

@@ -34,9 +34,9 @@ public class StringLangEntry extends LangEntry<String> {
     public void send(CommandSender sender, Map<String, String> replaceMap) {
         if (sender instanceof Player) {
             Player bukkitPlayer = (Player) sender;
-            new BukkitPlayer(bukkitPlayer).sendMsg(value(bukkitPlayer), replaceMap);
+            BukkitPlayer.byPlayer(bukkitPlayer).sendMsg(value(bukkitPlayer), replaceMap);
         } else {
-            new BukkitCommandInvoker(sender).sendMsg(value(), replaceMap);
+            BukkitCommandInvoker.byCommandSender(sender).sendMsg(value(), replaceMap);
         }
     }
 

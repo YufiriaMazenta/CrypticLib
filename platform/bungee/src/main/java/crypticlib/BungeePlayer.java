@@ -7,6 +7,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,36 +17,41 @@ import java.util.UUID;
 
 public class BungeePlayer extends BungeeCommandInvoker implements CommonPlayer {
 
-    protected ProxiedPlayer platformPlayer;
+    protected @NotNull UUID playerId;
 
-    public BungeePlayer(@NotNull ProxiedPlayer platformPlayer) {
+    @ApiStatus.Internal
+    protected BungeePlayer(@NotNull ProxiedPlayer platformPlayer) {
         super(platformPlayer);
-        this.platformPlayer = platformPlayer;
+        this.playerId = platformPlayer.getUniqueId();
     }
 
     @Override
-    public Object getPlatformPlayer() {
-        return platformPlayer;
+    public ProxiedPlayer getPlatformPlayer() {
+        return ProxyServer.getInstance().getPlayer(playerId);
     }
 
     @Override
-    public UUID getUniqueId() {
-        return platformPlayer.getUniqueId();
+    public @NotNull UUID getUniqueId() {
+        return playerId;
     }
 
     @Override
-    public Locale getLocale() {
-        return platformPlayer.getLocale();
+    public @NotNull Locale getLocale() {
+        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(playerId);
+        if (player != null) {
+            return player.getLocale();
+        }
+        return Locale.getDefault();
     }
 
     @Override
     public void sendTitle(@Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut, @Nullable Map<String, String> replaceMap) {
-        if (title == null) {
-            title = "";
+        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(playerId);
+        if (player == null) {
+            return;
         }
-        if (subtitle == null) {
-            subtitle = "";
-        }
+        title = title != null ? title : "";
+        subtitle = subtitle != null ? subtitle : "";
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         title = BungeeTextProcessor.color(title);
@@ -56,17 +62,19 @@ public class BungeePlayer extends BungeeCommandInvoker implements CommonPlayer {
             .fadeIn(fadeIn)
             .fadeOut(fadeOut)
             .stay(stay)
-            .send(platformPlayer);
+            .send(player);
     }
 
     @Override
     public void sendActionBar(String text, Map<String, String> replaceMap) {
-        if (text == null)
+        ProxiedPlayer player = ProxyServer.getInstance().getPlayer(playerId);
+        if (player == null || text == null) {
             return;
+        }
         text = StringHelper.replaceStrings(text, replaceMap);
         text = BungeeTextProcessor.color(text);
         BaseComponent component = BungeeTextProcessor.toComponent(text);
-        platformPlayer.sendMessage(ChatMessageType.ACTION_BAR, component);
+        player.sendMessage(ChatMessageType.ACTION_BAR, component);
     }
 
     @Override
@@ -82,6 +90,10 @@ public class BungeePlayer extends BungeeCommandInvoker implements CommonPlayer {
     @Override
     public CommonPlayer asPlayer() {
         return this;
+    }
+
+    public static BungeePlayer byProxiedPlayer(ProxiedPlayer player) {
+        return new BungeePlayer(player);
     }
 
 }

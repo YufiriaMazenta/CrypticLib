@@ -15,7 +15,8 @@ public final class BungeeCommand extends Command implements TabExecutor {
     public BungeeCommand(CommandTree commandTree) {
         super(
             commandTree.commandInfo.name(),
-            commandTree.commandInfo.permission() != null ? commandTree.commandInfo.permission().permission() : null, commandTree.commandInfo.aliases().toArray(new String[]{})
+            commandTree.commandInfo.permission() != null ? commandTree.commandInfo.permission().permission() : null,
+            commandTree.commandInfo.aliases().toArray(new String[]{})
         );
         this.commandTree = commandTree;
     }
@@ -32,9 +33,9 @@ public final class BungeeCommand extends Command implements TabExecutor {
 
     private CommandInvoker commandSender2Invoker(CommandSender sender) {
         if (sender instanceof ProxiedPlayer) {
-            return new BungeePlayer((ProxiedPlayer) sender);
+            return BungeePlayer.byProxiedPlayer((ProxiedPlayer) sender);
         } else {
-            return new BungeeCommandInvoker(sender);
+            return BungeeCommandInvoker.byCommandSender(sender);
         }
     }
 

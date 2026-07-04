@@ -6,6 +6,7 @@ import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.StringHelper;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -14,7 +15,8 @@ public class BukkitCommandInvoker implements CommandInvoker {
 
     protected @NotNull CommandSender platformInvoker;
 
-    public BukkitCommandInvoker(@NotNull CommandSender platformInvoker) {
+    @ApiStatus.Internal
+    protected BukkitCommandInvoker(@NotNull CommandSender platformInvoker) {
         this.platformInvoker = platformInvoker;
     }
 
@@ -61,7 +63,11 @@ public class BukkitCommandInvoker implements CommandInvoker {
         if (this instanceof BukkitPlayer) {
             return (CommonPlayer) this;
         }
-        return new BukkitPlayer((Player) platformInvoker);
+        return BukkitPlayer.byPlayer((Player) platformInvoker);
+    }
+
+    public static BukkitCommandInvoker byCommandSender(CommandSender commandSender) {
+        return new BukkitCommandInvoker(commandSender);
     }
 
 }

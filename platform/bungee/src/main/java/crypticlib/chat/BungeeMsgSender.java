@@ -48,7 +48,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendMsg(new BungeePlayer(player), msg);
+            sendMsg(BungeePlayer.byProxiedPlayer(player), msg);
         }
         info(msg);
     }
@@ -57,7 +57,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendActionBar(new BungeePlayer(player), msg);
+            sendActionBar(BungeePlayer.byProxiedPlayer(player), msg);
         }
     }
 
@@ -66,7 +66,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendTitle(new BungeePlayer(player), title, subtitle, fadeIn, stay, fadeOut);
+            sendTitle(BungeePlayer.byProxiedPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
@@ -75,14 +75,14 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendTitle(new BungeePlayer(player), title, subtitle);
+            sendTitle(BungeePlayer.byProxiedPlayer(player), title, subtitle);
         }
     }
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(new BungeeCommandInvoker(ProxyServer.getInstance().getConsole()), msg, replaceMap);
+        sendMsg(BungeeCommandInvoker.byCommandSender(ProxyServer.getInstance().getConsole()), msg, replaceMap);
     }
 
 }

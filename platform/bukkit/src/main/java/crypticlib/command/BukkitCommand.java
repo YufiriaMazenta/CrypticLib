@@ -33,9 +33,9 @@ public final class BukkitCommand implements TabExecutor {
 
     private CommandInvoker commandSender2Invoker(CommandSender sender) {
         if (sender instanceof Player) {
-            return new BukkitPlayer((Player) sender);
+            return BukkitPlayer.byPlayer((Player) sender);
         } else {
-            return new BukkitCommandInvoker(sender);
+            return BukkitCommandInvoker.byCommandSender(sender);
         }
     }
 

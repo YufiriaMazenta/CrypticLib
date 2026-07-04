@@ -38,7 +38,7 @@ public class CooldownMenu extends Menu {
         if (cooldown > 0) {
             Optional<Player> playerOpt = playerOpt();
             if (playerOpt.isPresent()) {
-                new BukkitPlayer(playerOpt.orElse(null)).sendMsg(
+                BukkitPlayer.byPlayer(playerOpt.orElse(null)).sendMsg(
                     String.format(
                         cooldownMessage, cooldown / 1000.0
                     )

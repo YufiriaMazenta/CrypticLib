@@ -1,12 +1,15 @@
 package crypticlib;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import crypticlib.chat.VelocityTextProcessor;
 import crypticlib.command.VelocityCommandInvoker;
+import crypticlib.util.ReflectionHelper;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.kyori.adventure.util.Ticks;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,36 +19,43 @@ import java.util.UUID;
 
 public class VelocityPlayer extends VelocityCommandInvoker implements CommonPlayer {
 
-    protected @NotNull Player platformPlayer;
+    protected @NotNull UUID playerId;
+    protected @NotNull ProxyServer proxyServer;
 
-    public VelocityPlayer(@NotNull Player platformPlayer) {
+    @ApiStatus.Internal
+    protected VelocityPlayer(@NotNull Player platformPlayer) {
         super(platformPlayer);
-        this.platformPlayer = platformPlayer;
+        this.playerId = platformPlayer.getUniqueId();
+        this.proxyServer = ((VelocityPlugin) ReflectionHelper.getPluginInstance()).proxyServer;
     }
 
     @Override
-    public Object getPlatformPlayer() {
-        return platformPlayer;
+    public Player getPlatformPlayer() {
+        return proxyServer.getPlayer(playerId).orElse(null);
     }
 
     @Override
-    public UUID getUniqueId() {
-        return platformPlayer.getUniqueId();
+    public @NotNull UUID getUniqueId() {
+        return playerId;
     }
 
     @Override
-    public Locale getLocale() {
-        return platformPlayer.getPlayerSettings().getLocale();
+    public @NotNull Locale getLocale() {
+        Player player = proxyServer.getPlayer(playerId).orElse(null);
+        if (player != null) {
+            return player.getPlayerSettings().getLocale();
+        }
+        return Locale.getDefault();
     }
 
     @Override
     public void sendTitle(@Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut, @Nullable Map<String, String> replaceMap) {
-        if (title == null) {
-            title = "";
+        Player player = proxyServer.getPlayer(playerId).orElse(null);
+        if (player == null) {
+            return;
         }
-        if (subtitle == null) {
-            subtitle = "";
-        }
+        title = title != null ? title : "";
+        subtitle = subtitle != null ? subtitle : "";
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         Component titleComponent = VelocityTextProcessor.deserializeLegacyText(title);
@@ -59,21 +69,27 @@ public class VelocityPlayer extends VelocityCommandInvoker implements CommonPlay
                 Ticks.duration(fadeOut)
             )
         );
-        platformPlayer.showTitle(titleObj);
+        player.showTitle(titleObj);
     }
 
     @Override
     public void sendActionBar(String text, Map<String, String> replaceMap) {
-        if (text == null)
+        Player player = proxyServer.getPlayer(playerId).orElse(null);
+        if (player == null || text == null) {
             return;
+        }
         text = StringHelper.replaceStrings(text, replaceMap);
         Component component = VelocityTextProcessor.deserializeLegacyText(text);
-        platformPlayer.sendActionBar(component != null ? component : Component.text(""));
+        player.sendActionBar(component != null ? component : Component.text(""));
     }
 
     @Override
     public @NotNull String getName() {
-        return platformPlayer.getUsername();
+        Player player = proxyServer.getPlayer(playerId).orElse(null);
+        if (player != null) {
+            return player.getUsername();
+        }
+        return "Unknown";
     }
 
     @Override
@@ -89,6 +105,10 @@ public class VelocityPlayer extends VelocityCommandInvoker implements CommonPlay
     @Override
     public CommonPlayer asPlayer() {
         return this;
+    }
+
+    public static VelocityPlayer byPlayer(Player player) {
+        return new VelocityPlayer(player);
     }
 
 }
