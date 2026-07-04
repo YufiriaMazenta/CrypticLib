@@ -1,7 +1,9 @@
 package crypticlib.command;
 
+import crypticlib.CommonPlayer;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public interface CommandInvoker {
@@ -11,7 +13,7 @@ public interface CommandInvoker {
     @NotNull String getName();
 
     default void sendMsg(String msg) {
-        sendMsg(msg, null);
+        sendMsg(msg, new HashMap<>());
     }
 
     void sendMsg(String msg, Map<String, String> replaceMap);
@@ -22,6 +24,6 @@ public interface CommandInvoker {
 
     boolean isConsole();
 
-    PlayerCommandInvoker asPlayer();
+    CommonPlayer asPlayer();
 
 }

@@ -1,6 +1,8 @@
 package crypticlib.chat;
 
 import crypticlib.CrypticLib;
+import crypticlib.command.CommandInvoker;
+import crypticlib.CommonPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -14,7 +16,7 @@ public interface MsgSender {
      * @param receiver 发送到的对象
      * @param msg      发送的消息
      */
-    default void sendMsg(Object receiver, String msg) {
+    default void sendMsg(CommandInvoker receiver, String msg) {
         sendMsg(receiver, msg, new HashMap<>());
     }
 
@@ -25,7 +27,11 @@ public interface MsgSender {
      * @param msg        发送的消息
      * @param replaceMap 需要替换的文本
      */
-    void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap);
+    default void sendMsg(CommandInvoker receiver, String msg, @NotNull Map<String, String> replaceMap) {
+        if (receiver == null)
+            return;
+        receiver.sendMsg(msg, replaceMap);
+    }
 
     /**
      * 给玩家发送Title
@@ -37,11 +43,15 @@ public interface MsgSender {
      * @param stay     Title的停留时间
      * @param fadeOut  Title的淡出时间
      */
-    default void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+    default void sendTitle(CommonPlayer player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
         sendTitle(player, title, subTitle, fadeIn, stay, fadeOut, new HashMap<>());
     }
 
-    void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap);
+    default void sendTitle(CommonPlayer player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+        if (player == null)
+            return;
+        player.sendTitle(title, subTitle, fadeIn, stay, fadeOut, replaceMap);
+    }
 
     /**
      * 给玩家发送Title
@@ -50,7 +60,7 @@ public interface MsgSender {
      * @param title    发送的Title
      * @param subTitle 发送的Subtitle
      */
-    default void sendTitle(Object player, String title, String subTitle) {
+    default void sendTitle(CommonPlayer player, String title, String subTitle) {
         sendTitle(player, title, subTitle, 10, 70, 20);
     }
 
@@ -60,11 +70,15 @@ public interface MsgSender {
      * @param player 发送的玩家
      * @param text   发送的ActionBar文本
      */
-    default void sendActionBar(Object player, String text) {
+    default void sendActionBar(CommonPlayer player, String text) {
         sendActionBar(player, text, new HashMap<>());
     }
 
-    void sendActionBar(Object player, String text, Map<String, String> replaceMap);
+    default void sendActionBar(CommonPlayer player, String text, Map<String, String> replaceMap) {
+        if (player == null)
+            return;
+        player.sendActionBar(text, replaceMap);
+    }
 
     /**
      * 为所有玩家发送一条消息,这条消息会处理颜色代码和PlaceholderAPI变量
@@ -162,19 +176,17 @@ public interface MsgSender {
      * 处理聊天组件的子接口
      * 提供基于平台Component类型的发送方法
      *
-     * @param <Receiver> 平台接收者类型
      * @param <Component> 平台聊天组件类型
-     * @param <Player> 平台玩家类型
      */
-    interface ComponentSender<Receiver, Component, Player> extends MsgSender {
+    interface ComponentSender<Component> extends MsgSender {
 
-        void sendMsg(Receiver receiver, @NotNull Component... components);
+        void sendMsg(CommandInvoker receiver, @NotNull Component... components);
 
-        void sendMsg(Receiver receiver, @NotNull Component component);
+        void sendMsg(CommandInvoker receiver, @NotNull Component component);
 
-        void sendActionBar(Player player, Component component);
+        void sendActionBar(CommonPlayer player, Component component);
 
-        void sendActionBar(Player player, Component... components);
+        void sendActionBar(CommonPlayer player, Component... components);
 
     }
 

@@ -1,6 +1,10 @@
 package crypticlib.chat;
 
 import crypticlib.CrypticLib;
+import crypticlib.command.BungeeCommandInvoker;
+import crypticlib.BungeePlayer;
+import crypticlib.command.CommandInvoker;
+import crypticlib.CommonPlayer;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.CommandSender;
@@ -12,84 +16,39 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public enum BungeeMsgSender implements MsgSender.ComponentSender<CommandSender, BaseComponent, ProxiedPlayer> {
+public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> {
 
     INSTANCE;
 
     @Override
-    public void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap) {
-        if (receiver == null)
-            return;
-        if (msg == null)
-            return;
-        CommandSender sender = (CommandSender) receiver;
-        msg = StringHelper.replaceStrings(msg, replaceMap);
-        sendMsg(sender, BungeeTextProcessor.toComponent(BungeeTextProcessor.color(msg)));
-    }
-
-    @Override
-    public void sendMsg(CommandSender receiver, @NotNull BaseComponent... baseComponents) {
+    public void sendMsg(CommandInvoker receiver, @NotNull BaseComponent... baseComponents) {
         sendMsg(receiver, new TextComponent(baseComponents));
     }
 
     @Override
-    public void sendMsg(CommandSender receiver, @NotNull BaseComponent baseComponent) {
+    public void sendMsg(CommandInvoker receiver, @NotNull BaseComponent baseComponent) {
         if (receiver == null)
             return;
-        receiver.sendMessage(baseComponent);
+        ((CommandSender) receiver.getPlatformInvoker()).sendMessage(baseComponent);
     }
 
     @Override
-    public void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+    public void sendActionBar(CommonPlayer player, BaseComponent component) {
         if (player == null)
             return;
-        ProxiedPlayer bungeePlayer = (ProxiedPlayer) player;
-        if (title == null) {
-            title = "";
-        }
-        if (subTitle == null) {
-            subTitle = "";
-        }
-        title = StringHelper.replaceStrings(title, replaceMap);
-        subTitle = StringHelper.replaceStrings(subTitle, replaceMap);
-        title = BungeeTextProcessor.color(title);
-        subTitle = BungeeTextProcessor.color(subTitle);
-        ProxyServer.getInstance().createTitle()
-            .title(BungeeTextProcessor.toComponent(title))
-            .subTitle(BungeeTextProcessor.toComponent(subTitle))
-            .fadeIn(fadeIn)
-            .fadeOut(fadeOut)
-            .stay(stay)
-            .send(bungeePlayer);
+        ((ProxiedPlayer) player.getPlatformPlayer()).sendMessage(ChatMessageType.ACTION_BAR, component);
     }
 
     @Override
-    public void sendActionBar(ProxiedPlayer player, BaseComponent component) {
-        if (player == null)
-            return;
-        player.sendMessage(ChatMessageType.ACTION_BAR, component);
-    }
-
-    @Override
-    public void sendActionBar(ProxiedPlayer player, BaseComponent... baseComponents) {
+    public void sendActionBar(CommonPlayer player, BaseComponent... baseComponents) {
         sendActionBar(player, new TextComponent(baseComponents));
-    }
-
-    @Override
-    public void sendActionBar(Object player, String text, Map<String, String> replaceMap) {
-        if (player == null)
-            return;
-        ProxiedPlayer bungeePlayer = (ProxiedPlayer) player;
-        text = StringHelper.replaceStrings(text, replaceMap);
-        text = BungeeTextProcessor.color(text);
-        sendActionBar(bungeePlayer, BungeeTextProcessor.toComponent(text));
     }
 
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendMsg(player, msg);
+            sendMsg(new BungeePlayer(player), msg);
         }
         info(msg);
     }
@@ -98,7 +57,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<CommandSender, 
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendActionBar(player, msg);
+            sendActionBar(new BungeePlayer(player), msg);
         }
     }
 
@@ -107,7 +66,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<CommandSender, 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
+            sendTitle(new BungeePlayer(player), title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
@@ -116,14 +75,14 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<CommandSender, 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
-            sendTitle(player, title, subtitle);
+            sendTitle(new BungeePlayer(player), title, subtitle);
         }
     }
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(ProxyServer.getInstance().getConsole(), msg, replaceMap);
+        sendMsg(new BungeeCommandInvoker(ProxyServer.getInstance().getConsole()), msg, replaceMap);
     }
 
 }

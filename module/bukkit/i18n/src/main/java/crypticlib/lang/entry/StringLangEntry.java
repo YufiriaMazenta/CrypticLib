@@ -1,6 +1,7 @@
 package crypticlib.lang.entry;
 
-import crypticlib.chat.BukkitMsgSender;
+import crypticlib.command.BukkitCommandInvoker;
+import crypticlib.BukkitPlayer;
 import crypticlib.lang.LangEntryContainer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -32,9 +33,10 @@ public class StringLangEntry extends LangEntry<String> {
     @Override
     public void send(CommandSender sender, Map<String, String> replaceMap) {
         if (sender instanceof Player) {
-            BukkitMsgSender.INSTANCE.sendMsg(sender, value((Player) sender), replaceMap);
+            Player bukkitPlayer = (Player) sender;
+            new BukkitPlayer(bukkitPlayer).sendMsg(value(bukkitPlayer), replaceMap);
         } else {
-            BukkitMsgSender.INSTANCE.sendMsg(sender, value(), replaceMap);
+            new BukkitCommandInvoker(sender).sendMsg(value(), replaceMap);
         }
     }
 

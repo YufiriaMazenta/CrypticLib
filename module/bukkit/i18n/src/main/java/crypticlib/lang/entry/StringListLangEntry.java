@@ -1,6 +1,7 @@
 package crypticlib.lang.entry;
 
 import crypticlib.chat.BukkitMsgSender;
+import crypticlib.command.BukkitCommandInvoker;
 import crypticlib.lang.LangEntryContainer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -40,7 +41,7 @@ public class StringListLangEntry extends LangEntry<List<String>> {
             lang = value();
         }
         for (String str : lang) {
-            BukkitMsgSender.INSTANCE.sendMsg(sender, str, replaceMap);
+            new BukkitCommandInvoker(sender).sendMsg(str, replaceMap);
         }
     }
 

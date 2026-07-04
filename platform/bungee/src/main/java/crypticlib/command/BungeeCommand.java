@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.BungeePlayer;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
@@ -31,7 +32,7 @@ public final class BungeeCommand extends Command implements TabExecutor {
 
     private CommandInvoker commandSender2Invoker(CommandSender sender) {
         if (sender instanceof ProxiedPlayer) {
-            return new BungeePlayerCommandInvoker((ProxiedPlayer) sender);
+            return new BungeePlayer((ProxiedPlayer) sender);
         } else {
             return new BungeeCommandInvoker(sender);
         }

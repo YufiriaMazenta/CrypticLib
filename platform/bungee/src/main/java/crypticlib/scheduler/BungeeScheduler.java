@@ -8,6 +8,8 @@ import crypticlib.lifecycle.TaskRule;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -22,11 +24,12 @@ public enum BungeeScheduler implements Scheduler, LifeCycleTask {
     INSTANCE;
 
     private Plugin plugin;
-    private final ScheduledExecutorService asyncExecutor = Executors.newScheduledThreadPool(1, r -> {
+    private final ScheduledExecutorService asyncExecutor = Executors.newScheduledThreadPool(8, r -> {
         Thread t = new Thread(r, "CrypticLib-Async-Scheduler");
         t.setDaemon(true);
         return t;
     });
+    private final Set<ScheduledFuture<?>> asyncFutures = ConcurrentHashMap.newKeySet();
 
     @Override
     public TaskWrapper sync(@NotNull Runnable task) {
@@ -48,6 +51,7 @@ public enum BungeeScheduler implements Scheduler, LifeCycleTask {
     @Override
     public TaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
         ScheduledFuture<?> future = asyncExecutor.schedule(task, delayTicks * 50, TimeUnit.MILLISECONDS);
+        asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
     }
 
@@ -61,13 +65,17 @@ public enum BungeeScheduler implements Scheduler, LifeCycleTask {
     @Override
     public TaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         ScheduledFuture<?> future = asyncExecutor.scheduleAtFixedRate(task, delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS);
+        asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
     }
 
     @Override
     public void cancelTasks() {
         plugin.getProxy().getScheduler().cancel(plugin);
-        asyncExecutor.shutdownNow();
+        for (ScheduledFuture<?> future : asyncFutures) {
+            future.cancel(false);
+        }
+        asyncFutures.clear();
     }
 
     @Override

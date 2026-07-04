@@ -37,6 +37,7 @@ public enum PluginScanner {
 
     public void scanJar(@NotNull JarFile jarFile) {
         pluginClassMap.clear();
+        annotatedClassesMap.clear();
 
         Enumeration<JarEntry> entries = jarFile.entries();
         ClassLoader classLoader = getClass().getClassLoader();

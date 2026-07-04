@@ -25,7 +25,7 @@ public abstract class LangEntry<T> {
     }
 
     public LangEntry<T> setValue(@NotNull Locale locale, @NotNull T value) {
-        return setValue(LocaleHelper.localToLang(locale), value);
+        return setValue(LocaleHelper.local2LanguageTag(locale), value);
     }
 
     public LangEntry<T> setValue(@NotNull String lang, @NotNull T value) {
@@ -38,7 +38,7 @@ public abstract class LangEntry<T> {
     }
 
     public T value(@NotNull Locale locale) {
-        return value(LocaleHelper.localToLang(locale));
+        return value(LocaleHelper.local2LanguageTag(locale));
     }
 
     public T value(@NotNull String lang) {

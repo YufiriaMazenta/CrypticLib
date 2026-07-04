@@ -4,6 +4,7 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.proxy.Player;
+import crypticlib.VelocityPlayer;
 import crypticlib.perm.PermDef;
 import crypticlib.perm.PermInfo;
 
@@ -53,7 +54,7 @@ public final class VelocityCommand implements SimpleCommand {
 
     private CommandInvoker commandSource2Invoker(CommandSource source) {
         if (source instanceof Player) {
-            return new VelocityPlayerCommandInvoker((Player) source);
+            return new VelocityPlayer((Player) source);
         } else {
             return new VelocityCommandInvoker(source);
         }

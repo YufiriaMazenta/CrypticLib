@@ -3,14 +3,18 @@ package crypticlib.command;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
-import crypticlib.chat.VelocityMsgSender;
+import crypticlib.CommonPlayer;
+import crypticlib.VelocityPlayer;
+import crypticlib.chat.VelocityTextProcessor;
+import crypticlib.util.StringHelper;
+import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 public class VelocityCommandInvoker implements CommandInvoker {
 
-    protected CommandSource platformInvoker;
+    protected final CommandSource platformInvoker;
 
     public VelocityCommandInvoker(CommandSource platformInvoker) {
         this.platformInvoker = platformInvoker;
@@ -23,12 +27,21 @@ public class VelocityCommandInvoker implements CommandInvoker {
 
     @Override
     public @NotNull String getName() {
-        throw new UnsupportedOperationException("Velocity command source do not has name");
+        if (platformInvoker instanceof Player) {
+            return ((Player) platformInvoker).getUsername();
+        }
+        return "Server";
     }
 
     @Override
     public void sendMsg(String msg, Map<String, String> replaceMap) {
-        VelocityMsgSender.INSTANCE.sendMsg(platformInvoker, msg, replaceMap);
+        if (msg == null)
+            return;
+        msg = StringHelper.replaceStrings(msg, replaceMap);
+        Component component = VelocityTextProcessor.deserializeLegacyText(msg);
+        if (component != null) {
+            platformInvoker.sendMessage(component);
+        }
     }
 
     @Override
@@ -43,18 +56,18 @@ public class VelocityCommandInvoker implements CommandInvoker {
 
     @Override
     public boolean isConsole() {
-        return platformInvoker instanceof ConsoleCommandSource;
+        return !isPlayer();
     }
 
     @Override
-    public PlayerCommandInvoker asPlayer() {
+    public CommonPlayer asPlayer() {
         if (!isPlayer()) {
             throw new ClassCastException("CommandInvoker is not a Player");
         }
-        if (this instanceof VelocityPlayerCommandInvoker) {
-            return (PlayerCommandInvoker) this;
+        if (this instanceof VelocityPlayer) {
+            return (CommonPlayer) this;
         }
-        return new VelocityPlayerCommandInvoker((Player) platformInvoker);
+        return new VelocityPlayer((Player) platformInvoker);
     }
 
 }

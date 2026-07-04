@@ -1,6 +1,9 @@
 package crypticlib.command;
 
-import crypticlib.chat.BukkitMsgSender;
+import crypticlib.BukkitPlayer;
+import crypticlib.CommonPlayer;
+import crypticlib.chat.BukkitTextProcessor;
+import crypticlib.util.StringHelper;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +30,12 @@ public class BukkitCommandInvoker implements CommandInvoker {
 
     @Override
     public void sendMsg(String msg, Map<String, String> replaceMap) {
-        BukkitMsgSender.INSTANCE.sendMsg(platformInvoker, msg, replaceMap);
+        if (msg == null)
+            return;
+        msg = StringHelper.replaceStrings(msg, replaceMap);
+        if (platformInvoker instanceof Player)
+            msg = BukkitTextProcessor.placeholder((Player) platformInvoker, msg);
+        platformInvoker.spigot().sendMessage(BukkitTextProcessor.toComponent(BukkitTextProcessor.color(msg)));
     }
 
     @Override
@@ -46,14 +54,14 @@ public class BukkitCommandInvoker implements CommandInvoker {
     }
 
     @Override
-    public PlayerCommandInvoker asPlayer() {
+    public CommonPlayer asPlayer() {
         if (!isPlayer()) {
             throw new ClassCastException("CommandInvoker is not a Player");
         }
-        if (this instanceof BukkitPlayerCommandInvoker) {
-            return (PlayerCommandInvoker) this;
+        if (this instanceof BukkitPlayer) {
+            return (CommonPlayer) this;
         }
-        return new BukkitPlayerCommandInvoker((Player) platformInvoker);
+        return new BukkitPlayer((Player) platformInvoker);
     }
 
 }

@@ -49,7 +49,7 @@ public class LangEntryContainer {
      */
     private void saveDefLangFiles() {
         for (Locale locale : Locale.getAvailableLocales()) {
-            String lang = LocaleHelper.localToLang(locale);
+            String lang = LocaleHelper.local2LanguageTag(locale);
             String langFileName = langFileFolder + "/" + lang + ".yml";
             if (plugin.getResource(langFileName) == null)
                 continue;

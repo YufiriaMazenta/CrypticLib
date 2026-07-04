@@ -1,6 +1,10 @@
 package crypticlib.chat;
 
 import crypticlib.CrypticLib;
+import crypticlib.command.BukkitCommandInvoker;
+import crypticlib.BukkitPlayer;
+import crypticlib.command.CommandInvoker;
+import crypticlib.CommonPlayer;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -12,80 +16,39 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public enum BukkitMsgSender implements MsgSender.ComponentSender<CommandSender, BaseComponent, Player> {
+public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> {
 
     INSTANCE;
 
     @Override
-    public void sendMsg(Object receiver, String msg, @NotNull Map<String, String> replaceMap) {
-        if (receiver == null)
-            return;
-        if (msg == null)
-            return;
-        CommandSender sender = (CommandSender) receiver;
-        msg = StringHelper.replaceStrings(msg, replaceMap);
-        if (sender instanceof Player)
-            msg = BukkitTextProcessor.placeholder((Player) sender, msg);
-        sendMsg(sender, BukkitTextProcessor.toComponent(BukkitTextProcessor.color(msg)));
-    }
-
-    @Override
-    public void sendMsg(CommandSender receiver, @NotNull BaseComponent... baseComponents) {
+    public void sendMsg(CommandInvoker receiver, @NotNull BaseComponent... baseComponents) {
         sendMsg(receiver, new TextComponent(baseComponents));
     }
 
     @Override
-    public void sendMsg(CommandSender receiver, @NotNull BaseComponent baseComponent) {
+    public void sendMsg(CommandInvoker receiver, @NotNull BaseComponent baseComponent) {
         if (receiver == null)
             return;
-        receiver.spigot().sendMessage(baseComponent);
+        ((CommandSender) receiver.getPlatformInvoker()).spigot().sendMessage(baseComponent);
     }
 
     @Override
-    public void sendTitle(Object player, String title, String subTitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
+    public void sendActionBar(CommonPlayer player, BaseComponent component) {
         if (player == null)
             return;
-        Player bukkitPlayer = (Player) player;
-        if (title == null) {
-            title = "";
-        }
-        if (subTitle == null) {
-            subTitle = "";
-        }
-        title = StringHelper.replaceStrings(title, replaceMap);
-        subTitle = StringHelper.replaceStrings(subTitle, replaceMap);
-        title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(bukkitPlayer, title));
-        subTitle = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(bukkitPlayer, subTitle));
-        bukkitPlayer.sendTitle(title, subTitle, fadeIn, stay, fadeOut);
+        ((Player) player.getPlatformPlayer()).spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
     }
 
     @Override
-    public void sendActionBar(Player player, BaseComponent component) {
-        if (player == null)
-            return;
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
-    }
-
-    @Override
-    public void sendActionBar(Player player, BaseComponent... baseComponents) {
+    public void sendActionBar(CommonPlayer player, BaseComponent... baseComponents) {
         sendActionBar(player, new TextComponent(baseComponents));
-    }
-
-    @Override
-    public void sendActionBar(Object player, String text, Map<String, String> replaceMap) {
-        if (player == null)
-            return;
-        Player bukkitPlayer = (Player) player;
-        text = StringHelper.replaceStrings(text, replaceMap);
-        text = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(bukkitPlayer, text));
-        sendActionBar(bukkitPlayer, BukkitTextProcessor.toComponent(text));
     }
 
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendMsg(player, msg);
+            sendMsg(new BukkitPlayer(player), msg);
         }
         info(msg);
     }
@@ -94,7 +57,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<CommandSender, 
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendActionBar(player, msg);
+            sendActionBar(new BukkitPlayer(player), msg);
         }
     }
 
@@ -103,7 +66,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<CommandSender, 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendTitle(player, title, subtitle, fadeIn, stay, fadeOut);
+            sendTitle(new BukkitPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
         }
     }
 
@@ -112,14 +75,14 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<CommandSender, 
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendTitle(player, title, subtitle);
+            sendTitle(new BukkitPlayer(player), title, subtitle);
         }
     }
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(Bukkit.getConsoleSender(), msg, replaceMap);
+        sendMsg(new BukkitCommandInvoker(Bukkit.getConsoleSender()), msg, replaceMap);
     }
 
 }

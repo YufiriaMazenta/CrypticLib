@@ -1,6 +1,6 @@
 package crypticlib.ui.menu;
 
-import crypticlib.chat.BukkitMsgSender;
+import crypticlib.BukkitPlayer;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.util.InventoryViewHelper;
@@ -36,12 +36,14 @@ public class CooldownMenu extends Menu {
         long current = System.currentTimeMillis();
         long cooldown = cooldownTick * 50L - (current - lastClick);
         if (cooldown > 0) {
-            BukkitMsgSender.INSTANCE.sendMsg(
-                playerOpt().orElse(null),
-                String.format(
-                    cooldownMessage, cooldown / 1000.0
-                )
-            );
+            Optional<Player> playerOpt = playerOpt();
+            if (playerOpt.isPresent()) {
+                new BukkitPlayer(playerOpt.orElse(null)).sendMsg(
+                    String.format(
+                        cooldownMessage, cooldown / 1000.0
+                    )
+                );
+            }
             return Optional.empty();
         }
         this.lastClick = current;

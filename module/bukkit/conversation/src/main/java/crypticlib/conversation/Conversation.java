@@ -2,9 +2,9 @@ package crypticlib.conversation;
 
 import crypticlib.CrypticLibBukkit;
 import crypticlib.chat.BukkitMsgSender;
+import crypticlib.BukkitPlayer;
 import crypticlib.conversation.handler.ConversationHandler;
 import crypticlib.scheduler.TaskWrapper;
-import crypticlib.scheduler.task.BukkitTaskWrapper;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
@@ -74,7 +74,7 @@ public class Conversation {
 
     public void start() {
         ConversationHandler.INSTANCE.startChat(who, this);
-        BukkitMsgSender.INSTANCE.sendMsg(who, prompt.promptText(data));
+        BukkitMsgSender.INSTANCE.sendMsg(new BukkitPlayer(who), prompt.promptText(data));
         scheduleTimeout();
     }
 
@@ -97,7 +97,7 @@ public class Conversation {
                 end();
                 return;
             }
-            BukkitMsgSender.INSTANCE.sendMsg(who, prompt.promptText(data));
+            BukkitMsgSender.INSTANCE.sendMsg(new BukkitPlayer(who), prompt.promptText(data));
             scheduleTimeout();
         });
     }
