@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -50,6 +49,7 @@ public class BatchTask<T, R> {
     private final Scheduler scheduler;
     private final List<T> failedItems = new ArrayList<>();
     private final List<R> results = new ArrayList<>();
+    private boolean completed = false;
 
     private int currentIndex = 0;
     private int useTick = 0;
@@ -97,6 +97,9 @@ public class BatchTask<T, R> {
     }
 
     private void run() {
+        if (completed) {
+            return;
+        }
         if (currentIndex >= items.size()) {
             finish();
             return;
@@ -123,6 +126,7 @@ public class BatchTask<T, R> {
 
     private void finish() {
         cancel();
+        completed = true;
         if (callback != null) {
             callback.onComplete(results, this);
         }
