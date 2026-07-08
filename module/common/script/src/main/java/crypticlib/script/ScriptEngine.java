@@ -72,6 +72,7 @@ public enum ScriptEngine implements LifeCycleTask {
      * @param module 函数模块
      */
     public void registerModule(ScriptModule module) {
+        ScriptFunctionRegistry.INSTANCE.unregisterModule(module.moduleName());
         module.register(ScriptFunctionRegistry.INSTANCE);
     }
 
