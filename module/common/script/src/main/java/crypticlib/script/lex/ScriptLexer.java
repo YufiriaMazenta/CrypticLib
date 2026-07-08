@@ -1,5 +1,6 @@
 package crypticlib.script.lex;
 
+import crypticlib.script.InterpolationPart;
 import crypticlib.script.ScriptException;
 
 import java.util.ArrayList;
@@ -11,6 +12,8 @@ import java.util.List;
  *
  * 支持：
  * - 引号字符串: "hello world"
+ * - 字符串插值: "Hello ${name}!" (使用 ${variable} 语法)
+ * - 变量引用: ${variable}
  * - 数字: 123, 3.14, -5
  * - 布尔: true, false
  * - 运算符: == != > >= < <= && || + - * / %
@@ -76,6 +79,12 @@ public class ScriptLexer {
                 continue;
             }
 
+            // 变量引用 ${identifier}
+            if (c == '$' && peek() == '{') {
+                readVariable();
+                continue;
+            }
+
             // 运算符
             if (tryReadOperator()) continue;
 
@@ -83,6 +92,7 @@ public class ScriptLexer {
             if (c == '(') { tokens.add(new Token(Token.Type.LPAREN, "(", line)); pos++; continue; }
             if (c == ')') { tokens.add(new Token(Token.Type.RPAREN, ")", line)); pos++; continue; }
             if (c == ',') { tokens.add(new Token(Token.Type.COMMA, ",", line)); pos++; continue; }
+            if (c == '.') { tokens.add(new Token(Token.Type.DOT, ".", line)); pos++; continue; }
 
             // 标识符 / 关键字
             if (isAlpha(c) || c == '_') {
@@ -110,11 +120,69 @@ public class ScriptLexer {
         while (pos < source.length() && source.charAt(pos) != '\n') pos++;
     }
 
+    /**
+     * 读取 ${identifier} 变量引用
+     */
+    private void readVariable() {
+        pos += 2; // 跳过 ${
+        int start = pos;
+        while (pos < source.length() && (isAlphaNumeric(source.charAt(pos)) || source.charAt(pos) == '_')) {
+            pos++;
+        }
+        if (pos >= source.length() || source.charAt(pos) != '}') {
+            throw new ScriptException("Expected '}' after variable name at line " + line);
+        }
+        String varName = source.substring(start, pos);
+        if (varName.isEmpty()) {
+            throw new ScriptException("Empty variable name at line " + line);
+        }
+        pos++; // 跳过 }
+        tokens.add(new Token(Token.Type.VARIABLE, varName, line));
+    }
+
     private void readString() {
         pos++; // 跳过开头 "
+        int startLine = line;
         StringBuilder sb = new StringBuilder();
+        List<InterpolationPart> parts = new ArrayList<>();
+
         while (pos < source.length() && source.charAt(pos) != '"') {
             char c = source.charAt(pos);
+
+            // 检查转义 \$
+            if (c == '\\' && pos + 1 < source.length() && source.charAt(pos + 1) == '$') {
+                sb.append('$');
+                pos += 2;
+                continue;
+            }
+
+            // 检查插值 ${
+            if (c == '$' && pos + 1 < source.length() && source.charAt(pos + 1) == '{') {
+                // 保存之前的文本
+                if (sb.length() > 0) {
+                    parts.add(new InterpolationPart.Text(sb.toString()));
+                    sb = new StringBuilder();
+                }
+
+                // 读取变量
+                pos += 2; // 跳过 ${
+                int varStart = pos;
+                while (pos < source.length() && (isAlphaNumeric(source.charAt(pos)) || source.charAt(pos) == '_')) {
+                    pos++;
+                }
+                if (pos >= source.length() || source.charAt(pos) != '}') {
+                    throw new ScriptException("Expected '}' after variable name at line " + line);
+                }
+                String varName = source.substring(varStart, pos);
+                if (varName.isEmpty()) {
+                    throw new ScriptException("Empty variable name in string interpolation at line " + line);
+                }
+                pos++; // 跳过 }
+                parts.add(new InterpolationPart.Variable(varName));
+                continue;
+            }
+
+            // 普通转义字符
             if (c == '\\' && pos + 1 < source.length()) {
                 pos++;
                 c = source.charAt(pos);
@@ -130,11 +198,25 @@ public class ScriptLexer {
             }
             pos++;
         }
+
         if (pos >= source.length()) {
-            throw new ScriptException("Unterminated string at line " + line);
+            throw new ScriptException("Unterminated string at line " + startLine);
         }
         pos++; // 跳过结尾 "
-        tokens.add(new Token(Token.Type.STRING, sb.toString(), line));
+
+        // 如果没有插值，返回普通字符串
+        if (parts.isEmpty()) {
+            tokens.add(new Token(Token.Type.STRING, sb.toString(), startLine));
+            return;
+        }
+
+        // 有插值，保存最后一个文本部分
+        if (sb.length() > 0) {
+            parts.add(new InterpolationPart.Text(sb.toString()));
+        }
+
+        // 生成插值字符串标记
+        tokens.add(new Token(Token.Type.INTERPOLATED_STRING, parts, startLine));
     }
 
     private void readNumber() {

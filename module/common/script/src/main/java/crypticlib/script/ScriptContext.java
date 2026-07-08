@@ -3,10 +3,10 @@ package crypticlib.script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 脚本执行上下文
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ScriptContext {
 
     private final UUID playerId;
-    private final Map<String, ScriptValue> variables = new ConcurrentHashMap<>();
+    private final Map<String, ScriptValue> variables = new HashMap<>();
 
     public ScriptContext(@NotNull UUID playerId) {
         this.playerId = Objects.requireNonNull(playerId);

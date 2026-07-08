@@ -41,6 +41,11 @@ public class Instruction {
         return new Instruction(opCode, null, null, offset, line);
     }
 
+    /** LOAD_VAR varName */
+    public static Instruction loadVar(String varName, int line) {
+        return new Instruction(OpCode.LOAD_VAR, null, varName, 0, line);
+    }
+
     public OpCode opCode()     { return opCode; }
     public ScriptValue operand() { return operand; }
     public String funcName()   { return funcName; }
@@ -52,6 +57,7 @@ public class Instruction {
         switch (opCode) {
             case PUSH: return "PUSH " + operand;
             case CALL: return "CALL " + funcName + " " + jumpOffset;
+            case LOAD_VAR: return "LOAD_VAR " + funcName;
             case JUMP:
             case JUMP_IF_FALSE: return opCode + " " + jumpOffset;
             default: return opCode.name();

@@ -6,12 +6,24 @@ package crypticlib.script;
  */
 public abstract class ScriptValue {
 
+    // ---- 小整数缓存 ----
+    private static final Num[] SMALL_INTS = new Num[256];
+    static {
+        for (int i = 0; i < 256; i++) {
+            SMALL_INTS[i] = new Num(i - 128);
+        }
+    }
+
     // ---- 工厂方法 ----
     public static ScriptValue of(String value) {
         return new Str(value);
     }
 
     public static ScriptValue of(double value) {
+        int ivalue = (int) value;
+        if (ivalue == value && ivalue >= -128 && ivalue < 128) {
+            return SMALL_INTS[ivalue + 128];
+        }
         return new Num(value);
     }
 
@@ -49,7 +61,7 @@ public abstract class ScriptValue {
         if (this instanceof Str) return ((Str) this).value();
         if (this instanceof Num) return String.valueOf(((Num) this).value());
         if (this instanceof Bool) return String.valueOf(((Bool) this).value());
-        return "null";
+        return "";  // nil 返回空字符串，避免插值时出现 "null"
     }
 
     public double asNumber() {
@@ -57,7 +69,7 @@ public abstract class ScriptValue {
         if (this instanceof Str) {
             try {
                 return Double.parseDouble(((Str) this).value());
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 return 0;
             }
         }

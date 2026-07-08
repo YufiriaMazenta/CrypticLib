@@ -1,5 +1,6 @@
 package crypticlib.script.compile;
 
+import crypticlib.script.InterpolationPart;
 import crypticlib.script.ScriptValue;
 import crypticlib.script.ast.ASTNode;
 
@@ -30,6 +31,10 @@ public class ScriptCompiler {
             emitLiteral((ASTNode.LiteralNode) node, instructions);
         } else if (node instanceof ASTNode.IdentifierNode) {
             emitIdentifier((ASTNode.IdentifierNode) node, instructions);
+        } else if (node instanceof ASTNode.VariableReferenceNode) {
+            emitVariableReference((ASTNode.VariableReferenceNode) node, instructions);
+        } else if (node instanceof ASTNode.StringInterpolationNode) {
+            emitStringInterpolation((ASTNode.StringInterpolationNode) node, instructions);
         } else if (node instanceof ASTNode.BinaryOpNode) {
             emitBinaryOp((ASTNode.BinaryOpNode) node, instructions);
         } else if (node instanceof ASTNode.UnaryOpNode) {
@@ -65,6 +70,35 @@ public class ScriptCompiler {
     private void emitIdentifier(ASTNode.IdentifierNode node, List<Instruction> instructions) {
         // 标识符作为无参函数调用
         instructions.add(Instruction.call(node.name(), 0, node.line()));
+    }
+
+    private void emitVariableReference(ASTNode.VariableReferenceNode node, List<Instruction> instructions) {
+        instructions.add(Instruction.loadVar(node.variableName(), node.line()));
+    }
+
+    private void emitStringInterpolation(ASTNode.StringInterpolationNode node, List<Instruction> instructions) {
+        List<InterpolationPart> parts = node.parts();
+        if (parts.isEmpty()) {
+            instructions.add(Instruction.push(ScriptValue.of(""), node.line()));
+            return;
+        }
+
+        // 编译第一个部分
+        emitInterpolationPart(parts.get(0), instructions);
+
+        // 编译后续部分并拼接（使用 ADD 操作码，当一侧为字符串时自动拼接）
+        for (int i = 1; i < parts.size(); i++) {
+            emitInterpolationPart(parts.get(i), instructions);
+            instructions.add(Instruction.of(OpCode.ADD, node.line()));
+        }
+    }
+
+    private void emitInterpolationPart(InterpolationPart part, List<Instruction> instructions) {
+        if (part instanceof InterpolationPart.Text) {
+            instructions.add(Instruction.push(ScriptValue.of(((InterpolationPart.Text) part).text()), 0));
+        } else if (part instanceof InterpolationPart.Variable) {
+            instructions.add(Instruction.loadVar(((InterpolationPart.Variable) part).variableName(), 0));
+        }
     }
 
     private void emitBinaryOp(ASTNode.BinaryOpNode node, List<Instruction> instructions) {

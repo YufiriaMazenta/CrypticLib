@@ -29,6 +29,9 @@ public enum OpCode {
     MOD,            // a % b  → Number（取余）
     NEG,            // -a     → Number（取负）
 
+    // 变量操作
+    LOAD_VAR,       // LOAD_VAR varName → 从上下文加载变量
+
     // 函数调用
     CALL,           // CALL funcName argCount → 调用函数
 

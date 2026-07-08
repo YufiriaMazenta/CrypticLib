@@ -1,5 +1,6 @@
 package crypticlib.script.ast;
 
+import crypticlib.script.InterpolationPart;
 import crypticlib.script.ScriptException;
 import crypticlib.script.lex.Token;
 
@@ -25,10 +26,10 @@ import java.util.List;
  *   additive      = multiplicative (("+" | "-") multiplicative)*
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
- *   call          = IDENTIFIER "(" args ")" | IDENTIFIER bare_args | atom
+ *   call          = VARIABLE | IDENTIFIER "(" args ")" | IDENTIFIER bare_args | atom
  *   bare_args     = atom+
  *   args          = (expression ("," expression)*)?
- *   atom          = STRING | NUMBER | BOOLEAN | "(" expression ")"
+ *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN | VARIABLE | "(" expression ")"
  */
 public class ScriptParser {
 
@@ -209,8 +210,24 @@ public class ScriptParser {
     }
 
     private ASTNode parseCall() {
+        // 变量引用 ${identifier}
+        if (check(Token.Type.VARIABLE)) {
+            Token var = advance();
+            return new ASTNode.VariableReferenceNode(var.value(), var.line());
+        }
+
         if (check(Token.Type.IDENTIFIER)) {
             Token name = advance();
+            String funcName = name.value();
+
+            // 检查是否是 module.function 格式
+            if (match(Token.Type.DOT)) {
+                if (!check(Token.Type.IDENTIFIER)) {
+                    throw new ScriptException("Expected function name after '.' at line " + previous().line());
+                }
+                Token funcToken = advance();
+                funcName = funcName + "." + funcToken.value();
+            }
 
             // 情况1: 有括号的函数调用 name(...)
             if (match(Token.Type.LPAREN)) {
@@ -222,7 +239,7 @@ public class ScriptParser {
                     }
                 }
                 expect(Token.Type.RPAREN, "Expected ')'");
-                return new ASTNode.FunctionCallNode(name.value(), args, name.line());
+                return new ASTNode.FunctionCallNode(funcName, args, name.line());
             }
 
             // 情况2/3: 判断后面是否跟着可作为参数的 token（STRING/NUMBER/BOOLEAN/IDENTIFIER）
@@ -232,11 +249,19 @@ public class ScriptParser {
             while (isBareArgToken()) {
                 if (check(Token.Type.IDENTIFIER)) {
                     args.add(parseCall());
+                } else if (check(Token.Type.MINUS)) {
+                    // 处理负数
+                    int line = advance().line(); // 消费 MINUS
+                    if (!check(Token.Type.NUMBER)) {
+                        throw new ScriptException("Expected number after '-' at line " + line);
+                    }
+                    Token num = advance();
+                    args.add(new ASTNode.LiteralNode(-Double.parseDouble(num.value()), num.line()));
                 } else {
                     args.add(parseAtom());
                 }
             }
-            return new ASTNode.FunctionCallNode(name.value(), args, name.line());
+            return new ASTNode.FunctionCallNode(funcName, args, name.line());
         }
 
         return parseAtom();
@@ -245,6 +270,10 @@ public class ScriptParser {
     private boolean isBareArgToken() {
         if (isAtEnd()) return false;
         Token.Type type = tokens.get(pos).type();
+        // 支持负数：MINUS 后面跟着 NUMBER
+        if (type == Token.Type.MINUS && pos + 1 < tokens.size() && tokens.get(pos + 1).type() == Token.Type.NUMBER) {
+            return true;
+        }
         return type == Token.Type.STRING || type == Token.Type.NUMBER || type == Token.Type.BOOLEAN;
     }
 
@@ -253,6 +282,14 @@ public class ScriptParser {
         Token.Type type = tok.type();
         if (type == Token.Type.STRING) {
             return new ASTNode.LiteralNode(tok.value(), tok.line());
+        } else if (type == Token.Type.INTERPOLATED_STRING) {
+            // 将插值字符串的 parts 转换为 AST 节点列表
+            List<InterpolationPart> rawParts = tok.getInterpolationParts();
+            List<InterpolationPart> astParts = new ArrayList<>();
+            for (InterpolationPart part : rawParts) {
+                astParts.add(part); // 直接复用，无需转换
+            }
+            return new ASTNode.StringInterpolationNode(astParts, tok.line());
         } else if (type == Token.Type.NUMBER) {
             return new ASTNode.LiteralNode(Double.parseDouble(tok.value()), tok.line());
         } else if (type == Token.Type.BOOLEAN) {

@@ -191,6 +191,12 @@ public class ScriptVM {
                     stack.push(ScriptValue.of(-operand.asNumber()));
                     break;
                 }
+                case LOAD_VAR: {
+                    String varName = inst.funcName();
+                    ScriptValue value = context.getVariable(varName);
+                    stack.push(value != null ? value : ScriptValue.nil());
+                    break;
+                }
                 case CALL:
                     executeCall(inst);
                     break;

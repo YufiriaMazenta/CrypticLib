@@ -1,5 +1,7 @@
 package crypticlib.script.ast;
 
+import crypticlib.script.InterpolationPart;
+
 import java.util.List;
 
 /**
@@ -153,6 +155,44 @@ public abstract class ASTNode {
         }
 
         public ASTNode value() { return value; }
+    }
+
+    /**
+     * 变量引用节点 ${variable}
+     */
+    public static final class VariableReferenceNode extends ASTNode {
+        private final String variableName;
+
+        public VariableReferenceNode(String variableName, int line) {
+            super(line);
+            this.variableName = variableName;
+        }
+
+        public String variableName() { return variableName; }
+
+        @Override
+        public String toString() {
+            return "VarRef(${" + variableName + "})";
+        }
+    }
+
+    /**
+     * 插值字符串节点 "Hello ${name}!"
+     */
+    public static final class StringInterpolationNode extends ASTNode {
+        private final List<InterpolationPart> parts;
+
+        public StringInterpolationNode(List<InterpolationPart> parts, int line) {
+            super(line);
+            this.parts = parts;
+        }
+
+        public List<InterpolationPart> parts() { return parts; }
+
+        @Override
+        public String toString() {
+            return "Interpolation(" + parts + ")";
+        }
     }
 
     /**

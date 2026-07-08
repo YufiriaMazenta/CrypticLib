@@ -9,6 +9,7 @@ import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
 import crypticlib.script.compile.ScriptCompiler;
 import crypticlib.script.func.BuiltinScriptModule;
+import crypticlib.script.func.MathScriptModule;
 import crypticlib.script.func.ScriptFunctionRegistry;
 import crypticlib.script.func.ScriptModule;
 import crypticlib.script.lex.ScriptLexer;
@@ -62,6 +63,7 @@ public enum ScriptEngine implements LifeCycleTask {
             return;
         }
         registerModule(BuiltinScriptModule.INSTANCE);
+        registerModule(MathScriptModule.INSTANCE);
         initialized = true;
     }
 
@@ -122,13 +124,13 @@ public enum ScriptEngine implements LifeCycleTask {
     }
 
     /**
-     * 编译并执行脚本（不缓存）
+     * 编译并执行脚本（自动缓存）
      * @param source 脚本源码
      * @param context 执行上下文
      * @return 执行结果
      */
     public ScriptValue execute(String source, ScriptContext context) {
-        CompiledScript script = compile("_inline_" + source.hashCode(), source);
+        CompiledScript script = getOrCompile("_inline_" + source, source);
         return script.execute(context);
     }
 
