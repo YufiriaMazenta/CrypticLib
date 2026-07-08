@@ -3,8 +3,6 @@ package crypticlib;
 import crypticlib.util.StringHelper;
 import org.bukkit.Bukkit;
 
-import java.text.NumberFormat;
-
 public enum MinecraftVersion {
 
     CURRENT(getCurrentVersion()),
@@ -120,6 +118,16 @@ public enum MinecraftVersion {
      */
     public boolean equals(MinecraftVersion version) {
         return this.version == version.version;
+    }
+
+    /**
+     * 获取版本的字符串格式
+     */
+    public String versionStr() {
+        int x = version / 10000;
+        int y =  (version % 10000) / 100;
+        int z = version % 100;
+        return x + "." + y + "." + z;
     }
 
     public static MinecraftVersion current() {
