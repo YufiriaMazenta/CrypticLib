@@ -7,7 +7,6 @@ import crypticlib.util.IOHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +44,7 @@ public class ResourceLoader {
                 boolean success = false;
                 for (String url : downloadUrl) {
                     try {
-                        IOHelper.downloadFile(new URL(url), out);
+                        IOHelper.downloadFile(url, out);
                         success = true;
                         break;
                     } catch (IOException e) {

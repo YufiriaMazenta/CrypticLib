@@ -1,14 +1,13 @@
 package crypticlib.libloader;
 
 import crypticlib.CrypticLib;
+import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.reflect.Method;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.jar.JarEntry;
@@ -70,7 +69,7 @@ public class BootLoader {
             File relocatedCommons = relocateJarBytes(asmDir, asmCommonsJar, ASM_ARTIFACT_COMMONS);
 
             AsmClassLoader.init(
-                new URL[]{relocatedCore.toURI().toURL(), relocatedCommons.toURI().toURL()},
+                new java.net.URL[]{relocatedCore.toURI().toURL(), relocatedCommons.toURI().toURL()},
                 BootLoader.class.getClassLoader()
             );
 
@@ -86,7 +85,7 @@ public class BootLoader {
             if (is == null) {
                 throw new RuntimeException("Cannot find JarRelocator class resource");
             }
-            byte[] classBytes = readAllBytes(is);
+            byte[] classBytes = IOHelper.readBytes(is);
             byte[] relocatedBytes = relocateClassBytes(classBytes);
             relocatedJarRelocatorClass = asmLoader.defineClassPublic(JarRelocator.class.getName(), relocatedBytes);
         }
@@ -96,7 +95,7 @@ public class BootLoader {
             if (is == null) {
                 throw new RuntimeException("Cannot find JarRelocator$RelocateRemapper class resource");
             }
-            byte[] classBytes = readAllBytes(is);
+            byte[] classBytes = IOHelper.readBytes(is);
             byte[] relocatedBytes = relocateClassBytes(classBytes);
             asmLoader.defineClassPublic(JarRelocator.class.getName() + "$RelocateRemapper", relocatedBytes);
         }
@@ -112,9 +111,7 @@ public class BootLoader {
         String groupIdPath = ASM_GROUP.replace('.', '/');
         String url = MAVEN_CENTRAL + groupIdPath + "/" + artifactId + "/" + ASM_VERSION + "/" + artifactId + "-" + ASM_VERSION + ".jar";
 
-        try (InputStream is = new URL(url).openStream()) {
-            Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
+        IOHelper.downloadFile(url, target);
         return target;
     }
 
@@ -134,13 +131,13 @@ public class BootLoader {
 
                 if (name.endsWith(".class")) {
                     try (InputStream is = jarFile.getInputStream(entry)) {
-                        byte[] classBytes = readAllBytes(is);
+                        byte[] classBytes = IOHelper.readBytes(is);
                         byte[] relocatedBytes = relocateClassBytes(classBytes);
                         jos.write(relocatedBytes);
                     }
                 } else {
                     try (InputStream is = jarFile.getInputStream(entry)) {
-                        byte[] bytes = readAllBytes(is);
+                        byte[] bytes = IOHelper.readBytes(is);
                         jos.write(bytes);
                     }
                 }
@@ -219,16 +216,6 @@ public class BootLoader {
             return newSlash + name.substring(oldSlash.length());
         }
         return name.replace(oldDot, newDot);
-    }
-
-    private static byte[] readAllBytes(@NotNull InputStream is) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        while ((bytesRead = is.read(buffer)) != -1) {
-            bos.write(buffer, 0, bytesRead);
-        }
-        return bos.toByteArray();
     }
 
 }

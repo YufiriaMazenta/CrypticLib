@@ -6,12 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
@@ -79,7 +76,7 @@ public class LibLoader {
         }
     }
 
-    private static void downloadTransitiveDependencies(@NotNull Library parent, @NotNull Set<String> resolved) throws IOException {
+    private static void downloadTransitiveDependencies(@NotNull Library parent, @NotNull Set<String> resolved) throws IOException, java.net.URISyntaxException {
         List<PomDependency> dependencies = PomParser.parseDependencies(
             parent.repository(),
             parent.groupId(),
@@ -185,9 +182,7 @@ public class LibLoader {
         String groupIdPath = groupId.replace('.', '/');
         String url = repositoryUrl + groupIdPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".jar";
 
-        try (InputStream is = new URL(url).openStream()) {
-            Files.copy(is, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
+        IOHelper.downloadFile(url, target);
     }
 
 }

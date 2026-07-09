@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -152,15 +153,30 @@ public class IOHelper {
      * @param url 地址
      * @param out 目标文件
      */
-    @SuppressWarnings("StatementWithEmptyBody")
     public static void downloadFile(URL url, File out) throws IOException {
         out.getParentFile().mkdirs();
-        InputStream ins = url.openStream();
-        OutputStream outs = Files.newOutputStream(out.toPath());
-        byte[] buffer = new byte[BUFFER_SIZE];
-        for (int len; (len = ins.read(buffer)) > 0; outs.write(buffer, 0, len)) ;
-        outs.close();
-        ins.close();
+        try (InputStream ins = url.openStream();
+             OutputStream outs = Files.newOutputStream(out.toPath())) {
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int len;
+            while ((len = ins.read(buffer)) > 0) {
+                outs.write(buffer, 0, len);
+            }
+        }
+    }
+
+    /**
+     * 从URL字符串下载文件
+     *
+     * @param urlStr URL地址字符串
+     * @param out 目标文件
+     */
+    public static void downloadFile(String urlStr, File out) throws IOException {
+        try {
+            downloadFile(new URI(urlStr).toURL(), out);
+        } catch (Exception e) {
+            throw new IOException("Invalid URL: " + urlStr, e);
+        }
     }
 
     /**

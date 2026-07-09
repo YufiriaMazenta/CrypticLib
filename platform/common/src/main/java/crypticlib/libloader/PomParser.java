@@ -1,11 +1,13 @@
 package crypticlib.libloader;
 
+import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -16,7 +18,7 @@ public class PomParser {
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
 
     @NotNull
-    public static List<PomDependency> parseDependencies(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) throws IOException {
+    public static List<PomDependency> parseDependencies(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) throws IOException, URISyntaxException {
         String repositoryUrl = repository;
         if (!repositoryUrl.endsWith("/")) {
             repositoryUrl += "/";
@@ -25,8 +27,8 @@ public class PomParser {
         String groupIdPath = groupId.replace('.', '/');
         String pomUrl = repositoryUrl + groupIdPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".pom";
 
-        try (InputStream is = new URL(pomUrl).openStream()) {
-            String pomContent = new String(readAllBytes(is), StandardCharsets.UTF_8);
+        try (InputStream is = new URI(pomUrl).toURL().openStream()) {
+            String pomContent = new String(IOHelper.readBytes(is), StandardCharsets.UTF_8);
             Map<String, String> properties = parseProperties(pomContent);
             properties.put("project.version", version);
             properties.put("project.groupId", groupId);
@@ -156,9 +158,9 @@ public class PomParser {
         String parentGroupIdPath = parentGroupId.replace('.', '/');
         String parentPomUrl = repositoryUrl + parentGroupIdPath + "/" + parentArtifactId + "/" + parentVersion + "/" + parentArtifactId + "-" + parentVersion + ".pom";
 
-        try (InputStream is = new URL(parentPomUrl).openStream()) {
-            return new String(readAllBytes(is), StandardCharsets.UTF_8);
-        } catch (IOException e) {
+        try (InputStream is = new URI(parentPomUrl).toURL().openStream()) {
+            return new String(IOHelper.readBytes(is), StandardCharsets.UTF_8);
+        } catch (IOException | URISyntaxException e) {
             return null;
         }
     }
@@ -214,16 +216,6 @@ public class PomParser {
         if (end == -1) return null;
 
         return xml.substring(start, end).trim();
-    }
-
-    private static byte[] readAllBytes(@NotNull InputStream is) throws IOException {
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-        while ((bytesRead = is.read(buffer)) != -1) {
-            bos.write(buffer, 0, bytesRead);
-        }
-        return bos.toByteArray();
     }
 
 }

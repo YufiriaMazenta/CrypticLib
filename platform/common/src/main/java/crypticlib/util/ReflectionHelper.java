@@ -48,25 +48,12 @@ public class ReflectionHelper {
     }
 
     private static Field getFieldCache(Class<?> clazz, String fieldName) {
-        String className = clazz.getName();
-        if (fieldCaches.containsKey(className)) {
-            Map<String, Field> classFieldCache = fieldCaches.get(className);
-            if (classFieldCache.containsKey(fieldName)) {
-                return classFieldCache.get(fieldName);
-            }
-        }
-        return null;
+        Map<String, Field> classFieldCache = fieldCaches.get(clazz.getName());
+        return classFieldCache != null ? classFieldCache.get(fieldName) : null;
     }
 
     private static void putFieldCache(Class<?> clazz, String fieldName, Field field) {
-        String className = clazz.getName();
-        if (fieldCaches.containsKey(className)) {
-            fieldCaches.get(className).put(fieldName, field);
-            return;
-        }
-        Map<String, Field> classFieldCache = new ConcurrentHashMap<>();
-        classFieldCache.put(fieldName, field);
-        fieldCaches.put(className, classFieldCache);
+        fieldCaches.computeIfAbsent(clazz.getName(), k -> new ConcurrentHashMap<>()).put(fieldName, field);
     }
 
     @SuppressWarnings("unchecked")
