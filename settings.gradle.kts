@@ -9,7 +9,6 @@ include(
 )
 include(
     "module:common:database",
-    "module:common:resource",
     "module:common:compat",
     "module:common:script"
 )
