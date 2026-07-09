@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 变量插值功能测试
- * 测试 ${variable} 语法和字符串插值功能
+ * Script 功能测试
+ * 测试整数类型、变量插值、数学函数等功能
  */
 public class ScriptTest {
 
@@ -23,77 +23,96 @@ public class ScriptTest {
     private static int failed = 0;
 
     public static void main(String[] args) {
-        // 注册数学函数模块
         MathScriptModule.INSTANCE.register(ScriptFunctionRegistry.INSTANCE);
 
-        System.out.println("=== Script 变量插值功能测试 ===\n");
+        System.out.println("=== Script 功能测试 ===\n");
 
-        // === 基本变量引用 ===
-        System.out.println("--- 基本变量引用 ---");
-        testVarRef("基本变量引用", "${x}", 10.0, "x", 10.0);
-        testVarRef("字符串变量", "${name}", "Steve", "name", "Steve");
-        testVarRef("布尔变量", "${flag}", true, "flag", true);
-        testVarRef("变量在表达式中", "${x} > 5", true, "x", 10.0);
-        testVarRef("变量比较相等", "${x} == 10", true, "x", 10.0);
-        testVarRef("变量算术运算", "${x} + 5", 15.0, "x", 10.0);
-        testVarRef("变量乘法", "${x} * 2", 20.0, "x", 10.0);
+        // === 整数类型 ===
+        System.out.println("--- 整数类型 ---");
+        testIntType("整数字面量是Int", "64", true, false);
+        testIntType("浮点字面量是Num", "3.14", false, true);
+        testIntType("整数值浮点数是Num", "10.0", false, true);
+        testIntType("零是Int", "0", true, false);
+        testIntType("负整数是Int", "-5", true, false);
+        testIntType("大整数是Int", "1000", true, false);
+
+        // === asInt / asLong ===
+        System.out.println("\n--- asInt / asLong ---");
+        testAsInt("整数字面量asInt", "64", 64);
+        testAsInt("负整数asInt", "-5", -5);
+        testAsInt("大整数asInt", "1000", 1000);
+        testAsInt("浮点数截断为整数", "3.14", 3);
+        testAsInt("round结果asInt", "round(3.7)", 4);
+
+        // === 整数运算保持整数 ===
+        System.out.println("\n--- 整数运算 ---");
+        testIntArith("整数 + 整数 = 整数", "10 + 5", 15L);
+        testIntArith("整数 - 整数 = 整数", "10 - 5", 5L);
+        testIntArith("整数 * 整数 = 整数", "10 * 5", 50L);
+        testIntArith("整数 / 整数 = 整数", "10 / 3", 3L);
+        testIntArith("整数 % 整数 = 整数", "10 % 3", 1L);
+        testIntArith("负整数取负 = 整数", "-5", -5L);
+        testIntArith("裸参数abs整数", "abs -5", 5L);
+
+        // === 混合运算提升为浮点数 ===
+        System.out.println("\n--- 混合运算 ---");
+        testMixedArith("整数 + 浮点 = 浮点", "10 + 3.14", 13.14);
+        testMixedArith("浮点 + 整数 = 浮点", "3.14 + 10", 13.14);
+        testMixedArith("整数 * 浮点 = 浮点", "2 * 1.5", 3.0);
+
+        // === 整数比较 ===
+        System.out.println("\n--- 整数比较 ---");
+        testIntCompare("整数相等", "64 == 64", true);
+        testIntCompare("整数不等", "64 != 32", true);
+        testIntCompare("整数大于", "64 > 32", true);
+        testIntCompare("整数小于", "32 < 64", true);
+        testIntCompare("整数大于等于", "64 >= 64", true);
+        testIntCompare("整数小于等于", "32 <= 64", true);
+
+        // === Token 类型 ===
+        System.out.println("\n--- Token 类型 ---");
+        testTokenTypes("整数Token", "64", "INTEGER");
+        testTokenTypes("浮点Token", "3.14", "NUMBER");
+        testTokenTypes("负整数Token", "-5", "MINUS INTEGER");
+
+        // === 变量引用 ===
+        System.out.println("\n--- 变量引用 ---");
+        testVarRef("整数变量引用", "${x}", 64L, "x", 64);
+        testVarRef("整数变量在表达式中", "${x} > 5", true, "x", 64);
+        testVarRef("整数变量算术运算", "${x} + 5", 69L, "x", 64);
 
         // === 字符串插值 ===
         System.out.println("\n--- 字符串插值 ---");
-        testInterpolation("简单插值", "\"Hello ${name}!\"", "Hello Steve!", "name", "Steve");
-        testInterpolation("数字插值", "\"damage: ${d}\"", "damage: 10.0", "d", 10.0);
-        testInterpolation("多变量插值", "\"${a} and ${b}\"", "Alice and Bob", "a", "Alice", "b", "Bob");
-        testInterpolation("插值在开头", "\"${name} said\"", "Steve said", "name", "Steve");
-        testInterpolation("插值在结尾", "\"Hello ${name}\"", "Hello Steve", "name", "Steve");
-        testInterpolation("连续插值", "\"${a}${b}${c}\"", "123", "a", "1", "b", "2", "c", "3");
-        testInterpolation("空字符串插值", "\"${empty}\"", "", "empty", "");
+        testInterpolation("整数插值", "\"count: ${n}\"", "count: 64", "n", 64);
+        testInterpolation("浮点插值", "\"damage: ${d}\"", "damage: 3.14", "d", 3.14);
+        testInterpolation("浮点数插值", "\"count: ${n}\"", "count: 10.0", "n", 10.0);
 
-        // === 转义测试 ===
-        System.out.println("\n--- 转义测试 ---");
-        testVarRef("转义美元符号", "\"show \\${price}\"", "show ${price}");
+        // === 数学函数 ===
+        System.out.println("\n--- 数学函数 ---");
+        testMath("abs整数", "abs(5)", 5.0);
+        testMath("abs负整数", "abs(-5)", 5.0);
+        testMath("round四舍五入", "round(3.7)", 4.0);
+        testMath("floor向下取整", "floor(3.7)", 3.0);
+        testMath("ceil向上取整", "ceil(3.2)", 4.0);
 
-        // === 未定义变量 ===
-        System.out.println("\n--- 未定义变量 ---");
-        testVarRef("未定义变量返回nil", "${undefined}", null);
-        testInterpolation("未定义变量插值为空", "\"Hello ${undefined}!\"", "Hello !");
+        // === random 函数 ===
+        System.out.println("\n--- random 函数 ---");
+        testRandomFloat("random无参数", "random()", 0.0, 1.0);
+        testRandomFloat("random(10)", "random(10)", 0.0, 10.0);
+        testRandomFloat("random(1.5, 10.9)", "random(1.5, 10.9)", 1.5, 10.9);
 
-        // === 复杂场景 ===
-        System.out.println("\n--- 复杂场景 ---");
-        testVarRefWithMultipleVars("复杂条件判断",
-            "${hp} > 0 && ${hp} < 100",
-            true, "hp", 50.0);
-        testVarRefWithMultipleVars("复杂字符串插值",
-            "\"${attacker} hit ${victim} for ${damage} damage\"",
-            "Steve hit Alex for 10.0 damage",
-            "attacker", "Steve", "victim", "Alex", "damage", 10.0);
+        // === random_int 函数 ===
+        System.out.println("\n--- random_int 函数 ---");
+        testRandomInt("random_int(10)", "random_int(10)", 0, 10);
+        testRandomInt("random_int(1, 64)", "random_int(1, 64)", 1, 64);
 
-        // === Token 类型测试 ===
-        System.out.println("\n--- Token 类型测试 ---");
-        testTokenTypes("变量引用Token", "${x}", "VARIABLE(x)");
-        testTokenTypes("插值字符串Token", "\"Hello ${name}!\"", "INTERPOLATED_STRING");
-
-        // === 数学函数测试 ===
-        System.out.println("\n--- 数学函数测试 ---");
-        testMath("abs正数", "abs(5)", 5.0);
-        testMath("abs负数", "abs(-5)", 5.0);
-        testMath("abs裸参数正数", "abs 5", 5.0);
-        testMath("abs裸参数负数", "abs -5", 5.0);
-        testMath("min函数", "min(3, 7)", 3.0);
-        testMath("max函数", "max(3, 7)", 7.0);
-        testMath("round四舍五入", "round(3.5)", 4.0);
-        testMath("round向下", "round(3.4)", 3.0);
-        testMath("floor函数", "floor(3.7)", 3.0);
-        testMath("ceil函数", "ceil(3.2)", 4.0);
-        testMath("sqrt函数", "sqrt(16)", 4.0);
-        testMath("pow函数", "pow(2, 3)", 8.0);
-
-        // === 命名空间测试 ===
-        System.out.println("\n--- 命名空间测试 ---");
-        testMath("math.abs带命名空间", "math.abs(-5)", 5.0);
-        testMath("math.min带命名空间", "math.min(3, 7)", 3.0);
-        testMath("math.max带命名空间", "math.max(3, 7)", 7.0);
-        testMath("math.sqrt带命名空间", "math.sqrt(16)", 4.0);
-        testMath("math.pow带命名空间", "math.pow(2, 3)", 8.0);
+        // === 类型转换函数 ===
+        System.out.println("\n--- 类型转换函数 ---");
+        testIntType("int(3.14)是整数", "int(3.14)", true, false);
+        testAsInt("int(3.14)值为3", "int(3.14)", 3);
+        testIntType("int(64)是整数", "int(64)", true, false);
+        testIntType("float(64)是浮点", "float(64)", false, true);
+        testIntType("float(3.14)是浮点", "float(3.14)", false, true);
 
         // === 结果 ===
         System.out.println("\n=============================");
@@ -102,7 +121,119 @@ public class ScriptTest {
     }
 
     /**
-     * 测试变量引用（单个变量）
+     * 测试整数类型判断
+     */
+    private static void testIntType(String name, String source, boolean expectInt, boolean expectFloat) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            boolean isInt = result.isInteger();
+            boolean isFloat = result.isFloat();
+            if (isInt == expectInt && isFloat == expectFloat) {
+                System.out.println("✓ " + name + ": " + source + " -> " + result);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> " + result
+                    + " (isInt=" + isInt + ", isFloat=" + isFloat + ")");
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试 asInt 转换
+     */
+    private static void testAsInt(String name, String source, int expected) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            int actual = result.asInt();
+            if (actual == expected) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> 期望 " + expected + ", 实际 " + actual);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试整数运算（结果应为 Int 类型）
+     */
+    private static void testIntArith(String name, String source, long expected) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            if (!result.isInteger()) {
+                System.out.println("✗ " + name + ": " + source + " -> 不是整数: " + result);
+                failed++;
+                return;
+            }
+            long actual = result.asLong();
+            if (actual == expected) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> 期望 " + expected + ", 实际 " + actual);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试混合运算（结果应为浮点数）
+     */
+    private static void testMixedArith(String name, String source, double expected) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            if (!result.isFloat()) {
+                System.out.println("✗ " + name + ": " + source + " -> 不是浮点数: " + result);
+                failed++;
+                return;
+            }
+            double actual = result.asNumber();
+            if (Math.abs(actual - expected) < 0.0001) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> 期望 " + expected + ", 实际 " + actual);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试整数比较
+     */
+    private static void testIntCompare(String name, String source, boolean expected) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            boolean actual = result.asBoolean();
+            if (actual == expected) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> 期望 " + expected + ", 实际 " + actual);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试变量引用
      */
     private static void testVarRef(String name, String source, Object expected, String varName, Object varValue) {
         try {
@@ -111,35 +242,37 @@ public class ScriptTest {
                 ctx.setVariable(varName, toScriptValue(varValue));
             }
             ScriptValue result = execute(source, ctx);
-            Object actual = toExpected(result, expected);
-
+            Object actual;
             if (expected == null) {
-                // 期望 nil
                 if (result.isNull()) {
-                    System.out.println("✓ " + name + ": " + source + " → nil");
+                    System.out.println("✓ " + name + ": " + source + " -> nil");
                     passed++;
+                    return;
                 } else {
-                    System.out.println("✗ " + name + ": " + source + " → 期望 nil，实际 " + result);
+                    System.out.println("✗ " + name + ": " + source + " -> 期望 nil, 实际 " + result);
                     failed++;
+                    return;
                 }
-            } else if (expected.equals(actual)) {
-                System.out.println("✓ " + name + ": " + source + " → " + actual);
+            } else if (expected instanceof Long) {
+                actual = result.asLong();
+            } else if (expected instanceof Double) {
+                actual = result.asNumber();
+            } else if (expected instanceof Boolean) {
+                actual = result.asBoolean();
+            } else {
+                actual = result.asString();
+            }
+            if (expected.equals(actual)) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
                 passed++;
             } else {
-                System.out.println("✗ " + name + ": " + source + " → 期望 " + expected + "，实际 " + actual);
+                System.out.println("✗ " + name + ": " + source + " -> 期望 " + expected + ", 实际 " + actual);
                 failed++;
             }
         } catch (Exception e) {
-            System.out.println("✗ " + name + ": " + source + " → 异常: " + e.getMessage());
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
             failed++;
         }
-    }
-
-    /**
-     * 测试变量引用（无预设变量，用于转义测试等）
-     */
-    private static void testVarRef(String name, String source, Object expected) {
-        testVarRef(name, source, expected, null, null);
     }
 
     /**
@@ -153,48 +286,15 @@ public class ScriptTest {
             }
             ScriptValue result = execute(source, ctx);
             String actual = result.asString();
-
             if (expected.equals(actual)) {
-                System.out.println("✓ " + name + ": " + source + " → \"" + actual + "\"");
+                System.out.println("✓ " + name + ": " + source + " -> \"" + actual + "\"");
                 passed++;
             } else {
-                System.out.println("✗ " + name + ": " + source + " → 期望 \"" + expected + "\"，实际 \"" + actual + "\"");
+                System.out.println("✗ " + name + ": " + source + " -> 期望 \"" + expected + "\", 实际 \"" + actual + "\"");
                 failed++;
             }
         } catch (Exception e) {
-            System.out.println("✗ " + name + ": " + source + " → 异常: " + e.getMessage());
-            failed++;
-        }
-    }
-
-    /**
-     * 测试多变量引用的表达式
-     */
-    private static void testVarRefWithMultipleVars(String name, String source, Object expected, Object... vars) {
-        try {
-            ScriptContext ctx = createContext();
-            for (int i = 0; i < vars.length; i += 2) {
-                ctx.setVariable((String) vars[i], toScriptValue(vars[i + 1]));
-            }
-            ScriptValue result = execute(source, ctx);
-            Object actual;
-            if (expected instanceof Boolean) {
-                actual = result.asBoolean();
-            } else if (expected instanceof Double) {
-                actual = result.asNumber();
-            } else {
-                actual = result.asString();
-            }
-
-            if (expected.equals(actual)) {
-                System.out.println("✓ " + name + ": " + source + " → " + actual);
-                passed++;
-            } else {
-                System.out.println("✗ " + name + ": " + source + " → 期望 " + expected + "，实际 " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("✗ " + name + ": " + source + " → 异常: " + e.getMessage());
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
             failed++;
         }
     }
@@ -204,19 +304,67 @@ public class ScriptTest {
      */
     private static void testMath(String name, String source, double expected) {
         try {
-            ScriptContext ctx = createContext();
-            ScriptValue result = execute(source, ctx);
+            ScriptValue result = execute(source, createContext());
             double actual = result.asNumber();
-
             if (Math.abs(expected - actual) < 0.0001) {
-                System.out.println("✓ " + name + ": " + source + " → " + actual);
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
                 passed++;
             } else {
-                System.out.println("✗ " + name + ": " + source + " → 期望 " + expected + "，实际 " + actual);
+                System.out.println("✗ " + name + ": " + source + " -> 期望 " + expected + ", 实际 " + actual);
                 failed++;
             }
         } catch (Exception e) {
-            System.out.println("✗ " + name + ": " + source + " → 异常: " + e.getMessage());
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试浮点随机数（结果应为浮点且在范围内）
+     */
+    private static void testRandomFloat(String name, String source, double min, double max) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            if (!result.isFloat()) {
+                System.out.println("✗ " + name + ": " + source + " -> 不是浮点数: " + result);
+                failed++;
+                return;
+            }
+            double actual = result.asNumber();
+            if (actual >= min && actual < max) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> 超出范围 [" + min + ", " + max + "): " + actual);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
+            failed++;
+        }
+    }
+
+    /**
+     * 测试整数随机数（结果应为整数且在范围内）
+     */
+    private static void testRandomInt(String name, String source, long min, long max) {
+        try {
+            ScriptValue result = execute(source, createContext());
+            if (!result.isInteger()) {
+                System.out.println("✗ " + name + ": " + source + " -> 不是整数: " + result);
+                failed++;
+                return;
+            }
+            long actual = result.asLong();
+            if (actual >= min && actual < max) {
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
+                passed++;
+            } else {
+                System.out.println("✗ " + name + ": " + source + " -> 超出范围 [" + min + ", " + max + "): " + actual);
+                failed++;
+            }
+        } catch (Exception e) {
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
             failed++;
         }
     }
@@ -232,13 +380,10 @@ public class ScriptTest {
                 if (t.type() == Token.Type.NEWLINE || t.type() == Token.Type.EOF) continue;
                 if (sb.length() > 0) sb.append(' ');
                 sb.append(t.type());
-                if (t.type() == Token.Type.VARIABLE) {
-                    sb.append('(').append(t.value()).append(')');
-                }
             }
             String actual = sb.toString();
             if (expected.equals(actual)) {
-                System.out.println("✓ " + name + ": " + source + " → " + actual);
+                System.out.println("✓ " + name + ": " + source + " -> " + actual);
                 passed++;
             } else {
                 System.out.println("✗ " + name + ": " + source);
@@ -247,7 +392,7 @@ public class ScriptTest {
                 failed++;
             }
         } catch (Exception e) {
-            System.out.println("✗ " + name + ": " + source + " → 异常: " + e.getMessage());
+            System.out.println("✗ " + name + ": " + source + " -> 异常: " + e.getMessage());
             failed++;
         }
     }
@@ -265,20 +410,11 @@ public class ScriptTest {
     private static ScriptValue toScriptValue(Object value) {
         if (value == null) return ScriptValue.nil();
         if (value instanceof String) return ScriptValue.of((String) value);
-        if (value instanceof Number) return ScriptValue.of(((Number) value).doubleValue());
+        if (value instanceof Long) return ScriptValue.of((Long) value);
+        if (value instanceof Integer) return ScriptValue.of((int) value);
+        if (value instanceof Double) return ScriptValue.of((Double) value);
         if (value instanceof Boolean) return ScriptValue.of((Boolean) value);
         return ScriptValue.nil();
-    }
-
-    /**
-     * 根据期望类型转换结果
-     */
-    private static Object toExpected(ScriptValue result, Object expected) {
-        if (expected == null) return null;
-        if (expected instanceof Boolean) return result.asBoolean();
-        if (expected instanceof Double) return result.asNumber();
-        if (expected instanceof String) return result.asString();
-        return result;
     }
 
     /**

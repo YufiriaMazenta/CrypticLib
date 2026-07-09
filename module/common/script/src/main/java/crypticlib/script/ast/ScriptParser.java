@@ -252,11 +252,15 @@ public class ScriptParser {
                 } else if (check(Token.Type.MINUS)) {
                     // 处理负数
                     int line = advance().line(); // 消费 MINUS
-                    if (!check(Token.Type.NUMBER)) {
+                    if (!check(Token.Type.NUMBER) && !check(Token.Type.INTEGER)) {
                         throw new ScriptException("Expected number after '-' at line " + line);
                     }
                     Token num = advance();
-                    args.add(new ASTNode.LiteralNode(-Double.parseDouble(num.value()), num.line()));
+                    if (num.type() == Token.Type.INTEGER) {
+                        args.add(new ASTNode.LiteralNode(-Long.parseLong(num.value()), num.line()));
+                    } else {
+                        args.add(new ASTNode.LiteralNode(-Double.parseDouble(num.value()), num.line()));
+                    }
                 } else {
                     args.add(parseAtom());
                 }
@@ -270,11 +274,12 @@ public class ScriptParser {
     private boolean isBareArgToken() {
         if (isAtEnd()) return false;
         Token.Type type = tokens.get(pos).type();
-        // 支持负数：MINUS 后面跟着 NUMBER
-        if (type == Token.Type.MINUS && pos + 1 < tokens.size() && tokens.get(pos + 1).type() == Token.Type.NUMBER) {
+        // 支持负数：MINUS 后面跟着 NUMBER 或 INTEGER
+        if (type == Token.Type.MINUS && pos + 1 < tokens.size() && 
+            (tokens.get(pos + 1).type() == Token.Type.NUMBER || tokens.get(pos + 1).type() == Token.Type.INTEGER)) {
             return true;
         }
-        return type == Token.Type.STRING || type == Token.Type.NUMBER || type == Token.Type.BOOLEAN;
+        return type == Token.Type.STRING || type == Token.Type.NUMBER || type == Token.Type.INTEGER || type == Token.Type.BOOLEAN;
     }
 
     private ASTNode parseAtom() {
@@ -285,13 +290,13 @@ public class ScriptParser {
         } else if (type == Token.Type.INTERPOLATED_STRING) {
             // 将插值字符串的 parts 转换为 AST 节点列表
             List<InterpolationPart> rawParts = tok.getInterpolationParts();
-            List<InterpolationPart> astParts = new ArrayList<>();
-            for (InterpolationPart part : rawParts) {
-                astParts.add(part); // 直接复用，无需转换
-            }
+            // 直接复用，无需转换
+            List<InterpolationPart> astParts = new ArrayList<>(rawParts);
             return new ASTNode.StringInterpolationNode(astParts, tok.line());
         } else if (type == Token.Type.NUMBER) {
             return new ASTNode.LiteralNode(Double.parseDouble(tok.value()), tok.line());
+        } else if (type == Token.Type.INTEGER) {
+            return new ASTNode.LiteralNode(Long.parseLong(tok.value()), tok.line());
         } else if (type == Token.Type.BOOLEAN) {
             return new ASTNode.LiteralNode(Boolean.parseBoolean(tok.value()), tok.line());
         } else if (type == Token.Type.IDENTIFIER) {

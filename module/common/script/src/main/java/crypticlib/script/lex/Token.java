@@ -16,6 +16,7 @@ public class Token {
         // 字面量
         STRING,     // "hello world"
         NUMBER,     // 123, 3.14
+        INTEGER,    // 123, 456 (无小数点的整数)
         BOOLEAN,    // true, false
 
         // 标识符（函数名、变量名）

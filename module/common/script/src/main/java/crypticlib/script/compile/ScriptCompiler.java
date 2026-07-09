@@ -55,6 +55,10 @@ public class ScriptCompiler {
         ScriptValue value;
         if (val instanceof String) {
             value = ScriptValue.of((String) val);
+        } else if (val instanceof Long) {
+            value = ScriptValue.of((Long) val);
+        } else if (val instanceof Integer) {
+            value = ScriptValue.of((Integer) val);
         } else if (val instanceof Double) {
             value = ScriptValue.of((Double) val);
         } else if (val instanceof Boolean) {

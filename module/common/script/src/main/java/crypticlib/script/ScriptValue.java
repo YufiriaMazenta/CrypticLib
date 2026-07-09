@@ -7,10 +7,10 @@ package crypticlib.script;
 public abstract class ScriptValue {
 
     // ---- 小整数缓存 ----
-    private static final Num[] SMALL_INTS = new Num[256];
+    private static final Int[] SMALL_INTS = new Int[256];
     static {
         for (int i = 0; i < 256; i++) {
-            SMALL_INTS[i] = new Num(i - 128);
+            SMALL_INTS[i] = new Int(i - 128);
         }
     }
 
@@ -20,11 +20,21 @@ public abstract class ScriptValue {
     }
 
     public static ScriptValue of(double value) {
-        int ivalue = (int) value;
-        if (ivalue == value && ivalue >= -128 && ivalue < 128) {
-            return SMALL_INTS[ivalue + 128];
-        }
         return new Num(value);
+    }
+
+    public static ScriptValue of(long value) {
+        if (value >= -128 && value < 128) {
+            return SMALL_INTS[(int) value + 128];
+        }
+        return new Int(value);
+    }
+
+    public static ScriptValue of(int value) {
+        if (value >= -128 && value < 128) {
+            return SMALL_INTS[value + 128];
+        }
+        return new Int(value);
     }
 
     public static ScriptValue of(boolean value) {
@@ -41,6 +51,14 @@ public abstract class ScriptValue {
     }
 
     public boolean isNumber() {
+        return this instanceof Num || this instanceof Int;
+    }
+
+    public boolean isInteger() {
+        return this instanceof Int;
+    }
+
+    public boolean isFloat() {
         return this instanceof Num;
     }
 
@@ -58,14 +76,28 @@ public abstract class ScriptValue {
 
     // ---- 取值 ----
     public String asString() {
-        if (this instanceof Str) return ((Str) this).value();
-        if (this instanceof Num) return String.valueOf(((Num) this).value());
-        if (this instanceof Bool) return String.valueOf(((Bool) this).value());
+        if (this instanceof Str) {
+            return ((Str) this).value();
+        }
+        if (this instanceof Int) {
+            return String.valueOf(((Int) this).value());
+        }
+        if (this instanceof Num) {
+            return String.valueOf(((Num) this).value());
+        }
+        if (this instanceof Bool) {
+            return String.valueOf(((Bool) this).value());
+        }
         return "";  // nil 返回空字符串，避免插值时出现 "null"
     }
 
     public double asNumber() {
-        if (this instanceof Num) return ((Num) this).value();
+        if (this instanceof Int) {
+            return ((Int) this).value();
+        }
+        if (this instanceof Num) {
+            return ((Num) this).value();
+        }
         if (this instanceof Str) {
             try {
                 return Double.parseDouble(((Str) this).value());
@@ -73,20 +105,63 @@ public abstract class ScriptValue {
                 return 0;
             }
         }
-        if (this instanceof Bool) return ((Bool) this).value() ? 1 : 0;
+        if (this instanceof Bool) {
+            return ((Bool) this).value() ? 1 : 0;
+        }
         return 0;
     }
 
+    public long asLong() {
+        if (this instanceof Int) {
+            return ((Int) this).value();
+        }
+        if (this instanceof Num) {
+            return (long) ((Num) this).value();
+        }
+        if (this instanceof Str) {
+            try {
+                return Long.parseLong(((Str) this).value());
+            } catch (NumberFormatException e) {
+                try {
+                    return (long) Double.parseDouble(((Str) this).value());
+                } catch (NumberFormatException e2) {
+                    return 0;
+                }
+            }
+        }
+        if (this instanceof Bool) {
+            return ((Bool) this).value() ? 1 : 0;
+        }
+        return 0;
+    }
+
+    public int asInt() {
+        return (int) asLong();
+    }
+
     public boolean asBoolean() {
-        if (this instanceof Bool) return ((Bool) this).value();
-        if (this instanceof Num) return ((Num) this).value() != 0;
-        if (this instanceof Str) return Boolean.parseBoolean(((Str) this).value());
+        if (this instanceof Bool) {
+            return ((Bool) this).value();
+        }
+        if (this instanceof Int) {
+            return ((Int) this).value() != 0;
+        }
+        if (this instanceof Num) {
+            return ((Num) this).value() != 0;
+        }
+        if (this instanceof Str) {
+            return Boolean.parseBoolean(((Str) this).value());
+        }
         return false;
     }
 
     // ---- 比较 ----
     public int compare(ScriptValue other) {
         if (this.isNumber() || other.isNumber()) {
+            // 如果都是整数类型，使用整数比较
+            if (this.isInteger() && other.isInteger()) {
+                return Long.compare(this.asLong(), other.asLong());
+            }
             return Double.compare(this.asNumber(), other.asNumber());
         }
         return this.asString().compareTo(other.asString());
@@ -108,6 +183,23 @@ public abstract class ScriptValue {
         @Override
         public String toString() {
             return "Str(" + value + ")";
+        }
+    }
+
+    public static final class Int extends ScriptValue {
+        private final long value;
+
+        public Int(long value) {
+            this.value = value;
+        }
+
+        public long value() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return "Int(" + value + ")";
         }
     }
 

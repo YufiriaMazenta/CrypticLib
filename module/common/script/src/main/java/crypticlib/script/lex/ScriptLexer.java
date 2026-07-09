@@ -223,12 +223,15 @@ public class ScriptLexer {
         int start = pos;
         if (source.charAt(pos) == '-') pos++;
         while (pos < source.length() && isDigit(source.charAt(pos))) pos++;
+        boolean isFloat = false;
         if (pos < source.length() && source.charAt(pos) == '.') {
+            isFloat = true;
             do {
                 pos++;
             } while (pos < source.length() && isDigit(source.charAt(pos)));
         }
-        tokens.add(new Token(Token.Type.NUMBER, source.substring(start, pos), line));
+        Token.Type type = isFloat ? Token.Type.NUMBER : Token.Type.INTEGER;
+        tokens.add(new Token(type, source.substring(start, pos), line));
     }
 
     private void readIdentifier() {

@@ -33,13 +33,21 @@ public enum MathScriptModule implements ScriptModule {
         registry.register(module, "sqrt", this::sqrt);
         registry.register(module, "pow", this::pow);
         registry.register(module, "random", this::random);
+        registry.register(module, "random_int", this::randomInt);
+        registry.register(module, "int", this::toInt);
+        registry.register(module, "float", this::toFloat);
     }
 
     /**
      * abs(number) → 返回绝对值
      */
     private ScriptValue abs(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 1) return ScriptValue.nil();
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
+        if (args[0].isInteger()) {
+            return ScriptValue.of(Math.abs(args[0].asLong()));
+        }
         return ScriptValue.of(Math.abs(args[0].asNumber()));
     }
 
@@ -47,7 +55,12 @@ public enum MathScriptModule implements ScriptModule {
      * min(a, b) → 返回较小值
      */
     private ScriptValue min(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 2) return ScriptValue.nil();
+        if (args.length < 2) {
+            return ScriptValue.nil();
+        }
+        if (args[0].isInteger() && args[1].isInteger()) {
+            return ScriptValue.of(Math.min(args[0].asLong(), args[1].asLong()));
+        }
         return ScriptValue.of(Math.min(args[0].asNumber(), args[1].asNumber()));
     }
 
@@ -55,15 +68,22 @@ public enum MathScriptModule implements ScriptModule {
      * max(a, b) → 返回较大值
      */
     private ScriptValue max(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 2) return ScriptValue.nil();
+        if (args.length < 2) {
+            return ScriptValue.nil();
+        }
+        if (args[0].isInteger() && args[1].isInteger()) {
+            return ScriptValue.of(Math.max(args[0].asLong(), args[1].asLong()));
+        }
         return ScriptValue.of(Math.max(args[0].asNumber(), args[1].asNumber()));
     }
 
     /**
-     * round(number) → 四舍五入
+     * round(number) → 四舍五入，返回整数
      */
     private ScriptValue round(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 1) return ScriptValue.nil();
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
         return ScriptValue.of(Math.round(args[0].asNumber()));
     }
 
@@ -71,7 +91,12 @@ public enum MathScriptModule implements ScriptModule {
      * floor(number) → 向下取整
      */
     private ScriptValue floor(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 1) return ScriptValue.nil();
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
+        if (args[0].isInteger()) {
+            return args[0];
+        }
         return ScriptValue.of(Math.floor(args[0].asNumber()));
     }
 
@@ -79,7 +104,12 @@ public enum MathScriptModule implements ScriptModule {
      * ceil(number) → 向上取整
      */
     private ScriptValue ceil(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 1) return ScriptValue.nil();
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
+        if (args[0].isInteger()) {
+            return args[0];
+        }
         return ScriptValue.of(Math.ceil(args[0].asNumber()));
     }
 
@@ -87,9 +117,13 @@ public enum MathScriptModule implements ScriptModule {
      * sqrt(number) → 平方根
      */
     private ScriptValue sqrt(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 1) return ScriptValue.nil();
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
         double value = args[0].asNumber();
-        if (value < 0) return ScriptValue.nil();
+        if (value < 0) {
+            return ScriptValue.nil();
+        }
         return ScriptValue.of(Math.sqrt(value));
     }
 
@@ -97,26 +131,70 @@ public enum MathScriptModule implements ScriptModule {
      * pow(base, exponent) → 幂运算
      */
     private ScriptValue pow(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
-        if (args.length < 2) return ScriptValue.nil();
+        if (args.length < 2) {
+            return ScriptValue.nil();
+        }
         return ScriptValue.of(Math.pow(args[0].asNumber(), args[1].asNumber()));
     }
 
     /**
-     * random() → 返回 [0, 1) 的随机数
-     * random(max) → 返回 [0, max) 的随机整数
-     * random(min, max) → 返回 [min, max) 的随机整数
+     * random() → 返回 [0, 1) 的随机浮点数
+     * random(max) → 返回 [0, max) 的随机浮点数
+     * random(min, max) → 返回 [min, max) 的随机浮点数
      */
     private ScriptValue random(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length == 0) {
             return ScriptValue.of(Math.random());
         }
         if (args.length == 1) {
-            int max = (int) args[0].asNumber();
-            return ScriptValue.of((int) (Math.random() * max));
+            double max = args[0].asNumber();
+            return ScriptValue.of(Math.random() * max);
         }
-        int min = (int) args[0].asNumber();
-        int max = (int) args[1].asNumber();
-        if (min >= max) return ScriptValue.of(min);
-        return ScriptValue.of(min + (int) (Math.random() * (max - min)));
+        double min = args[0].asNumber();
+        double max = args[1].asNumber();
+        if (min >= max) {
+            return ScriptValue.of(min);
+        }
+        return ScriptValue.of(min + Math.random() * (max - min));
+    }
+
+    /**
+     * random_int(max) → 返回 [0, max) 的随机整数
+     * random_int(min, max) → 返回 [min, max) 的随机整数
+     */
+    private ScriptValue randomInt(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        if (args.length == 0) {
+            return ScriptValue.nil();
+        }
+        if (args.length == 1) {
+            long max = args[0].asLong();
+            return ScriptValue.of((long) (Math.random() * max));
+        }
+        long min = args[0].asLong();
+        long max = args[1].asLong();
+        if (min >= max) {
+            return ScriptValue.of(min);
+        }
+        return ScriptValue.of(min + (long) (Math.random() * (max - min)));
+    }
+
+    /**
+     * int(value) → 转换为整数（截断小数部分）
+     */
+    private ScriptValue toInt(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
+        return ScriptValue.of(args[0].asLong());
+    }
+
+    /**
+     * float(value) → 转换为浮点数
+     */
+    private ScriptValue toFloat(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        if (args.length < 1) {
+            return ScriptValue.nil();
+        }
+        return ScriptValue.of(args[0].asNumber());
     }
 }
