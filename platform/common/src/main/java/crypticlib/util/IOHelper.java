@@ -111,11 +111,12 @@ public class IOHelper {
      * @return 是否创建成功
      */
     public static boolean createNewFile(@NotNull File file) {
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
         try {
-            return file.createNewFile();
+            if (!file.getParentFile().exists()) {
+                Files.createDirectories(file.getParentFile().toPath());
+            }
+            Files.createFile(file.toPath());
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -154,9 +155,10 @@ public class IOHelper {
      * @param out 目标文件
      */
     public static void downloadFile(URL url, File out) throws IOException {
-        out.getParentFile().mkdirs();
+        Files.createDirectories(out.getParentFile().toPath());
         try (InputStream ins = url.openStream();
-             OutputStream outs = Files.newOutputStream(out.toPath())) {
+             OutputStream outs = Files.newOutputStream(out.toPath())
+        ) {
             byte[] buffer = new byte[BUFFER_SIZE];
             int len;
             while ((len = ins.read(buffer)) > 0) {
@@ -186,8 +188,8 @@ public class IOHelper {
     public static String readFile(File file) {
         if (file == null)
             return null;
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            return readFully(fileInputStream, StandardCharsets.UTF_8);
+        try {
+            return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -211,13 +213,14 @@ public class IOHelper {
      * @param inputStream 输入流
      */
     public static byte[] readBytes(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        byte[] buf = new byte[BUFFER_SIZE];
-        int len;
-        while ((len = inputStream.read(buf)) > 0) {
-            stream.write(buf, 0, len);
+        try(ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            byte[] buf = new byte[BUFFER_SIZE];
+            int len;
+            while ((len = inputStream.read(buf)) > 0) {
+                stream.write(buf, 0, len);
+            }
+            return stream.toByteArray();
         }
-        return stream.toByteArray();
     }
 
     /**
