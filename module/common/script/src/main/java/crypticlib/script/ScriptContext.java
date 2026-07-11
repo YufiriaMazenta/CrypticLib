@@ -3,10 +3,7 @@ package crypticlib.script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 脚本执行上下文
@@ -16,16 +13,20 @@ import java.util.UUID;
  */
 public class ScriptContext {
 
-    private final UUID playerId;
+    private final @Nullable UUID playerId;
     private final Map<String, ScriptValue> variables = new HashMap<>();
 
-    public ScriptContext(@NotNull UUID playerId) {
-        this.playerId = Objects.requireNonNull(playerId);
+    public ScriptContext(@Nullable UUID playerId) {
+        this.playerId = playerId;
     }
 
-    @NotNull
-    public UUID playerId() {
+    @Deprecated
+    public @Nullable UUID playerId() {
         return playerId;
+    }
+
+    public Optional<UUID> playerIdOpt() {
+        return Optional.ofNullable(playerId);
     }
 
     // ---- 变量存取 ----
