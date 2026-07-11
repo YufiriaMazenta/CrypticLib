@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * 脚本执行上下文
@@ -20,13 +21,12 @@ public class ScriptContext {
         this.playerId = playerId;
     }
 
-    @Deprecated
-    public @Nullable UUID playerId() {
-        return playerId;
+    public Optional<UUID> playerId() {
+        return Optional.ofNullable(playerId);
     }
 
-    public Optional<UUID> playerIdOpt() {
-        return Optional.ofNullable(playerId);
+    public <T> Optional<T> resolvePlayer(Function<@Nullable UUID, T> playerGetter) {
+        return Optional.ofNullable(playerGetter.apply(playerId));
     }
 
     // ---- 变量存取 ----

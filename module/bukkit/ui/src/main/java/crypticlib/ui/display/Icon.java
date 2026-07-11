@@ -117,7 +117,7 @@ public class Icon implements DataHolder {
         return this;
     }
 
-    public Optional<UUID> parsePlayerIdOpt() {
+    public Optional<UUID> parsePlayerId() {
         return Optional.ofNullable(parsePlayerId);
     }
 
@@ -126,16 +126,11 @@ public class Icon implements DataHolder {
         return this;
     }
 
-    public Optional<Player> parsePlayerOpt() {
+    public Optional<Player> parsePlayer() {
         if (parsePlayerId == null) {
             return Optional.empty();
         }
         return Optional.ofNullable(Bukkit.getPlayer(parsePlayerId));
-    }
-
-    @Deprecated
-    public @Nullable Player parsePlayer() {
-        return parsePlayerOpt().orElse(null);
     }
 
     /**
@@ -143,7 +138,7 @@ public class Icon implements DataHolder {
      * @return 解析后的文本
      */
     public String parseIconText(String originText) {
-        Player iconParsePlayer = parsePlayerOpt().orElse(null);
+        Player iconParsePlayer = parsePlayer().orElse(null);
         return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(iconParsePlayer, originText));
     }
 

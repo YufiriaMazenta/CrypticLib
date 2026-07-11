@@ -170,11 +170,11 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         return dataDirectory.toFile();
     }
 
-    public Optional<Player> getPlayerOpt(UUID uuid) {
+    public Optional<Player> getPlayer(UUID uuid) {
         return proxyServer.getPlayer(uuid);
     }
 
-    public Optional<Player> getPlayerOpt(String name) {
+    public Optional<Player> getPlayer(String name) {
         return proxyServer.getPlayer(name);
     }
 
@@ -182,7 +182,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         return proxyServer.getAllPlayers();
     }
 
-    public Optional<RegisteredServer> getServerOpt(String name) {
+    public Optional<RegisteredServer> getServer(String name) {
         return proxyServer.getServer(name);
     }
 

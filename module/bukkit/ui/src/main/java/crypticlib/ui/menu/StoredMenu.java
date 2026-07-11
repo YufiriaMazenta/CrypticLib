@@ -82,7 +82,7 @@ public class StoredMenu extends Menu {
             returnItems[i] = item;
             i++;
         }
-        Player player = playerOpt().orElse(null);
+        Player player = player().orElse(null);
         if (player == null) {
             return;
         }

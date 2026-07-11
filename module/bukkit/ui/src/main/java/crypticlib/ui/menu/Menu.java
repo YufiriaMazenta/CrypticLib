@@ -83,7 +83,7 @@ public class Menu implements InventoryHolder, DataHolder {
     public MenuOpenResult openMenu() {
         if (inventoryCache == null)
             this.inventoryCache = getInventory();
-        Optional<Player> playerOpt = playerOpt();
+        Optional<Player> playerOpt = player();
         if (!playerOpt.isPresent()) {
             return MenuOpenResult.PLAYER_OFFLINE;
         }
@@ -102,7 +102,7 @@ public class Menu implements InventoryHolder, DataHolder {
                 this.inventoryCache = getInventory();
             }
             CrypticLibBukkit.scheduler().sync(() -> {
-                Optional<Player> playerOpt = playerOpt();
+                Optional<Player> playerOpt = player();
                 if (!playerOpt.isPresent()) {
                     callback.accept(MenuOpenResult.PLAYER_OFFLINE);
                     return;
@@ -199,7 +199,7 @@ public class Menu implements InventoryHolder, DataHolder {
      * 刷新页面标题，若玩家未打开此页面，则无效
      */
     public void updateMenuTitle() {
-        Player player = player();
+        Player player = player().orElse(null);
         if (player == null) {
             return;
         }
@@ -313,20 +313,8 @@ public class Menu implements InventoryHolder, DataHolder {
      * @param slot 位置
      * @return 图标，如果不存在则返回 Optional.empty()
      */
-    public Optional<Icon> getIconOpt(int slot) {
+    public Optional<Icon> getIcon(int slot) {
         return Optional.ofNullable(slotMap.get(slot));
-    }
-
-    /**
-     * 获取一个位置的图标
-     * @param slot 位置
-     * @return 图标
-     * @deprecated 使用 {@link #getIconOpt(int)} 代替
-     */
-    @Deprecated
-    @Nullable
-    public Icon getIcon(int slot) {
-        return slotMap.get(slot);
     }
 
     /**
@@ -360,22 +348,13 @@ public class Menu implements InventoryHolder, DataHolder {
      * @return 解析完成的标题
      */
     public String parsedMenuTitle() {
-        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(playerOpt().orElse(null), display.title()));
-    }
-
-    /**
-     * 获取打开此页面的玩家,除非玩家离线,否则不会为null
-     */
-    @Deprecated
-    @Nullable
-    public Player player() {
-        return playerOpt().orElse(null);
+        return BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player().orElse(null), display.title()));
     }
 
     /**
      * 获取打开该页面的玩家,除非玩家离线,否则不会为null
      */
-    public Optional<Player> playerOpt() {
+    public Optional<Player> player() {
         return Optional.ofNullable(Bukkit.getPlayer(playerId));
     }
 

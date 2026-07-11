@@ -36,7 +36,7 @@ public class CooldownMenu extends Menu {
         long current = System.currentTimeMillis();
         long cooldown = cooldownTick * 50L - (current - lastClick);
         if (cooldown > 0) {
-            Optional<Player> playerOpt = playerOpt();
+            Optional<Player> playerOpt = player();
             if (playerOpt.isPresent()) {
                 BukkitPlayer.byPlayer(playerOpt.orElse(null)).sendMsg(
                     String.format(
