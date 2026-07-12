@@ -94,7 +94,7 @@ public class CommandNode {
         if (desc != null && !desc.isEmpty()) {
             description.add(desc);
         }
-        subcommands().forEach(
+        subcommands.forEach(
             (key, subcommand) -> {
                 if (!subcommand.hasPermission(invoker)) {
                     return;
@@ -145,9 +145,9 @@ public class CommandNode {
      * @param commandHandler 注册的命令
      */
     public CommandNode regSub(@NotNull CommandNode commandHandler) {
-        subcommands().put(commandHandler.commandInfo().name(), commandHandler);
+        subcommands.put(commandHandler.commandInfo().name(), commandHandler);
         for (String alias : commandHandler.commandInfo().aliases()) {
-            subcommands().put(alias, commandHandler);
+            subcommands.put(alias, commandHandler);
         }
         return this;
     }
@@ -169,7 +169,7 @@ public class CommandNode {
      */
     public final void onCommand(CommandInvoker invoker, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
-        if (args.isEmpty() || subcommands().isEmpty() || !subcommands().containsKey(args.get(0))) {
+        if (args.isEmpty() || subcommands.isEmpty() || !subcommands.containsKey(args.get(0))) {
             if (hasPermission(invoker)) {
                 execute(invoker, args);
             } else {
@@ -178,8 +178,8 @@ public class CommandNode {
             return;
         }
         //执行对应的子命令
-        CommandNode commandHandler = subcommands().get(args.get(0));
-        if (commandHandler != null && commandHandler.hasPermission(invoker)) {
+        CommandNode commandHandler = subcommands.get(args.get(0));
+        if (commandHandler != null) {
             commandHandler.onCommand(invoker, args.subList(1, args.size()));
         }
     }
@@ -201,9 +201,9 @@ public class CommandNode {
         }
 
         //尝试获取子命令的补全内容
-        if (!subcommands().isEmpty()) {
+        if (!subcommands.isEmpty()) {
             if (args.size() > 1) {
-                CommandNode commandHandler = subcommands().get(args.get(0));
+                CommandNode commandHandler = subcommands.get(args.get(0));
                 if (commandHandler != null) {
                     if (commandHandler.hasPermission(invoker)) {
                         return commandHandler.onTabComplete(invoker, args.subList(1, args.size()));
@@ -213,8 +213,8 @@ public class CommandNode {
                 }
                 return Collections.singletonList("");
             }
-            for (String arg : subcommands().keySet()) {
-                CommandNode commandHandler = subcommands().get(arg);
+            for (String arg : subcommands.keySet()) {
+                CommandNode commandHandler = subcommands.get(arg);
                 if (commandHandler.hasPermission(invoker)) {
                     arguments.add(arg);
                 }
@@ -229,7 +229,7 @@ public class CommandNode {
 
     public final void registerPerms() {
         //扫描子命令,注册子命令所需权限
-        for (CommandNode commandTreeNode : subcommands().values()) {
+        for (CommandNode commandTreeNode : subcommands.values()) {
             commandTreeNode.registerPerms();
         }
         //注册自己的权限节点
@@ -250,7 +250,7 @@ public class CommandNode {
         }
 
         //再注册子命令的子命令
-        for (CommandNode commandHandler : subcommands().values()) {
+        for (CommandNode commandHandler : subcommands.values()) {
             commandHandler.scanSubCommands();
         }
     }
