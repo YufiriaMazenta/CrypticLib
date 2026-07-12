@@ -52,13 +52,13 @@ public class CommandNode {
      * @param invoker 命令执行者
      * @param args 参数
      */
-    public void executeNoPerm(@NotNull CommandInvoker invoker, @NotNull List<String> args) {}
+    public void onNoPerm(@NotNull CommandInvoker invoker, @NotNull List<String> args) {}
 
     /**
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
      * @return 此命令的补全参数内容
      */
-    public @Nullable List<String> tab(@NotNull CommandInvoker invoker, @NotNull List<String> args) {
+    public @Nullable List<String> tabComplete(@NotNull CommandInvoker invoker, @NotNull List<String> args) {
         return null;
     }
 
@@ -173,7 +173,7 @@ public class CommandNode {
             if (hasPermission(invoker)) {
                 execute(invoker, args);
             } else {
-                executeNoPerm(invoker, args);
+                onNoPerm(invoker, args);
             }
             return;
         }
@@ -193,7 +193,7 @@ public class CommandNode {
      */
     public final List<String> onTabComplete(CommandInvoker invoker, List<String> args) {
         List<String> arguments;
-        List<String> tab = tab(invoker, args);
+        List<String> tab = tabComplete(invoker, args);
         if (tab == null) {
             arguments = new ArrayList<>();
         } else {
