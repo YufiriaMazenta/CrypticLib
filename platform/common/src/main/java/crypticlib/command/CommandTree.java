@@ -33,8 +33,8 @@ public class CommandTree extends CommandNode {
     }
 
     @Override
-    public CommandTree regSub(@NotNull CommandNode commandNode) {
-        return (CommandTree) super.regSub(commandNode);
+    public CommandTree regSub(@NotNull CommandNode commandHandler) {
+        return (CommandTree) super.regSub(commandHandler);
     }
 
     public final void register() {
