@@ -18,8 +18,8 @@ public class ScriptExecutor {
         this.executorType = executorType;
     }
 
-    public @Nullable UUID executorId() {
-        return executorId;
+    public Optional<UUID> executorId() {
+        return Optional.ofNullable(executorId);
     }
 
     public @NotNull ExecutorType executorType() {
