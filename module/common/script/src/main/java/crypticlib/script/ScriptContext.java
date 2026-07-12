@@ -10,23 +10,19 @@ import java.util.function.Function;
  * 脚本执行上下文
  * 携带脚本执行时需要的环境信息
  *
- * 设计为通用上下文，业务数据通过 variables 传入
+ * 设计为通用上下文，数据通过 variables 传入
  */
 public class ScriptContext {
 
-    private final @Nullable UUID playerId;
-    private final Map<String, ScriptValue> variables = new HashMap<>();
+    private final @NotNull ScriptExecutor executor;
+    private final @NotNull Map<String, ScriptValue> variables = new HashMap<>();
 
-    public ScriptContext(@Nullable UUID playerId) {
-        this.playerId = playerId;
+    public ScriptContext(@NotNull ScriptExecutor executor) {
+        this.executor = Objects.requireNonNull(executor);
     }
 
-    public Optional<UUID> playerId() {
-        return Optional.ofNullable(playerId);
-    }
-
-    public <T> Optional<T> resolvePlayer(Function<@Nullable UUID, T> playerGetter) {
-        return Optional.ofNullable(playerGetter.apply(playerId));
+    public @NotNull ScriptExecutor executor() {
+        return executor;
     }
 
     // ---- 变量存取 ----
