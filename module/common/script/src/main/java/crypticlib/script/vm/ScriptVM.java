@@ -10,6 +10,8 @@ import crypticlib.script.compile.OpCode;
 import crypticlib.script.func.ScriptFunction;
 import crypticlib.script.func.ScriptFunctionRegistry;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -153,7 +155,8 @@ public class ScriptVM {
                         // 两个整数使用整数运算
                         stack.push(ScriptValue.of(l.asLong() + r.asLong()));
                     } else {
-                        stack.push(ScriptValue.of(l.asNumber() + r.asNumber()));
+                        BigDecimal result = l.asBigDecimal().add(r.asBigDecimal());
+                        stack.push(ScriptValue.of(result));
                     }
                     break;
                 }
@@ -163,7 +166,8 @@ public class ScriptVM {
                     if (l.isInteger() && r.isInteger()) {
                         stack.push(ScriptValue.of(l.asLong() - r.asLong()));
                     } else {
-                        stack.push(ScriptValue.of(l.asNumber() - r.asNumber()));
+                        BigDecimal result = l.asBigDecimal().subtract(r.asBigDecimal());
+                        stack.push(ScriptValue.of(result));
                     }
                     break;
                 }
@@ -173,7 +177,8 @@ public class ScriptVM {
                     if (l.isInteger() && r.isInteger()) {
                         stack.push(ScriptValue.of(l.asLong() * r.asLong()));
                     } else {
-                        stack.push(ScriptValue.of(l.asNumber() * r.asNumber()));
+                        BigDecimal result = l.asBigDecimal().multiply(r.asBigDecimal());
+                        stack.push(ScriptValue.of(result));
                     }
                     break;
                 }
@@ -187,11 +192,12 @@ public class ScriptVM {
                         }
                         stack.push(ScriptValue.of(l.asLong() / divisor));
                     } else {
-                        double divisor = r.asNumber();
-                        if (divisor == 0) {
+                        BigDecimal divisor = r.asBigDecimal();
+                        if (divisor.compareTo(BigDecimal.ZERO) == 0) {
                             throw new ScriptException("Division by zero at line " + inst.line() + " in script: " + script.sourceName());
                         }
-                        stack.push(ScriptValue.of(l.asNumber() / divisor));
+                        BigDecimal result = l.asBigDecimal().divide(divisor, ScriptValue.DIV_SCALE, RoundingMode.HALF_UP);
+                        stack.push(ScriptValue.of(result));
                     }
                     break;
                 }
@@ -205,11 +211,12 @@ public class ScriptVM {
                         }
                         stack.push(ScriptValue.of(l.asLong() % divisor));
                     } else {
-                        double divisor = r.asNumber();
-                        if (divisor == 0) {
+                        BigDecimal divisor = r.asBigDecimal();
+                        if (divisor.compareTo(BigDecimal.ZERO) == 0) {
                             throw new ScriptException("Modulo by zero at line " + inst.line() + " in script: " + script.sourceName());
                         }
-                        stack.push(ScriptValue.of(l.asNumber() % divisor));
+                        BigDecimal result = l.asBigDecimal().remainder(divisor);
+                        stack.push(ScriptValue.of(result));
                     }
                     break;
                 }
@@ -218,7 +225,7 @@ public class ScriptVM {
                     if (operand.isInteger()) {
                         stack.push(ScriptValue.of(-operand.asLong()));
                     } else {
-                        stack.push(ScriptValue.of(-operand.asNumber()));
+                        stack.push(ScriptValue.of(operand.asBigDecimal().negate()));
                     }
                     break;
                 }

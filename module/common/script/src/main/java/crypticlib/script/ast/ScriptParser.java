@@ -4,6 +4,7 @@ import crypticlib.script.InterpolationPart;
 import crypticlib.script.ScriptException;
 import crypticlib.script.lex.Token;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -259,7 +260,7 @@ public class ScriptParser {
                     if (num.type() == Token.Type.INTEGER) {
                         args.add(new ASTNode.LiteralNode(-Long.parseLong(num.value()), num.line()));
                     } else {
-                        args.add(new ASTNode.LiteralNode(-Double.parseDouble(num.value()), num.line()));
+                        args.add(new ASTNode.LiteralNode(new BigDecimal(num.value()).negate(), num.line()));
                     }
                 } else {
                     args.add(parseAtom());
@@ -294,7 +295,7 @@ public class ScriptParser {
             List<InterpolationPart> astParts = new ArrayList<>(rawParts);
             return new ASTNode.StringInterpolationNode(astParts, tok.line());
         } else if (type == Token.Type.NUMBER) {
-            return new ASTNode.LiteralNode(Double.parseDouble(tok.value()), tok.line());
+            return new ASTNode.LiteralNode(new BigDecimal(tok.value()), tok.line());
         } else if (type == Token.Type.INTEGER) {
             return new ASTNode.LiteralNode(Long.parseLong(tok.value()), tok.line());
         } else if (type == Token.Type.BOOLEAN) {

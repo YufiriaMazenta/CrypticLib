@@ -4,6 +4,7 @@ import crypticlib.script.InterpolationPart;
 import crypticlib.script.ScriptValue;
 import crypticlib.script.ast.ASTNode;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,6 +60,8 @@ public class ScriptCompiler {
             value = ScriptValue.of((Long) val);
         } else if (val instanceof Integer) {
             value = ScriptValue.of((Integer) val);
+        } else if (val instanceof BigDecimal) {
+            value = ScriptValue.of((BigDecimal) val);
         } else if (val instanceof Double) {
             value = ScriptValue.of((Double) val);
         } else if (val instanceof Boolean) {

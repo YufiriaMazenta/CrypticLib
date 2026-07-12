@@ -4,6 +4,10 @@ import crypticlib.script.ScriptContext;
 import crypticlib.script.ScriptValue;
 import crypticlib.script.vm.ScriptVM;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+
 /**
  * 数学函数模块
  * 提供常用的数学运算函数
@@ -48,7 +52,7 @@ public enum MathScriptModule implements ScriptModule {
         if (args[0].isInteger()) {
             return ScriptValue.of(Math.abs(args[0].asLong()));
         }
-        return ScriptValue.of(Math.abs(args[0].asNumber()));
+        return ScriptValue.of(args[0].asBigDecimal().abs());
     }
 
     /**
@@ -61,7 +65,7 @@ public enum MathScriptModule implements ScriptModule {
         if (args[0].isInteger() && args[1].isInteger()) {
             return ScriptValue.of(Math.min(args[0].asLong(), args[1].asLong()));
         }
-        return ScriptValue.of(Math.min(args[0].asNumber(), args[1].asNumber()));
+        return ScriptValue.of(args[0].asBigDecimal().min(args[1].asBigDecimal()));
     }
 
     /**
@@ -74,7 +78,7 @@ public enum MathScriptModule implements ScriptModule {
         if (args[0].isInteger() && args[1].isInteger()) {
             return ScriptValue.of(Math.max(args[0].asLong(), args[1].asLong()));
         }
-        return ScriptValue.of(Math.max(args[0].asNumber(), args[1].asNumber()));
+        return ScriptValue.of(args[0].asBigDecimal().max(args[1].asBigDecimal()));
     }
 
     /**
@@ -84,7 +88,10 @@ public enum MathScriptModule implements ScriptModule {
         if (args.length < 1) {
             return ScriptValue.nil();
         }
-        return ScriptValue.of(Math.round(args[0].asNumber()));
+        if (args[0].isInteger()) {
+            return args[0];
+        }
+        return ScriptValue.of(args[0].asBigDecimal().setScale(0, RoundingMode.HALF_UP).toBigInteger().longValue());
     }
 
     /**
@@ -97,7 +104,7 @@ public enum MathScriptModule implements ScriptModule {
         if (args[0].isInteger()) {
             return args[0];
         }
-        return ScriptValue.of(Math.floor(args[0].asNumber()));
+        return ScriptValue.of(args[0].asBigDecimal().setScale(0, RoundingMode.FLOOR).toBigInteger().longValue());
     }
 
     /**
@@ -110,7 +117,7 @@ public enum MathScriptModule implements ScriptModule {
         if (args[0].isInteger()) {
             return args[0];
         }
-        return ScriptValue.of(Math.ceil(args[0].asNumber()));
+        return ScriptValue.of(args[0].asBigDecimal().setScale(0, RoundingMode.CEILING).toBigInteger().longValue());
     }
 
     /**
@@ -120,11 +127,11 @@ public enum MathScriptModule implements ScriptModule {
         if (args.length < 1) {
             return ScriptValue.nil();
         }
-        double value = args[0].asNumber();
-        if (value < 0) {
+        BigDecimal value = args[0].asBigDecimal();
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
             return ScriptValue.nil();
         }
-        return ScriptValue.of(Math.sqrt(value));
+        return ScriptValue.of(value.sqrt(MathContext.DECIMAL128));
     }
 
     /**
@@ -134,7 +141,9 @@ public enum MathScriptModule implements ScriptModule {
         if (args.length < 2) {
             return ScriptValue.nil();
         }
-        return ScriptValue.of(Math.pow(args[0].asNumber(), args[1].asNumber()));
+        // BigDecimal.pow() 只支持整数指数
+        int exponent = args[1].asInt();
+        return ScriptValue.of(args[0].asBigDecimal().pow(exponent));
     }
 
     /**
@@ -144,18 +153,19 @@ public enum MathScriptModule implements ScriptModule {
      */
     private ScriptValue random(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length == 0) {
-            return ScriptValue.of(Math.random());
+            return ScriptValue.of(BigDecimal.valueOf(Math.random()));
         }
         if (args.length == 1) {
-            double max = args[0].asNumber();
-            return ScriptValue.of(Math.random() * max);
+            BigDecimal max = args[0].asBigDecimal();
+            return ScriptValue.of(BigDecimal.valueOf(Math.random()).multiply(max));
         }
-        double min = args[0].asNumber();
-        double max = args[1].asNumber();
-        if (min >= max) {
+        BigDecimal min = args[0].asBigDecimal();
+        BigDecimal max = args[1].asBigDecimal();
+        if (min.compareTo(max) >= 0) {
             return ScriptValue.of(min);
         }
-        return ScriptValue.of(min + Math.random() * (max - min));
+        BigDecimal range = max.subtract(min);
+        return ScriptValue.of(min.add(BigDecimal.valueOf(Math.random()).multiply(range)));
     }
 
     /**
@@ -195,6 +205,6 @@ public enum MathScriptModule implements ScriptModule {
         if (args.length < 1) {
             return ScriptValue.nil();
         }
-        return ScriptValue.of(args[0].asNumber());
+        return ScriptValue.of(args[0].asBigDecimal());
     }
 }

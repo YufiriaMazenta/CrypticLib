@@ -401,7 +401,7 @@ public class ScriptTest {
      * 创建测试上下文
      */
     private static ScriptContext createContext() {
-        return new ScriptContext(UUID.randomUUID());
+        return new ScriptContext(new ScriptExecutor(null, ScriptExecutor.ExecutorType.CONSOLE));
     }
 
     /**

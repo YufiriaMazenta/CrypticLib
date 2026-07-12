@@ -1,10 +1,17 @@
 package crypticlib.script;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+
 /**
  * 脚本值的类型安全封装
  * 所有脚本内部运算都通过此类进行，避免 ClassCastException
  */
 public abstract class ScriptValue {
+
+    /** 除法运算的默认精度 */
+    public static final int DIV_SCALE = 10;
 
     // ---- 小整数缓存 ----
     private static final Int[] SMALL_INTS = new Int[256];
@@ -20,6 +27,10 @@ public abstract class ScriptValue {
     }
 
     public static ScriptValue of(double value) {
+        return new Num(BigDecimal.valueOf(value));
+    }
+
+    public static ScriptValue of(BigDecimal value) {
         return new Num(value);
     }
 
@@ -83,7 +94,7 @@ public abstract class ScriptValue {
             return String.valueOf(((Int) this).value());
         }
         if (this instanceof Num) {
-            return String.valueOf(((Num) this).value());
+            return ((Num) this).value().toPlainString();
         }
         if (this instanceof Bool) {
             return String.valueOf(((Bool) this).value());
@@ -91,24 +102,28 @@ public abstract class ScriptValue {
         return "";  // nil 返回空字符串，避免插值时出现 "null"
     }
 
-    public double asNumber() {
+    public BigDecimal asBigDecimal() {
         if (this instanceof Int) {
-            return ((Int) this).value();
+            return BigDecimal.valueOf(((Int) this).value());
         }
         if (this instanceof Num) {
             return ((Num) this).value();
         }
         if (this instanceof Str) {
             try {
-                return Double.parseDouble(((Str) this).value());
+                return new BigDecimal(((Str) this).value());
             } catch (NumberFormatException e) {
-                return 0;
+                return BigDecimal.ZERO;
             }
         }
         if (this instanceof Bool) {
-            return ((Bool) this).value() ? 1 : 0;
+            return ((Bool) this).value() ? BigDecimal.ONE : BigDecimal.ZERO;
         }
-        return 0;
+        return BigDecimal.ZERO;
+    }
+
+    public double asNumber() {
+        return asBigDecimal().doubleValue();
     }
 
     public long asLong() {
@@ -116,14 +131,14 @@ public abstract class ScriptValue {
             return ((Int) this).value();
         }
         if (this instanceof Num) {
-            return (long) ((Num) this).value();
+            return ((Num) this).value().longValue();
         }
         if (this instanceof Str) {
             try {
                 return Long.parseLong(((Str) this).value());
             } catch (NumberFormatException e) {
                 try {
-                    return (long) Double.parseDouble(((Str) this).value());
+                    return new BigDecimal(((Str) this).value()).longValue();
                 } catch (NumberFormatException e2) {
                     return 0;
                 }
@@ -147,7 +162,7 @@ public abstract class ScriptValue {
             return ((Int) this).value() != 0;
         }
         if (this instanceof Num) {
-            return ((Num) this).value() != 0;
+            return ((Num) this).value().compareTo(BigDecimal.ZERO) != 0;
         }
         if (this instanceof Str) {
             return Boolean.parseBoolean(((Str) this).value());
@@ -162,7 +177,7 @@ public abstract class ScriptValue {
             if (this.isInteger() && other.isInteger()) {
                 return Long.compare(this.asLong(), other.asLong());
             }
-            return Double.compare(this.asNumber(), other.asNumber());
+            return this.asBigDecimal().compareTo(other.asBigDecimal());
         }
         return this.asString().compareTo(other.asString());
     }
@@ -204,13 +219,13 @@ public abstract class ScriptValue {
     }
 
     public static final class Num extends ScriptValue {
-        private final double value;
+        private final BigDecimal value;
 
-        public Num(double value) {
+        public Num(BigDecimal value) {
             this.value = value;
         }
 
-        public double value() {
+        public BigDecimal value() {
             return value;
         }
 
