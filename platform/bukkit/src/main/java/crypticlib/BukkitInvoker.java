@@ -1,27 +1,29 @@
-package crypticlib.command;
+package crypticlib;
 
-import crypticlib.BukkitPlayer;
-import crypticlib.CommonPlayer;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.StringHelper;
+import org.bukkit.command.BlockCommandSender;
+import org.bukkit.command.CommandException;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class BukkitCommandInvoker implements CommandInvoker {
+public class BukkitInvoker implements Invoker {
 
     protected @NotNull CommandSender platformInvoker;
 
     @ApiStatus.Internal
-    protected BukkitCommandInvoker(@NotNull CommandSender platformInvoker) {
+    protected BukkitInvoker(@NotNull CommandSender platformInvoker) {
         this.platformInvoker = platformInvoker;
     }
 
     @Override
-    public Object getPlatformInvoker() {
+    public @NotNull Object getPlatformInvoker() {
         return platformInvoker;
     }
 
@@ -52,13 +54,13 @@ public class BukkitCommandInvoker implements CommandInvoker {
 
     @Override
     public boolean isConsole() {
-        return !isPlayer();
+        return platformInvoker instanceof ConsoleCommandSender;
     }
 
     @Override
     public CommonPlayer asPlayer() {
         if (!isPlayer()) {
-            throw new ClassCastException("CommandInvoker is not a Player");
+            throw new ClassCastException("Invoker is not a Player");
         }
         if (this instanceof BukkitPlayer) {
             return (CommonPlayer) this;
@@ -66,8 +68,22 @@ public class BukkitCommandInvoker implements CommandInvoker {
         return BukkitPlayer.byPlayer((Player) platformInvoker);
     }
 
-    public static BukkitCommandInvoker byCommandSender(CommandSender commandSender) {
-        return new BukkitCommandInvoker(commandSender);
+    public static BukkitInvoker byCommandSender(CommandSender commandSender) {
+        return new BukkitInvoker(commandSender);
+    }
+
+    @Override
+    public InvokerType invokerType() {
+        if (platformInvoker instanceof Player) {
+            return InvokerType.PLAYER;
+        } else if (platformInvoker instanceof ConsoleCommandSender) {
+            return InvokerType.CONSOLE;
+        } else if (platformInvoker instanceof BlockCommandSender) {
+            return InvokerType.BLOCK;
+        } else if (platformInvoker instanceof Entity) {
+            return InvokerType.ENTITY;
+        }
+        throw new CommandException("Unknown invoker type: " + platformInvoker.getClass().getName());
     }
 
 }

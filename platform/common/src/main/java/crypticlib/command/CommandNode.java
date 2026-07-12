@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.Invoker;
 import crypticlib.command.annotation.Subcommand;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
@@ -43,7 +44,7 @@ public class CommandNode {
      * @param invoker 执行者
      * @param args   参数
      */
-    public void execute(@NotNull CommandInvoker invoker, @NotNull List<String> args) {
+    public void execute(@NotNull Invoker invoker, @NotNull List<String> args) {
         sendDescriptions(invoker);
     }
 
@@ -52,13 +53,13 @@ public class CommandNode {
      * @param invoker 命令执行者
      * @param args 参数
      */
-    public void onNoPerm(@NotNull CommandInvoker invoker, @NotNull List<String> args) {}
+    public void onNoPerm(@NotNull Invoker invoker, @NotNull List<String> args) {}
 
     /**
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
      * @return 此命令的补全参数内容
      */
-    public @Nullable List<String> tabComplete(@NotNull CommandInvoker invoker, @NotNull List<String> args) {
+    public @Nullable List<String> tabComplete(@NotNull Invoker invoker, @NotNull List<String> args) {
         return null;
     }
 
@@ -77,7 +78,7 @@ public class CommandNode {
      *
      * @return 转换完成的介绍
      */
-    public List<String> toDescriptions(CommandInvoker invoker) {
+    public List<String> toDescriptions(Invoker invoker) {
         List<String> description = new ArrayList<>();
 
         StringJoiner nameJoiner = new StringJoiner(" | ", "&7", ":");
@@ -119,7 +120,7 @@ public class CommandNode {
         return description;
     }
 
-    public void sendDescriptions(CommandInvoker invoker) {
+    public void sendDescriptions(Invoker invoker) {
         List<String> descriptions = toDescriptions(invoker);
         for (String description : descriptions) {
             invoker.sendMsg(description);
@@ -131,7 +132,7 @@ public class CommandNode {
      * @param invoker 执行者
      * @return 是否有此命令节点的权限
      */
-    public boolean hasPermission(CommandInvoker invoker) {
+    public boolean hasPermission(Invoker invoker) {
         PermInfo permission = commandInfo().permission();
         if (permission == null)
             return true;
@@ -167,7 +168,7 @@ public class CommandNode {
      * @param invoker 发送此命令的人
      * @param args   发送时的参数
      */
-    public final void onCommand(CommandInvoker invoker, List<String> args) {
+    public final void onCommand(Invoker invoker, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || subcommands.isEmpty() || !subcommands.containsKey(args.get(0))) {
             if (hasPermission(invoker)) {
@@ -191,7 +192,7 @@ public class CommandNode {
      * @param args   参数列表
      * @return 返回的tab列表内容
      */
-    public final List<String> onTabComplete(CommandInvoker invoker, List<String> args) {
+    public final List<String> onTabComplete(Invoker invoker, List<String> args) {
         List<String> arguments;
         List<String> tab = tabComplete(invoker, args);
         if (tab == null) {

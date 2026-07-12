@@ -1,11 +1,8 @@
-package crypticlib.command;
+package crypticlib;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.ConsoleCommandSource;
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.api.proxy.ProxyServer;
-import crypticlib.CommonPlayer;
-import crypticlib.VelocityPlayer;
 import crypticlib.chat.VelocityTextProcessor;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
@@ -14,17 +11,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class VelocityCommandInvoker implements CommandInvoker {
+public class VelocityInvoker implements Invoker {
 
     protected final CommandSource platformInvoker;
 
     @ApiStatus.Internal
-    protected VelocityCommandInvoker(CommandSource platformInvoker) {
+    protected VelocityInvoker(CommandSource platformInvoker) {
         this.platformInvoker = platformInvoker;
     }
 
     @Override
-    public Object getPlatformInvoker() {
+    public @NotNull Object getPlatformInvoker() {
         return platformInvoker;
     }
 
@@ -59,13 +56,13 @@ public class VelocityCommandInvoker implements CommandInvoker {
 
     @Override
     public boolean isConsole() {
-        return !isPlayer();
+        return platformInvoker instanceof ConsoleCommandSource;
     }
 
     @Override
     public CommonPlayer asPlayer() {
         if (!isPlayer()) {
-            throw new ClassCastException("CommandInvoker is not a Player");
+            throw new ClassCastException("Invoker is not a Player");
         }
         if (this instanceof VelocityPlayer) {
             return (CommonPlayer) this;
@@ -73,8 +70,17 @@ public class VelocityCommandInvoker implements CommandInvoker {
         return VelocityPlayer.byPlayer((Player) platformInvoker);
     }
 
-    public static VelocityCommandInvoker byCommandSource(CommandSource commandSource) {
-        return new VelocityCommandInvoker(commandSource);
+    @Override
+    public InvokerType invokerType() {
+        if (platformInvoker instanceof Player) {
+            return InvokerType.PLAYER;
+        } else {
+            return InvokerType.CONSOLE;
+        }
+    }
+
+    public static VelocityInvoker byCommandSource(CommandSource commandSource) {
+        return new VelocityInvoker(commandSource);
     }
 
 }

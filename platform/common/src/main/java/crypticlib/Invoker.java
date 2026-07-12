@@ -1,14 +1,17 @@
-package crypticlib.command;
+package crypticlib;
 
-import crypticlib.CommonPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public interface CommandInvoker {
+/**
+ * 定义执行/调用某种行为的实体
+ * 用于命令,脚本等模块
+ */
+public interface Invoker {
 
-    Object getPlatformInvoker();
+    @NotNull Object getPlatformInvoker();
 
     @NotNull String getName();
 
@@ -25,5 +28,14 @@ public interface CommandInvoker {
     boolean isConsole();
 
     CommonPlayer asPlayer();
+
+    InvokerType invokerType();
+
+    enum InvokerType {
+        PLAYER,
+        ENTITY,
+        CONSOLE,
+        BLOCK
+    }
 
 }

@@ -5,9 +5,9 @@ import com.velocitypowered.api.proxy.Player;
 import crypticlib.CrypticLib;
 import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
-import crypticlib.command.CommandInvoker;
+import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
-import crypticlib.command.VelocityCommandInvoker;
+import crypticlib.VelocityInvoker;
 import crypticlib.VelocityPlayer;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
@@ -30,7 +30,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     private VelocityPlugin plugin;
 
     @Override
-    public void sendMsg(CommandInvoker receiver, @NotNull Component... baseComponents) {
+    public void sendMsg(Invoker receiver, @NotNull Component... baseComponents) {
         if (receiver == null)
             return;
         Component component = Component.text().build();
@@ -41,7 +41,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     }
 
     @Override
-    public void sendMsg(CommandInvoker receiver, @NotNull Component baseComponent) {
+    public void sendMsg(Invoker receiver, @NotNull Component baseComponent) {
         if (receiver == null)
             return;
         ((CommandSource) receiver.getPlatformInvoker()).sendMessage(baseComponent);
@@ -51,7 +51,9 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void sendActionBar(CommonPlayer player, Component component) {
         if (player == null)
             return;
-        ((Player) player.getPlatformPlayer()).sendActionBar(component);
+        player.getPlatformPlayer((uuid) -> plugin.getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
+            vcPlayer.sendActionBar(component);
+        });
     }
 
     @Override
@@ -62,7 +64,10 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
         for (Component baseComponent : components) {
             component = component.append(baseComponent);
         }
-        ((Player) player.getPlatformPlayer()).sendActionBar(component);
+        Component finalComponent = component;
+        player.getPlatformPlayer((uuid) -> plugin.getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
+            vcPlayer.sendActionBar(finalComponent);
+        });
     }
 
     @Override
@@ -103,7 +108,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(VelocityCommandInvoker.byCommandSource(plugin.proxyServer().getConsoleCommandSource()), msg, replaceMap);
+        sendMsg(VelocityInvoker.byCommandSource(plugin.proxyServer().getConsoleCommandSource()), msg, replaceMap);
     }
 
     @Override

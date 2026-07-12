@@ -1,6 +1,8 @@
 package crypticlib.command;
 
+import crypticlib.BukkitInvoker;
 import crypticlib.BukkitPlayer;
+import crypticlib.Invoker;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -31,11 +33,11 @@ public final class BukkitCommand implements TabExecutor {
         return true;
     }
 
-    private CommandInvoker commandSender2Invoker(CommandSender sender) {
+    private Invoker commandSender2Invoker(CommandSender sender) {
         if (sender instanceof Player) {
             return BukkitPlayer.byPlayer((Player) sender);
         } else {
-            return BukkitCommandInvoker.byCommandSender(sender);
+            return BukkitInvoker.byCommandSender(sender);
         }
     }
 

@@ -1,7 +1,5 @@
-package crypticlib.command;
+package crypticlib;
 
-import crypticlib.BungeePlayer;
-import crypticlib.CommonPlayer;
 import crypticlib.chat.BungeeTextProcessor;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.CommandSender;
@@ -11,17 +9,17 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public class BungeeCommandInvoker implements CommandInvoker {
+public class BungeeInvoker implements Invoker {
 
     protected final CommandSender platformInvoker;
 
     @ApiStatus.Internal
-    protected BungeeCommandInvoker(CommandSender platformInvoker) {
+    protected BungeeInvoker(CommandSender platformInvoker) {
         this.platformInvoker = platformInvoker;
     }
 
     @Override
-    public Object getPlatformInvoker() {
+    public @NotNull Object getPlatformInvoker() {
         return platformInvoker;
     }
 
@@ -56,7 +54,7 @@ public class BungeeCommandInvoker implements CommandInvoker {
     @Override
     public CommonPlayer asPlayer() {
         if (!isPlayer()) {
-            throw new ClassCastException("CommandInvoker is not a Player");
+            throw new ClassCastException("Invoker is not a Player");
         }
         if (this instanceof BungeePlayer) {
             return (CommonPlayer) this;
@@ -64,8 +62,17 @@ public class BungeeCommandInvoker implements CommandInvoker {
         return BungeePlayer.byProxiedPlayer((ProxiedPlayer) platformInvoker);
     }
 
-    public static BungeeCommandInvoker byCommandSender(CommandSender commandSender) {
-        return new BungeeCommandInvoker(commandSender);
+    @Override
+    public InvokerType invokerType() {
+        if (platformInvoker instanceof ProxiedPlayer) {
+            return InvokerType.PLAYER;
+        } else {
+            return InvokerType.CONSOLE;
+        }
+    }
+
+    public static BungeeInvoker byCommandSender(CommandSender commandSender) {
+        return new BungeeInvoker(commandSender);
     }
 
 }

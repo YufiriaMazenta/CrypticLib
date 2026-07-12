@@ -1,7 +1,6 @@
 package crypticlib;
 
 import crypticlib.chat.BukkitTextProcessor;
-import crypticlib.command.BukkitCommandInvoker;
 import crypticlib.util.LocaleHelper;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
@@ -13,31 +12,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.UUID;
 
-public class BukkitPlayer extends BukkitCommandInvoker implements CommonPlayer {
-
-    protected @NotNull UUID playerId;
+public class BukkitPlayer extends BukkitEntity implements CommonPlayer {
 
     @ApiStatus.Internal
     protected BukkitPlayer(@NotNull Player platformPlayer) {
         super(platformPlayer);
-        this.playerId = platformPlayer.getUniqueId();
-    }
-
-    @Override
-    public Player getPlatformPlayer() {
-        return Bukkit.getPlayer(playerId);
-    }
-
-    @Override
-    public @NotNull UUID getUniqueId() {
-        return playerId;
     }
 
     @Override
     public @NotNull Locale getLocale() {
-        Player player = Bukkit.getPlayer(playerId);
+        Player player = Bukkit.getPlayer(uuid);
         if (player != null) {
             return LocaleHelper.languageTag2Local(player.getLocale());
         }
@@ -48,7 +33,7 @@ public class BukkitPlayer extends BukkitCommandInvoker implements CommonPlayer {
     public void sendTitle(@Nullable String title, @Nullable String subtitle, int fadeIn, int stay, int fadeOut, @Nullable Map<String, String> replaceMap) {
         title = title != null ? title : "";
         subtitle = subtitle != null ? subtitle : "";
-        Player player = Bukkit.getPlayer(playerId);
+        Player player = Bukkit.getPlayer(uuid);
         if (player == null) {
             return;
         }
@@ -61,7 +46,7 @@ public class BukkitPlayer extends BukkitCommandInvoker implements CommonPlayer {
 
     @Override
     public void sendActionBar(String text, Map<String, String> replaceMap) {
-        Player player = Bukkit.getPlayer(playerId);
+        Player player = Bukkit.getPlayer(uuid);
         if (player == null) {
             return;
         }
@@ -83,6 +68,11 @@ public class BukkitPlayer extends BukkitCommandInvoker implements CommonPlayer {
     @Override
     public CommonPlayer asPlayer() {
         return this;
+    }
+
+    @Override
+    public InvokerType invokerType() {
+        return InvokerType.PLAYER;
     }
 
     public static BukkitPlayer byPlayer(Player player) {

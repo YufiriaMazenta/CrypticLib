@@ -1,5 +1,7 @@
 package crypticlib.script;
 
+import crypticlib.CommonPlayer;
+import crypticlib.Invoker;
 import crypticlib.script.ast.ASTNode;
 import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
@@ -9,9 +11,10 @@ import crypticlib.script.func.ScriptFunctionRegistry;
 import crypticlib.script.lex.ScriptLexer;
 import crypticlib.script.lex.Token;
 import crypticlib.script.vm.ScriptVM;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 /**
  * Script 功能测试
@@ -401,7 +404,31 @@ public class ScriptTest {
      * 创建测试上下文
      */
     private static ScriptContext createContext() {
-        return new ScriptContext(new ScriptExecutor(null, ScriptExecutor.ExecutorType.CONSOLE));
+        return new ScriptContext(new Invoker() {
+            @Override
+            public @NotNull Object getPlatformInvoker() { return null; }
+
+            @Override
+            public @NotNull String getName() { return "Console"; }
+
+            @Override
+            public void sendMsg(String msg, Map<String, String> replaceMap) {}
+
+            @Override
+            public boolean hasPermission(String permission) { return true; }
+
+            @Override
+            public boolean isPlayer() { return false; }
+
+            @Override
+            public boolean isConsole() { return true; }
+
+            @Override
+            public CommonPlayer asPlayer() { throw new UnsupportedOperationException(); }
+
+            @Override
+            public InvokerType invokerType() { return InvokerType.CONSOLE; }
+        });
     }
 
     /**

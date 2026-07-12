@@ -1,6 +1,6 @@
 package crypticlib.perm;
 
-import crypticlib.command.CommandInvoker;
+import crypticlib.Invoker;
 
 public class PermInfo {
 
@@ -31,8 +31,8 @@ public class PermInfo {
         }
     }
 
-    public boolean hasPermission(CommandInvoker commandInvoker) {
-        return commandInvoker.hasPermission(permission);
+    public boolean hasPermission(Invoker invoker) {
+        return invoker.hasPermission(permission);
     }
 
 }

@@ -1,6 +1,6 @@
 package crypticlib.lang.entry;
 
-import crypticlib.command.BukkitCommandInvoker;
+import crypticlib.BukkitInvoker;
 import crypticlib.BukkitPlayer;
 import crypticlib.lang.LangEntryContainer;
 import org.bukkit.command.CommandSender;
@@ -36,7 +36,7 @@ public class StringLangEntry extends LangEntry<String> {
             Player bukkitPlayer = (Player) sender;
             BukkitPlayer.byPlayer(bukkitPlayer).sendMsg(value(bukkitPlayer), replaceMap);
         } else {
-            BukkitCommandInvoker.byCommandSender(sender).sendMsg(value(), replaceMap);
+            BukkitInvoker.byCommandSender(sender).sendMsg(value(), replaceMap);
         }
     }
 

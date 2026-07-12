@@ -1,7 +1,7 @@
 package crypticlib.chat;
 
 import crypticlib.CrypticLib;
-import crypticlib.command.CommandInvoker;
+import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +16,7 @@ public interface MsgSender {
      * @param receiver 发送到的对象
      * @param msg      发送的消息
      */
-    default void sendMsg(CommandInvoker receiver, String msg) {
+    default void sendMsg(Invoker receiver, String msg) {
         sendMsg(receiver, msg, new HashMap<>());
     }
 
@@ -27,7 +27,7 @@ public interface MsgSender {
      * @param msg        发送的消息
      * @param replaceMap 需要替换的文本
      */
-    default void sendMsg(CommandInvoker receiver, String msg, @NotNull Map<String, String> replaceMap) {
+    default void sendMsg(Invoker receiver, String msg, @NotNull Map<String, String> replaceMap) {
         if (receiver == null)
             return;
         receiver.sendMsg(msg, replaceMap);
@@ -180,9 +180,9 @@ public interface MsgSender {
      */
     interface ComponentSender<Component> extends MsgSender {
 
-        void sendMsg(CommandInvoker receiver, @NotNull Component... components);
+        void sendMsg(Invoker receiver, @NotNull Component... components);
 
-        void sendMsg(CommandInvoker receiver, @NotNull Component component);
+        void sendMsg(Invoker receiver, @NotNull Component component);
 
         void sendActionBar(CommonPlayer player, Component component);
 

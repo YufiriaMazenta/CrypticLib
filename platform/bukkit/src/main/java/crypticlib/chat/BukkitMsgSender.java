@@ -1,9 +1,9 @@
 package crypticlib.chat;
 
 import crypticlib.CrypticLib;
-import crypticlib.command.BukkitCommandInvoker;
+import crypticlib.BukkitInvoker;
 import crypticlib.BukkitPlayer;
-import crypticlib.command.CommandInvoker;
+import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
@@ -21,12 +21,12 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     INSTANCE;
 
     @Override
-    public void sendMsg(CommandInvoker receiver, @NotNull BaseComponent... baseComponents) {
+    public void sendMsg(Invoker receiver, @NotNull BaseComponent... baseComponents) {
         sendMsg(receiver, new TextComponent(baseComponents));
     }
 
     @Override
-    public void sendMsg(CommandInvoker receiver, @NotNull BaseComponent baseComponent) {
+    public void sendMsg(Invoker receiver, @NotNull BaseComponent baseComponent) {
         if (receiver == null)
             return;
         ((CommandSender) receiver.getPlatformInvoker()).spigot().sendMessage(baseComponent);
@@ -36,7 +36,9 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void sendActionBar(CommonPlayer player, BaseComponent component) {
         if (player == null)
             return;
-        ((Player) player.getPlatformPlayer()).spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
+        player.getPlatformPlayer(Bukkit::getPlayer).ifPresent(bukkitPlayer -> {
+            bukkitPlayer.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
+        });
     }
 
     @Override
@@ -82,7 +84,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(BukkitCommandInvoker.byCommandSender(Bukkit.getConsoleSender()), msg, replaceMap);
+        sendMsg(BukkitInvoker.byCommandSender(Bukkit.getConsoleSender()), msg, replaceMap);
     }
 
 }

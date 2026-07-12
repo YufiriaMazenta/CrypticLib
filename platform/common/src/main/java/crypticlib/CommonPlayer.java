@@ -1,16 +1,19 @@
 package crypticlib;
 
-import crypticlib.command.CommandInvoker;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
-public interface CommonPlayer extends CommandInvoker {
+public interface CommonPlayer extends Invoker {
 
-    @Nullable Object getPlatformPlayer();
+    default <T> Optional<T> getPlatformPlayer(Function<@NotNull UUID, @Nullable T> playerGetter) {
+        return Optional.ofNullable(playerGetter.apply(getUniqueId()));
+    }
 
     @NotNull UUID getUniqueId();
 

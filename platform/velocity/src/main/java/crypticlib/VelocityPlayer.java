@@ -3,7 +3,6 @@ package crypticlib;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import crypticlib.chat.VelocityTextProcessor;
-import crypticlib.command.VelocityCommandInvoker;
 import crypticlib.util.ReflectionHelper;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
@@ -17,7 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public class VelocityPlayer extends VelocityCommandInvoker implements CommonPlayer {
+public class VelocityPlayer extends VelocityInvoker implements CommonPlayer {
 
     protected @NotNull UUID playerId;
     protected @NotNull ProxyServer proxyServer;
@@ -27,11 +26,6 @@ public class VelocityPlayer extends VelocityCommandInvoker implements CommonPlay
         super(platformPlayer);
         this.playerId = platformPlayer.getUniqueId();
         this.proxyServer = ((VelocityPlugin) ReflectionHelper.getPluginInstance()).proxyServer;
-    }
-
-    @Override
-    public Player getPlatformPlayer() {
-        return proxyServer.getPlayer(playerId).orElse(null);
     }
 
     @Override
@@ -105,6 +99,11 @@ public class VelocityPlayer extends VelocityCommandInvoker implements CommonPlay
     @Override
     public CommonPlayer asPlayer() {
         return this;
+    }
+
+    @Override
+    public InvokerType invokerType() {
+        return InvokerType.PLAYER;
     }
 
     public static VelocityPlayer byPlayer(Player player) {

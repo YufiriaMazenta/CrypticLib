@@ -1,7 +1,6 @@
 package crypticlib;
 
 import crypticlib.chat.BungeeTextProcessor;
-import crypticlib.command.BungeeCommandInvoker;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.ProxyServer;
@@ -15,7 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-public class BungeePlayer extends BungeeCommandInvoker implements CommonPlayer {
+public class BungeePlayer extends BungeeInvoker implements CommonPlayer {
 
     protected @NotNull UUID playerId;
 
@@ -23,11 +22,6 @@ public class BungeePlayer extends BungeeCommandInvoker implements CommonPlayer {
     protected BungeePlayer(@NotNull ProxiedPlayer platformPlayer) {
         super(platformPlayer);
         this.playerId = platformPlayer.getUniqueId();
-    }
-
-    @Override
-    public ProxiedPlayer getPlatformPlayer() {
-        return ProxyServer.getInstance().getPlayer(playerId);
     }
 
     @Override
@@ -90,6 +84,11 @@ public class BungeePlayer extends BungeeCommandInvoker implements CommonPlayer {
     @Override
     public CommonPlayer asPlayer() {
         return this;
+    }
+
+    @Override
+    public InvokerType invokerType() {
+        return InvokerType.PLAYER;
     }
 
     public static BungeePlayer byProxiedPlayer(ProxiedPlayer player) {

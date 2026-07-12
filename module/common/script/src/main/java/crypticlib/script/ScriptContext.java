@@ -1,10 +1,10 @@
 package crypticlib.script;
 
+import crypticlib.Invoker;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * 脚本执行上下文
@@ -14,15 +14,15 @@ import java.util.function.Function;
  */
 public class ScriptContext {
 
-    private final @NotNull ScriptExecutor executor;
+    private final @NotNull Invoker invoker;
     private final @NotNull Map<String, ScriptValue> variables = new HashMap<>();
 
-    public ScriptContext(@NotNull ScriptExecutor executor) {
-        this.executor = Objects.requireNonNull(executor);
+    public ScriptContext(@NotNull Invoker invoker) {
+        this.invoker = Objects.requireNonNull(invoker);
     }
 
-    public @NotNull ScriptExecutor executor() {
-        return executor;
+    public @NotNull Invoker invoker() {
+        return invoker;
     }
 
     // ---- 变量存取 ----
