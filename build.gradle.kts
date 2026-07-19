@@ -4,7 +4,7 @@ rootProject.group = "com.crypticlib"
 rootProject.version = rootProject.findProperty("version").toString()
 
 
-var repositoryUrl = "http://110.42.10.241:8082/repository/"
+var repositoryUrl = "https://repo.crypticlib.incrafttime.top/repository/"
 repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
     repositoryUrl.plus("maven-snapshots/")
 } else {
@@ -38,11 +38,8 @@ subprojects {
         maven("https://r.irepo.space/maven/")
         maven("https://repo.codemc.io/repository/nms/")
         maven("https://libraries.minecraft.net")
-//        maven("https://repo.crypticlib.com:8081/repository/maven-public/")
         //CrypticLib
-        maven("http://110.42.10.241:8082/repository/maven-public/") {
-            isAllowInsecureProtocol = true
-        }
+        maven("https://repo.crypticlib.incrafttime.top/repository/maven-public/")
         maven("https://jitpack.io")
         mavenCentral()
     }
@@ -61,7 +58,6 @@ subprojects {
         repositories {
             maven {
                 url = uri(repositoryUrl)
-                isAllowInsecureProtocol = true
                 credentials {
                     username = project.findProperty("maven_username").toString()
                     password = project.findProperty("maven_password").toString()
