@@ -61,7 +61,7 @@ build.gradle
 ```groovy
 repositories {
     maven {
-        url = "https://repo.crypticlib.com:8081/repository/maven-public/"
+        url = "https://repo.crypticlib.incrafttime.top/repository/maven-public/"
     }
 }
 ```
