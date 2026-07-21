@@ -15,8 +15,6 @@ public interface CommonPlayer extends Invoker {
         return Optional.ofNullable(playerGetter.apply(getUniqueId()));
     }
 
-    @NotNull UUID getUniqueId();
-
     @NotNull Locale getLocale();
 
     default void sendTitle(@Nullable String title, @Nullable String subtitle) {
