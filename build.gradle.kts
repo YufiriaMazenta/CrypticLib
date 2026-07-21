@@ -18,6 +18,9 @@ plugins {
 }
 
 subprojects {
+    // 跳过没有源码的中间项目（如 platform、module、module:bukkit 等）
+    if (!file("src").exists()) return@subprojects
+
     apply(plugin = "java")
     apply(plugin = "maven-publish")
     apply(plugin = "com.github.johnrengelman.shadow")
