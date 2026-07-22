@@ -282,6 +282,18 @@ public class ScriptVM {
         CrypticLib.scheduler().syncLater(this::resume, delayTicks);
     }
 
+    /**
+     * 暂停脚本执行，由插件自主控制恢复时机
+     * <p>
+     * 调用后脚本会在当前指令执行完毕后停止，
+     * 插件可在合适的时机调用 {@link #resume()} 恢复执行。
+     * 与 {@link #pauseAndScheduleResume(long)} 不同，
+     * 此方法不会自动调度恢复任务。
+     */
+    public void pause() {
+        paused = true;
+    }
+
     public boolean isPaused() {
         return paused;
     }
