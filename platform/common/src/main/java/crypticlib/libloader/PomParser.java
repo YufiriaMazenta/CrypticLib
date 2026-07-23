@@ -18,14 +18,18 @@ public class PomParser {
     private static final Pattern PROPERTY_PATTERN = Pattern.compile("\\$\\{([^}]+)}");
 
     @NotNull
-    public static List<PomDependency> parseDependencies(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) throws IOException, URISyntaxException {
-        String repositoryUrl = repository;
-        if (!repositoryUrl.endsWith("/")) {
-            repositoryUrl += "/";
-        }
+    private static String normalizeRepository(@NotNull String repository) {
+        return repository.endsWith("/") ? repository : repository + "/";
+    }
 
-        String groupIdPath = groupId.replace('.', '/');
-        String pomUrl = repositoryUrl + groupIdPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".pom";
+    @NotNull
+    private static String buildPomUrl(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
+        return normalizeRepository(repository) + groupId.replace('.', '/') + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".pom";
+    }
+
+    @NotNull
+    public static List<PomDependency> parseDependencies(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) throws IOException, URISyntaxException {
+        String pomUrl = buildPomUrl(repository, groupId, artifactId, version);
 
         try (InputStream is = new URI(pomUrl).toURL().openStream()) {
             String pomContent = new String(IOHelper.readBytes(is), StandardCharsets.UTF_8);
@@ -50,19 +54,12 @@ public class PomParser {
     private static List<PomDependency> parseDependenciesFromPom(@NotNull String pomContent, @NotNull String repository, @NotNull Map<String, String> properties) {
         List<PomDependency> dependencies = new ArrayList<>();
 
-        int depsStart = pomContent.indexOf("<dependencies>");
-        if (depsStart == -1) {
+        String depsSection = findDependenciesSection(pomContent);
+        if (depsSection == null) {
             return Collections.emptyList();
         }
 
-        int depsEnd = pomContent.indexOf("</dependencies>", depsStart);
-        if (depsEnd == -1) {
-            return Collections.emptyList();
-        }
-
-        String depsSection = pomContent.substring(depsStart, depsEnd);
         int pos = 0;
-
         while (true) {
             int depStart = depsSection.indexOf("<dependency>", pos);
             if (depStart == -1) break;
@@ -80,6 +77,74 @@ public class PomParser {
         }
 
         return dependencies;
+    }
+
+    @Nullable
+    private static String findDependenciesSection(@NotNull String pomContent) {
+        int dmStart = pomContent.indexOf("<dependencyManagement>");
+        int dmEnd = dmStart == -1 ? -1 : findElementEnd(pomContent, dmStart, "dependencyManagement");
+
+        int pos = 0;
+        while (true) {
+            int depsStart = pomContent.indexOf("<dependencies>", pos);
+            if (depsStart == -1) {
+                return null;
+            }
+
+            if (dmStart != -1 && dmEnd != -1 && depsStart > dmStart && depsStart < dmEnd) {
+                pos = dmEnd;
+                continue;
+            }
+
+            int depsEnd = findElementEnd(pomContent, depsStart, "dependencies");
+            if (depsEnd == -1) {
+                return null;
+            }
+            return pomContent.substring(depsStart + "<dependencies>".length(), depsEnd);
+        }
+    }
+
+    private static int findElementEnd(@NotNull String content, int start, @NotNull String tag) {
+        String openTag = "<" + tag + ">";
+        String closeTag = "</" + tag + ">";
+        int depth = 0;
+        int pos = start;
+        while (pos < content.length()) {
+            int nextOpen = content.indexOf(openTag, pos);
+            int nextClose = content.indexOf(closeTag, pos);
+
+            if (nextClose == -1) {
+                return -1;
+            }
+
+            if (nextOpen != -1 && nextOpen < nextClose) {
+                depth++;
+                pos = nextOpen + openTag.length();
+            } else {
+                depth--;
+                if (depth == 0) {
+                    return nextClose;
+                }
+                pos = nextClose + closeTag.length();
+            }
+        }
+        return -1;
+    }
+
+    @NotNull
+    public static String parsePackaging(@NotNull String pomContent) {
+        String packaging = extractTag(pomContent, "packaging");
+        return packaging != null ? packaging : "jar";
+    }
+
+    @Nullable
+    public static String fetchPomContent(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
+        String pomUrl = buildPomUrl(repository, groupId, artifactId, version);
+        try (InputStream is = new URI(pomUrl).toURL().openStream()) {
+            return new String(IOHelper.readBytes(is), StandardCharsets.UTF_8);
+        } catch (IOException | URISyntaxException e) {
+            return null;
+        }
     }
 
     @NotNull
@@ -150,13 +215,7 @@ public class PomParser {
 
         parentVersion = resolveProperty(parentVersion, properties);
 
-        String repositoryUrl = repository;
-        if (!repositoryUrl.endsWith("/")) {
-            repositoryUrl += "/";
-        }
-
-        String parentGroupIdPath = parentGroupId.replace('.', '/');
-        String parentPomUrl = repositoryUrl + parentGroupIdPath + "/" + parentArtifactId + "/" + parentVersion + "/" + parentArtifactId + "-" + parentVersion + ".pom";
+        String parentPomUrl = buildPomUrl(repository, parentGroupId, parentArtifactId, parentVersion);
 
         try (InputStream is = new URI(parentPomUrl).toURL().openStream()) {
             return new String(IOHelper.readBytes(is), StandardCharsets.UTF_8);

@@ -52,4 +52,9 @@ public class PomDependency {
         return groupId + ":" + artifactId;
     }
 
+    @NotNull
+    public String toCoord() {
+        return groupId + ":" + artifactId + ":" + version;
+    }
+
 }

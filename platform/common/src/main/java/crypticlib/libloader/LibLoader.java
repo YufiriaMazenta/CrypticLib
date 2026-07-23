@@ -18,6 +18,11 @@ public class LibLoader {
 
     private static final Map<String, ClassLoader> loadedLibraries = new ConcurrentHashMap<>();
 
+    private static boolean isPomPackaging(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
+        String pomContent = PomParser.fetchPomContent(repository, groupId, artifactId, version);
+        return pomContent != null && "pom".equals(PomParser.parsePackaging(pomContent));
+    }
+
     public static void loadLibrary(@NotNull Library library) {
         loadLibrary(library, new HashSet<>());
     }
@@ -37,6 +42,13 @@ public class LibLoader {
                 return;
             }
             try {
+                if (isPomPackaging(library.repository(), library.groupId(), library.artifactId(), library.version())) {
+                    downloadTransitiveDependencies(library, resolved);
+                    loadedLibraries.put(key, LibLoader.class.getClassLoader());
+                    IOHelper.info("Successfully resolved pom dependency " + library.dependency());
+                    return;
+                }
+
                 File libDir = getJarDir(library.groupId(), library.artifactId(), library.version());
                 if (!libDir.exists()) {
                     libDir.mkdirs();
@@ -56,7 +68,7 @@ public class LibLoader {
                 if (!library.relocate().isEmpty()) {
                     File relocatedFile = new File(libDir, library.artifactId() + "-" + library.version() + "-relocated.jar");
                     if (!relocatedFile.exists()) {
-                        IOHelper.info("Relocating " + library.dependency() + " to " + library.relocate());
+                        IOHelper.info("Relocating " + library.dependency());
                         BootLoader.relocate(jarFile, relocatedFile, library.relocate());
                     }
                     loadFile = relocatedFile;
@@ -93,12 +105,21 @@ public class LibLoader {
                 continue;
             }
 
-            String depKey = dep.groupId() + ":" + dep.artifactId();
+            if (dep.version() == null) {
+                continue;
+            }
+
+            String depKey = dep.toCoord();
             if (loadedLibraries.containsKey(depKey) || resolved.contains(depKey)) {
                 continue;
             }
 
-            if (dep.version() == null) {
+            if (isPomPackaging(parent.repository(), dep.groupId(), dep.artifactId(), dep.version())) {
+                resolved.add(depKey);
+                Library transitiveLib = new Library(parent.repository(), depKey, parent.relocate());
+                downloadTransitiveDependencies(transitiveLib, resolved);
+                loadedLibraries.put(depKey, LibLoader.class.getClassLoader());
+                IOHelper.info("Successfully resolved pom dependency " + depKey);
                 continue;
             }
 
@@ -109,21 +130,20 @@ public class LibLoader {
 
             File depJar = new File(depDir, dep.artifactId() + "-" + dep.version() + ".jar");
             if (!depJar.exists()) {
-                IOHelper.info("Downloading transitive dependency " + dep.groupId() + ":" + dep.artifactId() + ":" + dep.version());
+                IOHelper.info("Downloading " + depKey + " from " + parent.repository());
                 downloadJar(parent.repository(), dep.groupId(), dep.artifactId(), dep.version(), depJar);
             }
 
             resolved.add(depKey);
 
-            String depCoord = dep.groupId() + ":" + dep.artifactId() + ":" + dep.version();
-            Library transitiveLib = new Library(parent.repository(), depCoord, parent.relocate());
+            Library transitiveLib = new Library(parent.repository(), depKey, parent.relocate());
             downloadTransitiveDependencies(transitiveLib, resolved);
 
             File loadFile = depJar;
             if (!parent.relocate().isEmpty()) {
                 File relocatedFile = new File(depDir, dep.artifactId() + "-" + dep.version() + "-relocated.jar");
                 if (!relocatedFile.exists()) {
-                    IOHelper.info("Relocating transitive dependency " + dep.groupId() + ":" + dep.artifactId());
+                    IOHelper.info("Relocating " + depKey);
                     BootLoader.relocate(depJar, relocatedFile, parent.relocate());
                 }
                 loadFile = relocatedFile;
@@ -135,7 +155,7 @@ public class LibLoader {
             );
             verifyClassLoader(classLoader, dep.groupId(), dep.artifactId());
             loadedLibraries.put(depKey, classLoader);
-            IOHelper.info("Successfully loaded transitive dependency " + depKey);
+            IOHelper.info("Successfully loaded " + depKey);
         }
     }
 
@@ -182,7 +202,12 @@ public class LibLoader {
         String groupIdPath = groupId.replace('.', '/');
         String url = repositoryUrl + groupIdPath + "/" + artifactId + "/" + version + "/" + artifactId + "-" + version + ".jar";
 
-        IOHelper.downloadFile(url, target);
+        try {
+            IOHelper.downloadFile(url, target);
+        } catch (IOException e) {
+            target.delete();
+            throw e;
+        }
     }
 
 }
