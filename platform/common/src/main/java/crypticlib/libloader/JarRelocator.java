@@ -36,7 +36,8 @@ public class JarRelocator {
                 String name = entry.getName();
                 String mappedName;
                 if (name.endsWith(".class")) {
-                    mappedName = remapper.map(name.substring(0, name.length() - 6).replace('/', '.')).replace('.', '/') + ".class";
+                    String internalName = name.substring(0, name.length() - 6);
+                    mappedName = remapper.map(internalName) + ".class";
                 } else {
                     mappedName = name;
                 }
@@ -80,11 +81,14 @@ public class JarRelocator {
 
         @Override
         public String map(String internalName) {
+            // internalName 使用斜杠分隔 (如 com/google/gson/Gson)
             for (Map.Entry<String, String> entry : relocation.entrySet()) {
                 String oldPrefix = entry.getKey().replace('.', '/');
                 String newPrefix = entry.getValue().replace('.', '/');
                 if (internalName.startsWith(oldPrefix)) {
-                    return newPrefix + internalName.substring(oldPrefix.length());
+                    String result = newPrefix + internalName.substring(oldPrefix.length());
+                    System.out.println("map: " + internalName + " -> " + result);
+                    return result;
                 }
             }
             return internalName;

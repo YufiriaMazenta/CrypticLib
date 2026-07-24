@@ -18,37 +18,17 @@ public class LibLoader {
 
     private static final Map<String, ClassLoader> loadedLibraries = new ConcurrentHashMap<>();
 
-    private static boolean isPomPackaging(@NotNull String repository, @NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
-        String pomContent = PomParser.fetchPomContent(repository, groupId, artifactId, version);
-        return pomContent != null && "pom".equals(PomParser.parsePackaging(pomContent));
-    }
-
     public static void loadLibrary(@NotNull Library library) {
-        loadLibrary(library, new HashSet<>());
-    }
-
-    private static void loadLibrary(@NotNull Library library, @NotNull Set<String> resolved) {
         String key = library.dependency();
         if (loadedLibraries.containsKey(key)) {
             return;
         }
-        if (resolved.contains(key)) {
-            return;
-        }
-        resolved.add(key);
 
         synchronized (LibLoader.class) {
             if (loadedLibraries.containsKey(key)) {
                 return;
             }
             try {
-                if (isPomPackaging(library.repository(), library.groupId(), library.artifactId(), library.version())) {
-                    downloadTransitiveDependencies(library, resolved);
-                    loadedLibraries.put(key, LibLoader.class.getClassLoader());
-                    IOHelper.info("Successfully resolved pom dependency " + library.dependency());
-                    return;
-                }
-
                 File libDir = getJarDir(library.groupId(), library.artifactId(), library.version());
                 if (!libDir.exists()) {
                     libDir.mkdirs();
@@ -61,8 +41,6 @@ public class LibLoader {
                     IOHelper.info("Downloading " + library.groupId() + ":" + library.artifactId() + ":" + library.version() + " from " + library.repository());
                     downloadJar(library.repository(), library.groupId(), library.artifactId(), library.version(), jarFile);
                 }
-
-                downloadTransitiveDependencies(library, resolved);
 
                 File loadFile = jarFile;
                 if (!library.relocate().isEmpty()) {
@@ -85,77 +63,6 @@ public class LibLoader {
                 IOHelper.info("Failed to load " + library.dependency() + ": " + e.getMessage());
                 throw new RuntimeException("Failed to load library: " + library.dependency(), e);
             }
-        }
-    }
-
-    private static void downloadTransitiveDependencies(@NotNull Library parent, @NotNull Set<String> resolved) throws IOException, java.net.URISyntaxException {
-        List<PomDependency> dependencies = PomParser.parseDependencies(
-            parent.repository(),
-            parent.groupId(),
-            parent.artifactId(),
-            parent.version()
-        );
-
-        for (PomDependency dep : dependencies) {
-            if (dep.optional()) {
-                continue;
-            }
-            String scope = dep.scope();
-            if (!"compile".equals(scope) && !"runtime".equals(scope)) {
-                continue;
-            }
-
-            if (dep.version() == null) {
-                continue;
-            }
-
-            String depKey = dep.toCoord();
-            if (loadedLibraries.containsKey(depKey) || resolved.contains(depKey)) {
-                continue;
-            }
-
-            if (isPomPackaging(parent.repository(), dep.groupId(), dep.artifactId(), dep.version())) {
-                resolved.add(depKey);
-                Library transitiveLib = new Library(parent.repository(), depKey, parent.relocate());
-                downloadTransitiveDependencies(transitiveLib, resolved);
-                loadedLibraries.put(depKey, LibLoader.class.getClassLoader());
-                IOHelper.info("Successfully resolved pom dependency " + depKey);
-                continue;
-            }
-
-            File depDir = getJarDir(dep.groupId(), dep.artifactId(), dep.version());
-            if (!depDir.exists()) {
-                depDir.mkdirs();
-            }
-
-            File depJar = new File(depDir, dep.artifactId() + "-" + dep.version() + ".jar");
-            if (!depJar.exists()) {
-                IOHelper.info("Downloading " + depKey + " from " + parent.repository());
-                downloadJar(parent.repository(), dep.groupId(), dep.artifactId(), dep.version(), depJar);
-            }
-
-            resolved.add(depKey);
-
-            Library transitiveLib = new Library(parent.repository(), depKey, parent.relocate());
-            downloadTransitiveDependencies(transitiveLib, resolved);
-
-            File loadFile = depJar;
-            if (!parent.relocate().isEmpty()) {
-                File relocatedFile = new File(depDir, dep.artifactId() + "-" + dep.version() + "-relocated.jar");
-                if (!relocatedFile.exists()) {
-                    IOHelper.info("Relocating " + depKey);
-                    BootLoader.relocate(depJar, relocatedFile, parent.relocate());
-                }
-                loadFile = relocatedFile;
-            }
-
-            URLClassLoader classLoader = new URLClassLoader(
-                new URL[]{loadFile.toURI().toURL()},
-                LibLoader.class.getClassLoader()
-            );
-            verifyClassLoader(classLoader, dep.groupId(), dep.artifactId());
-            loadedLibraries.put(depKey, classLoader);
-            IOHelper.info("Successfully loaded " + depKey);
         }
     }
 

@@ -36,7 +36,13 @@ public class AsmClassLoader extends URLClassLoader {
         if (clazz != null) {
             return clazz;
         }
-        return super.loadClass(name);
+        // 先尝试从自己加载的 JAR 中查找
+        try {
+            return findClass(name);
+        } catch (ClassNotFoundException e) {
+            // 找不到再委托给父类加载器
+            return super.loadClass(name);
+        }
     }
 
 }

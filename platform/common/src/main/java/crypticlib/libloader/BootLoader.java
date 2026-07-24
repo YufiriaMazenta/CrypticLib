@@ -23,7 +23,7 @@ public class BootLoader {
     private static final String MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2/";
 
     private static final String OLD_PREFIX_STR = "org/objectweb/asm";
-    private static final String NEW_PREFIX_STR = "crypticlib/lib/asm";
+    private static final String NEW_PREFIX_STR = "crypticlib/lb/asm";
     private static final byte[] OLD_PREFIX = OLD_PREFIX_STR.getBytes(StandardCharsets.UTF_8);
     private static final byte[] NEW_PREFIX = NEW_PREFIX_STR.getBytes(StandardCharsets.UTF_8);
 
