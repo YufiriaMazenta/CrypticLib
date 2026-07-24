@@ -15,7 +15,7 @@ public class Database {
             DependencyLoader.INSTANCE.loadDependency(
                 Dependency.builder("com.zaxxer", "HikariCP", "5.1.0")
                     .test("!com%zaxxer%hikari%HikariDataSource")
-                    .relocate("com%zaxxer%hikari", "crypticlib%lib%hikari")
+                    .relocate("com%zaxxer%hikari", "crypticlib%libs%hikari")
                     .build()
             );
         } catch (Throwable e) {

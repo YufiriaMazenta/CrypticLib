@@ -183,7 +183,7 @@ public class Dependency extends AbstractXmlParser {
         private String repository;
         private String test;
         private boolean transitive = true;
-        private List<JarRelocation> relocations = new ArrayList<>();
+        private final List<JarRelocation> relocations = new ArrayList<>();
 
         public Builder(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
             this.groupId = groupId.replace("#", "").replace("%", ".");
@@ -207,6 +207,7 @@ public class Dependency extends AbstractXmlParser {
          * 设置类存在性检测
          * @param test 类名，前缀 "!" 表示类不存在时才加载
          *         支持 % 代替 . 和 # 作为转义（避免 Shadow relocate）
+         *         输入值应当为relocate之后的类名
          */
         @NotNull
         public Builder test(@Nullable String test) {
