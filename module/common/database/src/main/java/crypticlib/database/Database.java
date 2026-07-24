@@ -2,15 +2,14 @@ package crypticlib.database;
 
 import crypticlib.libloader.LibLoader;
 import crypticlib.libloader.Library;
-
-import java.util.Collections;
+import crypticlib.libloader.Relocation;
 
 public class Database {
 
     private static final Library HIKARI_LIBRARY = new Library(
         "https://repo.maven.apache.org/maven2/",
         "com.zaxxer:HikariCP:5.1.0",
-        Collections.singletonMap("com.zaxxer.hikari", "crypticlib.lib.hikari")
+        Relocation.of("com.zaxxer.hikari", "crypticlib.lib.hikari")
     );
 
     private static boolean initialized = false;
