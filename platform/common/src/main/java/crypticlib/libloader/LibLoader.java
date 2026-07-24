@@ -43,11 +43,12 @@ public class LibLoader {
                 }
 
                 File loadFile = jarFile;
-                if (!library.relocate().isEmpty()) {
+                Map<String, String> relocateMap = library.relocateMap();
+                if (!relocateMap.isEmpty()) {
                     File relocatedFile = new File(libDir, library.artifactId() + "-" + library.version() + "-relocated.jar");
                     if (!relocatedFile.exists()) {
                         IOHelper.info("Relocating " + library.dependency());
-                        BootLoader.relocate(jarFile, relocatedFile, library.relocate());
+                        BootLoader.relocate(jarFile, relocatedFile, relocateMap);
                     }
                     loadFile = relocatedFile;
                 }

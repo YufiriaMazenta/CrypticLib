@@ -1,10 +1,12 @@
 package crypticlib.libloader;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Library {
@@ -16,20 +18,21 @@ public class Library {
 
     private final @NotNull String repository;
     private final @NotNull String dependency;
-    private final Map<String, String> relocate;
+    private final List<Relocation> relocations;
 
     public Library(@NotNull String dependency) {
-        this(REPOSITORY_MAVEN_CENTRAL, dependency, null);
+        this(REPOSITORY_MAVEN_CENTRAL, dependency);
     }
 
     public Library(@NotNull String repository, @NotNull String dependency) {
-        this(repository, dependency, null);
+        this(repository, dependency, new Relocation[0]);
     }
 
-    public Library(@NotNull String repository, @NotNull String dependency, @Nullable Map<String, String> relocate) {
+    public Library(@NotNull String repository, @NotNull String dependency, @NotNull Relocation... relocations) {
         this.repository = repository;
-        this.dependency = dependency;
-        this.relocate = relocate == null ? Collections.emptyMap() : Collections.unmodifiableMap(new LinkedHashMap<>(relocate));
+        // 支持在依赖字符串中用 # 避免 Shadow relocate 误伤，构造时去掉
+        this.dependency = dependency.replace("#", "");
+        this.relocations = Collections.unmodifiableList(Arrays.asList(relocations));
     }
 
     @NotNull
@@ -43,8 +46,8 @@ public class Library {
     }
 
     @NotNull
-    public Map<String, String> relocate() {
-        return relocate;
+    public List<Relocation> relocations() {
+        return relocations;
     }
 
     @NotNull
@@ -60,6 +63,22 @@ public class Library {
     @NotNull
     public String version() {
         return dependency.split(":")[2];
+    }
+
+    /**
+     * 将 relocations 列表转换为 Map 格式（兼容旧代码）
+     * @return Map 格式的 relocation 规则
+     */
+    @NotNull
+    public Map<String, String> relocateMap() {
+        if (relocations.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> map = new LinkedHashMap<>();
+        for (Relocation r : relocations) {
+            map.put(r.from(), r.to());
+        }
+        return Collections.unmodifiableMap(map);
     }
 
 }
