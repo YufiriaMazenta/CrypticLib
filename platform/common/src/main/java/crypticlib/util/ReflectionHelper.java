@@ -220,9 +220,6 @@ public class ReflectionHelper {
                 } catch (RuntimeException e) {
                     //当没有INSTANCE名字的变量时，则新建一个对象
                     object = ReflectionHelper.newDeclaredInstance(clazz, objects);
-                    if (CrypticLib.debug) {
-                        e.printStackTrace();
-                    }
                 }
             }
             singletonObjectMap.put(clazz, object);

@@ -1,16 +1,9 @@
 package crypticlib.database;
 
-import crypticlib.libloader.LibLoader;
-import crypticlib.libloader.Library;
-import crypticlib.libloader.Relocation;
+import crypticlib.dependency.Dependency;
+import crypticlib.dependency.DependencyLoader;
 
 public class Database {
-
-    private static final Library HIKARI_LIBRARY = new Library(
-        "https://repo.maven.apache.org/maven2/",
-        "com.zaxxer:HikariCP:5.1.0",
-        Relocation.of("com.zaxxer.hikari", "crypticlib.lib.hikari")
-    );
 
     private static boolean initialized = false;
 
@@ -18,7 +11,16 @@ public class Database {
         if (initialized) {
             return;
         }
-        LibLoader.loadLibrary(HIKARI_LIBRARY);
+        try {
+            DependencyLoader.INSTANCE.loadDependency(
+                Dependency.builder("com.zaxxer", "HikariCP", "5.1.0")
+                    .test("!com%zaxxer%hikari%HikariDataSource")
+                    .relocate("com%zaxxer%hikari", "crypticlib%lib%hikari")
+                    .build()
+            );
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to load HikariCP", e);
+        }
         initialized = true;
     }
 

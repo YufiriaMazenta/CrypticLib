@@ -13,3 +13,7 @@ dependencies {
     implementation(project(":platform:common"))
     implementation(project(":module:common:script"))
 }
+
+tasks.shadowJar {
+    relocate("me.lucko.jarrelocator", "crypticlib.libs.jarrelocator")
+}

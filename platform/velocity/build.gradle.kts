@@ -8,3 +8,7 @@ dependencies {
     compileOnly("com.electronwill.night-config:core:3.6.7")
     implementation(project(":platform:common"))
 }
+
+tasks.shadowJar {
+    relocate("me.lucko.jarrelocator", "crypticlib.libs.jarrelocator")
+}

@@ -6,3 +6,7 @@ dependencies {
     compileOnly("net.md-5:bungeecord-api:1.21-R0.1-SNAPSHOT")
     implementation(project(":platform:common"))
 }
+
+tasks.shadowJar {
+    relocate("me.lucko.jarrelocator", "crypticlib.libs.jarrelocator")
+}
