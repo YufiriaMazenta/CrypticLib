@@ -227,7 +227,7 @@ public class Dependency extends AbstractXmlParser {
          * 设置类存在性检测
          * @param test 类名，前缀 "!" 表示类不存在时才加载
          *         支持 % 代替 . 和 # 作为转义
-         *         因为shadow的relocate会将字符串中的包名也重定向，所以这里可以写原始类名
+         *         最好是传递relocate后的类名,并且使用%和#转义
          */
         @NotNull
         public Builder test(@Nullable String test) {
