@@ -6,6 +6,6 @@ dependencies {
 
 tasks {
     shadowJar {
-        relocate("com.zaxxer.hikari", "crypticlib.libs.hikari")
+        relocate("com.zaxxer.hikari", "com.zaxxer.hikari510")
     }
 }

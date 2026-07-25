@@ -9,6 +9,7 @@ import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycleTaskWrapper;
 import crypticlib.lifecycle.TaskRule;
+import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
 import org.jetbrains.annotations.ApiStatus;
@@ -18,19 +19,18 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+@ApiStatus.Internal
 public interface CrypticLibPlugin {
 
-    @ApiStatus.Internal
     String pluginName();
 
-    @ApiStatus.Internal
     CommandManager<?, ?> commandManager();
 
-    @ApiStatus.Internal
     Scheduler scheduler();
 
-    @ApiStatus.Internal
     MsgSender msgSender();
+
+    PermManager permManager();
 
     default void runLifeCycleTasks(Object plugin, LifeCycle lifeCycle) {
         List<LifeCycleTaskWrapper> taskWrappers = new ArrayList<>();

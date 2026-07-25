@@ -21,6 +21,7 @@ import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.PermInfo;
+import crypticlib.perm.PermManager;
 import crypticlib.perm.VelocityPermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.scheduler.VelocityScheduler;
@@ -57,7 +58,6 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
 
     @Subscribe
     public final void onProxyInitialization(ProxyInitializeEvent event) {
-        PermInfo.PERM_MANAGER = VelocityPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
@@ -243,6 +243,11 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     @Override
     public MsgSender msgSender() {
         return VelocityMsgSender.INSTANCE;
+    }
+
+    @Override
+    public PermManager permManager() {
+        return VelocityPermManager.INSTANCE;
     }
 
 }

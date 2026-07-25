@@ -15,6 +15,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
@@ -43,7 +44,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
 
     @Override
     public final void onLoad() {
-        PermInfo.PERM_MANAGER = BukkitPermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
@@ -233,6 +233,11 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     @Override
     public MsgSender msgSender() {
         return BukkitMsgSender.INSTANCE;
+    }
+
+    @Override
+    public PermManager permManager() {
+        return BukkitPermManager.INSTANCE;
     }
 
 }

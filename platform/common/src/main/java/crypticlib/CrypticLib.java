@@ -3,7 +3,9 @@ package crypticlib;
 import crypticlib.chat.MsgSender;
 import crypticlib.command.CommandManager;
 import crypticlib.internal.CrypticLibPlugin;
+import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Objects;
 
@@ -42,18 +44,25 @@ public class CrypticLib {
         crypticLibPlugin = plugin;
     }
 
+    @ApiStatus.Internal
+    public static PermManager permManager() { return crypticLibPlugin.permManager(); }
+
+    @ApiStatus.Internal
     public static String pluginName() {
         return crypticLibPlugin.pluginName();
     }
 
+    @ApiStatus.Internal
     public static CommandManager<?, ?> commandManager() {
         return crypticLibPlugin.commandManager();
     }
 
+    @ApiStatus.Internal
     public static MsgSender msgSender() {
         return crypticLibPlugin.msgSender();
     }
 
+    @ApiStatus.Internal
     public static Scheduler scheduler() {
         return crypticLibPlugin.scheduler();
     }

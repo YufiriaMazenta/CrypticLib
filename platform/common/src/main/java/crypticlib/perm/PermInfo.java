@@ -1,10 +1,10 @@
 package crypticlib.perm;
 
+import crypticlib.CrypticLib;
 import crypticlib.Invoker;
 
 public class PermInfo {
 
-    public static PermManager PERM_MANAGER;
     private final String permission;
     private final PermDef permDef;
 
@@ -26,9 +26,7 @@ public class PermInfo {
     }
 
     public void register() {
-        if (PERM_MANAGER != null) {
-            PERM_MANAGER.regPerm(this);
-        }
+        CrypticLib.permManager().regPerm(this);
     }
 
     public boolean hasPermission(Invoker invoker) {

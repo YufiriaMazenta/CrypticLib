@@ -11,7 +11,6 @@ dependencies {
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("dev.folia:folia-api:1.20.2")
     implementation(project(":platform:common"))
-    implementation(project(":module:common:script"))
 }
 
 tasks.shadowJar {

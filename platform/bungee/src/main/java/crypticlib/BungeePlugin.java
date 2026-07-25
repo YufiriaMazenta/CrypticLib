@@ -15,6 +15,7 @@ import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermInfo;
+import crypticlib.perm.PermManager;
 import crypticlib.scheduler.BungeeScheduler;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.IOHelper;
@@ -43,7 +44,6 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
 
     @Override
     public final void onLoad() {
-        PermInfo.PERM_MANAGER = BungeePermManager.INSTANCE;
         pluginScanner.getAnnotatedClasses(ConfigHandler.class).forEach(
             configClass -> {
                 ConfigHandler configHandler = configClass.getAnnotation(ConfigHandler.class);
@@ -227,6 +227,11 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     @Override
     public MsgSender msgSender() {
         return BungeeMsgSender.INSTANCE;
+    }
+
+    @Override
+    public PermManager permManager() {
+        return BungeePermManager.INSTANCE;
     }
 
 }
