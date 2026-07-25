@@ -5,6 +5,7 @@ import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -16,10 +17,6 @@ public enum DependencyLoader {
     INSTANCE;
 
     public static final String DEFAULT_DEPENDENCY_FOLDER = "plugins/" + CrypticLib.pluginName() + "/libs";
-    public static final String REPOSITORY_MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2";
-    public static final String REPOSITORY_MAVEN_CENTRAL_MIRROR_ALI = "https://maven.aliyun.com/repository/central";
-    public static final String REPOSITORY_JITPACK = "https://jitpack.io";
-    public static final String REPOSITORY_SONATYPE = "https://oss.sonatype.org/content/groups/public";
 
     /**
      * 加载依赖
@@ -40,7 +37,7 @@ public enum DependencyLoader {
 
         String url = dependency.toString();
         String[] args = url.split(":");
-        String repository = dependency.getRepository();
+        List<String> repos = dependency.getRepositories();
         File baseDir = new File(DEFAULT_DEPENDENCY_FOLDER);
         List<JarRelocation> relocation = dependency.getRelocations();
         boolean transitive = dependency.isTransitive();
@@ -49,15 +46,16 @@ public enum DependencyLoader {
 
         DependencyDownloader downloader = new DependencyDownloader(baseDir, relocation);
 
-        // 解析仓库
-        if (repository == null || repository.isEmpty()) {
-            repository = REPOSITORY_MAVEN_CENTRAL;
+        // 解析仓库列表，从上到下尝试
+        List<String> repoUrls = repos.isEmpty()
+            ? Collections.singletonList(Dependency.REPOSITORY_MAVEN_CENTRAL)
+            : repos;
+        for (String repoUrl : repoUrls) {
+            if (repoUrl.endsWith("/")) {
+                repoUrl = repoUrl.substring(0, repoUrl.length() - 1);
+            }
+            downloader.addRepository(new Repository(repoUrl));
         }
-        // 移除尾部的 /
-        if (repository.endsWith("/")) {
-            repository = repository.substring(0, repository.length() - 1);
-        }
-        downloader.addRepository(new Repository(repository));
         downloader.setDependencyScopes(new DependencyScope[]{dependency.getScope()});
         downloader.setTransitive(transitive);
 
@@ -71,10 +69,23 @@ public enum DependencyLoader {
         if (validation(pomFile, pomFile1)) {
             allDeps.addAll(downloader.loadDependencyFromInputStream(pomFile.toURI().toURL().openStream()));
         } else {
-            String pom = String.format("%s/%s/%s/%s/%s-%s.pom",
-                repository, args[0].replace('.', '/'), args[1], args[2], args[1], args[2]);
-            IOHelper.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + "...");
-            allDeps.addAll(downloader.loadDependencyFromInputStream(new URL(pom).openStream()));
+            // 从上到下尝试每个仓库下载 POM
+            IOException lastError = null;
+            for (Repository repo : downloader.getRepositories()) {
+                String pom = String.format("%s/%s/%s/%s/%s-%s.pom",
+                    repo.getUrl(), args[0].replace('.', '/'), args[1], args[2], args[1], args[2]);
+                try {
+                    IOHelper.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + " from " + repo.getUrl() + "...");
+                    allDeps.addAll(downloader.loadDependencyFromInputStream(new URL(pom).openStream()));
+                    lastError = null;
+                    break;
+                } catch (IOException e) {
+                    lastError = e;
+                }
+            }
+            if (lastError != null) {
+                throw lastError;
+            }
         }
 
         // 加载主依赖

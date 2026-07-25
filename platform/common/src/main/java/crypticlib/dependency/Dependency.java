@@ -16,12 +16,16 @@ import java.util.*;
  */
 public class Dependency extends AbstractXmlParser {
 
+    public static final String REPOSITORY_MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2";
+    public static final String REPOSITORY_MAVEN_CENTRAL_MIRROR_ALI = "https://maven.aliyun.com/repository/central";
+    public static final String REPOSITORY_JITPACK = "https://jitpack.io";
+    public static final String REPOSITORY_SONATYPE = "https://oss.sonatype.org/content/groups/public";
     private static final String LATEST_VERSION = "latest";
 
     private final String groupId;
     private final String artifactId;
     private final DependencyScope scope;
-    private final String repository;
+    private final List<String> repositories;
     private final String test;
     private final boolean transitive;
     private final List<JarRelocation> relocations;
@@ -34,7 +38,7 @@ public class Dependency extends AbstractXmlParser {
         this.version = builder.version.contains("$") || builder.version.contains("[") || builder.version.contains("(")
             ? LATEST_VERSION : builder.version;
         this.scope = builder.scope;
-        this.repository = builder.repository;
+        this.repositories = Collections.unmodifiableList(builder.repositories);
         this.test = builder.test;
         this.transitive = builder.transitive;
         this.relocations = Collections.unmodifiableList(builder.relocations);
@@ -120,9 +124,9 @@ public class Dependency extends AbstractXmlParser {
         return version.equals(LATEST_VERSION) ? null : version;
     }
 
-    @Nullable
-    public String getRepository() {
-        return repository;
+    @NotNull
+    public List<String> getRepositories() {
+        return repositories;
     }
 
     @Nullable
@@ -180,7 +184,7 @@ public class Dependency extends AbstractXmlParser {
         private final String artifactId;
         private String version;
         private DependencyScope scope = DependencyScope.RUNTIME;
-        private String repository;
+        private final List<String> repositories = new ArrayList<>();
         private String test;
         private boolean transitive = true;
         private final List<JarRelocation> relocations = new ArrayList<>();
@@ -197,17 +201,33 @@ public class Dependency extends AbstractXmlParser {
             return this;
         }
 
+        /**
+         * 添加仓库，按添加顺序从上到下尝试
+         *
+         * @param repository 仓库 URL
+         */
         @NotNull
-        public Builder repository(@Nullable String repository) {
-            this.repository = repository;
+        public Builder repository(@NotNull String repository) {
+            this.repositories.add(repository);
+            return this;
+        }
+
+        /**
+         * 批量添加仓库，按添加顺序从上到下尝试
+         *
+         * @param repositories 仓库 URL 列表
+         */
+        @NotNull
+        public Builder repositories(@NotNull List<String> repositories) {
+            this.repositories.addAll(repositories);
             return this;
         }
 
         /**
          * 设置类存在性检测
          * @param test 类名，前缀 "!" 表示类不存在时才加载
-         *         支持 % 代替 . 和 # 作为转义（避免 Shadow relocate）
-         *         输入值应当为relocate之后的类名
+         *         支持 % 代替 . 和 # 作为转义
+         *         因为shadow的relocate会将字符串中的包名也重定向，所以这里可以写原始类名
          */
         @NotNull
         public Builder test(@Nullable String test) {

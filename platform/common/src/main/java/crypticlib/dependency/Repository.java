@@ -30,7 +30,7 @@ public class Repository extends AbstractXmlParser {
     }
 
     public Repository() {
-        this("https://maven.aliyun.com/repository/central");
+        this(Dependency.REPOSITORY_MAVEN_CENTRAL);
     }
 
     /**
