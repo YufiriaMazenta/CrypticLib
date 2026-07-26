@@ -179,12 +179,12 @@ public class EffectGroup {
     }
 
     public EffectGroup setOffsetY(double offsetY) {
-        effectList.forEach(effect -> effect.setOffsetX(offsetY));
+        effectList.forEach(effect -> effect.setOffsetY(offsetY));
         return this;
     }
 
     public EffectGroup setOffsetZ(double offsetZ) {
-        effectList.forEach(effect -> effect.setOffsetX(offsetZ));
+        effectList.forEach(effect -> effect.setOffsetZ(offsetZ));
         return this;
     }
 
@@ -204,12 +204,12 @@ public class EffectGroup {
     }
 
     public EffectGroup setIncrementY(double incrementY) {
-        effectList.forEach(effect -> effect.setIncrementX(incrementY));
+        effectList.forEach(effect -> effect.setIncrementY(incrementY));
         return this;
     }
 
     public EffectGroup setIncrementZ(double incrementZ) {
-        effectList.forEach(effect -> effect.setIncrementX(incrementZ));
+        effectList.forEach(effect -> effect.setIncrementZ(incrementZ));
         return this;
     }
 

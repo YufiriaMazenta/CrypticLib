@@ -111,8 +111,9 @@ public class Pyramid extends ParticleObject {
 
         for (double angle = 0; angle <= 360; angle += 360D / side) {
             double radians = Math.toRadians(angle);
-            double x = Math.cos(radians);
-            double z = Math.sin(radians);
+            // 补上 radius 因子, 与 resetLocations/show() 保持一致
+            double x = radius * Math.cos(radians);
+            double z = radius * Math.sin(radians);
 
             temp.add(getOriginLocation().clone().add(x, 0, z));
         }

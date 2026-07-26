@@ -99,14 +99,15 @@ public class FilledCircle extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
+        currentCount = 0;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
                 if (currentCount > sample) {
                     cancel();
                     return;
                 }
-                currentCount++;
                 double indices = currentCount + 0.5;
                 double r = Math.sqrt(indices / sample);
                 double theta = Math.PI * (1 + Math.sqrt(5)) * indices;
@@ -114,6 +115,7 @@ public class FilledCircle extends ParticleObject implements Playable {
                 double z = radius * r * Math.sin(theta);
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, z));
+                currentCount++;
             }
         }.syncTimer(0, period());
     }
@@ -159,7 +161,8 @@ public class FilledCircle extends ParticleObject implements Playable {
         new CrypticLibRunnable() {
             // 这里用来计量当前要播放的粒子是第几个tick, 也可说是帧数
             int frame = 0;
-            int sample = 0;
+            // 已经绘制到的粒子下标(不含), 每帧从此处继续, 保证区间不重叠
+            long sample = 0;
 
             @Override
             public void run() {
@@ -168,9 +171,17 @@ public class FilledCircle extends ParticleObject implements Playable {
                     return;
                 }
                 frame++;
-                // 每一帧要计算的粒子数量
+                // 每一帧要计算的粒子数量, 至少为 1, 避免 count<time 时空转
                 int frameTick = (int) (count / time);
-                for (double i = sample; i < (frame + 1) * frameTick; i += 1) {
+                if (frameTick < 1) {
+                    frameTick = 1;
+                }
+                long upper = (long) frame * frameTick;
+                // 最后一帧补齐余数, 保证绘制到 count 为止
+                if (frame >= time) {
+                    upper = count;
+                }
+                for (long i = sample; i < upper && i < count; i++) {
                     double indices = i + 0.5;
                     double r = Math.sqrt(indices / count);
                     double theta = Math.PI * (1 + Math.sqrt(5)) * indices;
@@ -181,9 +192,9 @@ public class FilledCircle extends ParticleObject implements Playable {
                     Location spawnLocation = getOriginLocation().clone().add(x, 0, z);
                     spawnParticle(spawnLocation);
                 }
-                sample += frameTick;
+                sample = Math.min(upper, count);
             }
-        }.asyncTimer(0L, 1L);
+        }.syncTimer(0L, 1L);
     }
 
 }

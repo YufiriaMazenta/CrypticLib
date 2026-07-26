@@ -46,6 +46,8 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
         this.p2 = p2;
         this.p3 = p3;
         this.step = step;
+        // 曲线点位由控制点绝对坐标烘焙而来, 这里以首控制点作为原点, 避免叠加矩阵时 getOriginLocation() 为 null 导致 NPE
+        setOriginLocation(p0);
         locations = new ArrayList<>();
 
         resetLocations();

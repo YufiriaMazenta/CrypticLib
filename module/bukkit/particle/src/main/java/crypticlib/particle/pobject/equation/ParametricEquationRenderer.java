@@ -82,6 +82,8 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
         this.minT = minT;
         this.maxT = maxT;
         this.dt = dT;
+        // 播放游标初始化为区间起点, 使 play/playNextPoint 与 show 覆盖区间一致
+        this.currentT = minT;
     }
 
     @Override
@@ -123,8 +125,9 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
         new CrypticLibRunnable() {
             @Override
             public void run() {
-                // 进行关闭
+                // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
                 if (currentT > maxT) {
+                    currentT = minT;
                     cancel();
                     return;
                 }

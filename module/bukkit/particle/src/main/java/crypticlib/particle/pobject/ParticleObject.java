@@ -27,10 +27,10 @@ public abstract class ParticleObject {
     protected static final Particle REDSTONE;//因为1.20.5以上REDSTONE更名为DUST,需要做一些小小的兼容
     protected Location originLocation;
 
-    protected ShowType showType = ShowType.NONE;
-    protected TaskWrapper showTask;
+    protected volatile ShowType showType = ShowType.NONE;
+    protected volatile TaskWrapper showTask;
     protected long period;
-    protected boolean running = false;
+    protected volatile boolean running = false;
 
     protected Particle particle;
     protected int count = 1;
@@ -86,42 +86,62 @@ public abstract class ParticleObject {
     public abstract void show();
 
     /**
+     * 将特效对象展示任务提交到合适的调度器
+     * <p>
+     * 在 Folia 上根据是否绑定实体选择 runOnEntityTimer/runOnLocationTimer,
+     * 使任务落到粒子所在区域线程, 避免在全局区域线程访问区域敏感的世界/实体 API;
+     * 在 Spigot 上这些方法会退化为主线程执行。
+     *
+     * @param runnable 展示任务
+     * @return {@link TaskWrapper}
+     */
+    private TaskWrapper startShowTimer(Runnable runnable) {
+        if (entityId != null) {
+            Entity entity = getEntity();
+            if (entity != null) {
+                return CrypticLibBukkit.scheduler().runOnEntityTimer(entity, runnable, () -> {}, 0L, period);
+            }
+        }
+        if (originLocation != null) {
+            return CrypticLibBukkit.scheduler().runOnLocationTimer(originLocation, runnable, 0L, period);
+        }
+        return CrypticLibBukkit.scheduler().syncTimer(runnable, 0L, period);
+    }
+
+    /**
      * 将特效对象持续地展示
+     * <p>
+     * 由于 Bukkit/Folia 的 cancel 是即时生效的, 这里先同步取消旧任务再直接创建新任务,
+     * 不再使用 2tick 延迟缓冲, 避免延迟窗口内重复调用导致定时器泄漏或关闭被静默撤销。
      */
     public void alwaysShow() {
         turnOffTask();
-
-        // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
-        CrypticLibBukkit.scheduler().syncLater(() -> {
-            running = true;
-            showTask = CrypticLibBukkit.scheduler().syncTimer(() -> {
-                if (!running) {
-                    return;
-                }
-                show();
-            }, 0L, period);
-            setShowType(ShowType.ALWAYS_SHOW);
-        }, 2L);
+        running = true;
+        showTask = startShowTimer(() -> {
+            if (!running) {
+                return;
+            }
+            show();
+        });
+        setShowType(ShowType.ALWAYS_SHOW);
     }
 
     /**
      * 将特效对象持续地异步地展示
+     * <p>
+     * 注意: 异步变体仅适用于纯计算场景。World#spawnParticle 等发包 API 并非线程安全,
+     * 在异步线程调用可能与主线程并发出错, 使用者需自行确保安全。
      */
     public void alwaysShowAsync() {
         turnOffTask();
-
-        // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
-        CrypticLibBukkit.scheduler().syncLater(() -> {
-            running = true;
-            showTask = CrypticLibBukkit.scheduler().asyncTimer(() -> {
-                if (!running) {
-                    return;
-                }
-                show();
-            }, 0L, period);
-
-            setShowType(ShowType.ALWAYS_SHOW_ASYNC);
-        }, 2L);
+        running = true;
+        showTask = CrypticLibBukkit.scheduler().asyncTimer(() -> {
+            if (!running) {
+                return;
+            }
+            show();
+        }, 0L, period);
+        setShowType(ShowType.ALWAYS_SHOW_ASYNC);
     }
 
     /**
@@ -138,22 +158,20 @@ public abstract class ParticleObject {
         }
         Playable playable = (Playable) this;
         turnOffTask();
-
-        // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
-        CrypticLibBukkit.scheduler().syncLater(() -> {
-            running = true;
-            showTask = CrypticLibBukkit.scheduler().syncTimer(() -> {
-                if (!running) {
-                    return;
-                }
-                playable.playNextPoint();
-            }, 0L, period);
-            setShowType(ShowType.ALWAYS_PLAY);
-        }, 2L);
+        running = true;
+        showTask = startShowTimer(() -> {
+            if (!running) {
+                return;
+            }
+            playable.playNextPoint();
+        });
+        setShowType(ShowType.ALWAYS_PLAY);
     }
 
     /**
      * 将特效对象持续地异步地播放
+     * <p>
+     * 注意: 异步变体仅适用于纯计算场景, 发包 API 并非线程安全, 使用者需自行确保安全。
      */
     public void alwaysPlayAsync() {
         if (!(this instanceof Playable)) {
@@ -166,18 +184,14 @@ public abstract class ParticleObject {
         }
         Playable playable = (Playable) this;
         turnOffTask();
-
-        // 此处的延迟 2tick 是为了防止turnOffTask还没把特效给关闭时的缓冲
-        CrypticLibBukkit.scheduler().syncLater(() -> {
-            running = true;
-            showTask = CrypticLibBukkit.scheduler().asyncTimer(() -> {
-                if (!running) {
-                    return;
-                }
-                playable.playNextPoint();
-            }, 0L, period);
-            setShowType(ShowType.ALWAYS_PLAY_ASYNC);
-        }, 2L);
+        running = true;
+        showTask = CrypticLibBukkit.scheduler().asyncTimer(() -> {
+            if (!running) {
+                return;
+            }
+            playable.playNextPoint();
+        }, 0L, period);
+        setShowType(ShowType.ALWAYS_PLAY_ASYNC);
     }
 
     /**
@@ -570,6 +584,9 @@ public abstract class ParticleObject {
      * @return {@link Entity}
      */
     public @Nullable Entity getEntity() {
+        if (entityId == null) {
+            return null;
+        }
         return Bukkit.getEntity(entityId);
     }
 
@@ -609,7 +626,8 @@ public abstract class ParticleObject {
      */
     public void spawnParticle(Location location, Particle particle, int count, double offsetX, double offsetY, double offsetZ, double extra, Object data) {
         Location showLocation = location;
-        if (hasMatrix()) {
+        // originLocation 为 null 时无法计算相对向量, 退化为不施加矩阵, 避免 NPE
+        if (hasMatrix() && originLocation != null) {
             Vector vector = location.clone().subtract(originLocation).toVector();
             Vector changed = matrix.applyVector(vector);
 
@@ -639,7 +657,8 @@ public abstract class ParticleObject {
 
     public void spawnColorParticle(Location location, int r, int g, int b) {
         Location showLocation = location;
-        if (hasMatrix()) {
+        // originLocation 为 null 时无法计算相对向量, 退化为不施加矩阵, 避免 NPE
+        if (hasMatrix() && originLocation != null) {
             Vector vector = location.clone().subtract(originLocation).toVector();
             Vector changed = matrix.applyVector(vector);
 

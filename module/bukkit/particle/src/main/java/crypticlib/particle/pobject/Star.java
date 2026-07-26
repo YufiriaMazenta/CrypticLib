@@ -115,13 +115,22 @@ public class Star extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
+        currentSide = 1;
+        currentStep = 0;
+        showTask = new CrypticLibRunnable() {
             // 转弧度制
             final double radians = Math.toRadians(72);
             final double x = radius * Math.cos(radians);
             final double z = radius * Math.sin(radians);
             Location end = getOriginLocation().clone().add(x, 0, z);
-            final Vector START = new Vector(radius * (Math.cos(Math.toRadians(72 * 3)) - x), 0, radius * (Math.sin(Math.toRadians(72 * 3)) - z));
+            // 与 show() 保持一致: 方向向量为 (cos216-cos72, 0, sin216-sin72)*radius 后归一化,
+            // 归一化后步距才与 currentStep(以格为单位)一致
+            final Vector START = new Vector(
+                radius * Math.cos(Math.toRadians(72 * 3)) - x,
+                0,
+                radius * Math.sin(Math.toRadians(72 * 3)) - z
+            ).normalize();
 
             @Override
             public void run() {

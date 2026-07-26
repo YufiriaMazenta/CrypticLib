@@ -52,6 +52,14 @@ public class Sphere extends ParticleObject implements Playable {
     }
 
     @Override
+    public ParticleObject setOriginLocation(Location originLocation) {
+        super.setOriginLocation(originLocation);
+        // 烘焙类图形在原点变化时需要重新计算点位, 否则 setOriginLocation/EffectGroup#setOrigin 不生效
+        resetLocations();
+        return this;
+    }
+
+    @Override
     public List<Location> calculateLocations() {
         List<Location> points = Lists.newArrayList();
 
@@ -95,17 +103,19 @@ public class Sphere extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        // 每次播放前重置游标至 0, 从首个点开始, 并登记任务到 showTask 以便 turnOffTask 取消
+        currentSample = 0;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
                 // 进行关闭
-                if (currentSample + 1 == locations.size()) {
+                if (currentSample >= locations.size()) {
                     cancel();
                     return;
                 }
-                currentSample++;
 
                 spawnParticle(locations.get(currentSample));
+                currentSample++;
             }
         }.syncTimer(0, period());
     }
@@ -140,7 +150,16 @@ public class Sphere extends ParticleObject implements Playable {
         return this;
     }
 
+    /**
+     * 重置烘焙点位
+     * <p>
+     * 该方法会在 setOriginLocation 时被调用, 使 setOriginLocation/EffectGroup#setOrigin 能生效。
+     * 注意: 构造期间 super.setOriginLocation 会先于 locations 初始化被调用, 故此处对 null 做保护。
+     */
     public void resetLocations() {
+        if (locations == null) {
+            return;
+        }
         locations.clear();
 
         for (int i = 0; i < sample; i++) {

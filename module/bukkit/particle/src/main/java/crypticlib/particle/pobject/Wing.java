@@ -66,8 +66,10 @@ public class Wing extends ParticleObject {
         resetWing();
 
         List<Location> points = Lists.newArrayList();
+        // 缓存实体绑定判断, 未绑定实体时避免每个点位都查询一次实体
+        boolean attachedEntity = entityId() != null;
         for (Vector vector : vectors) {
-            if (getEntity() != null) {
+            if (attachedEntity) {
                 points.add(getOriginLocation().clone().add(VectorUtils.rotateVector(vector, getOriginLocation().getYaw() - 90 + (float) currentAngle, 0F)));
                 points.add(getOriginLocation().clone().add(VectorUtils.rotateVector(vector.clone().setX(-vector.getX()), getOriginLocation().getYaw() - 90 - (float) currentAngle, 0F)));
                 continue;
@@ -93,8 +95,10 @@ public class Wing extends ParticleObject {
 
     @Override
     public void show() {
+        // 缓存实体绑定判断, 未绑定实体时避免每个点位都查询一次实体
+        boolean attachedEntity = entityId() != null;
         for (Vector vector : vectors) {
-            if (getEntity() != null) {
+            if (attachedEntity) {
                 spawnParticle(getOriginLocation().clone().add(VectorUtils.rotateVector(vector, getOriginLocation().getYaw() - 90 + (float) currentAngle, 0F)));
                 spawnParticle(getOriginLocation().clone().add(VectorUtils.rotateVector(vector.clone().setX(-vector.getX()), getOriginLocation().getYaw() - 90 - (float) currentAngle, 0F)));
                 continue;

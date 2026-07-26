@@ -38,6 +38,8 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
         this.minX = minX;
         this.maxX = maxX;
         this.dx = dx;
+        // 播放游标初始化为区间起点, 使 play/playNextPoint 与 show 覆盖区间一致
+        this.currentX = minX;
     }
 
     @Override
@@ -73,8 +75,9 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
         new CrypticLibRunnable() {
             @Override
             public void run() {
-                // 进行关闭
+                // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
                 if (currentX > maxX) {
+                    currentX = minX;
                     cancel();
                     return;
                 }

@@ -44,6 +44,14 @@ public class Cone extends ParticleObject implements Playable {
     }
 
     @Override
+    public ParticleObject setOriginLocation(Location originLocation) {
+        super.setOriginLocation(originLocation);
+        // 烘焙类图形在原点变化时需要重新计算点位, 否则 setOriginLocation/EffectGroup#setOrigin 不生效
+        resetLocations();
+        return this;
+    }
+
+    @Override
     public List<Location> calculateLocations() {
         List<Location> points = Lists.newArrayList();
 
@@ -138,6 +146,10 @@ public class Cone extends ParticleObject implements Playable {
     }
 
     public void resetLocations() {
+        // 构造期间 super.setOriginLocation 会先于 locations 初始化被调用, 故此处对 null 做保护
+        if (locations == null) {
+            return;
+        }
         locations.clear();
 
         List<Double> indices = MathUtils.arange(0, sample, 1);

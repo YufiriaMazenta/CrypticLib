@@ -21,11 +21,25 @@ public class Matrix {
     }
 
     public Matrix(double[][] m) {
-        this.m = m;
+        this.m = copyOf(m);
     }
 
     public Matrix(Matrix matrix) {
-        this.m = matrix.asArray();
+        this.m = copyOf(matrix.asArray());
+    }
+
+    /**
+     * 对二维数组进行深拷贝, 避免矩阵与外部数组共享底层引用
+     *
+     * @param source 源二维数组
+     * @return 深拷贝后的新二维数组
+     */
+    private static double[][] copyOf(double[][] source) {
+        double[][] copy = new double[source.length][];
+        for (int i = 0; i < source.length; i++) {
+            copy[i] = Arrays.copyOf(source[i], source[i].length);
+        }
+        return copy;
     }
 
     public int row() {
@@ -36,6 +50,12 @@ public class Matrix {
         return m[0].length;
     }
 
+    /**
+     * 返回矩阵内部的二维数组
+     * <p>注意: 返回的是内部引用而非副本, 修改返回的数组会直接影响本矩阵</p>
+     *
+     * @return 矩阵内部的二维数组
+     */
     public double[][] asArray() {
         return m;
     }

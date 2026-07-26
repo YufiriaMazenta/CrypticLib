@@ -58,13 +58,14 @@ public class Matrixs {
 
     /**
      * 通过给定的角度返回一个平面旋转矩阵
+     * <p>旋转方向与 {@link crypticlib.particle.utils.VectorUtils#rotateAroundAxisY} 保持一致</p>
      *
      * @param theta 旋转角度
      * @return {@link Matrix}
      */
     public static Matrix rotate2D(double theta) {
         double[][] m = new double[2][2];
-        double radians = Math.toRadians(-theta);
+        double radians = Math.toRadians(theta);
         double cos = Math.cos(radians);
         double sin = Math.sin(radians);
 
@@ -99,6 +100,7 @@ public class Matrixs {
     /**
      * 通过给定的角度返回一个关于Y轴的旋转矩阵
      * <p>注意：该方法会返回3阶方阵</p>
+     * <p>旋转方向与 {@link crypticlib.particle.utils.VectorUtils#rotateAroundAxisY} 保持一致</p>
      *
      * @param theta 旋转角度
      * @return {@link Matrix}
@@ -106,7 +108,7 @@ public class Matrixs {
     public static Matrix rotateAroundYAxis(double theta) {
         Matrix matrix = eyes(3, 3);
 
-        double radians = Math.toRadians(-theta);
+        double radians = Math.toRadians(theta);
         double cos = Math.cos(radians);
         double sin = Math.sin(radians);
 

@@ -121,14 +121,15 @@ public class VectorUtils {
 
     /**
      * 空间向量绕任一向量旋转
+     * <p>注意: 与 {@code rotateAroundAxisX/Y/Z}(接受角度)不同, 该方法的角度单位为<b>弧度</b>!</p>
      *
-     * @param vector 待旋转向量
-     * @param axis   旋转轴向量
-     * @param angle  旋转角度
+     * @param vector       待旋转向量
+     * @param axis         旋转轴向量
+     * @param angleRadians 旋转角度, 单位为弧度
      * @return {@link Vector}
      */
-    public static Vector rotateAroundAxis(Vector vector, Vector axis, double angle) {
-        return rotateAroundNonUnitAxis(vector, isNormalized(axis) ? axis : axis.clone().normalize(), angle);
+    public static Vector rotateAroundAxis(Vector vector, Vector axis, double angleRadians) {
+        return rotateAroundNonUnitAxis(vector, isNormalized(axis) ? axis : axis.clone().normalize(), angleRadians);
     }
 
     /**
@@ -139,17 +140,19 @@ public class VectorUtils {
      * <p>
      * 正常人能看懂的: https://www.cnblogs.com/wubugui/p/3734627.html
      *
-     * @param vector 要旋转的向量
-     * @param axis   旋转轴向量
-     * @param angle  旋转角度
+     * <p>注意: 与 {@code rotateAroundAxisX/Y/Z}(接受角度)不同, 该方法的角度单位为<b>弧度</b>!</p>
+     *
+     * @param vector       要旋转的向量
+     * @param axis         旋转轴向量
+     * @param angleRadians 旋转角度, 单位为弧度
      * @return {@link Vector}
      */
-    public static Vector rotateAroundNonUnitAxis(Vector vector, Vector axis, double angle) {
+    public static Vector rotateAroundNonUnitAxis(Vector vector, Vector axis, double angleRadians) {
         double x = vector.getX(), y = vector.getY(), z = vector.getZ();
         double x2 = axis.getX(), y2 = axis.getY(), z2 = axis.getZ();
 
-        double cosTheta = Math.cos(angle);
-        double sinTheta = Math.sin(angle);
+        double cosTheta = Math.cos(angleRadians);
+        double sinTheta = Math.sin(angleRadians);
         double dotProduct = vector.dot(axis);
 
         double xPrime = x2 * dotProduct * (1d - cosTheta)

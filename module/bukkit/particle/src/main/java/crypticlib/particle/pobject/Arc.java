@@ -65,13 +65,14 @@ public class Arc extends ParticleObject implements Playable {
         this.angle = angle;
         this.radius = radius;
         this.step = step;
+        this.currentAngle = startAngle;
         setPeriod(period);
     }
 
     @Override
     public List<Location> calculateLocations() {
         List<Location> points = Lists.newArrayList();
-        for (double i = startAngle; i < angle; i += step) {
+        for (double i = startAngle; i < startAngle + angle; i += step) {
             double radians = Math.toRadians(i);
             double x = radius * Math.cos(radians);
             double z = radius * Math.sin(radians);
@@ -92,7 +93,7 @@ public class Arc extends ParticleObject implements Playable {
 
     @Override
     public void show() {
-        for (double i = startAngle; i < angle; i += step) {
+        for (double i = startAngle; i < startAngle + angle; i += step) {
             double radians = Math.toRadians(i);
             double x = radius * Math.cos(radians);
             double z = radius * Math.sin(radians);
@@ -102,36 +103,38 @@ public class Arc extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        // 每次播放前重置游标至起始角度, 并登记任务到 showTask 以便 turnOffTask 取消
+        currentAngle = startAngle;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
                 // 进行关闭
-                if (currentAngle > angle) {
+                if (currentAngle > startAngle + angle) {
                     cancel();
                     return;
                 }
-                currentAngle += step;
                 double radians = Math.toRadians(currentAngle);
                 double x = radius * Math.cos(radians);
                 double z = radius * Math.sin(radians);
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, z));
+                currentAngle += step;
             }
         }.syncTimer(0, period());
     }
 
     @Override
     public void playNextPoint() {
-        currentAngle += step;
         double radians = Math.toRadians(currentAngle);
         double x = radius * Math.cos(radians);
         double z = radius * Math.sin(radians);
 
         spawnParticle(getOriginLocation().clone().add(x, 0, z));
+        currentAngle += step;
 
         // 进行重置
-        if (currentAngle > angle) {
-            currentAngle = 0D;
+        if (currentAngle > startAngle + angle) {
+            currentAngle = startAngle;
         }
     }
 

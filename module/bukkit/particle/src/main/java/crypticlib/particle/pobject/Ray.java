@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -14,6 +15,11 @@ import java.util.stream.Collectors;
 
 /**
  * 代表一个射线
+ * <p>
+ * 注意: 当 {@link RayStopType#HIT_ENTITY} 时, show()/play()/playNextPoint() 会调用
+ * {@link org.bukkit.World#getNearbyEntities} 检测实体。该方法在 Spigot/Paper 上有异步检查,
+ * 请勿对使用 HIT_ENTITY 的 Ray 调用 alwaysShowAsync/alwaysPlayAsync, 否则会在异步线程抛出异常;
+ * 实体命中回调也应仅在同步线程操作实体。
  *
  * @author Zoyn IceCold
  */
@@ -76,7 +82,7 @@ public class Ray extends ParticleObject implements Playable {
                         }
                     }
                 } else {
-                    entities = (List<Entity>) nearbyEntities;
+                    entities = new ArrayList<>(nearbyEntities);
                 }
 
                 // 获取首个实体
@@ -120,12 +126,14 @@ public class Ray extends ParticleObject implements Playable {
                         }
                     }
                 } else {
-                    entities = (List<Entity>) nearbyEntities;
+                    entities = new ArrayList<>(nearbyEntities);
                 }
 
                 // 获取首个实体
                 if (!entities.isEmpty()) {
-                    hitEntityConsumer.accept(entities.get(0));
+                    if (hitEntityConsumer != null) {
+                        hitEntityConsumer.accept(entities.get(0));
+                    }
                     break;
                 }
             }
@@ -134,7 +142,9 @@ public class Ray extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
+        currentStep = 0D;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
                 // 进行关闭
@@ -142,11 +152,11 @@ public class Ray extends ParticleObject implements Playable {
                     cancel();
                     return;
                 }
-                currentStep += step;
                 Vector vectorTemp = direction.clone().multiply(currentStep);
                 Location spawnLocation = getOriginLocation().clone().add(vectorTemp);
 
                 spawnParticle(spawnLocation);
+                currentStep += step;
 
                 if (stopType.equals(RayStopType.HIT_ENTITY)) {
                     Collection<Entity> nearbyEntities = spawnLocation.getWorld().getNearbyEntities(spawnLocation, range, range, range);
@@ -159,12 +169,14 @@ public class Ray extends ParticleObject implements Playable {
                             }
                         }
                     } else {
-                        entities = (List<Entity>) nearbyEntities;
+                        entities = new ArrayList<>(nearbyEntities);
                     }
 
                     // 获取首个实体
                     if (!entities.isEmpty()) {
-                        hitEntityConsumer.accept(entities.get(0));
+                        if (hitEntityConsumer != null) {
+                            hitEntityConsumer.accept(entities.get(0));
+                        }
                         cancel();
                     }
                 }
@@ -191,12 +203,14 @@ public class Ray extends ParticleObject implements Playable {
                     }
                 }
             } else {
-                entities = (List<Entity>) nearbyEntities;
+                entities = new ArrayList<>(nearbyEntities);
             }
 
             // 获取首个实体
             if (!entities.isEmpty()) {
-                hitEntityConsumer.accept(entities.get(0));
+                if (hitEntityConsumer != null) {
+                    hitEntityConsumer.accept(entities.get(0));
+                }
                 return;
             }
         }
@@ -264,6 +278,15 @@ public class Ray extends ParticleObject implements Playable {
         return entityFilter;
     }
 
+    /**
+     * 设置实体过滤器
+     * <p>
+     * 注意: 该过滤器的语义为"排除", 即 {@code test} 返回 {@code true} 的实体会被排除在命中候选之外,
+     * 与 {@link java.util.stream.Stream#filter} 保留 true 的惯例相反。
+     *
+     * @param entityFilter 实体过滤器(返回 true 表示排除该实体)
+     * @return {@link Ray}
+     */
     public Ray setEntityFilter(Predicate<Entity> entityFilter) {
         this.entityFilter = entityFilter;
         return this;

@@ -41,6 +41,8 @@ public class Grid extends ParticleObject {
         }
 
         this.gridLength = gridLength;
+        // 设定原点, 否则叠加矩阵后 spawnParticle 会因 originLocation 为 null 而 NPE
+        setOriginLocation(minimumLocation);
     }
 
     @Override
@@ -69,22 +71,24 @@ public class Grid extends ParticleObject {
         int widthSideLine = (int) (width / gridLength);
 
         if (isYDimension) {
-            for (int i = 1; i <= heightSideLine; i++) {
+            // 沿 Z 偏移的线组: 条数按 Z 跨度(widthSideLine), 线沿 X 方向, 线长上限用 height(X跨度)
+            for (int i = 1; i <= widthSideLine; i++) {
                 Vector vector = maxLocation.clone().subtract(minLocation).toVector();
                 vector.setZ(0).normalize();
 
                 Location start = minLocation.clone().add(0, 0, i * gridLength);
-                for (double j = 0; j < width; j += 0.2) {
+                for (double j = 0; j < height; j += 0.2) {
                     points.add(start.clone().add(vector.clone().multiply(j)));
                 }
             }
 
-            for (int i = 1; i <= widthSideLine; i++) {
+            // 沿 X 偏移的线组: 条数按 X 跨度(heightSideLine), 线沿 Z 方向, 线长上限用 width(Z跨度)
+            for (int i = 1; i <= heightSideLine; i++) {
                 Vector vector = maxLocation.clone().subtract(minLocation).toVector();
                 vector.setX(0).normalize();
                 Location start = minLocation.clone().add(i * gridLength, 0, 0);
 
-                for (double j = 0; j < height; j += 0.2) {
+                for (double j = 0; j < width; j += 0.2) {
                     points.add(start.clone().add(vector.clone().multiply(j)));
                 }
             }
@@ -157,23 +161,25 @@ public class Grid extends ParticleObject {
         int widthSideLine = (int) (width / gridLength);
 
         if (isYDimension) {
-            for (int i = 1; i <= heightSideLine; i++) {
+            // 沿 Z 偏移的线组: 条数按 Z 跨度(widthSideLine), 线沿 X 方向, 线长上限用 height(X跨度)
+            for (int i = 1; i <= widthSideLine; i++) {
                 Vector vector = maxLocation.clone().subtract(minLocation).toVector();
                 vector.setZ(0).normalize();
 
                 Location start = minLocation.clone().add(0, 0, i * gridLength);
-                for (double j = 0; j < width; j += 0.2) {
+                for (double j = 0; j < height; j += 0.2) {
                     spawnParticle(start.clone().add(vector.clone().multiply(j)));
 
                 }
             }
 
-            for (int i = 1; i <= widthSideLine; i++) {
+            // 沿 X 偏移的线组: 条数按 X 跨度(heightSideLine), 线沿 Z 方向, 线长上限用 width(Z跨度)
+            for (int i = 1; i <= heightSideLine; i++) {
                 Vector vector = maxLocation.clone().subtract(minLocation).toVector();
                 vector.setX(0).normalize();
                 Location start = minLocation.clone().add(i * gridLength, 0, 0);
 
-                for (double j = 0; j < height; j += 0.2) {
+                for (double j = 0; j < width; j += 0.2) {
                     spawnParticle(start.clone().add(vector.clone().multiply(j)));
                 }
             }

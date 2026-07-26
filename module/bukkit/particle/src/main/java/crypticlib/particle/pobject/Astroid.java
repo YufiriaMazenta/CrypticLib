@@ -21,6 +21,8 @@ public class Astroid extends ParticleObject implements Playable {
 
     /**
      * 构造一个星形线
+     * <p>
+     * 该链路使用默认半径 1D, 并委托给 {@link #Astroid(double, Location)}
      *
      * @param origin 原点
      */
@@ -35,7 +37,7 @@ public class Astroid extends ParticleObject implements Playable {
      * @param origin 原点
      */
     public Astroid(double radius, Location origin) {
-        this(1D, origin, 10);
+        this(radius, origin, 10);
     }
 
     public Astroid(double radius, Location origin, double step) {
@@ -81,21 +83,23 @@ public class Astroid extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        // 每次播放前重置游标, 并将任务登记到 showTask 以便 turnOffTask 取消
+        currentT = 0D;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
-                // 重置
+                // 越界则关闭
                 if (currentT > 360D) {
                     cancel();
                     return;
                 }
-                currentT += step;
                 double radians = Math.toRadians(currentT);
                 // 计算公式
                 double x = Math.pow(radius() * Math.cos(radians), 3.0D);
                 double z = Math.pow(radius() * Math.sin(radians), 3.0D);
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, z));
+                currentT += step;
             }
         }.syncTimer(0, period());
     }
