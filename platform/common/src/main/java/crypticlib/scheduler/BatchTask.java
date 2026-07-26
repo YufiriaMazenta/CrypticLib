@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 /**
@@ -49,12 +50,13 @@ public class BatchTask<T, R> {
     private final Scheduler scheduler;
     private final List<T> failedItems = new ArrayList<>();
     private final List<R> results = new ArrayList<>();
-    private boolean completed = false;
+    private final AtomicBoolean started = new AtomicBoolean(false);
+    private volatile boolean completed = false;
 
-    private int currentIndex = 0;
-    private int usedTick = 0;
-    private long usedMilliseconds = 0;
-    private TaskWrapper taskWrapper;
+    private volatile int currentIndex = 0;
+    private volatile int usedTick = 0;
+    private volatile long usedMilliseconds = 0;
+    private volatile TaskWrapper taskWrapper;
 
     @FunctionalInterface
     public interface BatchCallback<T, R> {
@@ -84,6 +86,9 @@ public class BatchTask<T, R> {
      * 启动分片任务，每 tick 执行一次，每次处理最多 itemsPerTick 个元素。
      */
     public void start() {
+        if (!started.compareAndSet(false, true)) {
+            return;
+        }
         this.taskWrapper = scheduler.syncTimer(this::run, 1L, 1L);
     }
 
@@ -112,7 +117,7 @@ public class BatchTask<T, R> {
                 if (result != null) {
                     results.add(result);
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 failedItems.add(items.get(i));
             }
         }

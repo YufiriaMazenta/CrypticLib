@@ -50,7 +50,16 @@ public enum BungeeScheduler implements Scheduler, LifeCycleTask {
 
     @Override
     public TaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
-        ScheduledFuture<?> future = asyncExecutor.schedule(task, delayTicks * 50, TimeUnit.MILLISECONDS);
+        //一次性任务执行完毕后从集合中移除自身,避免 asyncFutures 只增不减造成内存泄漏
+        ScheduledFuture<?>[] futureHolder = new ScheduledFuture<?>[1];
+        ScheduledFuture<?> future = asyncExecutor.schedule(() -> {
+            try {
+                task.run();
+            } finally {
+                asyncFutures.remove(futureHolder[0]);
+            }
+        }, delayTicks * 50, TimeUnit.MILLISECONDS);
+        futureHolder[0] = future;
         asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
     }

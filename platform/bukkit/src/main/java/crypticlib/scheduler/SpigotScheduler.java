@@ -58,17 +58,49 @@ public enum SpigotScheduler implements BukkitScheduler, LifeCycleTask {
 
     @Override
     public BukkitTaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
-        return sync(task);
+        return sync(() -> {
+            if (entity == null || !entity.isValid()) {
+                if (retriedTask != null) {
+                    retriedTask.run();
+                }
+                return;
+            }
+            task.run();
+        });
     }
 
     @Override
     public BukkitTaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
-        return syncLater(task, delayTicks);
+        return syncLater(() -> {
+            if (entity == null || !entity.isValid()) {
+                if (retriedTask != null) {
+                    retriedTask.run();
+                }
+                return;
+            }
+            task.run();
+        }, delayTicks);
     }
 
     @Override
     public BukkitTaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
-        return syncTimer(task, delayTicks, periodTicks);
+        // Spigot 没有 Folia 的 EntityScheduler, 这里在每个周期检查实体有效性以逼近其语义:
+        // 实体失效时取消定时任务并执行 retriedTask (Folia 的 retired 回调)。
+        final BukkitTaskWrapper[] holder = new BukkitTaskWrapper[1];
+        BukkitTaskWrapper wrapper = syncTimer(() -> {
+            if (entity == null || !entity.isValid()) {
+                if (holder[0] != null) {
+                    holder[0].cancel();
+                }
+                if (retriedTask != null) {
+                    retriedTask.run();
+                }
+                return;
+            }
+            task.run();
+        }, delayTicks, periodTicks);
+        holder[0] = wrapper;
+        return wrapper;
     }
 
     @Override
