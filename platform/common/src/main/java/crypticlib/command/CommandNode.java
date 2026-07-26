@@ -49,7 +49,14 @@ public class CommandNode {
     }
 
     /**
-     * 当执行者无权限时执行的方法，默认不进行任何操作
+     * 当执行者无权限时执行的方法，默认不进行任何操作。
+     * <p>
+     * 注意：此方法仅对<b>子命令节点</b>可靠生效。对于根命令节点(命令树本身)，
+     * 各平台会在进入本执行逻辑之前就用平台自身的权限检查拦截无权限的执行者，
+     * 因此覆写根节点的 {@code onNoPerm} 通常不会被调用，且不同平台给玩家的
+     * 无权限反馈也不一致(Bukkit 红字提示 / Bungee 代理提示 / Velocity 视为未知命令)。
+     * 若需自定义无权限反馈，请在子命令层覆写此方法。
+     *
      * @param invoker 命令执行者
      * @param args 参数
      */
@@ -95,28 +102,27 @@ public class CommandNode {
         if (desc != null && !desc.isEmpty()) {
             description.add(desc);
         }
-        subcommands.forEach(
-            (key, subcommand) -> {
-                if (!subcommand.hasPermission(invoker)) {
-                    return;
-                }
-                StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- ", "");
-                subNameJoiner.add(subcommand.commandInfo().name());
-                for (String alias : subcommand.commandInfo().aliases()) {
-                    subNameJoiner.add(alias);
-                }
-                description.add(subNameJoiner.toString());
-                String subUsage = subcommand.commandInfo().usage();
-                if (subUsage != null && !subUsage.isEmpty()) {
-                    description.add("   " + subUsage);
-                }
-                String subDesc = subcommand.commandInfo().description();
-                if (subDesc == null || subDesc.isEmpty()) {
-                    return;
-                }
-                description.add("   " + subDesc);
+        //别名与主名共享同一节点,去重后再生成描述,避免同一子命令重复输出
+        for (CommandNode subcommand : new LinkedHashSet<>(subcommands.values())) {
+            if (!subcommand.hasPermission(invoker)) {
+                continue;
             }
-        );
+            StringJoiner subNameJoiner = new StringJoiner(" | ", " &7- ", "");
+            subNameJoiner.add(subcommand.commandInfo().name());
+            for (String alias : subcommand.commandInfo().aliases()) {
+                subNameJoiner.add(alias);
+            }
+            description.add(subNameJoiner.toString());
+            String subUsage = subcommand.commandInfo().usage();
+            if (subUsage != null && !subUsage.isEmpty()) {
+                description.add("   " + subUsage);
+            }
+            String subDesc = subcommand.commandInfo().description();
+            if (subDesc == null || subDesc.isEmpty()) {
+                continue;
+            }
+            description.add("   " + subDesc);
+        }
         return description;
     }
 
@@ -212,12 +218,14 @@ public class CommandNode {
                         return Collections.singletonList("");
                     }
                 }
-                return Collections.singletonList("");
-            }
-            for (String arg : subcommands.keySet()) {
-                CommandNode commandHandler = subcommands.get(arg);
-                if (commandHandler.hasPermission(invoker)) {
-                    arguments.add(arg);
+                //首参不匹配任何子命令时,回退到自定义tabComplete的结果,
+                //与onCommand对自由参数的处理保持一致
+            } else {
+                for (String arg : subcommands.keySet()) {
+                    CommandNode commandHandler = subcommands.get(arg);
+                    if (commandHandler.hasPermission(invoker)) {
+                        arguments.add(arg);
+                    }
                 }
             }
         }
@@ -229,8 +237,8 @@ public class CommandNode {
     }
 
     public final void registerPerms() {
-        //扫描子命令,注册子命令所需权限
-        for (CommandNode commandTreeNode : subcommands.values()) {
+        //扫描子命令,注册子命令所需权限(别名共享节点,去重后避免重复递归)
+        for (CommandNode commandTreeNode : new LinkedHashSet<>(subcommands.values())) {
             commandTreeNode.registerPerms();
         }
         //注册自己的权限节点
@@ -250,8 +258,8 @@ public class CommandNode {
             }
         }
 
-        //再注册子命令的子命令
-        for (CommandNode commandHandler : subcommands.values()) {
+        //再注册子命令的子命令(别名共享节点,去重后避免重复递归)
+        for (CommandNode commandHandler : new LinkedHashSet<>(subcommands.values())) {
             commandHandler.scanSubCommands();
         }
     }

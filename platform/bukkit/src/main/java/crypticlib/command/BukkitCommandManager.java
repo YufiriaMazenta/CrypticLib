@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -78,17 +79,20 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
             return Optional.empty();
         command.unregister(serverCommandMap);
 
+        //SimpleCommandMap 存入 knownCommands 时会将主名与别名统一转为小写,移除时也需使用小写键
+        String lowerCommandName = commandName.toLowerCase(Locale.ENGLISH);
+
         //先移除不带命名空间的
-        serverCommandMapKnownCommands.remove(commandName);
+        serverCommandMapKnownCommands.remove(lowerCommandName);
         for (String alias : command.getAliases()) {
-            serverCommandMapKnownCommands.remove(alias);
+            serverCommandMapKnownCommands.remove(alias.toLowerCase(Locale.ENGLISH));
         }
 
         //再移除带命名空间的
         String commandNamespace = command.getPlugin().getName().toLowerCase(Locale.ENGLISH);
-        serverCommandMapKnownCommands.remove(commandNamespace + ":" + commandName.toLowerCase(Locale.ENGLISH));
+        serverCommandMapKnownCommands.remove(commandNamespace + ":" + lowerCommandName);
         for (String alias : command.getAliases()) {
-            serverCommandMapKnownCommands.remove(commandNamespace + ":" + alias);
+            serverCommandMapKnownCommands.remove(commandNamespace + ":" + alias.toLowerCase(Locale.ENGLISH));
         }
 
         registeredCommands.remove(commandName);
@@ -100,12 +104,11 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
      */
     @Override
     public void unregisterAll() {
-        registeredCommands.forEach(
-            (pluginName, command) -> {
-                command.unregister(serverCommandMap);
-            }
-        );
+        //复用 unregister 的完整清理逻辑,确保 knownCommands 中的主名、别名及带命名空间的键全部被移除
+        new ArrayList<>(registeredCommands.keySet()).forEach(this::unregister);
         registeredCommands.clear();
+        //刷新控制台与玩家的命令列表,移除残留的失效命令
+        syncCommands();
     }
 
     @Override
