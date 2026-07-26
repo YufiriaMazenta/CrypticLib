@@ -40,7 +40,7 @@ public class LangEntryContainer {
         this.langConfigWrapperMap = new ConcurrentHashMap<>();
         this.langFileFolder = langFileFolder;
         this.containerClass = containerClass;
-        this.defLang = defLang;
+        this.defLang = defLang == null ? null : defLang.toLowerCase();
         saveDefLangFiles();
     }
 
@@ -95,6 +95,7 @@ public class LangEntryContainer {
                 entry.setDefLang(defLang);
             }
             entry.load(this);
+            LangManager.INSTANCE.putLangEntry(langFileFolder, entry);
         });
     }
 
@@ -114,7 +115,7 @@ public class LangEntryContainer {
 
         for (File langFile : yamlFiles) {
             String fileName = langFile.getName();
-            String lang = fileName.substring(0, fileName.lastIndexOf("."));
+            String lang = fileName.substring(0, fileName.lastIndexOf(".")).toLowerCase();
             BukkitConfigWrapper configWrapper = new BukkitConfigWrapper(langFile);
             configWrapper.reloadConfig();
             langConfigWrapperMap.put(lang, configWrapper);

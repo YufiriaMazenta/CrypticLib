@@ -125,8 +125,8 @@ public enum LangManager implements LifeCycleTask {
             if (split.length < 2) {
                 result.append(langKey);
             } else {
-                //获取对应的翻译文本进行替换
-                StringLangEntry stringLangEntry = getStringLangEntryOrAdd(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
+                //获取对应的翻译文本进行替换,使用只读查找,未命中时原样输出,避免为任意未知key永久注册新条目
+                StringLangEntry stringLangEntry = getStringLangEntry(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
                 //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
                 if (stringLangEntry == null) {
                     result.append(langKey);
