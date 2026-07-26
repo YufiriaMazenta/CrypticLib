@@ -125,8 +125,17 @@ public enum LangManager implements LifeCycleTask {
             if (split.length < 2) {
                 result.append(langKey);
             } else {
-                //获取对应的翻译文本进行替换,使用只读查找,未命中时原样输出,避免为任意未知key永久注册新条目
-                StringLangEntry stringLangEntry = getStringLangEntry(split[0], String.join(":", Arrays.copyOfRange(split, 1, split.length)));
+                String folder = split[0];
+                String key = String.join(":", Arrays.copyOfRange(split, 1, split.length));
+                //先只读查找已注册条目; 未命中时, 仅当该key确实存在于语言文件中才注册加载,
+                //既支持用户在语言文件中自定义新key, 又避免为任意未知key(可能来自玩家输入)永久注册条目导致内存无界增长
+                StringLangEntry stringLangEntry = getStringLangEntry(folder, key);
+                if (stringLangEntry == null) {
+                    LangEntryContainer container = langEntryContainerMap.get(folder);
+                    if (container != null && container.hasLangKey(key)) {
+                        stringLangEntry = getStringLangEntryOrAdd(folder, key);
+                    }
+                }
                 //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
                 if (stringLangEntry == null) {
                     result.append(langKey);

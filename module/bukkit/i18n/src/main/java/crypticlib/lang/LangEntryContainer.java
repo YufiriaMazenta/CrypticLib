@@ -146,6 +146,19 @@ public class LangEntryContainer {
         return langConfigWrapperMap.containsKey(lang);
     }
 
+    /**
+     * 判断该容器已加载的任意语言文件中是否存在指定 key
+     * @param key 要检查的语言键
+     */
+    public boolean hasLangKey(@NotNull String key) {
+        for (BukkitConfigWrapper configWrapper : langConfigWrapperMap.values()) {
+            if (configWrapper.contains(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public @Nullable BukkitConfigWrapper getLangConfigWrapper(String lang) {
         return langConfigWrapperMap.get(lang);
     }
