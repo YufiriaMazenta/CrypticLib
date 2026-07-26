@@ -34,11 +34,27 @@ import java.util.List;
  */
 public class ScriptParser {
 
+    /** 递归下降的最大嵌套深度，超过则抛出 ScriptException，防止深嵌套脚本触发 StackOverflowError */
+    private static final int MAX_DEPTH = 200;
+
     private final List<Token> tokens;
     private int pos;
+    private int depth;
 
     public ScriptParser(List<Token> tokens) {
         this.tokens = tokens;
+    }
+
+    private void enterDepth() {
+        if (++depth > MAX_DEPTH) {
+            depth--;
+            int line = isAtEnd() ? tokens.get(tokens.size() - 1).line() : tokens.get(pos).line();
+            throw new ScriptException("Expression nesting too deep (max " + MAX_DEPTH + ") at line " + line);
+        }
+    }
+
+    private void exitDepth() {
+        depth--;
     }
 
     /**
@@ -93,6 +109,15 @@ public class ScriptParser {
     }
 
     private ASTNode.IfNode parseIf(boolean consumeKeyword) {
+        enterDepth();
+        try {
+            return parseIfBody(consumeKeyword);
+        } finally {
+            exitDepth();
+        }
+    }
+
+    private ASTNode.IfNode parseIfBody(boolean consumeKeyword) {
         int line;
         if (consumeKeyword) {
             line = advance().line(); // 消费 "if"
@@ -138,7 +163,12 @@ public class ScriptParser {
     // ======================== 表达式（优先级递增） ========================
 
     private ASTNode parseExpression() {
-        return parseOr();
+        enterDepth();
+        try {
+            return parseOr();
+        } finally {
+            exitDepth();
+        }
     }
 
     private ASTNode parseOr() {
@@ -195,19 +225,24 @@ public class ScriptParser {
     }
 
     private ASTNode parseUnary() {
-        if (check(Token.Type.NOT)) {
-            advance();
-            int line = previous().line();
-            ASTNode operand = parseUnary();
-            return new ASTNode.UnaryOpNode("!", operand, line);
+        enterDepth();
+        try {
+            if (check(Token.Type.NOT)) {
+                advance();
+                int line = previous().line();
+                ASTNode operand = parseUnary();
+                return new ASTNode.UnaryOpNode("!", operand, line);
+            }
+            if (check(Token.Type.MINUS)) {
+                advance();
+                int line = previous().line();
+                ASTNode operand = parseUnary();
+                return new ASTNode.UnaryOpNode("-", operand, line);
+            }
+            return parseCall();
+        } finally {
+            exitDepth();
         }
-        if (check(Token.Type.MINUS)) {
-            advance();
-            int line = previous().line();
-            ASTNode operand = parseUnary();
-            return new ASTNode.UnaryOpNode("-", operand, line);
-        }
-        return parseCall();
     }
 
     private ASTNode parseCall() {
@@ -243,25 +278,16 @@ public class ScriptParser {
                 return new ASTNode.FunctionCallNode(funcName, args, name.line());
             }
 
-            // 情况2/3: 判断后面是否跟着可作为参数的 token（STRING/NUMBER/BOOLEAN/IDENTIFIER）
+            // 情况2/3: 判断后面是否跟着可作为参数的 token
+            // （STRING/INTERPOLATED_STRING/NUMBER/INTEGER/BOOLEAN/IDENTIFIER/VARIABLE）
             // 如果是，收集为裸参数；否则是无参调用
-            // IDENTIFIER 作为参数时会递归解析为函数调用（如 papi "%player_name%"）
+            // IDENTIFIER / VARIABLE 作为参数时递归解析为函数调用或变量引用（如 papi "%player_name%"、say ${player}）
+            // 注意：不再把 "- 数字" 识别为负数裸参数，否则 "x - 1" 会被吞为 x(-1)；
+            // 负数参数请使用括号调用形式 foo(-1)。
             List<ASTNode> args = new ArrayList<>();
             while (isBareArgToken()) {
-                if (check(Token.Type.IDENTIFIER)) {
+                if (check(Token.Type.IDENTIFIER) || check(Token.Type.VARIABLE)) {
                     args.add(parseCall());
-                } else if (check(Token.Type.MINUS)) {
-                    // 处理负数
-                    int line = advance().line(); // 消费 MINUS
-                    if (!check(Token.Type.NUMBER) && !check(Token.Type.INTEGER)) {
-                        throw new ScriptException("Expected number after '-' at line " + line);
-                    }
-                    Token num = advance();
-                    if (num.type() == Token.Type.INTEGER) {
-                        args.add(new ASTNode.LiteralNode(-Long.parseLong(num.value()), num.line()));
-                    } else {
-                        args.add(new ASTNode.LiteralNode(new BigDecimal(num.value()).negate(), num.line()));
-                    }
                 } else {
                     args.add(parseAtom());
                 }
@@ -275,12 +301,9 @@ public class ScriptParser {
     private boolean isBareArgToken() {
         if (isAtEnd()) return false;
         Token.Type type = tokens.get(pos).type();
-        // 支持负数：MINUS 后面跟着 NUMBER 或 INTEGER
-        if (type == Token.Type.MINUS && pos + 1 < tokens.size() && 
-            (tokens.get(pos + 1).type() == Token.Type.NUMBER || tokens.get(pos + 1).type() == Token.Type.INTEGER)) {
-            return true;
-        }
-        return type == Token.Type.STRING || type == Token.Type.NUMBER || type == Token.Type.INTEGER || type == Token.Type.BOOLEAN;
+        return type == Token.Type.STRING || type == Token.Type.INTERPOLATED_STRING
+            || type == Token.Type.NUMBER || type == Token.Type.INTEGER
+            || type == Token.Type.BOOLEAN || type == Token.Type.VARIABLE;
     }
 
     private ASTNode parseAtom() {
@@ -302,6 +325,8 @@ public class ScriptParser {
             return new ASTNode.LiteralNode(Boolean.parseBoolean(tok.value()), tok.line());
         } else if (type == Token.Type.IDENTIFIER) {
             return new ASTNode.IdentifierNode(tok.value(), tok.line());
+        } else if (type == Token.Type.VARIABLE) {
+            return new ASTNode.VariableReferenceNode(tok.value(), tok.line());
         } else if (type == Token.Type.LPAREN) {
             ASTNode expr = parseExpression();
             expect(Token.Type.RPAREN, "Expected ')'");

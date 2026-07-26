@@ -90,11 +90,13 @@ public class ScriptCompiler {
             return;
         }
 
-        // 编译第一个部分
-        emitInterpolationPart(parts.get(0), instructions);
+        // 先压入空字符串作为拼接基底，保证插值结果恒为字符串：
+        // 否则相邻变量插值（如 "${a}${b}"，a=1、b=2）首个 ADD 会退化为数值加法得到 3 而非 "12"，
+        // 单变量插值 "${a}" 也会保持变量原始类型而非字符串。
+        instructions.add(Instruction.push(ScriptValue.of(""), node.line()));
 
-        // 编译后续部分并拼接（使用 ADD 操作码，当一侧为字符串时自动拼接）
-        for (int i = 1; i < parts.size(); i++) {
+        // 依次编译各部分并拼接（使用 ADD 操作码，一侧为字符串即触发字符串拼接语义）
+        for (int i = 0; i < parts.size(); i++) {
             emitInterpolationPart(parts.get(i), instructions);
             instructions.add(Instruction.of(OpCode.ADD, node.line()));
         }

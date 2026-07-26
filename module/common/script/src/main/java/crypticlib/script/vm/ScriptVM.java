@@ -19,6 +19,11 @@ import java.util.List;
 /**
  * 栈式虚拟机
  * 执行编译后的指令序列
+ * <p>
+ * <b>线程安全说明：</b>本类非线程安全。{@link #pause()} 与 {@link #resume()} 之间
+ * 必须建立 happens-before 关系（例如经由调度器投递恢复任务，如 {@link #pauseAndScheduleResume(long)}），
+ * 不应由外部线程绕过调度器直接跨线程调用 resume()，否则 pc / stack 内容可能读到过期值，
+ * 导致从错误位置继续执行或栈内容错乱。paused、returned 已声明为 volatile 以保证暂停标志的跨线程可见性。
  */
 public class ScriptVM {
 
@@ -30,8 +35,8 @@ public class ScriptVM {
     private final int maxInstructions;
     private final Deque<ScriptValue> stack = new ArrayDeque<>();
     private int pc;
-    private boolean returned;
-    private boolean paused;
+    private volatile boolean returned;
+    private volatile boolean paused;
 
     public ScriptVM(CompiledScript script, ScriptContext context) {
         this(script, context, DEFAULT_MAX_INSTRUCTIONS);
@@ -275,6 +280,13 @@ public class ScriptVM {
 
     /**
      * 中断执行并调度延迟恢复
+     * <p>
+     * <b>Folia 线程语义警告：</b>本方法使用通用 {@link CrypticLib#scheduler()} 的 syncLater，
+     * 在 Folia 上其恢复任务被调度到全局区域线程（GlobalRegionScheduler）。若脚本在某玩家/实体的
+     * 区域线程上开始执行（如事件处理），delay 恢复后的后续函数一旦操作该实体/世界（传送、发消息、给物品等），
+     * 在 Folia 上会触发 IllegalStateException 线程检查失败或数据竞争；而在 Spigot/Paper 上恢复线程为主线程、行为正常。
+     * 需要实体级正确调度时，应在 Bukkit 平台层用 {@code CrypticLibBukkit.scheduler().runOnEntityLater(...)}
+     * 恢复，或为 ScriptVM 注入自定义恢复调度器（common 模块无 Bukkit API，无法在此实现）。
      * @param delayTicks 延迟 tick 数
      */
     public void pauseAndScheduleResume(long delayTicks) {
@@ -320,7 +332,7 @@ public class ScriptVM {
 
         ScriptValue[] args = new ScriptValue[argCount];
         for (int i = argCount - 1; i >= 0; i--) {
-            args[i] = stack.pop();
+            args[i] = popStack("CALL");
         }
 
         ScriptFunction func = ScriptFunctionRegistry.INSTANCE.getFunction(funcName);
@@ -329,7 +341,11 @@ public class ScriptVM {
         }
 
         ScriptValue result = func.execute(context, this, args);
-        if (!paused) {
+        if (paused) {
+            // 函数暂停 VM（如 delay）时结果尚未就绪，压入占位 nil 以保证栈平衡：
+            // 否则 delay 出现在表达式上下文时 CALL 会少压一个值，恢复后弹到错误操作数或栈耗尽。
+            stack.push(ScriptValue.nil());
+        } else {
             stack.push(result == null ? ScriptValue.nil() : result);
         }
     }

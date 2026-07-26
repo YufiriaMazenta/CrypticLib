@@ -5,7 +5,6 @@ import crypticlib.script.ScriptValue;
 import crypticlib.script.vm.ScriptVM;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
@@ -131,7 +130,9 @@ public enum MathScriptModule implements ScriptModule {
         if (value.compareTo(BigDecimal.ZERO) < 0) {
             return ScriptValue.nil();
         }
-        return ScriptValue.of(value.sqrt(MathContext.DECIMAL128));
+        // 使用 Java 8 兼容实现：BigDecimal.sqrt(MathContext) 是 Java 9+ 新增 API，
+        // 在 Java 8 运行时会抛 NoSuchMethodError
+        return ScriptValue.of(BigDecimal.valueOf(Math.sqrt(value.doubleValue())));
     }
 
     /**

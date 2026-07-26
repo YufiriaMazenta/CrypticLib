@@ -125,13 +125,17 @@ public enum ScriptEngine implements LifeCycleTask {
     }
 
     /**
-     * 编译并执行脚本（自动缓存）
+     * 编译并执行脚本（不缓存）
+     * <p>
+     * 每次调用都会重新编译源码且不写入缓存，避免以源码全文为 key 无界缓存导致的内存泄漏。
+     * 对需要重复执行的脚本，请显式使用 {@link #compileAndCache} 以稳定名称为 key 缓存，
+     * 并通过 {@code ${var}} 变量而非拼接源码传参。
      * @param source 脚本源码
      * @param context 执行上下文
      * @return 执行结果
      */
     public ScriptValue execute(String source, ScriptContext context) {
-        CompiledScript script = getOrCompile("_inline_" + source, source);
+        CompiledScript script = compile("_inline_", source);
         return script.execute(context);
     }
 

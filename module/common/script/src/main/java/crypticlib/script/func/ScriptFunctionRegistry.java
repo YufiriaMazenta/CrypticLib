@@ -25,6 +25,9 @@ public enum ScriptFunctionRegistry {
     /** 无命名空间的简写名 → 函数实现（仅无冲突时存在） */
     private final Map<String, ScriptFunction> shortNames = new ConcurrentHashMap<>();
 
+    /** 简写名 → 其归属的完整名（用于区分"同一函数重复注册"与"不同模块同名冲突"） */
+    private final Map<String, String> shortNameOwners = new ConcurrentHashMap<>();
+
     /** 已注册的简写名（用于检测冲突） */
     private final Set<String> conflictedShortNames = ConcurrentHashMap.newKeySet();
 
@@ -43,12 +46,19 @@ public enum ScriptFunctionRegistry {
             // 已冲突，不注册简写
             shortNames.remove(functionName);
         } else if (shortNames.containsKey(functionName)) {
-            // 发现冲突，移除简写
-            shortNames.remove(functionName);
-            conflictedShortNames.add(functionName);
+            if (fullName.equals(shortNameOwners.get(functionName))) {
+                // 同一 module.function 重复注册（如 onEnable 与 reload 各调一次），直接覆盖而非视为冲突
+                shortNames.put(functionName, function);
+            } else {
+                // 另一个模块注册了同名函数，发现冲突，移除简写
+                shortNames.remove(functionName);
+                shortNameOwners.remove(functionName);
+                conflictedShortNames.add(functionName);
+            }
         } else {
             // 无冲突，注册简写
             shortNames.put(functionName, function);
+            shortNameOwners.put(functionName, fullName);
         }
     }
 
@@ -62,6 +72,7 @@ public enum ScriptFunctionRegistry {
         functions.put(functionName, function);
         if (!conflictedShortNames.contains(functionName)) {
             shortNames.put(functionName, function);
+            shortNameOwners.put(functionName, functionName);
         }
     }
 
@@ -110,6 +121,7 @@ public enum ScriptFunctionRegistry {
     private void rebuildShortNames() {
         shortNames.clear();
         conflictedShortNames.clear();
+        shortNameOwners.clear();
 
         for (Map.Entry<String, ScriptFunction> entry : functions.entrySet()) {
             String fullName = entry.getKey();
@@ -119,9 +131,11 @@ public enum ScriptFunctionRegistry {
                 if (!conflictedShortNames.contains(shortName)) {
                     if (shortNames.containsKey(shortName)) {
                         shortNames.remove(shortName);
+                        shortNameOwners.remove(shortName);
                         conflictedShortNames.add(shortName);
                     } else {
                         shortNames.put(shortName, entry.getValue());
+                        shortNameOwners.put(shortName, fullName);
                     }
                 }
             }
