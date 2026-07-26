@@ -33,7 +33,9 @@ public class BungeePlayer extends BungeeInvoker implements CommonPlayer {
     public @NotNull Locale locale() {
         ProxiedPlayer player = ProxyServer.getInstance().getPlayer(playerId);
         if (player != null) {
-            return player.getLocale();
+            //客户端 ClientSettings 包到达前 getLocale() 可能为 null(如登录早期),兜底为默认 Locale
+            Locale locale = player.getLocale();
+            return locale != null ? locale : Locale.getDefault();
         }
         return Locale.getDefault();
     }

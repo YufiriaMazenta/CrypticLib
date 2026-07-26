@@ -1,8 +1,12 @@
 package crypticlib;
 
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.permission.PermissionsSetupEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.permission.PermissionFunction;
+import com.velocitypowered.api.permission.PermissionProvider;
+import com.velocitypowered.api.permission.Tristate;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -20,6 +24,8 @@ import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
+import crypticlib.perm.PermDef;
+import crypticlib.perm.PermInfo;
 import crypticlib.perm.PermManager;
 import crypticlib.perm.VelocityPermManager;
 import crypticlib.scheduler.Scheduler;
@@ -49,7 +55,16 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         this.pluginContainer = pluginContainer;
         this.dataDirectory = dataDirectory;
         CrypticLib.init(this);
-        File pluginFile = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
+        File pluginFile = pluginContainer.getDescription().getSource()
+            .map(Path::toFile)
+            .orElseGet(() -> {
+                try {
+                    //使用 URI 让 JDK 正确解码路径中的空格/百分号转义,避免 URL.getFile() 残留字面 %20 导致找不到 jar
+                    return new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+                } catch (java.net.URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
         runLifeCycleTasks(this, LifeCycle.INIT);
@@ -129,6 +144,30 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         VelocityCommandManager.INSTANCE.unregisterAll();
         scheduler().cancelTasks();
         whenDisable();
+    }
+
+    /**
+     * 应用通过 PermManager 注册的 PermDef.TRUE 默认权限。
+     * Velocity 本身没有默认权限概念,此处包装原始 PermissionFunction,
+     * 使得声明为 PermDef.TRUE 且玩家未显式设置的权限返回 TRUE,与 Bukkit/Bungee 行为对齐。
+     */
+    @Subscribe
+    public final void onPermissionsSetup(PermissionsSetupEvent event) {
+        PermissionProvider original = event.getProvider();
+        event.setProvider(subject -> {
+            PermissionFunction function = original.createFunction(subject);
+            return permission -> {
+                Tristate result = function.getPermissionValue(permission);
+                if (result != Tristate.UNDEFINED) {
+                    return result;
+                }
+                PermInfo permInfo = VelocityPermManager.INSTANCE.permissions().get(permission);
+                if (permInfo != null && PermDef.TRUE.equals(permInfo.permDef())) {
+                    return Tristate.TRUE;
+                }
+                return result;
+            };
+        });
     }
 
     public void whenLoad() {}
