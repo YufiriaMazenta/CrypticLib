@@ -63,11 +63,11 @@ public interface CrypticLibPlugin {
                 } catch (Throwable throwable) {
                     LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
                     List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
-                    if (ignoreExceptions.contains(throwable.getClass())) {
+                    if (isExceptionMatched(ignoreExceptions, throwable)) {
                         return;
                     }
                     List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                    if (printExceptions.contains(throwable.getClass())) {
+                    if (isExceptionMatched(printExceptions, throwable)) {
                         throwable.printStackTrace();
                         return;
                     }
@@ -79,6 +79,33 @@ public interface CrypticLibPlugin {
         for (LifeCycleTaskWrapper taskWrapper : taskWrappers) {
             taskWrapper.runLifecycleTask(plugin, lifeCycle);
         }
+    }
+
+    /**
+     * 判断异常(含其反射包装链上的任意cause)是否匹配给定的异常类型列表。
+     * <p>
+     * 通过反射实例化任务时，构造器抛出的异常会被逐层包装为 InvocationTargetException、
+     * RuntimeException 等，因此需要递归解包 cause 链，并使用 isAssignableFrom 以命中子类。
+     *
+     * @param exceptionClasses 需要匹配的异常类型
+     * @param throwable        实际捕获到的异常
+     * @return 异常链上是否存在匹配的异常类型
+     */
+    static boolean isExceptionMatched(List<Class<? extends Throwable>> exceptionClasses, Throwable throwable) {
+        Throwable current = throwable;
+        while (current != null) {
+            for (Class<? extends Throwable> exceptionClass : exceptionClasses) {
+                if (exceptionClass.isAssignableFrom(current.getClass())) {
+                    return true;
+                }
+            }
+            Throwable cause = current.getCause();
+            if (cause == current) {
+                break;
+            }
+            current = cause;
+        }
+        return false;
     }
 
 }

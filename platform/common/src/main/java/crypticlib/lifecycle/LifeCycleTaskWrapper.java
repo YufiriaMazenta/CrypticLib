@@ -1,5 +1,7 @@
 package crypticlib.lifecycle;
 
+import crypticlib.internal.CrypticLibPlugin;
+
 import java.util.List;
 
 public class LifeCycleTaskWrapper {
@@ -25,10 +27,10 @@ public class LifeCycleTaskWrapper {
         try {
             lifeCycleTask.lifecycle(plugin, lifeCycle);
         } catch (Throwable throwable) {
-            if (ignoreExceptions.contains(throwable.getClass())) {
+            if (CrypticLibPlugin.isExceptionMatched(ignoreExceptions, throwable)) {
                 return;
             }
-            if (printExceptions.contains(throwable.getClass())) {
+            if (CrypticLibPlugin.isExceptionMatched(printExceptions, throwable)) {
                 throwable.printStackTrace();
                 return;
             }
