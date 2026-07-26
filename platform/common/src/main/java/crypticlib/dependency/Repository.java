@@ -19,6 +19,11 @@ import java.util.Objects;
  */
 public class Repository extends AbstractXmlParser {
 
+    public static final Repository MAVEN_CENTRAL = new Repository("https://repo.maven.apache.org/maven2");
+    public static final Repository MAVEN_CENTRAL_MIRROR_ALI = new Repository("https://maven.aliyun.com/repository/central");
+    public static final Repository JITPACK = new Repository("https://jitpack.io");
+    public static final Repository SONATYPE = new Repository("https://oss.sonatype.org/content/groups/public");
+
     private final String url;
 
     public Repository(@NotNull String url) {
@@ -27,10 +32,6 @@ public class Repository extends AbstractXmlParser {
 
     public Repository(@NotNull Element node) throws ParseException {
         this(find("url", node, null));
-    }
-
-    public Repository() {
-        this(Dependency.REPOSITORY_MAVEN_CENTRAL);
     }
 
     /**

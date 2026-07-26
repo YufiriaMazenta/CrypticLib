@@ -37,7 +37,7 @@ public enum DependencyLoader {
 
         String url = dependency.toString();
         String[] args = url.split(":");
-        List<String> repos = dependency.getRepositories();
+        List<Repository> repos = dependency.getRepositories();
         File baseDir = new File(DEFAULT_DEPENDENCY_FOLDER);
         List<JarRelocation> relocation = dependency.getRelocations();
         boolean transitive = dependency.isTransitive();
@@ -47,14 +47,11 @@ public enum DependencyLoader {
         DependencyDownloader downloader = new DependencyDownloader(baseDir, relocation);
 
         // 解析仓库列表，从上到下尝试
-        List<String> repoUrls = repos.isEmpty()
-            ? Collections.singletonList(Dependency.REPOSITORY_MAVEN_CENTRAL)
+        List<Repository> repositories = repos.isEmpty()
+            ? Arrays.asList(Repository.MAVEN_CENTRAL_MIRROR_ALI, Repository.MAVEN_CENTRAL)
             : repos;
-        for (String repoUrl : repoUrls) {
-            if (repoUrl.endsWith("/")) {
-                repoUrl = repoUrl.substring(0, repoUrl.length() - 1);
-            }
-            downloader.addRepository(new Repository(repoUrl));
+        for (Repository repository : repositories) {
+            downloader.addRepository(repository);
         }
         downloader.setDependencyScopes(new DependencyScope[]{dependency.getScope()});
         downloader.setTransitive(transitive);

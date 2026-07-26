@@ -16,16 +16,12 @@ import java.util.*;
  */
 public class Dependency extends AbstractXmlParser {
 
-    public static final String REPOSITORY_MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2";
-    public static final String REPOSITORY_MAVEN_CENTRAL_MIRROR_ALI = "https://maven.aliyun.com/repository/central";
-    public static final String REPOSITORY_JITPACK = "https://jitpack.io";
-    public static final String REPOSITORY_SONATYPE = "https://oss.sonatype.org/content/groups/public";
     private static final String LATEST_VERSION = "latest";
 
     private final String groupId;
     private final String artifactId;
     private final DependencyScope scope;
-    private final List<String> repositories;
+    private final List<Repository> repositories;
     private final String test;
     private final boolean transitive;
     private final List<JarRelocation> relocations;
@@ -125,7 +121,7 @@ public class Dependency extends AbstractXmlParser {
     }
 
     @NotNull
-    public List<String> getRepositories() {
+    public List<Repository> getRepositories() {
         return repositories;
     }
 
@@ -184,7 +180,7 @@ public class Dependency extends AbstractXmlParser {
         private final String artifactId;
         private String version;
         private DependencyScope scope = DependencyScope.RUNTIME;
-        private final List<String> repositories = new ArrayList<>();
+        private final List<Repository> repositories = new ArrayList<>();
         private String test;
         private boolean transitive = true;
         private final List<JarRelocation> relocations = new ArrayList<>();
@@ -207,7 +203,7 @@ public class Dependency extends AbstractXmlParser {
          * @param repository 仓库 URL
          */
         @NotNull
-        public Builder repository(@NotNull String repository) {
+        public Builder repository(@NotNull Repository repository) {
             this.repositories.add(repository);
             return this;
         }
@@ -218,7 +214,7 @@ public class Dependency extends AbstractXmlParser {
          * @param repositories 仓库 URL 列表
          */
         @NotNull
-        public Builder repositories(@NotNull List<String> repositories) {
+        public Builder repositories(@NotNull List<Repository> repositories) {
             this.repositories.addAll(repositories);
             return this;
         }

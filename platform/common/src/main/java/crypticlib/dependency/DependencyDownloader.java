@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -205,14 +206,11 @@ public class DependencyDownloader extends AbstractXmlParser {
         Set<DependencyScope> scopeSet = new HashSet<>(Arrays.asList(dependencyScopes));
         NodeList nodes = pom.getDocumentElement().getChildNodes();
         List<Repository> repos = new ArrayList<>(repositories);
-        if (repos.isEmpty()) {
-            repos.add(new Repository());
-        }
 
         // 解析 <repositories>
         try {
             for (int i = 0; i < nodes.getLength(); ++i) {
-                org.w3c.dom.Node node = nodes.item(i);
+                Node node = nodes.item(i);
                 if (node.getNodeName().equals("repositories")) {
                     nodes = ((Element) node).getElementsByTagName("repository");
                     for (i = 0; i < nodes.getLength(); ++i) {
