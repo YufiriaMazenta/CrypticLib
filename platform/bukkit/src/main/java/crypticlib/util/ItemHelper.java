@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 物品相关工具类
@@ -44,10 +45,11 @@ public class ItemHelper {
     public static void setLore(ItemStack item, List<String> lore, boolean format) {
         Preconditions.checkArgument(!ItemHelper.isAir(item), "Item can not be air");
         ItemMeta itemMeta = item.getItemMeta();
-        if (format) {
-            lore.replaceAll(BukkitTextProcessor::color);
+        List<String> newLore = lore;
+        if (format && lore != null) {
+            newLore = lore.stream().map(BukkitTextProcessor::color).collect(Collectors.toList());
         }
-        itemMeta.setLore(lore);
+        itemMeta.setLore(newLore);
 
         item.setItemMeta(itemMeta);
     }

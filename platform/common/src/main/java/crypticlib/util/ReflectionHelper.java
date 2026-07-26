@@ -17,17 +17,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ReflectionHelper {
 
-    private final static Map<String, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
+    // getField(public含继承)与getDeclaredField(本类任意修饰符)语义不同,使用各自独立的缓存,避免互相污染
+    // 缓存key使用Class对象而非类名字符串,避免不同ClassLoader中同名类互相命中
+    private final static Map<Class<?>, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
+    private final static Map<Class<?>, Map<String, Field>> declaredFieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<>();
     private static Object PLUGIN_INSTANCE = null;
 
     public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
-        Field cacheField = getFieldCache(clazz, fieldName);
+        Field cacheField = getFieldCache(fieldCaches, clazz, fieldName);
         if (cacheField != null)
             return cacheField;
         try {
             Field field = clazz.getField(fieldName);
-            putFieldCache(clazz, fieldName, field);
+            putFieldCache(fieldCaches, clazz, fieldName, field);
             return field;
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
@@ -35,25 +38,25 @@ public class ReflectionHelper {
     }
 
     public static Field getDeclaredField(@NotNull Class<?> clazz, @NotNull String fieldName) {
-        Field cacheField = getFieldCache(clazz, fieldName);
+        Field cacheField = getFieldCache(declaredFieldCaches, clazz, fieldName);
         if (cacheField != null)
             return cacheField;
         try {
             Field field = clazz.getDeclaredField(fieldName);
-            putFieldCache(clazz, fieldName, field);
+            putFieldCache(declaredFieldCaches, clazz, fieldName, field);
             return field;
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static Field getFieldCache(Class<?> clazz, String fieldName) {
-        Map<String, Field> classFieldCache = fieldCaches.get(clazz.getName());
+    private static Field getFieldCache(Map<Class<?>, Map<String, Field>> caches, Class<?> clazz, String fieldName) {
+        Map<String, Field> classFieldCache = caches.get(clazz);
         return classFieldCache != null ? classFieldCache.get(fieldName) : null;
     }
 
-    private static void putFieldCache(Class<?> clazz, String fieldName, Field field) {
-        fieldCaches.computeIfAbsent(clazz.getName(), k -> new ConcurrentHashMap<>()).put(fieldName, field);
+    private static void putFieldCache(Map<Class<?>, Map<String, Field>> caches, Class<?> clazz, String fieldName, Field field) {
+        caches.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>()).put(fieldName, field);
     }
 
     @SuppressWarnings("unchecked")

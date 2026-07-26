@@ -37,8 +37,15 @@ public class MapHelper {
         //使用正则表达式匹配键值对
         Matcher matcher = KEY_VALUE_TEXT_PATTERN.matcher(keyValueText);
 
+        //记录正则匹配已消费到的位置,用于校验匹配区间是否连续覆盖整个文本
+        int lastEnd = 0;
+
         //逐一处理每个键值对
         while (matcher.find()) {
+            //匹配区间之间(以及开头)只允许出现分隔符(逗号)或空白,否则说明存在没有冒号的非法片段
+            checkGap(keyValueText, lastEnd, matcher.start());
+            lastEnd = matcher.end();
+
             String key = unwrapStr(matcher.group(1).trim());
             String value = unwrapStr(matcher.group(2).trim());
 
@@ -55,13 +62,8 @@ public class MapHelper {
             resultMap.put(key, value);
         }
 
-        //检查是否存在没有值的键(没有冒号的键值对)
-        String[] pairs = keyValueText.split(",");
-        for (String pair : pairs) {
-            if (!pair.contains(":")) {
-                throw new KeyValueTextParseException("Format incorrect: missing the separator \":\" at " + pair, keyValueText);
-            }
-        }
+        //校验末尾剩余部分同样只能是分隔符或空白
+        checkGap(keyValueText, lastEnd, keyValueText.length());
 
         return resultMap;
     }
@@ -100,6 +102,19 @@ public class MapHelper {
         result.append("}");
 
         return result.toString();
+    }
+
+    /**
+     * 校验[start, end)区间内的字符只能是分隔符(逗号)或空白
+     * 若出现其它字符,说明该片段缺少冒号分隔符,抛出异常
+     */
+    private static void checkGap(String keyValueText, int start, int end) {
+        for (int i = start; i < end; i++) {
+            char c = keyValueText.charAt(i);
+            if (c != ',' && !Character.isWhitespace(c)) {
+                throw new KeyValueTextParseException("Format incorrect: missing the separator \":\" at " + keyValueText.substring(start, end).trim(), keyValueText);
+            }
+        }
     }
 
     /**

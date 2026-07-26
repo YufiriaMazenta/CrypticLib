@@ -106,7 +106,7 @@ public class CollectionHelper {
      * 去除重复元素
      */
     public static <T> List<T> removeDuplication(List<T> list) {
-        TreeSet<T> set = new TreeSet<>(list);
+        LinkedHashSet<T> set = new LinkedHashSet<>(list);
         list.clear();
         list.addAll(set);
         return list;
