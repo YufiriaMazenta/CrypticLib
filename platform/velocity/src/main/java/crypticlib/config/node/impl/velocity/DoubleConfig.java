@@ -22,7 +22,12 @@ public class DoubleConfig extends VelocityConfigNode<Double> {
 
     @Override
     public void load(@NotNull CommentedConfig config) {
-        setValue(config.getOrElse(key, def));
+        Object raw = config.get(key);
+        if (raw instanceof Number) {
+            setValue(((Number) raw).doubleValue());
+        } else {
+            setValue(def);
+        }
         setComments(configContainer.configWrapper().getComments(key));
     }
 

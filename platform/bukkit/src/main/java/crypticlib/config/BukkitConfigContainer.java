@@ -2,6 +2,7 @@ package crypticlib.config;
 
 import crypticlib.config.node.BukkitConfigNode;
 import crypticlib.util.ReflectionHelper;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -16,6 +17,8 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> 
     @Override
     public void reload() {
 //        configWrapper.reloadConfig(); 不再由ConfigContainer进行重载
+        //仅在确实补写了默认值(存在缺失的键)时才保存, 避免Bukkit<1.18.1每次reload无条件重写文件抹掉注释
+        boolean changed = false;
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
@@ -24,11 +27,21 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> 
                 BukkitConfigNode<?> config = (BukkitConfigNode<?>) obj;
                 if (config.configContainer() == null)
                     config.setConfigContainer(this);
+                if (!configWrapper.config().contains(config.key()))
+                    changed = true;
                 config.saveDef(configWrapper.config());
-                config.load(configWrapper.config());
+                //单个节点加载异常时记录告警并跳过, 不让一个坏键中断整个配置类的加载
+                try {
+                    config.load(configWrapper.config());
+                } catch (Throwable t) {
+                    Bukkit.getLogger().warning("Failed to load config value at '" + config.key() + "' in "
+                        + configWrapper.configFile().getName() + ": " + t.getMessage());
+                }
             }
         }
-        configWrapper.saveConfig();
+        if (changed) {
+            configWrapper.saveConfig();
+        }
     }
 
     @Override

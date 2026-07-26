@@ -22,7 +22,12 @@ public class BooleanConfig extends VelocityConfigNode<Boolean> {
 
     @Override
     public void load(@NotNull CommentedConfig config) {
-        setValue(config.getOrElse(key, def));
+        Object raw = config.get(key);
+        if (raw instanceof Boolean) {
+            setValue((Boolean) raw);
+        } else {
+            setValue(def);
+        }
         setComments(configContainer.configWrapper().getComments(key));
     }
 

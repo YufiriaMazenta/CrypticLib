@@ -1,6 +1,7 @@
 package crypticlib.config.node.impl.bukkit;
 
 import crypticlib.config.node.BukkitConfigNode;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +23,19 @@ public class DoubleListConfig extends BukkitConfigNode<List<Double>> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        setValue(config.getDoubleList(key));
+        //load阶段只更新内存value, 不通过setValue把解析结果回写配置对象,
+        //键存在但类型不是列表时保留文件原值并回退默认值, 避免requireNonNull抛NPE
+        if (config.isList(key)) {
+            this.value = config.getDoubleList(key);
+        } else {
+            if (config.contains(key)) {
+                Bukkit.getLogger().warning("Config value at '" + key + "' in "
+                    + configContainer.configWrapper().configFile().getName()
+                    + " is not a list, falling back to default value"
+                    + " (the original file value is kept).");
+            }
+            this.value = def;
+        }
         setComments(getCommentsFromConfig());
     }
 

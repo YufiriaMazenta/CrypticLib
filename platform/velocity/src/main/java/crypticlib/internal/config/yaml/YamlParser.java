@@ -9,7 +9,6 @@ import com.electronwill.nightconfig.core.io.ParsingMode;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.comments.CommentLine;
-import org.yaml.snakeyaml.comments.CommentType;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.reader.UnicodeReader;
@@ -20,6 +19,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -69,7 +69,9 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
             }
             parsingMode.prepareParsing(destination);
             if (mappingNode != null) {
-                adjustNodeComments(mappingNode);
+                // 不再把文件头部注释(首键上方最后一个空行之前的块注释)剥离到从不回写的根节点上,
+                // 保留在首个键节点的块注释里, 避免 saveConfig 回写时头部注释永久丢失。
+                // 说明: 仅键上方的块注释会被保留, 值后的行内注释暂不支持。
                 fromNodeTree(mappingNode, destination);
             }
         } catch (Exception e) {
@@ -102,16 +104,17 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
                 valueNode = ((AnchorNode) valueNode).getRealNode();
             }
 
+            List<String> singleKeyPath = Collections.singletonList(key);
             if (valueNode instanceof MappingNode) {
                 Config subConfig = config.createSubConfig();
                 fromNodeTree((MappingNode) valueNode, subConfig);
-                config.set(key, subConfig);
+                config.set(singleKeyPath, subConfig);
             } else if (valueNode instanceof SequenceNode) {
                 List<Object> objects = new ArrayList<>();
                 fromNodeList((SequenceNode) valueNode, objects);
-                config.set(key, objects);
+                config.set(singleKeyPath, objects);
             } else {
-                config.set(key, constructor.construct(valueNode));
+                config.set(singleKeyPath, constructor.construct(valueNode));
             }
 
             if (config instanceof CommentedConfig) {
@@ -121,7 +124,7 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
                 }
 
                 String commentJsonArray = CommentLoader.commentLineList2JsonArray(blockComments);
-                ((CommentedConfig) config).setComment(key, commentJsonArray);
+                ((CommentedConfig) config).setComment(singleKeyPath, commentJsonArray);
             }
         }
     }
@@ -138,25 +141,6 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
                 objects.add(objects2);
             } else {
                 objects.add(constructor.construct(node));
-            }
-        }
-    }
-
-    private void adjustNodeComments(final MappingNode node) {
-        if (node.getBlockComments() == null && !node.getValue().isEmpty()) {
-            Node firstNode = node.getValue().get(0).getKeyNode();
-            List<CommentLine> lines = firstNode.getBlockComments();
-            if (lines != null) {
-                int index = -1;
-                for (int i = 0; i < lines.size(); i++) {
-                    if (lines.get(i).getCommentType() == CommentType.BLANK_LINE) {
-                        index = i;
-                    }
-                }
-                if (index != -1) {
-                    node.setBlockComments(lines.subList(0, index + 1));
-                    firstNode.setBlockComments(lines.subList(index + 1, lines.size()));
-                }
             }
         }
     }

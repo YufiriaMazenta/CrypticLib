@@ -21,25 +21,23 @@ import java.util.function.Supplier;
  */
 public class YamlFormat implements ConfigFormat<CommentedConfig> {
 
-    private static final ThreadLocal<YamlFormat> LOCAL_DEFAULT_FORMAT = ThreadLocal.withInitial(
-        () -> {
-            DumperOptions dumperOptions = new DumperOptions();
-            dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            dumperOptions.setProcessComments(true);
-            LoaderOptions loaderOptions = new LoaderOptions();
-            loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
-            loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
-            loaderOptions.setProcessComments(true);
-            return new YamlFormat(loaderOptions, dumperOptions);
-        });
+    private static final YamlFormat DEFAULT_FORMAT = createDefaultFormat();
 
-    public static YamlFormat defaultInstance() {
-        return LOCAL_DEFAULT_FORMAT.get();
+    private static YamlFormat createDefaultFormat() {
+        DumperOptions dumperOptions = new DumperOptions();
+        dumperOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        dumperOptions.setProcessComments(true);
+        LoaderOptions loaderOptions = new LoaderOptions();
+        loaderOptions.setMaxAliasesForCollections(Integer.MAX_VALUE);
+        loaderOptions.setCodePointLimit(Integer.MAX_VALUE);
+        loaderOptions.setProcessComments(true);
+        return new YamlFormat(loaderOptions, dumperOptions);
     }
 
-    private final Yaml yaml;
-    private final Constructor constructor;
-    private final Representer representer;
+    public static YamlFormat defaultInstance() {
+        return DEFAULT_FORMAT;
+    }
+
     private final LoaderOptions loaderOptions;
     private final DumperOptions dumperOptions;
 
@@ -58,9 +56,6 @@ public class YamlFormat implements ConfigFormat<CommentedConfig> {
     YamlFormat(LoaderOptions loaderOptions, DumperOptions dumperOptions) {
         this.loaderOptions = loaderOptions;
         this.dumperOptions = dumperOptions;
-        this.constructor = new Constructor(loaderOptions);
-        this.representer = new Representer(dumperOptions);
-        this.yaml = new Yaml(constructor, representer, dumperOptions, loaderOptions);
     }
 
     @Override
@@ -84,15 +79,15 @@ public class YamlFormat implements ConfigFormat<CommentedConfig> {
     }
 
     public Yaml yaml() {
-        return yaml;
+        return new Yaml(new Constructor(loaderOptions), new Representer(dumperOptions), dumperOptions, loaderOptions);
     }
 
     public Constructor constructor() {
-        return constructor;
+        return new Constructor(loaderOptions);
     }
 
     public Representer representer() {
-        return representer;
+        return new Representer(dumperOptions);
     }
 
     public LoaderOptions loaderOptions() {

@@ -1,6 +1,7 @@
 package crypticlib.config.node.impl.bukkit;
 
 import crypticlib.config.node.BukkitConfigNode;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +23,19 @@ public class BooleanConfig extends BukkitConfigNode<Boolean> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        setValue(config.getBoolean(key));
+        //load阶段只更新内存value, 不通过setValue把解析结果回写配置对象,
+        //避免类型不匹配时(如把布尔误写成字符串)用false静默覆盖用户原值
+        if (config.isBoolean(key)) {
+            this.value = config.getBoolean(key);
+        } else {
+            if (config.contains(key)) {
+                Bukkit.getLogger().warning("Config value at '" + key + "' in "
+                    + configContainer.configWrapper().configFile().getName()
+                    + " is not a boolean, falling back to default " + def
+                    + " (the original file value is kept).");
+            }
+            this.value = def;
+        }
         setComments(getCommentsFromConfig());
     }
 

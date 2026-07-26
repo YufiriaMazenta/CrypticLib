@@ -1,6 +1,7 @@
 package crypticlib.config.node.impl.bukkit;
 
 import crypticlib.config.node.BukkitConfigNode;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,19 @@ public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> 
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        setValue(Objects.requireNonNull(config.getConfigurationSection(key)));
+        //load阶段只更新内存value, 不通过setValue把解析结果回写配置对象,
+        //键存在但类型不是配置节点时保留文件原值并回退默认值, 避免requireNonNull抛NPE
+        if (config.isConfigurationSection(key)) {
+            this.value = config.getConfigurationSection(key);
+        } else {
+            if (config.contains(key)) {
+                Bukkit.getLogger().warning("Config value at '" + key + "' in "
+                    + configContainer.configWrapper().configFile().getName()
+                    + " is not a configuration section, falling back to default value"
+                    + " (the original file value is kept).");
+            }
+            this.value = def;
+        }
         setComments(getCommentsFromConfig());
     }
 

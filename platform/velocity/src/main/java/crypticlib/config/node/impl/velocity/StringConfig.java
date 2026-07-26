@@ -22,7 +22,12 @@ public class StringConfig extends VelocityConfigNode<String> {
 
     @Override
     public void load(@NotNull CommentedConfig config) {
-        setValue(config.getOrElse(key, def));
+        Object raw = config.get(key);
+        if (raw instanceof String) {
+            setValue((String) raw);
+        } else {
+            setValue(def);
+        }
         setComments(configContainer.configWrapper().getComments(key));
     }
 

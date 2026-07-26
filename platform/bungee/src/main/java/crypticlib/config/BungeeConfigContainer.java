@@ -16,6 +16,9 @@ public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper> 
     @Override
     public void reload() {
 //        configWrapper.reloadConfig(); 不再由ConfigContainer进行重载
+        //Bungee的Configuration不支持注释, 每次saveConfig都会按内存内容重新dump并抹掉用户注释,
+        //因此仅在确实补写了默认值(存在缺失的键)时才保存, 避免无谓地整文件重写
+        boolean changed = false;
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
@@ -24,11 +27,15 @@ public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper> 
                 BungeeConfigNode<?> config = (BungeeConfigNode<?>) obj;
                 if (config.configContainer() == null)
                     config.setConfigContainer(this);
+                if (!configWrapper.config().contains(config.key()))
+                    changed = true;
                 config.saveDef(configWrapper.config());
                 config.load(configWrapper.config());
             }
         }
-        configWrapper.saveConfig();
+        if (changed) {
+            configWrapper.saveConfig();
+        }
     }
 
     @Override

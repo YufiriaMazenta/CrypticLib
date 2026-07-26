@@ -1,13 +1,17 @@
 package crypticlib.config;
 
 import crypticlib.MinecraftVersion;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +59,35 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
 
     @Override
     public void reloadConfig() {
-        saveDefaultConfigFile();
-        config = YamlConfiguration.loadConfiguration(configFile);
+        synchronized (lock) {
+            saveDefaultConfigFile();
+            YamlConfiguration newConfig = new YamlConfiguration();
+            try {
+                newConfig.load(configFile);
+            } catch (InvalidConfigurationException e) {
+                //YAML解析失败: 保留用户原文件并另存.broken备份, 中止本次重载,
+                //绝不能以空配置为基础在后续saveConfig时把用户的配置和注释覆盖掉
+                backupBrokenConfigFile();
+                throw new IllegalStateException(
+                    "Failed to parse config file " + configFile
+                        + ", the original file has been kept and a backup was saved as "
+                        + configFile.getName() + ".broken", e);
+            } catch (FileNotFoundException e) {
+                //文件不存在时保持空配置
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            config = newConfig;
+        }
+    }
+
+    private void backupBrokenConfigFile() {
+        try {
+            File broken = new File(configFile.getAbsolutePath() + ".broken");
+            Files.copy(configFile.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override

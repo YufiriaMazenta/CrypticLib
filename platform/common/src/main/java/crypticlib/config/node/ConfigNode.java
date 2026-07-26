@@ -18,7 +18,7 @@ public abstract class ConfigNode<T, C> {
     protected final String key;
     protected final T def;
     protected final List<String> defComments;
-    protected T value;
+    protected volatile T value;
     protected List<String> comments;
     protected ConfigContainer<?> configContainer;
 

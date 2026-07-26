@@ -2,6 +2,7 @@ package crypticlib.config;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
+import com.electronwill.nightconfig.core.io.ParsingException;
 import crypticlib.VelocityPlugin;
 import crypticlib.internal.config.yaml.CommentLoader;
 import crypticlib.internal.config.yaml.YamlFormat;
@@ -9,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
@@ -50,11 +54,33 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
 
     @Override
     public void reloadConfig() {
-        saveDefaultConfigFile();
-        FormatDetector.registerExtension("yaml", YamlFormat.defaultInstance());
-        FormatDetector.registerExtension("yml", YamlFormat.defaultInstance());
-        config = CommentedFileConfig.ofConcurrent(configFile);
-        config.load();
+        synchronized (lock) {
+            saveDefaultConfigFile();
+            FormatDetector.registerExtension("yaml", YamlFormat.defaultInstance());
+            FormatDetector.registerExtension("yml", YamlFormat.defaultInstance());
+            CommentedFileConfig newConfig = CommentedFileConfig.ofConcurrent(configFile);
+            try {
+                newConfig.load();
+            } catch (ParsingException e) {
+                //YAML解析失败: 保留用户原文件并另存.broken备份, 中止本次重载,
+                //绝不能以空配置为基础在后续saveConfig时把用户的配置和注释覆盖掉
+                backupBrokenConfigFile();
+                throw new IllegalStateException(
+                    "Failed to parse config file " + configFile
+                        + ", the original file has been kept and a backup was saved as "
+                        + configFile.getName() + ".broken", e);
+            }
+            config = newConfig;
+        }
+    }
+
+    private void backupBrokenConfigFile() {
+        try {
+            File broken = new File(configFile.getAbsolutePath() + ".broken");
+            Files.copy(configFile.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override

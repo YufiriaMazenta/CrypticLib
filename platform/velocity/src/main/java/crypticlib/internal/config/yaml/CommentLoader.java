@@ -25,7 +25,7 @@ public class CommentLoader {
                     commentLines.add(new CommentLine(null, null, comment.getAsString(), CommentType.BLOCK));
             });
             return commentLines;
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | ClassCastException | IllegalStateException e) {
             return Collections.singletonList(new CommentLine(null, null, jsonArrayStr, CommentType.BLOCK));
         }
     }
@@ -39,7 +39,7 @@ public class CommentLoader {
                     commentLines.add(comment.getAsString());
             });
             return commentLines;
-        } catch (JsonSyntaxException e) {
+        } catch (JsonSyntaxException | ClassCastException | IllegalStateException e) {
             return Collections.singletonList(jsonArrayStr);
         }
     }

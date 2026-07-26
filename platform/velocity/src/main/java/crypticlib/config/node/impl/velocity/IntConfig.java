@@ -22,7 +22,12 @@ public class IntConfig extends VelocityConfigNode<Integer> {
 
     @Override
     public void load(@NotNull CommentedConfig config) {
-        setValue(config.getIntOrElse(key, def));
+        Object raw = config.get(key);
+        if (raw instanceof Number) {
+            setValue(((Number) raw).intValue());
+        } else {
+            setValue(def);
+        }
         setComments(configContainer.configWrapper().getComments(key));
     }
 

@@ -20,7 +20,8 @@ public abstract class ConfigWrapper<C> {
 
     protected final File configFile;
     protected final String path;
-    protected C config;
+    //volatile保证reloadConfig替换引用后对其他线程立即可见
+    protected volatile C config;
     //用于同步锁
     protected final Object lock = new Object();
 
@@ -84,7 +85,7 @@ public abstract class ConfigWrapper<C> {
     public abstract void saveConfig();
 
     public void saveDefaultConfigFile() {
-        synchronized (this) {
+        synchronized (lock) {
             if (!configFile.exists()) {
                 try (InputStream input = getResource(path)) {
                     IOHelper.createNewFile(configFile);
@@ -135,7 +136,7 @@ public abstract class ConfigWrapper<C> {
      * 删除这个配置文件所对应的文件,如果删除失败,则会打印错误消息
      */
     public boolean deleteConfigFile() {
-        synchronized (this) {
+        synchronized (lock) {
             try {
                 Files.delete(this.configFile.toPath());
                 return true;

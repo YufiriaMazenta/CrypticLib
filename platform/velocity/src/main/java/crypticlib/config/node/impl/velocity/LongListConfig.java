@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import crypticlib.config.node.VelocityConfigNode;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LongListConfig extends VelocityConfigNode<List<Long>> {
@@ -22,7 +23,18 @@ public class LongListConfig extends VelocityConfigNode<List<Long>> {
 
     @Override
     public void load(@NotNull CommentedConfig config) {
-        setValue(config.getOrElse(key, def));
+        Object raw = config.get(key);
+        if (raw instanceof List) {
+            List<Long> value = new ArrayList<>();
+            for (Object element : (List<?>) raw) {
+                if (element instanceof Number) {
+                    value.add(((Number) element).longValue());
+                }
+            }
+            setValue(value);
+        } else {
+            setValue(def);
+        }
         setComments(configContainer.configWrapper().getComments(key));
     }
 

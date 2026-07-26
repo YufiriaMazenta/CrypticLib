@@ -1,6 +1,7 @@
 package crypticlib.config.node.impl.bukkit;
 
 import crypticlib.config.node.BukkitConfigNode;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +23,20 @@ public class DoubleConfig extends BukkitConfigNode<Double> {
 
     @Override
     public void load(@NotNull ConfigurationSection config) {
-        setValue(config.getDouble(key));
+        //load阶段只更新内存value, 不通过setValue把解析结果回写配置对象,
+        //避免类型不匹配时用0静默覆盖用户原值
+        Object raw = config.get(key);
+        if (raw instanceof Number) {
+            this.value = ((Number) raw).doubleValue();
+        } else {
+            if (config.contains(key)) {
+                Bukkit.getLogger().warning("Config value at '" + key + "' in "
+                    + configContainer.configWrapper().configFile().getName()
+                    + " is not a number, falling back to default " + def
+                    + " (the original file value is kept).");
+            }
+            this.value = def;
+        }
         setComments(getCommentsFromConfig());
     }
 
