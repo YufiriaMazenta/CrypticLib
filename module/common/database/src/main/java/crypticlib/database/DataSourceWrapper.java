@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class DataSourceWrapper {
 
     private HikariConfig hikariConfig;
-    private HikariDataSource dataSource;
+    private volatile HikariDataSource dataSource;
 
     public DataSourceWrapper() {}
 
@@ -18,7 +18,7 @@ public class DataSourceWrapper {
         this.hikariConfig = hikariConfig;
     }
 
-    public void loadDataSource() {
+    public synchronized void loadDataSource() {
         if (hikariConfig == null) {
             throw new NullPointerException("hikariConfig is null");
         }
@@ -33,11 +33,18 @@ public class DataSourceWrapper {
     }
 
     public @Nullable Connection getConn(boolean throwException) {
-        if (dataSource == null) {
-            loadDataSource();
+        HikariDataSource ds = dataSource;
+        if (ds == null) {
+            synchronized (this) {
+                ds = dataSource;
+                if (ds == null) {
+                    loadDataSource();
+                    ds = dataSource;
+                }
+            }
         }
         try {
-            return dataSource.getConnection();
+            return ds.getConnection();
         } catch (SQLException e) {
             if (throwException) {
                 throw new RuntimeException(e);
@@ -52,7 +59,7 @@ public class DataSourceWrapper {
         return hikariConfig;
     }
 
-    public DataSourceWrapper setHikariConfig(HikariConfig hikariConfig, boolean reloadDataSource) {
+    public synchronized DataSourceWrapper setHikariConfig(HikariConfig hikariConfig, boolean reloadDataSource) {
         this.hikariConfig = hikariConfig;
         if (reloadDataSource) {
             loadDataSource();
@@ -60,7 +67,7 @@ public class DataSourceWrapper {
         return this;
     }
 
-    public void close() {
+    public synchronized void close() {
         if (dataSource != null) {
             dataSource.close();
         }
