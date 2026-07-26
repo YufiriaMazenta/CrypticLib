@@ -4,6 +4,7 @@ import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.util.InventoryViewHelper;
 import crypticlib.util.ItemHelper;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -75,14 +76,20 @@ public class StoredMenu extends Menu {
     public void returnStoredItems() {
         if (!returnStoredItems)
             return;
+        Player player = player().orElse(null);
         ItemStack[] returnItems = new ItemStack[storedItems.size()];
         int i = 0;
         for (Integer slot : storedItems.keySet()) {
             ItemStack item = storedItems.get(slot);
-            returnItems[i] = item;
+            //归还前clone,避免归还的物品仍是菜单容器槽位的镜像被后续操作反向修改
+            returnItems[i] = item != null ? item.clone() : null;
             i++;
+            //将已归还的物品从菜单容器对应槽位移除,防止菜单复用时物品残留被再次取出造成复制
+            if (inventoryCache != null)
+                inventoryCache.setItem(slot, new ItemStack(Material.AIR));
         }
-        Player player = player().orElse(null);
+        //无条件清空storedItems,避免下次开关循环重复归还
+        storedItems.clear();
         if (player == null) {
             return;
         }
@@ -92,7 +99,6 @@ public class StoredMenu extends Menu {
         for (ItemStack item : failedItems.values()) {
             player.getWorld().dropItem(player.getLocation(), item);
         }
-        storedItems.clear();
     }
 
     @Override

@@ -44,7 +44,14 @@ public class InventoryViewHelper {
             inventoryViewGetCursorMethod = ReflectionHelper.getMethod(inventoryViewClass, "getCursor");
             inventoryViewGetInventoryMethod = ReflectionHelper.getMethod(inventoryViewClass, "getInventory", int.class);
             inventoryViewGetItemMethod = ReflectionHelper.getMethod(inventoryViewClass, "getItem", int.class);
-            inventoryViewGetOriginalTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "getOriginalTitle");
+            //getOriginalTitle是Spigot 1.20才加入的API,旧版本缺失时置为null,不阻断整个类的初始化
+            Method getOriginalTitleMethod;
+            try {
+                getOriginalTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "getOriginalTitle");
+            } catch (RuntimeException e) {
+                getOriginalTitleMethod = null;
+            }
+            inventoryViewGetOriginalTitleMethod = getOriginalTitleMethod;
             inventoryViewGetPlayerMethod = ReflectionHelper.getMethod(inventoryViewClass, "getPlayer");
             inventoryViewGetSlotTypeMethod = ReflectionHelper.getMethod(inventoryViewClass, "getSlotType", int.class);
             inventoryViewGetTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "getTitle");
@@ -54,7 +61,14 @@ public class InventoryViewHelper {
             inventoryViewSetItemMethod = ReflectionHelper.getMethod(inventoryViewClass, "setItem", int.class, ItemStack.class);
             Class<?> inventoryViewPropertyClass = Class.forName("org.bukkit.inventory.InventoryView$Property");
             inventoryViewSetPropertyMethod = ReflectionHelper.getMethod(inventoryViewClass, "setProperty", inventoryViewPropertyClass, int.class);
-            inventoryViewSetTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "setTitle", String.class);
+            //setTitle(String)是Spigot 1.20才加入的API,旧版本缺失时置为null,不阻断整个类的初始化
+            Method setTitleMethod;
+            try {
+                setTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "setTitle", String.class);
+            } catch (RuntimeException e) {
+                setTitleMethod = null;
+            }
+            inventoryViewSetTitleMethod = setTitleMethod;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -145,7 +159,16 @@ public class InventoryViewHelper {
      * 获取原始视图标题
      */
     public static String getOriginalTitle(Object inventoryView) {
+        if (inventoryViewGetOriginalTitleMethod == null)
+            throw new UnsupportedOperationException("InventoryView#getOriginalTitle is not supported on this server version (requires 1.20+)");
         return (String) ReflectionHelper.invokeMethod(inventoryViewGetOriginalTitleMethod, inventoryView);
+    }
+
+    /**
+     * 当前服务端版本是否支持InventoryView#getOriginalTitle (Spigot 1.20+)
+     */
+    public static boolean isGetOriginalTitleSupported() {
+        return inventoryViewGetOriginalTitleMethod != null;
     }
 
     /**
@@ -208,7 +231,16 @@ public class InventoryViewHelper {
      * 设置此窗口的标题
      */
     public static void setTitle(Object inventoryView, String title) {
+        if (inventoryViewSetTitleMethod == null)
+            throw new UnsupportedOperationException("InventoryView#setTitle is not supported on this server version (requires 1.20+)");
         ReflectionHelper.invokeMethod(inventoryViewSetTitleMethod, inventoryView, title);
+    }
+
+    /**
+     * 当前服务端版本是否支持InventoryView#setTitle (Spigot 1.20+)
+     */
+    public static boolean isSetTitleSupported() {
+        return inventoryViewSetTitleMethod != null;
     }
 
 

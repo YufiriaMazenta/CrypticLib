@@ -70,7 +70,18 @@ public class Menu implements InventoryHolder, DataHolder {
         return Optional.of(slotMap.get(slot).onClick(event));
     }
 
-    public void onDrag(InventoryDragEvent event) {}
+    public void onDrag(InventoryDragEvent event) {
+        //普通Menu对所有点击都取消,拖拽也应保持一致:只要拖拽涉及顶部容器槽位就整体取消
+        Object inventoryView = InventoryViewHelper.getInventoryView(event);
+        Inventory topInv = InventoryViewHelper.getTopInventory(event);
+        for (Integer rawSlot : event.getRawSlots()) {
+            Inventory inventory = InventoryViewHelper.getInventory(inventoryView, rawSlot);
+            if (Objects.equals(inventory, topInv)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+    }
 
     public void onOpen(InventoryOpenEvent event) {}
 
@@ -92,24 +103,36 @@ public class Menu implements InventoryHolder, DataHolder {
     }
 
     /**
-     * 异步渲染页面,然后为玩家打开页面
+     * 异步调度打开页面,不阻塞调用方线程
+     * 容器的渲染(涉及PlaceholderAPI解析与Bukkit容器操作)与openInventory会在玩家所属的区域线程(Folia)或主线程(Spigot)执行,
+     * 以保证线程安全并兼容Folia的区域线程所有权检查
      *
      * @param callback 页面打开后要进行的操作
      */
     public void openMenuAsync(Consumer<MenuOpenResult> callback) {
         CrypticLibBukkit.scheduler().async(() -> {
-            if (this.inventoryCache == null) {
-                this.inventoryCache = getInventory();
+            Optional<Player> playerOpt = player();
+            if (!playerOpt.isPresent()) {
+                callback.accept(MenuOpenResult.PLAYER_OFFLINE);
+                return;
             }
-            CrypticLibBukkit.scheduler().sync(() -> {
-                Optional<Player> playerOpt = player();
-                if (!playerOpt.isPresent()) {
-                    callback.accept(MenuOpenResult.PLAYER_OFFLINE);
-                    return;
-                }
-                playerOpt.get().openInventory(inventoryCache);
-                callback.accept(MenuOpenResult.SUCCESS);
-            });
+            Player player = playerOpt.get();
+            //渲染与打开必须在玩家所属区域线程(Folia)/主线程(Spigot)执行,不能用全局区域调度器
+            CrypticLibBukkit.scheduler().runOnEntity(
+                player,
+                () -> {
+                    try {
+                        if (this.inventoryCache == null) {
+                            this.inventoryCache = getInventory();
+                        }
+                        player.openInventory(inventoryCache);
+                        callback.accept(MenuOpenResult.SUCCESS);
+                    } catch (Throwable t) {
+                        callback.accept(MenuOpenResult.FAILED);
+                    }
+                },
+                () -> callback.accept(MenuOpenResult.PLAYER_OFFLINE)
+            );
         });
     }
 
@@ -122,7 +145,9 @@ public class Menu implements InventoryHolder, DataHolder {
     @NotNull
     public Inventory getInventory() {
         updateLayout();
-        int size = Math.min(display.layout().layout().size() * 9, 54);
+        //容器最多6行(54格),空布局兜底为1行(9格),避免0格容器在部分版本抛异常
+        int rows = Math.max(Math.min(display.layout().layout().size(), 6), 1);
+        int size = rows * 9;
         Inventory inventory;
         if (inventoryCache == null) {
             inventory = Bukkit.createInventory(this, size, parsedMenuTitle());
@@ -148,7 +173,8 @@ public class Menu implements InventoryHolder, DataHolder {
         beforeUpdateLayout();
 
         MenuLayout layout = display.layout();
-        for (int x = 0; x < layout.layout().size(); x++) {
+        //容器最多6行,布局行数超过6时按6行截断,避免生成的slot超出容器尺寸导致draw越界
+        for (int x = 0; x < Math.min(layout.layout().size(), 6); x++) {
             String line = layout.layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
                 char key = line.charAt(y);
@@ -199,6 +225,10 @@ public class Menu implements InventoryHolder, DataHolder {
      * 刷新页面标题，若玩家未打开此页面，则无效
      */
     public void updateMenuTitle() {
+        //InventoryView#setTitle是1.20才加入的API,旧版本服务器上不支持时直接跳过标题刷新
+        if (!InventoryViewHelper.isSetTitleSupported()) {
+            return;
+        }
         Player player = player().orElse(null);
         if (player == null) {
             return;
@@ -430,7 +460,8 @@ public class Menu implements InventoryHolder, DataHolder {
     public enum MenuOpenResult {
 
         SUCCESS,
-        PLAYER_OFFLINE
+        PLAYER_OFFLINE,
+        FAILED
 
     }
 
