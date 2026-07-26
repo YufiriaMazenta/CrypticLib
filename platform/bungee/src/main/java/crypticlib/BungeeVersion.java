@@ -77,24 +77,33 @@ public enum BungeeVersion {
     }
 
     private static int getCurrentVersion() {
-        //获取游戏版本
-        String versionStr = ProxyServer.getInstance().getGameVersion();
-        //拿到支持的最后一个版本
-        versionStr = versionStr.substring(versionStr.lastIndexOf(",") + 1);
-        //将.x去掉
-        versionStr = versionStr.replace(".x", "").trim();
-        if (versionStr.contains("-")) {
-            versionStr = versionStr.substring(0, versionStr.indexOf("-"));
+        //现代BungeeCord的getGameVersion()返回形如"1.8.x-1.21.x"的区间串,解析失败时回退到保守默认值1.16
+        try {
+            //获取游戏版本
+            String versionStr = ProxyServer.getInstance().getGameVersion();
+            //拿到支持的最后一个版本
+            versionStr = versionStr.substring(versionStr.lastIndexOf(",") + 1);
+            //将.x去掉
+            versionStr = versionStr.replace(".x", "").trim();
+            //区间串取"-"之后的部分,即支持的最新版本
+            if (versionStr.contains("-")) {
+                versionStr = versionStr.substring(versionStr.indexOf("-") + 1);
+            }
+            String[] split = versionStr.split("\\.");
+            if (split.length < 2) {
+                return 11600;
+            }
+            int bungeeVersion;
+            bungeeVersion = 0;
+            bungeeVersion += (Integer.parseInt(split[0]) * 10000);
+            bungeeVersion += (Integer.parseInt(split[1]) * 100);
+            if (split.length > 2 && StringHelper.isNumber(split[2])) {
+                bungeeVersion += Integer.parseInt(split[2]);
+            }
+            return bungeeVersion;
+        } catch (Exception e) {
+            return 11600;
         }
-        String[] split = versionStr.split("\\.");
-        int bungeeVersion;
-        bungeeVersion = 0;
-        bungeeVersion += (Integer.parseInt(split[0]) * 10000);
-        bungeeVersion += (Integer.parseInt(split[1]) * 100);
-        if (split.length > 2 && StringHelper.isNumber(split[2])) {
-            bungeeVersion += Integer.parseInt(split[2]);
-        }
-        return bungeeVersion;
     }
     
 }

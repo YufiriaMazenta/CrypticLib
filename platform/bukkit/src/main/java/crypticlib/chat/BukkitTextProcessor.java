@@ -38,10 +38,26 @@ public class BukkitTextProcessor {
         if (MinecraftVersion.current().afterOrEquals(MinecraftVersion.V1_16)) {
             StringBuilder strBuilder = new StringBuilder(text);
             Matcher matcher = colorPattern.matcher(strBuilder);
-            while (matcher.find()) {
+            int searchFrom = 0;
+            while (matcher.find(searchFrom)) {
                 String colorCode = matcher.group();
-                String colorStr = ChatColor.of(colorCode.substring(1)).toString();
-                strBuilder.replace(matcher.start(), matcher.start() + colorCode.length(), colorStr);
+                String hex = matcher.group(1);
+                //将CSS风格的3位hex(如abc)按规则展开为6位(aabbcc)
+                if (hex.length() == 3) {
+                    hex = new StringBuilder()
+                            .append(hex.charAt(0)).append(hex.charAt(0))
+                            .append(hex.charAt(1)).append(hex.charAt(1))
+                            .append(hex.charAt(2)).append(hex.charAt(2))
+                            .toString();
+                }
+                try {
+                    String colorStr = ChatColor.of("#" + hex).toString();
+                    strBuilder.replace(matcher.start(), matcher.start() + colorCode.length(), colorStr);
+                    searchFrom = matcher.start() + colorStr.length();
+                } catch (IllegalArgumentException e) {
+                    //解析失败时保留原文本,避免异常中断消息发送
+                    searchFrom = matcher.start() + colorCode.length();
+                }
                 matcher = colorPattern.matcher(strBuilder);
             }
             text = strBuilder.toString();

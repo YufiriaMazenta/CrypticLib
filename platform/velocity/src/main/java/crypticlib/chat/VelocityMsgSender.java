@@ -13,6 +13,7 @@ import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.TaskRule;
+import crypticlib.util.ReflectionHelper;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +29,17 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     INSTANCE;
 
     private VelocityPlugin plugin;
+
+    /**
+     * 惰性获取插件实例,避免依赖 LifeCycle.LOAD 注入时机——
+     * 在 scanJar 的 debug 输出、INIT 阶段等更早路径上也能安全使用,不再抛 NPE
+     */
+    private VelocityPlugin plugin() {
+        if (plugin == null) {
+            plugin = (VelocityPlugin) ReflectionHelper.getPluginInstance();
+        }
+        return plugin;
+    }
 
     @Override
     public void sendMsg(Invoker receiver, @NotNull Component... baseComponents) {
@@ -51,7 +63,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void sendActionBar(CommonPlayer player, Component component) {
         if (player == null)
             return;
-        player.getPlatformPlayer((uuid) -> plugin.getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
+        player.getPlatformPlayer((uuid) -> plugin().getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
             vcPlayer.sendActionBar(component);
         });
     }
@@ -65,7 +77,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
             component = component.append(baseComponent);
         }
         Component finalComponent = component;
-        player.getPlatformPlayer((uuid) -> plugin.getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
+        player.getPlatformPlayer((uuid) -> plugin().getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
             vcPlayer.sendActionBar(finalComponent);
         });
     }
@@ -73,7 +85,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     @Override
     public void broadcast(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        for (Player player : plugin.proxyServer().getAllPlayers()) {
+        for (Player player : plugin().proxyServer().getAllPlayers()) {
             sendMsg(VelocityPlayer.byPlayer(player), msg);
         }
         info(msg);
@@ -82,7 +94,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     @Override
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
-        for (Player player : plugin.proxyServer().getAllPlayers()) {
+        for (Player player : plugin().proxyServer().getAllPlayers()) {
             sendActionBar(VelocityPlayer.byPlayer(player), msg);
         }
     }
@@ -91,7 +103,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut, Map<String, String> replaceMap) {
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
-        for (Player player : plugin.proxyServer().getAllPlayers()) {
+        for (Player player : plugin().proxyServer().getAllPlayers()) {
             sendTitle(VelocityPlayer.byPlayer(player), title, subtitle, fadeIn, stay, fadeOut);
         }
     }
@@ -100,7 +112,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap) {
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
-        for (Player player : plugin.proxyServer().getAllPlayers()) {
+        for (Player player : plugin().proxyServer().getAllPlayers()) {
             sendTitle(VelocityPlayer.byPlayer(player), title, subtitle);
         }
     }
@@ -108,7 +120,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
-        sendMsg(VelocityInvoker.byCommandSource(plugin.proxyServer().getConsoleCommandSource()), msg, replaceMap);
+        sendMsg(VelocityInvoker.byCommandSource(plugin().proxyServer().getConsoleCommandSource()), msg, replaceMap);
     }
 
     @Override
