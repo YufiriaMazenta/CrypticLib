@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.Objects;
 
@@ -42,17 +43,22 @@ public class Repository extends AbstractXmlParser {
         URL url = dep.getURL(this, ext);
         try {
             IOHelper.downloadFile(url, out);
-            IOHelper.downloadFile(dep.getURL(this, ext + ".sha1"), new File(out.getPath() + ".sha1"));
         } catch (IOException e) {
-            // 下载失败时清理可能的不完整文件
+            // 主文件下载失败时清理可能的不完整文件
             if (out.exists()) {
                 out.delete();
             }
-            File sha1File = new File(out.getPath() + ".sha1");
+            throw e;
+        }
+        // .sha1 为可选的完整性校验文件, 下载失败时降级为跳过校验并保留主文件,
+        // 不应连带删除已成功下载的主文件
+        File sha1File = new File(out.getPath() + ".sha1");
+        try {
+            IOHelper.downloadFile(dep.getURL(this, ext + ".sha1"), sha1File);
+        } catch (IOException e) {
             if (sha1File.exists()) {
                 sha1File.delete();
             }
-            throw e;
         }
     }
 
@@ -64,10 +70,21 @@ public class Repository extends AbstractXmlParser {
             url(), dep.groupId().replace('.', '/'), dep.artifactId()));
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            // 关闭 DOCTYPE 与外部实体解析, 防止 XXE / SSRF / billion-laughs
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setExpandEntityReferences(false);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            InputStream ins = url.openStream();
-            Document doc = builder.parse(ins);
-            dep.setVersion(find("release", doc.getDocumentElement(), find("version", doc.getDocumentElement(), null)));
+            URLConnection conn = url.openConnection();
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(30000);
+            conn.setRequestProperty("User-Agent", "CrypticLib");
+            try (InputStream ins = conn.getInputStream()) {
+                Document doc = builder.parse(ins);
+                dep.setVersion(find("release", doc.getDocumentElement(), find("version", doc.getDocumentElement(), null)));
+            }
         } catch (IOException | RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {

@@ -6,7 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.*;
 
 /**
@@ -35,25 +37,36 @@ public enum DependencyLoader {
             }
         }
 
-        String url = dependency.toString();
-        String[] args = url.split(":");
         List<Repository> repos = dependency.repositories();
         File baseDir = new File(DEFAULT_DEPENDENCY_FOLDER);
         List<JarRelocation> relocation = dependency.relocations();
         boolean transitive = dependency.isTransitive();
 
-        IOHelper.info("Loading " + args[0] + ":" + args[1] + ":" + args[2] + (transitive ? " (transitive)" : ""));
-
-        DependencyDownloader downloader = new DependencyDownloader(baseDir, relocation);
-
         // 解析仓库列表，从上到下尝试
         List<Repository> repositories = repos.isEmpty()
             ? Arrays.asList(Repository.MAVEN_CENTRAL_MIRROR_ALI, Repository.MAVEN_CENTRAL)
             : repos;
+
+        // 版本未确定(latest / 版本范围 / 属性表达式)时, 先解析出真实版本号再拼 URL,
+        // 否则会拼出字面 "latest" 的路径导致全仓库 404
+        if (dependency.version() == null) {
+            dependency.checkVersion(repositories, baseDir);
+            if (dependency.version() == null) {
+                throw new IOException("Unable to resolve version for "
+                    + dependency.groupId() + ":" + dependency.artifactId());
+            }
+        }
+
+        String url = dependency.toString();
+        String[] args = url.split(":");
+
+        IOHelper.info("Loading " + args[0] + ":" + args[1] + ":" + args[2] + (transitive ? " (transitive)" : ""));
+
+        DependencyDownloader downloader = new DependencyDownloader(baseDir, relocation);
+
         for (Repository repository : repositories) {
             downloader.addRepository(repository);
         }
-        downloader.setDependencyScopes(new DependencyScope[]{dependency.scope()});
         downloader.setTransitive(transitive);
 
         // 解析 POM 并收集所有依赖（主依赖 + 传递依赖）
@@ -64,7 +77,9 @@ public enum DependencyLoader {
         File pomFile1 = new File(pomFile.getPath() + ".sha1");
 
         if (validation(pomFile, pomFile1)) {
-            allDeps.addAll(downloader.loadDependencyFromInputStream(pomFile.toURI().toURL().openStream()));
+            try (InputStream in = pomFile.toURI().toURL().openStream()) {
+                allDeps.addAll(downloader.loadDependencyFromInputStream(in));
+            }
         } else {
             // 从上到下尝试每个仓库下载 POM
             IOException lastError = null;
@@ -73,7 +88,13 @@ public enum DependencyLoader {
                     repo.url(), args[0].replace('.', '/'), args[1], args[2], args[1], args[2]);
                 try {
                     IOHelper.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + " from " + repo.url() + "...");
-                    allDeps.addAll(downloader.loadDependencyFromInputStream(new URL(pom).openStream()));
+                    URLConnection conn = new URL(pom).openConnection();
+                    conn.setConnectTimeout(15000);
+                    conn.setReadTimeout(30000);
+                    conn.setRequestProperty("User-Agent", "CrypticLib");
+                    try (InputStream in = conn.getInputStream()) {
+                        allDeps.addAll(downloader.loadDependencyFromInputStream(in));
+                    }
                     lastError = null;
                     break;
                 } catch (IOException e) {

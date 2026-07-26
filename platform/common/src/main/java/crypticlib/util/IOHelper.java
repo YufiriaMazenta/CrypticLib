@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -156,7 +157,12 @@ public class IOHelper {
      */
     public static void downloadFile(URL url, File out) throws IOException {
         Files.createDirectories(out.getParentFile().toPath());
-        try (InputStream ins = url.openStream();
+        URLConnection conn = url.openConnection();
+        // 显式设置连接/读取超时, 避免不可达仓库无限阻塞启动线程
+        conn.setConnectTimeout(15000);
+        conn.setReadTimeout(30000);
+        conn.setRequestProperty("User-Agent", "CrypticLib");
+        try (InputStream ins = conn.getInputStream();
              OutputStream outs = Files.newOutputStream(out.toPath())
         ) {
             byte[] buffer = new byte[BUFFER_SIZE];

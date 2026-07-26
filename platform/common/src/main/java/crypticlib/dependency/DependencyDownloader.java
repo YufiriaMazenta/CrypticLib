@@ -62,20 +62,17 @@ public class DependencyDownloader extends AbstractXmlParser {
             }
 
             File file = dep.findFile(baseDir, "jar");
+            // 注入前校验 JAR 完整性, 损坏(如上次下载被强杀留下的残缺文件)则删除以触发重新下载
+            if (file.exists()) {
+                File fileSha1 = new File(file.getPath() + ".sha1");
+                if (fileSha1.exists() && !validation(file, fileSha1)) {
+                    file.delete();
+                    fileSha1.delete();
+                }
+            }
             if (file.exists()) {
                 if (!relocation.isEmpty()) {
-                    String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
-                    File rel = new File(file.getParentFile(), name + "_r2_" + Math.abs(relocation.hashCode()) + ".jar");
-                    if (!rel.exists() || rel.length() == 0) {
-                        List<Relocation> rules = relocation.stream()
-                            .map(JarRelocation::toRelocation)
-                            .collect(Collectors.toList());
-                        IOHelper.info("Relocating " + dep + "...");
-                        File tempSourceFile = copyFile(file, File.createTempFile(file.getName(), ".jar"));
-                        new JarRelocator(tempSourceFile, rel, rules).run();
-                        IOHelper.info("Relocated to " + rel.getName());
-                    }
-                    file = rel;
+                    file = relocateJar(dep, file);
                 }
                 ClassLoader loader = ClassAppender.addPath(file.toPath());
                 injectedDependencies.computeIfAbsent(dep, dependency -> new HashSet<>()).add(loader);
@@ -92,18 +89,7 @@ public class DependencyDownloader extends AbstractXmlParser {
                 File retryFile = dep.findFile(baseDir, "jar");
                 if (retryFile.exists()) {
                     if (!relocation.isEmpty()) {
-                        String name = retryFile.getName().substring(0, retryFile.getName().lastIndexOf('.'));
-                        File rel = new File(retryFile.getParentFile(), name + "_r2_" + Math.abs(relocation.hashCode()) + ".jar");
-                        if (!rel.exists() || rel.length() == 0) {
-                            List<Relocation> rules = relocation.stream()
-                                .map(JarRelocation::toRelocation)
-                                .collect(Collectors.toList());
-                            IOHelper.info("Relocating " + dep + "...");
-                            File tempSourceFile = copyFile(retryFile, File.createTempFile(retryFile.getName(), ".jar"));
-                            new JarRelocator(tempSourceFile, rel, rules).run();
-                            IOHelper.info("Relocated to " + rel.getName());
-                        }
-                        retryFile = rel;
+                        retryFile = relocateJar(dep, retryFile);
                     }
                     ClassLoader loader = ClassAppender.addPath(retryFile.toPath());
                     injectedDependencies.computeIfAbsent(dep, dependency -> new HashSet<>()).add(loader);
@@ -137,45 +123,67 @@ public class DependencyDownloader extends AbstractXmlParser {
         Set<Dependency> downloaded = new HashSet<>();
         downloaded.add(dependency);
 
-        // 检查是否已下载且完整
-        if (validation(pom, pom1)) {
+        // 检查是否已下载且完整（pom 与 jar 都需通过 sha1 校验; jar 不存在视为纯 POM 依赖）
+        if (validation(pom, pom1) && jarValid(jar, jar1)) {
             downloadedDependencies.add(dependency);
             if (pom.exists()) {
-                downloaded.addAll(loadDependencyFromInputStream(pom.toURI().toURL().openStream()));
+                try (InputStream in = pom.toURI().toURL().openStream()) {
+                    downloaded.addAll(loadDependencyFromInputStream(in));
+                }
             }
             return downloaded;
         }
 
         pom.getParentFile().mkdirs();
 
+        // 合并传入的 repos 参数与实例仓库, 保证 POM <repositories> 声明的自定义仓库参与实际下载
+        Set<Repository> downloadRepos = new LinkedHashSet<>(repos);
+        downloadRepos.addAll(repositories);
+
         IOException lastError = null;
         boolean pomDownloaded = false;
-        for (Repository repo : repositories) {
+        for (Repository repo : downloadRepos) {
             try {
                 repo.downloadFile(dependency, pom);
-                pomDownloaded = true;
                 // JAR 可能不存在（纯 POM 依赖），忽略 JAR 下载失败
                 try {
                     repo.downloadFile(dependency, jar);
                 } catch (IOException e) {
                     // 纯 POM 依赖没有 JAR，这是正常的
                 }
+                // 下载后立即用 .sha1 校验完整性; sha1 缺失(仓库不提供)时降级为跳过校验
+                if (pom1.exists() && !validation(pom, pom1)) {
+                    throw new IOException("POM checksum mismatch for " + dependency);
+                }
+                if (jar.exists() && jar1.exists() && !validation(jar, jar1)) {
+                    throw new IOException("JAR checksum mismatch for " + dependency);
+                }
+                pomDownloaded = true;
                 lastError = null;
                 break;
             } catch (Exception ex) {
+                // 清理该仓库可能留下的不完整/损坏文件后再尝试下一个仓库
+                deleteQuietly(pom);
+                deleteQuietly(pom1);
+                deleteQuietly(jar);
+                deleteQuietly(jar1);
                 lastError = new IOException(String.format("Unable to find download for %s (%s)", dependency, repo.url()), ex);
             }
         }
 
-        if (!pomDownloaded && lastError != null) {
-            throw lastError;
+        // 一个仓库都没成功(含循环从未执行的情形)时抛异常, 避免"什么都没下载却标记成功"的静默失败
+        if (!pomDownloaded) {
+            throw lastError != null ? lastError
+                : new IOException("No repository available to download " + dependency);
         }
 
         downloadedDependencies.add(dependency);
 
         // 如果 POM 存在，解析传递依赖
         if (pom.exists()) {
-            downloaded.addAll(loadDependencyFromInputStream(pom.toURI().toURL().openStream()));
+            try (InputStream in = pom.toURI().toURL().openStream()) {
+                downloaded.addAll(loadDependencyFromInputStream(in));
+            }
         }
 
         return downloaded;
@@ -225,21 +233,39 @@ public class DependencyDownloader extends AbstractXmlParser {
         }
 
         // 解析 <dependencies>
+        // 只取根元素下 <dependencies> 的直接子 <dependency>, 避免命中
+        // <dependencyManagement>、<build><plugins>、<profiles> 等处的 <dependency> 节点
         if (isTransitive) {
-            nodes = pom.getElementsByTagName("dependency");
-            try {
-                for (int i = 0; i < nodes.getLength(); ++i) {
-                    if (ignoreOptional && find("optional", (Element) nodes.item(i), "false").equals("true")) {
-                        continue;
-                    }
-                    Dependency dep = new Dependency((Element) nodes.item(i));
-                    if (scopeSet.contains(dep.scope())) {
-                        dependencies.add(dep);
-                    }
+            Element dependenciesElement = null;
+            NodeList rootChildren = pom.getDocumentElement().getChildNodes();
+            for (int i = 0; i < rootChildren.getLength(); ++i) {
+                Node node = rootChildren.item(i);
+                if (node.getNodeName().equals("dependencies")) {
+                    dependenciesElement = (Element) node;
+                    break;
                 }
-            } catch (ParseException ex) {
-                if (!ignoreException) {
-                    throw new IOException("Unable to parse dependencies", ex);
+            }
+            if (dependenciesElement != null) {
+                try {
+                    NodeList depNodes = dependenciesElement.getChildNodes();
+                    for (int i = 0; i < depNodes.getLength(); ++i) {
+                        Node depNode = depNodes.item(i);
+                        if (!(depNode instanceof Element) || !depNode.getNodeName().equals("dependency")) {
+                            continue;
+                        }
+                        Element depElement = (Element) depNode;
+                        if (ignoreOptional && find("optional", depElement, "false").equals("true")) {
+                            continue;
+                        }
+                        Dependency dep = new Dependency(depElement);
+                        if (scopeSet.contains(dep.scope())) {
+                            dependencies.add(dep);
+                        }
+                    }
+                } catch (ParseException ex) {
+                    if (!ignoreException) {
+                        throw new IOException("Unable to parse dependencies", ex);
+                    }
                 }
             }
         }
@@ -336,6 +362,25 @@ public class DependencyDownloader extends AbstractXmlParser {
         }
     }
 
+    /**
+     * 校验 JAR 完整性: JAR 不存在时视为纯 POM 依赖(合法); 存在但无 .sha1 时降级为跳过校验。
+     */
+    private boolean jarValid(@NotNull File jar, @NotNull File sha1File) {
+        if (!jar.exists()) {
+            return true;
+        }
+        if (!sha1File.exists()) {
+            return true;
+        }
+        return validation(jar, sha1File);
+    }
+
+    private void deleteQuietly(@NotNull File file) {
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
     private boolean validation(@NotNull File file, @NotNull File sha1File) {
         if (!file.exists() || !sha1File.exists()) {
             return false;
@@ -371,5 +416,39 @@ public class DependencyDownloader extends AbstractXmlParser {
     private File copyFile(@NotNull File source, @NotNull File dest) throws IOException {
         Files.copy(source.toPath(), dest.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
         return dest;
+    }
+
+    /**
+     * 对 JAR 执行重定位。
+     * 先写入与目标同目录的临时文件, 完成后原子 rename 到目标, 避免中途失败留下非空但损坏的产物;
+     * 临时源拷贝在 finally 中删除, 避免残留在系统临时目录。
+     */
+    @NotNull
+    private File relocateJar(@NotNull Dependency dep, @NotNull File file) throws IOException {
+        String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
+        File rel = new File(file.getParentFile(), name + "_r2_" + Math.abs(relocation.hashCode()) + ".jar");
+        if (rel.exists() && rel.length() > 0) {
+            return rel;
+        }
+        List<Relocation> rules = relocation.stream()
+            .map(JarRelocation::toRelocation)
+            .collect(Collectors.toList());
+        IOHelper.info("Relocating " + dep + "...");
+        File tempSource = File.createTempFile(file.getName(), ".jar");
+        File tempOut = File.createTempFile(name, "_r2.jar", file.getParentFile());
+        try {
+            copyFile(file, tempSource);
+            new JarRelocator(tempSource, tempOut, rules).run();
+            Files.move(tempOut.toPath(), rel.toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            IOHelper.info("Relocated to " + rel.getName());
+        } finally {
+            tempSource.delete();
+            if (tempOut.exists()) {
+                tempOut.delete();
+            }
+        }
+        return rel;
     }
 }

@@ -60,10 +60,12 @@ public abstract class AbstractXmlParser {
     @NotNull
     private static String replaceVariables(@NotNull String text, @NotNull Element pom) throws ParseException {
         Matcher matcher = SUBSTITUTION_PATTERN.matcher(text);
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
-            text = matcher.replaceFirst(getReplacement(matcher.group(1), pom));
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(getReplacement(matcher.group(1), pom)));
         }
-        return text;
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     @NotNull

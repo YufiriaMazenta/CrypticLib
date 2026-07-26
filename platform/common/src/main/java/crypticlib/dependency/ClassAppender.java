@@ -19,6 +19,7 @@ public class ClassAppender {
 
     static MethodHandles.Lookup lookup;
     static Unsafe unsafe;
+    static Throwable initError;
 
     static {
         try {
@@ -29,7 +30,8 @@ public class ClassAppender {
             Object lookupBase = unsafe.staticFieldBase(lookupField);
             long lookupOffset = unsafe.staticFieldOffset(lookupField);
             lookup = (MethodHandles.Lookup) unsafe.getObject(lookupBase, lookupOffset);
-        } catch (Throwable ignore) {
+        } catch (Throwable t) {
+            initError = t;
         }
     }
 
@@ -37,6 +39,12 @@ public class ClassAppender {
      * 将 JAR 文件注入到 ClassLoader
      */
     public static ClassLoader addPath(Path path) throws Throwable {
+        if (unsafe == null || lookup == null) {
+            throw new IllegalStateException(
+                "ClassAppender 初始化失败: 无法访问 sun.misc.Unsafe 或 MethodHandles.Lookup.IMPL_LOOKUP。" +
+                "在 JDK 24+ 上如以 --sun-misc-unsafe-memory-access=deny 运行, 请改为 --sun-misc-unsafe-memory-access=allow。",
+                initError);
+        }
         File file = new File(path.toUri().getPath());
         ClassLoader loader = DependencyLoader.class.getClassLoader();
 
@@ -86,7 +94,7 @@ public class ClassAppender {
         try {
             MethodHandle methodHandle = lookup.findVirtual(ucp.getClass(), "addURL", MethodType.methodType(void.class, URL.class));
             methodHandle.invoke(ucp, file.toURI().toURL());
-        } catch (NoSuchMethodError e) {
+        } catch (NoSuchMethodException e) {
             throw new IllegalStateException("Unsupported (classloader: " + loader.getClass().getName() + ", ucp: " + ucp.getClass().getName() + ")", e);
         }
     }

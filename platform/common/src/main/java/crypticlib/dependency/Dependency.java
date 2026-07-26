@@ -38,16 +38,17 @@ public class Dependency extends AbstractXmlParser {
         this.test = builder.test;
         this.transitive = builder.transitive;
         this.relocations = Collections.unmodifiableList(builder.relocations);
+        this.isExternal = builder.external;
     }
 
     public Dependency(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, @NotNull DependencyScope scope) {
-        this(builder(groupId, artifactId, version));
+        this(builder(groupId, artifactId, version).scope(scope));
     }
 
     public Dependency(@NotNull Element node) throws ParseException {
         this(find("groupId", node), find("artifactId", node),
              find("version", node, LATEST_VERSION),
-             DependencyScope.valueOf(find("scope", node, "runtime").toUpperCase()));
+             DependencyScope.valueOf(find("scope", node, "compile").toUpperCase()));
     }
 
     @NotNull
@@ -164,12 +165,13 @@ public class Dependency extends AbstractXmlParser {
         if (!(o instanceof Dependency)) return false;
         Dependency that = (Dependency) o;
         return Objects.equals(groupId(), that.groupId()) &&
-               Objects.equals(artifactId(), that.artifactId());
+               Objects.equals(artifactId(), that.artifactId()) &&
+               Objects.equals(version, that.version);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(groupId(), artifactId());
+        return Objects.hash(groupId(), artifactId(), version);
     }
 
     /**
@@ -183,6 +185,7 @@ public class Dependency extends AbstractXmlParser {
         private final List<Repository> repositories = new ArrayList<>();
         private String test;
         private boolean transitive = true;
+        private boolean external = false;
         private final List<JarRelocation> relocations = new ArrayList<>();
 
         public Builder(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
@@ -253,7 +256,7 @@ public class Dependency extends AbstractXmlParser {
 
         @NotNull
         public Builder external(boolean external) {
-            // 会在 build 后设置
+            this.external = external;
             return this;
         }
 
