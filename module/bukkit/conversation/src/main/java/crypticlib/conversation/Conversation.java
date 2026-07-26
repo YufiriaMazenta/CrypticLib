@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class Conversation {
@@ -29,8 +30,9 @@ public class Conversation {
     private Consumer<Map<Object, Object>> endTask;
 
     private long timeoutTicks;
-    private @Nullable TaskWrapper timeoutTaskWrapper;
+    private volatile @Nullable TaskWrapper timeoutTaskWrapper;
     private @Nullable Consumer<Conversation> onTimeout;
+    private final AtomicBoolean ended = new AtomicBoolean(false);
 
     public Conversation(@NotNull Plugin plugin, @NotNull Player who, @NotNull Prompt firstPrompt) {
         this(plugin, who, firstPrompt, "cancel", null);
@@ -79,14 +81,29 @@ public class Conversation {
     }
 
     public void end() {
+        if (!ended.compareAndSet(false, true)) {
+            return;
+        }
         cancelTimeout();
-        ConversationHandler.INSTANCE.endChat(who);
+        ConversationHandler.INSTANCE.endChat(who, this);
         if (endTask != null)
             endTask.accept(data);
     }
 
+    /**
+     * 放弃当前会话: 取消挂起的超时任务并标记会话已结束, 但不触发 endTask 回调。
+     * 用于玩家退出、被新会话覆盖等外部清理场景, 与 {@link #end()} 区分开。
+     */
+    public void abandon() {
+        ended.set(true);
+        cancelTimeout();
+    }
+
     public void handleInput(String input) {
-        CrypticLibBukkit.scheduler().sync(() -> {
+        CrypticLibBukkit.scheduler().runOnEntity(who, () -> {
+            if (ended.get() || !ConversationHandler.INSTANCE.isCurrent(who, this)) {
+                return;
+            }
             cancelTimeout();
             if (input.equalsIgnoreCase(cancelInput)) {
                 end();
@@ -99,7 +116,7 @@ public class Conversation {
             }
             BukkitMsgSender.INSTANCE.sendMsg(BukkitPlayer.byPlayer(who), prompt.promptText(data));
             scheduleTimeout();
-        });
+        }, () -> ConversationHandler.INSTANCE.endChat(who, this));
     }
 
 
@@ -110,12 +127,15 @@ public class Conversation {
         if (timeoutTicks <= 0) {
             return;
         }
-        timeoutTaskWrapper = CrypticLibBukkit.scheduler().syncLater(() -> {
+        timeoutTaskWrapper = CrypticLibBukkit.scheduler().runOnEntityLater(who, () -> {
+            if (ended.get() || !ConversationHandler.INSTANCE.isCurrent(who, this)) {
+                return;
+            }
             if (onTimeout != null) {
                 onTimeout.accept(this);
             }
             end();
-        }, timeoutTicks);
+        }, () -> ConversationHandler.INSTANCE.endChat(who, this), timeoutTicks);
     }
 
     /**
