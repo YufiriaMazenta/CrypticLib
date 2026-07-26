@@ -33,7 +33,7 @@ public class Image extends ParticleObject {
         this.scale = scale;
     }
 
-    public boolean isBypassGrayCheck() {
+    public boolean bypassGrayCheck() {
         return bypassGrayCheck;
     }
 

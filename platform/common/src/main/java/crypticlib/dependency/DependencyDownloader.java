@@ -163,7 +163,7 @@ public class DependencyDownloader extends AbstractXmlParser {
                 lastError = null;
                 break;
             } catch (Exception ex) {
-                lastError = new IOException(String.format("Unable to find download for %s (%s)", dependency, repo.getUrl()), ex);
+                lastError = new IOException(String.format("Unable to find download for %s (%s)", dependency, repo.url()), ex);
             }
         }
 
@@ -233,7 +233,7 @@ public class DependencyDownloader extends AbstractXmlParser {
                         continue;
                     }
                     Dependency dep = new Dependency((Element) nodes.item(i));
-                    if (scopeSet.contains(dep.getScope())) {
+                    if (scopeSet.contains(dep.scope())) {
                         dependencies.add(dep);
                     }
                 }
@@ -276,12 +276,12 @@ public class DependencyDownloader extends AbstractXmlParser {
     }
 
     @NotNull
-    public File getBaseDir() {
+    public File baseDir() {
         return baseDir;
     }
 
     @NotNull
-    public DependencyScope[] getDependencyScopes() {
+    public DependencyScope[] dependencyScopes() {
         return dependencyScopes;
     }
 
@@ -292,12 +292,12 @@ public class DependencyDownloader extends AbstractXmlParser {
     }
 
     @NotNull
-    public Map<Dependency, Set<ClassLoader>> getInjectedDependencies() {
+    public Map<Dependency, Set<ClassLoader>> injectedDependencies() {
         return injectedDependencies;
     }
 
     @NotNull
-    public Set<Repository> getRepositories() {
+    public Set<Repository> repositories() {
         return repositories;
     }
 
@@ -318,7 +318,7 @@ public class DependencyDownloader extends AbstractXmlParser {
     }
 
     @NotNull
-    public Set<JarRelocation> getRelocation() {
+    public Set<JarRelocation> relocation() {
         return relocation;
     }
 

@@ -29,7 +29,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void sendMsg(Invoker receiver, @NotNull BaseComponent baseComponent) {
         if (receiver == null)
             return;
-        ((CommandSender) receiver.getPlatformInvoker()).spigot().sendMessage(baseComponent);
+        ((CommandSender) receiver.platformInvoker()).spigot().sendMessage(baseComponent);
     }
 
     @Override

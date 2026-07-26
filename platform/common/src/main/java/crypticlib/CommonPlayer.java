@@ -12,10 +12,10 @@ import java.util.function.Function;
 public interface CommonPlayer extends Invoker {
 
     default <T> Optional<T> getPlatformPlayer(Function<@NotNull UUID, @Nullable T> playerGetter) {
-        return Optional.ofNullable(playerGetter.apply(getUniqueId()));
+        return Optional.ofNullable(playerGetter.apply(uniqueId()));
     }
 
-    @NotNull Locale getLocale();
+    @NotNull Locale locale();
 
     default void sendTitle(@Nullable String title, @Nullable String subtitle) {
         sendTitle(title, subtitle, 10, 70, 20);

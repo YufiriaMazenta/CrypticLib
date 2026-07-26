@@ -8,15 +8,15 @@ public class MathUtils {
 
     private static final Random RANDOM = new Random();
 
-    public static Random getRandom() {
+    public static Random random() {
         return RANDOM;
     }
 
-    public static double getRandomDouble() {
+    public static double randomDouble() {
         return RANDOM.nextDouble();
     }
 
-    public static double getUniformRandom(double a, double b) {
+    public static double uniformRandom(double a, double b) {
         return a + (b - a) * RANDOM.nextDouble();
     }
 

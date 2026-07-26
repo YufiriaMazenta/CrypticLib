@@ -29,12 +29,12 @@ public class VelocityPlayer extends VelocityInvoker implements CommonPlayer {
     }
 
     @Override
-    public @NotNull UUID getUniqueId() {
+    public @NotNull UUID uniqueId() {
         return playerId;
     }
 
     @Override
-    public @NotNull Locale getLocale() {
+    public @NotNull Locale locale() {
         Player player = proxyServer.getPlayer(playerId).orElse(null);
         if (player != null) {
             return player.getPlayerSettings().getLocale();
@@ -78,7 +78,7 @@ public class VelocityPlayer extends VelocityInvoker implements CommonPlayer {
     }
 
     @Override
-    public @NotNull String getName() {
+    public @NotNull String name() {
         Player player = proxyServer.getPlayer(playerId).orElse(null);
         if (player != null) {
             return player.getUsername();

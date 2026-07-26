@@ -56,12 +56,12 @@ public class Astroid extends ParticleObject implements Playable {
             Location showLocation = getOriginLocation().clone().add(x, 0, z);
             if (hasMatrix()) {
                 Vector vector = new Vector(x, 0, z);
-                Vector changed = getMatrix().applyVector(vector);
+                Vector changed = matrix().applyVector(vector);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             points.add(showLocation);
         }
         return points;
@@ -92,12 +92,12 @@ public class Astroid extends ParticleObject implements Playable {
                 currentT += step;
                 double radians = Math.toRadians(currentT);
                 // 计算公式
-                double x = Math.pow(getRadius() * Math.cos(radians), 3.0D);
-                double z = Math.pow(getRadius() * Math.sin(radians), 3.0D);
+                double x = Math.pow(radius() * Math.cos(radians), 3.0D);
+                double z = Math.pow(radius() * Math.sin(radians), 3.0D);
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, z));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -115,7 +115,7 @@ public class Astroid extends ParticleObject implements Playable {
         }
     }
 
-    public double getRadius() {
+    public double radius() {
         return radius;
     }
 
@@ -123,7 +123,7 @@ public class Astroid extends ParticleObject implements Playable {
         this.radius = radius;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 

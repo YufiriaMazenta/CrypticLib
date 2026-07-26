@@ -20,7 +20,6 @@ import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
-import crypticlib.perm.PermInfo;
 import crypticlib.perm.PermManager;
 import crypticlib.perm.VelocityPermManager;
 import crypticlib.scheduler.Scheduler;

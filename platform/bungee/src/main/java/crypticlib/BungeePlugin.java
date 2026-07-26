@@ -14,7 +14,6 @@ import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
 import crypticlib.perm.BungeePermManager;
-import crypticlib.perm.PermInfo;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.BungeeScheduler;
 import crypticlib.scheduler.Scheduler;

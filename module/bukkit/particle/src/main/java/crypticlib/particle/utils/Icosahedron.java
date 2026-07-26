@@ -75,7 +75,7 @@ public class Icosahedron {
         subdivide(vAB, vBC, vCA, depth - 1, radius);
     }
 
-    public List<Triangle> getTriangles() {
+    public List<Triangle> triangles() {
         return triangles;
     }
 

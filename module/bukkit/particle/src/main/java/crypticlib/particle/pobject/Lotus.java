@@ -70,12 +70,12 @@ public class Lotus extends ParticleObject {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }

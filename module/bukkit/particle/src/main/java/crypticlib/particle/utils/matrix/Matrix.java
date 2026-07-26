@@ -25,18 +25,18 @@ public class Matrix {
     }
 
     public Matrix(Matrix matrix) {
-        this.m = matrix.getAsArray();
+        this.m = matrix.asArray();
     }
 
-    public int getRow() {
+    public int row() {
         return m.length;
     }
 
-    public int getColumn() {
+    public int column() {
         return m[0].length;
     }
 
-    public double[][] getAsArray() {
+    public double[][] asArray() {
         return m;
     }
 
@@ -75,8 +75,8 @@ public class Matrix {
      * @param row 行数
      * @return 对应行所成的数组
      */
-    public double[] getRowAsArray(int row) {
-        return Arrays.copyOf(m[row - 1], getColumn());
+    public double[] rowAsArray(int row) {
+        return Arrays.copyOf(m[row - 1], column());
     }
 
     /**
@@ -85,20 +85,20 @@ public class Matrix {
      * @param column 列数
      * @return 列所成的数组
      */
-    public double[] getColumnAsArray(int column) {
-        double[] m = new double[getRow()];
-        for (int row = 0; row < getRow(); row++) {
+    public double[] columnAsArray(int column) {
+        double[] m = new double[row()];
+        for (int row = 0; row < row(); row++) {
             m[row] = get(row + 1, column);
         }
         return m;
     }
 
     public boolean isSameRow(Matrix matrix) {
-        return getRow() == matrix.getRow();
+        return row() == matrix.row();
     }
 
     public boolean isSameColumn(Matrix matrix) {
-        return getColumn() == matrix.getColumn();
+        return column() == matrix.column();
     }
 
     public boolean isSameRowAndColumn(Matrix matrix) {
@@ -111,9 +111,9 @@ public class Matrix {
      * @return {@link Matrix}
      */
     public Matrix invert() {
-        double[][] n = new double[getColumn()][getRow()];
-        for (int i = 0; i < getRow(); i++) {
-            for (int j = 0; j < getColumn(); j++) {
+        double[][] n = new double[column()][row()];
+        for (int i = 0; i < row(); i++) {
+            for (int j = 0; j < column(); j++) {
                 n[j][i] = m[i][j];
             }
         }
@@ -132,10 +132,10 @@ public class Matrix {
             throw new IllegalArgumentException("两矩阵大小不相同!");
         }
 
-        double[][] n = matrix.getAsArray();
-        double[][] result = new double[getRow()][getColumn()];
-        for (int row = 0; row < getRow(); row++) {
-            for (int column = 0; column < getColumn(); column++) {
+        double[][] n = matrix.asArray();
+        double[][] result = new double[row()][column()];
+        for (int row = 0; row < row(); row++) {
+            for (int column = 0; column < column(); column++) {
                 result[row][column] = m[row][column] + n[row][column];
             }
         }
@@ -150,10 +150,10 @@ public class Matrix {
      * @return {@link Matrix}
      */
     public Matrix multiply(double value) {
-        double[][] result = new double[getRow()][getColumn()];
+        double[][] result = new double[row()][column()];
 
-        for (int row = 0; row < getRow(); row++) {
-            for (int column = 0; column < getColumn(); column++) {
+        for (int row = 0; row < row(); row++) {
+            for (int column = 0; column < column(); column++) {
                 result[row][column] = m[row][column] * value;
             }
         }
@@ -168,17 +168,17 @@ public class Matrix {
      * @return {@link Matrix}
      */
     public Matrix multiply(Matrix matrix) {
-        if (getColumn() != matrix.getRow()) {
+        if (column() != matrix.row()) {
             throw new IllegalArgumentException("原矩阵的列数不等于新矩阵的行数");
         }
 
-        double[][] n = matrix.getAsArray();
-        double[][] result = new double[getRow()][matrix.getColumn()];
+        double[][] n = matrix.asArray();
+        double[][] result = new double[row()][matrix.column()];
 
-        for (int row = 0; row < getRow(); row++) {
-            for (int column = 0; column < matrix.getColumn(); column++) {
-                double[] x = getRowAsArray(row + 1);
-                double[] y = matrix.getColumnAsArray(column + 1);
+        for (int row = 0; row < row(); row++) {
+            for (int column = 0; column < matrix.column(); column++) {
+                double[] x = rowAsArray(row + 1);
+                double[] y = matrix.columnAsArray(column + 1);
                 for (int i = 0; i < x.length; i++) {
                     result[row][column] += x[i] * y[i];
                 }
@@ -216,9 +216,9 @@ public class Matrix {
      * @return {@link Location}
      */
     public Vector applyVector(Vector vector) {
-        if (getRow() == 2 && getColumn() == 2) {
+        if (row() == 2 && column() == 2) {
             return applyIn2DVector(vector);
-        } else if (getRow() == 3 && getColumn() == 3) {
+        } else if (row() == 3 && column() == 3) {
             return applyIn3DVector(vector);
         }
 
@@ -228,11 +228,11 @@ public class Matrix {
     private Vector applyIn2DVector(Vector vector) {
         double x = vector.getX();
         double z = vector.getZ();
-        double ax = getAsArray()[0][0] * x;
-        double ay = getAsArray()[0][1] * z;
+        double ax = asArray()[0][0] * x;
+        double ay = asArray()[0][1] * z;
 
-        double bx = getAsArray()[1][0] * x;
-        double by = getAsArray()[1][1] * z;
+        double bx = asArray()[1][0] * x;
+        double by = asArray()[1][1] * z;
 
         return new Vector(ax + ay, vector.getY(), bx + by);
     }
@@ -242,17 +242,17 @@ public class Matrix {
         double y = vector.getY();
         double z = vector.getZ();
 
-        double ax = getAsArray()[0][0] * x;
-        double ay = getAsArray()[0][1] * y;
-        double az = getAsArray()[0][2] * z;
+        double ax = asArray()[0][0] * x;
+        double ay = asArray()[0][1] * y;
+        double az = asArray()[0][2] * z;
 
-        double bx = getAsArray()[1][0] * x;
-        double by = getAsArray()[1][1] * y;
-        double bz = getAsArray()[1][2] * z;
+        double bx = asArray()[1][0] * x;
+        double by = asArray()[1][1] * y;
+        double bz = asArray()[1][2] * z;
 
-        double cx = getAsArray()[2][0] * x;
-        double cy = getAsArray()[2][1] * y;
-        double cz = getAsArray()[2][2] * z;
+        double cx = asArray()[2][0] * x;
+        double cy = asArray()[2][1] * y;
+        double cz = asArray()[2][2] * z;
 
         return new Vector(ax + ay + az, bx + by + bz, cx + cy + cz);
     }

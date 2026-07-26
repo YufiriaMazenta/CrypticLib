@@ -122,12 +122,12 @@ public class Grid extends ParticleObject {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -223,7 +223,7 @@ public class Grid extends ParticleObject {
         return new Location(minimumLocation.getWorld(), maxX, maxY, maxZ);
     }
 
-    public Location getMinimumLocation() {
+    public Location minimumLocation() {
         return minimumLocation;
     }
 
@@ -231,7 +231,7 @@ public class Grid extends ParticleObject {
         this.minimumLocation = minimumLocation;
     }
 
-    public Location getMaximumLocation() {
+    public Location maximumLocation() {
         return maximumLocation;
     }
 

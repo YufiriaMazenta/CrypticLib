@@ -25,7 +25,7 @@ public enum DependencyLoader {
      */
     public void loadDependency(@NotNull Dependency dependency) throws Throwable {
         // 检查 test 条件
-        String test = dependency.getTest();
+        String test = dependency.test();
         if (test != null && !test.isEmpty()) {
             String className = test.startsWith("!") ? test.substring(1) : test;
             boolean negated = test.startsWith("!");
@@ -37,9 +37,9 @@ public enum DependencyLoader {
 
         String url = dependency.toString();
         String[] args = url.split(":");
-        List<Repository> repos = dependency.getRepositories();
+        List<Repository> repos = dependency.repositories();
         File baseDir = new File(DEFAULT_DEPENDENCY_FOLDER);
-        List<JarRelocation> relocation = dependency.getRelocations();
+        List<JarRelocation> relocation = dependency.relocations();
         boolean transitive = dependency.isTransitive();
 
         IOHelper.info("Loading " + args[0] + ":" + args[1] + ":" + args[2] + (transitive ? " (transitive)" : ""));
@@ -53,7 +53,7 @@ public enum DependencyLoader {
         for (Repository repository : repositories) {
             downloader.addRepository(repository);
         }
-        downloader.setDependencyScopes(new DependencyScope[]{dependency.getScope()});
+        downloader.setDependencyScopes(new DependencyScope[]{dependency.scope()});
         downloader.setTransitive(transitive);
 
         // 解析 POM 并收集所有依赖（主依赖 + 传递依赖）
@@ -68,11 +68,11 @@ public enum DependencyLoader {
         } else {
             // 从上到下尝试每个仓库下载 POM
             IOException lastError = null;
-            for (Repository repo : downloader.getRepositories()) {
+            for (Repository repo : downloader.repositories()) {
                 String pom = String.format("%s/%s/%s/%s/%s-%s.pom",
-                    repo.getUrl(), args[0].replace('.', '/'), args[1], args[2], args[1], args[2]);
+                    repo.url(), args[0].replace('.', '/'), args[1], args[2], args[1], args[2]);
                 try {
-                    IOHelper.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + " from " + repo.getUrl() + "...");
+                    IOHelper.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + " from " + repo.url() + "...");
                     allDeps.addAll(downloader.loadDependencyFromInputStream(new URL(pom).openStream()));
                     lastError = null;
                     break;
@@ -88,7 +88,7 @@ public enum DependencyLoader {
         // 加载主依赖
         Dependency dep = new Dependency(args[0], args[1], args[2], DependencyScope.RUNTIME);
         dep.setExternal(dependency.isExternal());
-        allDeps.addAll(downloader.loadDependency(downloader.getRepositories(), dep));
+        allDeps.addAll(downloader.loadDependency(downloader.repositories(), dep));
 
         // 注入所有依赖
         downloader.injectClasspath(allDeps);

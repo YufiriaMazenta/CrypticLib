@@ -45,7 +45,7 @@ public class Heart extends ParticleObject implements Playable {
         setOriginLocation(origin);
     }
 
-    public double getXScaleRate() {
+    public double xScaleRate() {
         return xScaleRate;
     }
 
@@ -53,7 +53,7 @@ public class Heart extends ParticleObject implements Playable {
         this.xScaleRate = xScaleRate;
     }
 
-    public double getYScaleRate() {
+    public double yScaleRate() {
         return yScaleRate;
     }
 
@@ -61,7 +61,7 @@ public class Heart extends ParticleObject implements Playable {
         this.yScaleRate = yScaleRate;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 
@@ -79,12 +79,12 @@ public class Heart extends ParticleObject implements Playable {
             Location showLocation = getOriginLocation().clone().add(x, 0, y);
             if (hasMatrix()) {
                 Vector vector = new Vector(x, 0, y);
-                Vector changed = getMatrix().applyVector(vector);
+                Vector changed = matrix().applyVector(vector);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             points.add(showLocation);
 //            points.add(getOrigin().clone().add(x, 0, y));
         }
@@ -117,7 +117,7 @@ public class Heart extends ParticleObject implements Playable {
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, y));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override

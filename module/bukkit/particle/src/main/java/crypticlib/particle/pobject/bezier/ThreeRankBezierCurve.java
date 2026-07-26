@@ -78,12 +78,12 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -111,7 +111,7 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
 
                 spawnParticle(locations.get(currentSample));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
         currentSample++;
     }
 
-    public Location getP0() {
+    public Location p0() {
         return p0;
     }
 
@@ -133,7 +133,7 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
         return this;
     }
 
-    public Location getP1() {
+    public Location p1() {
         return p1;
     }
 
@@ -143,7 +143,7 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
         return this;
     }
 
-    public Location getP2() {
+    public Location p2() {
         return p2;
     }
 
@@ -153,7 +153,7 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
         return this;
     }
 
-    public Location getP3() {
+    public Location p3() {
         return p3;
     }
 
@@ -163,7 +163,7 @@ public class ThreeRankBezierCurve extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 

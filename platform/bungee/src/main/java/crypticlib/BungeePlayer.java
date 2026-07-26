@@ -25,12 +25,12 @@ public class BungeePlayer extends BungeeInvoker implements CommonPlayer {
     }
 
     @Override
-    public @NotNull UUID getUniqueId() {
+    public @NotNull UUID uniqueId() {
         return playerId;
     }
 
     @Override
-    public @NotNull Locale getLocale() {
+    public @NotNull Locale locale() {
         ProxiedPlayer player = ProxyServer.getInstance().getPlayer(playerId);
         if (player != null) {
             return player.getLocale();

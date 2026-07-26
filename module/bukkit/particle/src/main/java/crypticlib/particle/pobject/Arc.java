@@ -79,12 +79,12 @@ public class Arc extends ParticleObject implements Playable {
             Location showLocation = getOriginLocation().clone().add(x, 0, z);
             if (hasMatrix()) {
                 Vector vector = new Vector(x, 0, z);
-                Vector changed = getMatrix().applyVector(vector);
+                Vector changed = matrix().applyVector(vector);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             points.add(showLocation);
         }
         return points;
@@ -117,7 +117,7 @@ public class Arc extends ParticleObject implements Playable {
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, z));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -135,7 +135,7 @@ public class Arc extends ParticleObject implements Playable {
         }
     }
 
-    public double getStartAngle() {
+    public double startAngle() {
         return startAngle;
     }
 
@@ -144,7 +144,7 @@ public class Arc extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getAngle() {
+    public double angle() {
         return angle;
     }
 
@@ -153,7 +153,7 @@ public class Arc extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getRadius() {
+    public double radius() {
         return radius;
     }
 
@@ -162,7 +162,7 @@ public class Arc extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 

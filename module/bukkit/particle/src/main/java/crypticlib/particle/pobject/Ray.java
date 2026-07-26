@@ -91,12 +91,12 @@ public class Ray extends ParticleObject implements Playable {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -169,7 +169,7 @@ public class Ray extends ParticleObject implements Playable {
                     }
                 }
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -206,7 +206,7 @@ public class Ray extends ParticleObject implements Playable {
         }
     }
 
-    public Vector getDirection() {
+    public Vector direction() {
         return direction;
     }
 
@@ -215,7 +215,7 @@ public class Ray extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getMaxLength() {
+    public double maxLength() {
         return maxLength;
     }
 
@@ -224,7 +224,7 @@ public class Ray extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 
@@ -233,7 +233,7 @@ public class Ray extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getRange() {
+    public double range() {
         return range;
     }
 
@@ -242,7 +242,7 @@ public class Ray extends ParticleObject implements Playable {
         return this;
     }
 
-    public RayStopType getStopType() {
+    public RayStopType stopType() {
         return stopType;
     }
 
@@ -251,7 +251,7 @@ public class Ray extends ParticleObject implements Playable {
         return this;
     }
 
-    public Consumer<Entity> getHitEntityConsumer() {
+    public Consumer<Entity> hitEntityConsumer() {
         return hitEntityConsumer;
     }
 
@@ -260,7 +260,7 @@ public class Ray extends ParticleObject implements Playable {
         return this;
     }
 
-    public Predicate<Entity> getEntityFilter() {
+    public Predicate<Entity> entityFilter() {
         return entityFilter;
     }
 

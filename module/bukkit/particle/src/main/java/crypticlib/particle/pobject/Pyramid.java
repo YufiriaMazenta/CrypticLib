@@ -52,7 +52,7 @@ public class Pyramid extends ParticleObject {
         setOriginLocation(origin);
     }
 
-    public int getSide() {
+    public int side() {
         return side;
     }
 
@@ -63,7 +63,7 @@ public class Pyramid extends ParticleObject {
 
     }
 
-    public double getHeight() {
+    public double height() {
         return height;
     }
 
@@ -74,7 +74,7 @@ public class Pyramid extends ParticleObject {
         return this;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 
@@ -84,7 +84,7 @@ public class Pyramid extends ParticleObject {
         return this;
     }
 
-    public double getRadius() {
+    public double radius() {
         return radius;
     }
 
@@ -149,12 +149,12 @@ public class Pyramid extends ParticleObject {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }

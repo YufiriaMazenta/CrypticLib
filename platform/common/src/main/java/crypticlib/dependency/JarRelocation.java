@@ -19,12 +19,12 @@ public class JarRelocation {
     }
 
     @NotNull
-    public String getPattern() {
+    public String pattern() {
         return pattern;
     }
 
     @NotNull
-    public String getRelocatedPattern() {
+    public String relocatedPattern() {
         return relocatedPattern;
     }
 

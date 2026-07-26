@@ -14,7 +14,7 @@ public class BukkitEntity extends BukkitInvoker {
         this.uuid = entity.getUniqueId();
     }
 
-    public @NotNull UUID getUniqueId() {
+    public @NotNull UUID uniqueId() {
         return uuid;
     }
 

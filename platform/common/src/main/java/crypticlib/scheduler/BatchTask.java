@@ -52,8 +52,8 @@ public class BatchTask<T, R> {
     private boolean completed = false;
 
     private int currentIndex = 0;
-    private int useTick = 0;
-    private long useMilliseconds = 0;
+    private int usedTick = 0;
+    private long usedMilliseconds = 0;
     private TaskWrapper taskWrapper;
 
     @FunctionalInterface
@@ -116,8 +116,8 @@ public class BatchTask<T, R> {
                 failedItems.add(items.get(i));
             }
         }
-        useMilliseconds += System.currentTimeMillis() - startTime;
-        useTick++;
+        usedMilliseconds += System.currentTimeMillis() - startTime;
+        usedTick++;
         currentIndex = end;
         if (currentIndex >= items.size()) {
             finish();
@@ -143,17 +143,17 @@ public class BatchTask<T, R> {
     }
 
     /** 已消耗的 tick 数 */
-    public int getUseTick() {
-        return useTick;
+    public int usedTick() {
+        return usedTick;
     }
 
     /** 总耗时（毫秒） */
-    public long getUseMilliseconds() {
-        return useMilliseconds;
+    public long usedMilliseconds() {
+        return usedMilliseconds;
     }
 
     /** 处理失败的元素列表 */
-    public List<T> getFailedItems() {
+    public List<T> failedItems() {
         return failedItems;
     }
 

@@ -105,7 +105,7 @@ public class Token {
      * 获取插值字符串的部分列表
      * @return 插值部分列表，仅 INTERPOLATED_STRING 类型有值
      */
-    public List<InterpolationPart> getInterpolationParts() {
+    public List<InterpolationPart> interpolationParts() {
         return interpolationParts;
     }
 

@@ -406,10 +406,10 @@ public class ScriptTest {
     private static ScriptContext createContext() {
         return new ScriptContext(new Invoker() {
             @Override
-            public @NotNull Object getPlatformInvoker() { return null; }
+            public @NotNull Object platformInvoker() { return null; }
 
             @Override
-            public @NotNull String getName() { return "Console"; }
+            public @NotNull String name() { return "Console"; }
 
             @Override
             public void sendMsg(String msg, Map<String, String> replaceMap) {}

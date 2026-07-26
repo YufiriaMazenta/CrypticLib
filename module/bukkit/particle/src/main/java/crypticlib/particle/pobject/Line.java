@@ -112,7 +112,7 @@ public class Line extends ParticleObject implements Playable {
                 Vector vectorTemp = vector.clone().multiply(currentStep);
                 spawnParticle(start.clone().add(vectorTemp));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -126,7 +126,7 @@ public class Line extends ParticleObject implements Playable {
         }
     }
 
-    public Location getStart() {
+    public Location start() {
         return start;
     }
 
@@ -136,7 +136,7 @@ public class Line extends ParticleObject implements Playable {
         return this;
     }
 
-    public Location getEnd() {
+    public Location end() {
         return end;
     }
 
@@ -146,7 +146,7 @@ public class Line extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 

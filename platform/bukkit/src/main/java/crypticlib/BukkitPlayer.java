@@ -21,7 +21,7 @@ public class BukkitPlayer extends BukkitEntity implements CommonPlayer {
     }
 
     @Override
-    public @NotNull Locale getLocale() {
+    public @NotNull Locale locale() {
         Player player = Bukkit.getPlayer(uuid);
         if (player != null) {
             return LocaleHelper.languageTag2Local(player.getLocale());

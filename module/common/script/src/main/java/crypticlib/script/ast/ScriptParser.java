@@ -290,7 +290,7 @@ public class ScriptParser {
             return new ASTNode.LiteralNode(tok.value(), tok.line());
         } else if (type == Token.Type.INTERPOLATED_STRING) {
             // 将插值字符串的 parts 转换为 AST 节点列表
-            List<InterpolationPart> rawParts = tok.getInterpolationParts();
+            List<InterpolationPart> rawParts = tok.interpolationParts();
             // 直接复用，无需转换
             List<InterpolationPart> astParts = new ArrayList<>(rawParts);
             return new ASTNode.StringInterpolationNode(astParts, tok.line());

@@ -9,7 +9,7 @@ public class Pair<K, V> {
         this.value = value;
     }
 
-    public K getKey() {
+    public K key() {
         return key;
     }
 
@@ -18,7 +18,7 @@ public class Pair<K, V> {
         return this;
     }
 
-    public V getValue() {
+    public V value() {
         return value;
     }
 

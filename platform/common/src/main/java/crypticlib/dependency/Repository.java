@@ -61,7 +61,7 @@ public class Repository extends AbstractXmlParser {
      */
     public void getLatestVersion(@NotNull Dependency dep) throws IOException {
         URL url = new URL(String.format("%s/%s/%s/maven-metadata.xml",
-            getUrl(), dep.getGroupId().replace('.', '/'), dep.getArtifactId()));
+            url(), dep.groupId().replace('.', '/'), dep.artifactId()));
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -76,7 +76,7 @@ public class Repository extends AbstractXmlParser {
     }
 
     @NotNull
-    public String getUrl() {
+    public String url() {
         return url;
     }
 

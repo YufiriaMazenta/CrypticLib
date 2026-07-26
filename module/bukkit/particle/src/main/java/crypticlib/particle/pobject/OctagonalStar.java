@@ -56,12 +56,12 @@ public class OctagonalStar extends ParticleObject {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -93,7 +93,7 @@ public class OctagonalStar extends ParticleObject {
         }
     }
 
-    public double getRadius() {
+    public double radius() {
         return radius;
     }
 
@@ -102,7 +102,7 @@ public class OctagonalStar extends ParticleObject {
         return this;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 

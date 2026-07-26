@@ -62,12 +62,12 @@ public class FilledCircle extends ParticleObject implements Playable {
             Location showLocation = getOriginLocation().clone().add(x, 0, z);
             if (hasMatrix()) {
                 Vector vector = new Vector(x, 0 ,z);
-                Vector changed = getMatrix().applyVector(vector);
+                Vector changed = matrix().applyVector(vector);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             locations.add(showLocation);
 //            Location spawnLocation = getOrigin().clone().add(x, 0, z);
 //            locations.add(spawnLocation);
@@ -115,7 +115,7 @@ public class FilledCircle extends ParticleObject implements Playable {
 
                 spawnParticle(getOriginLocation().clone().add(x, 0, z));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override

@@ -14,15 +14,15 @@ public interface Invoker {
 
     UUID CONSOLE_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
-    @NotNull Object getPlatformInvoker();
+    @NotNull Object platformInvoker();
 
-    @NotNull String getName();
+    @NotNull String name();
 
     /**
      * 获得执行者的UUID，如果是控制台，那么将会返回Nil UUID
      * @return 获得执行者的UUID，如果是控制台，那么将会返回Nil UUID
      */
-    default @NotNull UUID getUniqueId() {
+    default @NotNull UUID uniqueId() {
         return CONSOLE_UUID;
     }
 

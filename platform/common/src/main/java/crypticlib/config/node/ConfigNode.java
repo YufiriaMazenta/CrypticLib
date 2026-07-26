@@ -52,7 +52,7 @@ public abstract class ConfigNode<T, C> {
         return def;
     }
 
-    public List<String> getDefComments() {
+    public List<String> defComments() {
         return defComments;
     }
 
@@ -83,7 +83,7 @@ public abstract class ConfigNode<T, C> {
         setComments(Collections.singletonList(comment));
     }
 
-    public @Nullable List<String> getComments() {
+    public @Nullable List<String> comments() {
         return comments;
     }
 

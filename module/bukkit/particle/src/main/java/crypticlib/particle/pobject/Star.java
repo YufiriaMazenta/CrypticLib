@@ -77,12 +77,12 @@ public class Star extends ParticleObject implements Playable {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -146,7 +146,7 @@ public class Star extends ParticleObject implements Playable {
                 spawnParticle(spawnLocation);
                 currentStep += step;
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -195,7 +195,7 @@ public class Star extends ParticleObject implements Playable {
         }
     }
 
-    public double getRadius() {
+    public double radius() {
         return radius;
     }
 
@@ -203,7 +203,7 @@ public class Star extends ParticleObject implements Playable {
         this.radius = radius;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 

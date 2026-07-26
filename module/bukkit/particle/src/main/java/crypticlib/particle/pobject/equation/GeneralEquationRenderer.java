@@ -51,12 +51,12 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -81,7 +81,7 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
                 currentX += dx;
                 spawnParticle(getOriginLocation().clone().add(currentX, function.apply(currentX), 0));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -94,7 +94,7 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
         spawnParticle(getOriginLocation().clone().add(currentX, function.apply(currentX), 0));
     }
 
-    public double getMinX() {
+    public double minX() {
         return minX;
     }
 
@@ -103,7 +103,7 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
         return this;
     }
 
-    public double getMaxX() {
+    public double maxX() {
         return maxX;
     }
 
@@ -112,7 +112,7 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
         return this;
     }
 
-    public double getDx() {
+    public double dx() {
         return dx;
     }
 

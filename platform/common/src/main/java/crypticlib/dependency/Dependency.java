@@ -66,12 +66,12 @@ public class Dependency extends AbstractXmlParser {
 
     @NotNull
     public URL getURL(@NotNull Repository repo, @NotNull String ext) throws MalformedURLException {
-        String name = String.format("%s-%s.%s", getArtifactId(), getVersion(), ext);
-        return new URL(String.format("%s/%s/%s/%s/%s", repo.getUrl(), getGroupId().replace('.', '/'), getArtifactId(), getVersion(), name));
+        String name = String.format("%s-%s.%s", artifactId(), version(), ext);
+        return new URL(String.format("%s/%s/%s/%s/%s", repo.url(), groupId().replace('.', '/'), artifactId(), version(), name));
     }
 
     public void checkVersion(@NotNull Collection<Repository> repositories, @NotNull File baseDir) throws IOException {
-        if (getVersion() == null) {
+        if (version() == null) {
             for (Repository repo : repositories) {
                 try {
                     repo.getLatestVersion(this);
@@ -85,15 +85,15 @@ public class Dependency extends AbstractXmlParser {
 
     @NotNull
     public File findFile(@NotNull File dir, @NotNull String ext) {
-        if (getVersion() == null) {
+        if (version() == null) {
             throw new IllegalStateException("Version is not resolved: " + this);
         }
-        for (String part : getGroupId().split("\\.")) {
+        for (String part : groupId().split("\\.")) {
             dir = new File(dir, part);
         }
-        dir = new File(dir, getArtifactId());
-        dir = new File(dir, getVersion());
-        return new File(dir, String.format("%s-%s.%s", getArtifactId(), getVersion(), ext));
+        dir = new File(dir, artifactId());
+        dir = new File(dir, version());
+        return new File(dir, String.format("%s-%s.%s", artifactId(), version(), ext));
     }
 
     public void setVersion(@NotNull String version) {
@@ -106,27 +106,27 @@ public class Dependency extends AbstractXmlParser {
     }
 
     @NotNull
-    public String getGroupId() {
+    public String groupId() {
         return groupId;
     }
 
     @NotNull
-    public String getArtifactId() {
+    public String artifactId() {
         return artifactId;
     }
 
     @Nullable
-    public String getVersion() {
+    public String version() {
         return version.equals(LATEST_VERSION) ? null : version;
     }
 
     @NotNull
-    public List<Repository> getRepositories() {
+    public List<Repository> repositories() {
         return repositories;
     }
 
     @Nullable
-    public String getTest() {
+    public String test() {
         return test;
     }
 
@@ -135,7 +135,7 @@ public class Dependency extends AbstractXmlParser {
     }
 
     @NotNull
-    public List<JarRelocation> getRelocations() {
+    public List<JarRelocation> relocations() {
         return relocations;
     }
 
@@ -148,7 +148,7 @@ public class Dependency extends AbstractXmlParser {
     }
 
     @NotNull
-    public DependencyScope getScope() {
+    public DependencyScope scope() {
         return scope;
     }
 
@@ -163,13 +163,13 @@ public class Dependency extends AbstractXmlParser {
         if (this == o) return true;
         if (!(o instanceof Dependency)) return false;
         Dependency that = (Dependency) o;
-        return Objects.equals(getGroupId(), that.getGroupId()) &&
-               Objects.equals(getArtifactId(), that.getArtifactId());
+        return Objects.equals(groupId(), that.groupId()) &&
+               Objects.equals(artifactId(), that.artifactId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getGroupId(), getArtifactId());
+        return Objects.hash(groupId(), artifactId());
     }
 
     /**

@@ -28,7 +28,7 @@ public class PlayerFixedCoordinate implements Coordinate {
         originDot.setPitch(0);
     }
 
-    public Location getOriginDot() {
+    public Location originDot() {
         return originDot;
     }
 

@@ -98,12 +98,12 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -135,7 +135,7 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
                 double z = zFunction.apply(currentT);
                 spawnParticle(getOriginLocation().clone().add(x, y, z));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -151,7 +151,7 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
         spawnParticle(getOriginLocation().clone().add(x, y, z));
     }
 
-    public double getMinT() {
+    public double minT() {
         return minT;
     }
 
@@ -160,7 +160,7 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
         return this;
     }
 
-    public double getMaxT() {
+    public double maxT() {
         return maxT;
     }
 
@@ -169,7 +169,7 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
         return this;
     }
 
-    public double getDt() {
+    public double dt() {
         return dt;
     }
 

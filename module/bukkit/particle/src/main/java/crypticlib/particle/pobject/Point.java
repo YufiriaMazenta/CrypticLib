@@ -19,7 +19,7 @@ public class Point extends ParticleObject {
     @Override
     public List<Location> calculateLocations() {
         Location loc = getOriginLocation().clone();
-        loc.add(getIncrementX(), getIncrementY(), getIncrementZ());
+        loc.add(incrementX(), incrementY(), incrementZ());
         return Collections.singletonList(loc);
     }
 

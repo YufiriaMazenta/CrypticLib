@@ -37,14 +37,14 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
         for (Component baseComponent : baseComponents) {
             component = component.append(baseComponent);
         }
-        ((CommandSource) receiver.getPlatformInvoker()).sendMessage(component);
+        ((CommandSource) receiver.platformInvoker()).sendMessage(component);
     }
 
     @Override
     public void sendMsg(Invoker receiver, @NotNull Component baseComponent) {
         if (receiver == null)
             return;
-        ((CommandSource) receiver.getPlatformInvoker()).sendMessage(baseComponent);
+        ((CommandSource) receiver.platformInvoker()).sendMessage(baseComponent);
     }
 
     @Override

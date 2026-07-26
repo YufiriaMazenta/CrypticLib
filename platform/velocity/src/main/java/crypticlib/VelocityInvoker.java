@@ -21,12 +21,12 @@ public class VelocityInvoker implements Invoker {
     }
 
     @Override
-    public @NotNull Object getPlatformInvoker() {
+    public @NotNull Object platformInvoker() {
         return platformInvoker;
     }
 
     @Override
-    public @NotNull String getName() {
+    public @NotNull String name() {
         if (platformInvoker instanceof Player) {
             return ((Player) platformInvoker).getUsername();
         }

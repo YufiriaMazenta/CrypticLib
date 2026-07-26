@@ -29,7 +29,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void sendMsg(Invoker receiver, @NotNull BaseComponent baseComponent) {
         if (receiver == null)
             return;
-        ((CommandSender) receiver.getPlatformInvoker()).sendMessage(baseComponent);
+        ((CommandSender) receiver.platformInvoker()).sendMessage(baseComponent);
     }
 
     @Override

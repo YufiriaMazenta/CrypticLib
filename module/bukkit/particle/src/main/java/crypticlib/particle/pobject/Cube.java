@@ -49,7 +49,7 @@ public class Cube extends ParticleObject {
         setOriginLocation(minLoc.clone().add(VectorUtils.createVector(minLoc, maxLoc).multiply(0.5)));
     }
 
-    public Location getMinLocation() {
+    public Location minLocation() {
         return minLoc;
     }
 
@@ -57,7 +57,7 @@ public class Cube extends ParticleObject {
         this.minLoc = minLoc;
     }
 
-    public Location getMaxLocation() {
+    public Location maxLocation() {
         return maxLoc;
     }
 
@@ -65,7 +65,7 @@ public class Cube extends ParticleObject {
         this.maxLoc = maxLoc;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 
@@ -125,12 +125,12 @@ public class Cube extends ParticleObject {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }

@@ -66,12 +66,12 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -105,7 +105,7 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
                 double y = rho * Math.sin(rad);
                 spawnParticle(getOriginLocation().clone().add(x, y, 0));
             }
-        }.syncTimer(0, getPeriod());
+        }.syncTimer(0, period());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
         spawnParticle(getOriginLocation().clone().add(x, y, 0));
     }
 
-    public double getMinTheta() {
+    public double minTheta() {
         return minTheta;
     }
 
@@ -132,7 +132,7 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getMaxTheta() {
+    public double maxTheta() {
         return maxTheta;
     }
 
@@ -141,7 +141,7 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
         return this;
     }
 
-    public double getDTheta() {
+    public double dTheta() {
         return dTheta;
     }
 

@@ -81,12 +81,12 @@ public class Wing extends ParticleObject {
             Location showLocation = location;
             if (hasMatrix()) {
                 Vector v = new Vector(location.getX() - getOriginLocation().getX(), location.getY() - getOriginLocation().getY(), location.getZ() - getOriginLocation().getZ());
-                Vector changed = getMatrix().applyVector(v);
+                Vector changed = matrix().applyVector(v);
 
                 showLocation = getOriginLocation().clone().add(changed);
             }
 
-            showLocation.add(getIncrementX(), getIncrementY(), getIncrementZ());
+            showLocation.add(incrementX(), incrementY(), incrementZ());
             return showLocation;
         }).collect(Collectors.toList());
     }
@@ -140,7 +140,7 @@ public class Wing extends ParticleObject {
         }
     }
 
-    public List<String> getPattern() {
+    public List<String> pattern() {
         return pattern;
     }
 
@@ -149,7 +149,7 @@ public class Wing extends ParticleObject {
         resetWing();
     }
 
-    public double getInterval() {
+    public double interval() {
         return interval;
     }
 
@@ -157,7 +157,7 @@ public class Wing extends ParticleObject {
         this.interval = interval;
     }
 
-    public double getMinRotAngle() {
+    public double minRotAngle() {
         return minRotAngle;
     }
 
@@ -165,7 +165,7 @@ public class Wing extends ParticleObject {
         this.minRotAngle = minRotAngle;
     }
 
-    public double getMaxRotAngle() {
+    public double maxRotAngle() {
         return maxRotAngle;
     }
 
@@ -173,7 +173,7 @@ public class Wing extends ParticleObject {
         this.maxRotAngle = maxRotAngle;
     }
 
-    public boolean isSwing() {
+    public boolean swing() {
         return swing;
     }
 

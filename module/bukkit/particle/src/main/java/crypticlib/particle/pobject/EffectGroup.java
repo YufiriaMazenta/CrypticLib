@@ -307,7 +307,7 @@ public class EffectGroup {
      *
      * @return {@link List}
      */
-    public List<ParticleObject> getEffectList() {
+    public List<ParticleObject> effectList() {
         return effectList;
     }
 

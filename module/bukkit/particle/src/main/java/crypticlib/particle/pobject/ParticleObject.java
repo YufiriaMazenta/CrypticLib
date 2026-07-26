@@ -230,7 +230,7 @@ public abstract class ParticleObject {
      *
      * @return {@link Matrix}
      */
-    public Matrix getMatrix() {
+    public Matrix matrix() {
         return matrix;
     }
 
@@ -252,7 +252,7 @@ public abstract class ParticleObject {
      *
      * @return X 轴的增量
      */
-    public double getIncrementX() {
+    public double incrementX() {
         return incrementX;
     }
 
@@ -274,7 +274,7 @@ public abstract class ParticleObject {
      *
      * @return Y 轴的增量
      */
-    public double getIncrementY() {
+    public double incrementY() {
         return incrementY;
     }
 
@@ -296,7 +296,7 @@ public abstract class ParticleObject {
      *
      * @return Z 轴的增量
      */
-    public double getIncrementZ() {
+    public double incrementZ() {
         return incrementZ;
     }
 
@@ -350,7 +350,7 @@ public abstract class ParticleObject {
      *
      * @return 单位为 tick
      */
-    public long getPeriod() {
+    public long period() {
         return period;
     }
 
@@ -370,7 +370,7 @@ public abstract class ParticleObject {
      *
      * @return {@link ShowType}
      */
-    public ShowType getShowType() {
+    public ShowType showType() {
         return showType;
     }
 
@@ -390,7 +390,7 @@ public abstract class ParticleObject {
      *
      * @return {@link Particle}
      */
-    public Particle getParticle() {
+    public Particle particle() {
         return particle;
     }
 
@@ -416,7 +416,7 @@ public abstract class ParticleObject {
      *
      * @return 一个点的粒子数量
      */
-    public int getCount() {
+    public int count() {
         return count;
     }
 
@@ -436,7 +436,7 @@ public abstract class ParticleObject {
      *
      * @return 一个点的 X 轴偏移量
      */
-    public double getOffsetX() {
+    public double offsetX() {
         return offsetX;
     }
 
@@ -456,7 +456,7 @@ public abstract class ParticleObject {
      *
      * @return 一个点的 Y 轴偏移量
      */
-    public double getOffsetY() {
+    public double offsetY() {
         return offsetY;
     }
 
@@ -476,7 +476,7 @@ public abstract class ParticleObject {
      *
      * @return 一个点的 Z 轴偏移量
      */
-    public double getOffsetZ() {
+    public double offsetZ() {
         return offsetZ;
     }
 
@@ -496,7 +496,7 @@ public abstract class ParticleObject {
      *
      * @return 一个点的 extra 参数
      */
-    public double getExtra() {
+    public double extra() {
         return extra;
     }
 
@@ -518,7 +518,7 @@ public abstract class ParticleObject {
      *
      * @return 一个点的 data 参数
      */
-    public Object getData() {
+    public Object data() {
         return data;
     }
 
@@ -538,7 +538,7 @@ public abstract class ParticleObject {
      *
      * @return {@link Color}
      */
-    public Color getColor() {
+    public Color color() {
         return color;
     }
 
@@ -559,7 +559,7 @@ public abstract class ParticleObject {
      * 得到当前特效对象所连接的实体的UUID
      * @return {@link UUID}
      */
-    public @Nullable UUID getEntityId() {
+    public @Nullable UUID entityId() {
         return entityId;
     }
 
