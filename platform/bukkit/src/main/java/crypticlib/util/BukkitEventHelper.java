@@ -12,6 +12,7 @@ public class BukkitEventHelper {
      */
     public static boolean isMove(PlayerMoveEvent event) {
         Location from = event.getFrom(), to = event.getTo();
+        if (to == null) return false;
         return from.getX() != to.getX() || from.getZ() != to.getZ() || from.getY() != to.getY();
     }
 
@@ -22,6 +23,7 @@ public class BukkitEventHelper {
      */
     public static boolean isBlockMove(PlayerMoveEvent event) {
         Location from = event.getFrom(), to = event.getTo();
+        if (to == null) return false;
         return from.getBlockX() != to.getBlockX() || from.getBlockZ() != to.getBlockZ() || from.getBlockY() != to.getBlockY();
     }
 
@@ -32,6 +34,7 @@ public class BukkitEventHelper {
      */
     public static boolean isVerticalMove(PlayerMoveEvent event) {
         Location from = event.getFrom(), to = event.getTo();
+        if (to == null) return false;
         return from.getY() != to.getY();
     }
 
@@ -42,6 +45,7 @@ public class BukkitEventHelper {
      */
     public static boolean isHorizontalMove(PlayerMoveEvent event) {
         Location from = event.getFrom(), to = event.getTo();
+        if (to == null) return false;
         return from.getX() != to.getX() || from.getZ() != to.getZ();
     }
 

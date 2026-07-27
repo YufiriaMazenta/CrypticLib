@@ -27,7 +27,7 @@ public enum PluginScanner {
     private final Map<Class<? extends Annotation>, List<Class<?>>> annotatedClassesMap = new ConcurrentHashMap<>();
 
     @ApiStatus.Internal
-    public void scanJar(@NotNull File file) {
+    public synchronized void scanJar(@NotNull File file) {
         try {
             scanJar(new JarFile(file));
         } catch (IOException e) {
@@ -35,7 +35,7 @@ public enum PluginScanner {
         }
     }
 
-    public void scanJar(@NotNull JarFile jarFile) {
+    public synchronized void scanJar(@NotNull JarFile jarFile) {
         pluginClassMap.clear();
         annotatedClassesMap.clear();
 

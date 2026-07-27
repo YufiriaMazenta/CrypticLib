@@ -55,7 +55,11 @@ public abstract class ConfigWrapper<C> {
     @NotNull
     public C config() {
         if (config == null) {
-            reloadConfig();
+            synchronized (lock) {
+                if (config == null) {
+                    reloadConfig();
+                }
+            }
         }
         return config;
     }
