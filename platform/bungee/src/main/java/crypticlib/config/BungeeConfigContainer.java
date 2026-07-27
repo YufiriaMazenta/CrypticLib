@@ -19,7 +19,8 @@ public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper> 
         //Bungee的Configuration不支持注释, 每次saveConfig都会按内存内容重新dump并抹掉用户注释,
         //因此仅在确实补写了默认值(存在缺失的键)时才保存, 避免无谓地整文件重写
         boolean changed = false;
-        for (Field field : containerClass.getDeclaredFields()) {
+        for (Class<?> c = containerClass; c != null; c = c.getSuperclass()) {
+        for (Field field : c.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
             Object obj = ReflectionHelper.getDeclaredFieldObj(field, null);
@@ -32,6 +33,7 @@ public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper> 
                 config.saveDef(configWrapper.config());
                 config.load(configWrapper.config());
             }
+        }
         }
         if (changed) {
             configWrapper.saveConfig();

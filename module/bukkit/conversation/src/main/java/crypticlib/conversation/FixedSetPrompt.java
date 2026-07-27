@@ -6,7 +6,13 @@ public interface FixedSetPrompt extends ValidatingPrompt {
 
     @Override
     default boolean isInputValid(String input) {
-        return fixedSet().contains(input.toLowerCase());
+        String lower = input.toLowerCase();
+        for (String s : fixedSet()) {
+            if (s.equalsIgnoreCase(lower)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     Set<String> fixedSet();

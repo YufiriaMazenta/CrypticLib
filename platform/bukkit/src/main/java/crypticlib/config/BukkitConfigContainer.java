@@ -19,7 +19,8 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> 
 //        configWrapper.reloadConfig(); 不再由ConfigContainer进行重载
         //仅在确实补写了默认值(存在缺失的键)时才保存, 避免Bukkit<1.18.1每次reload无条件重写文件抹掉注释
         boolean changed = false;
-        for (Field field : containerClass.getDeclaredFields()) {
+        for (Class<?> c = containerClass; c != null; c = c.getSuperclass()) {
+        for (Field field : c.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
             Object obj = ReflectionHelper.getDeclaredFieldObj(field, null);
@@ -38,6 +39,7 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> 
                         + configWrapper.configFile().getName() + ": " + t.getMessage());
                 }
             }
+        }
         }
         if (changed) {
             configWrapper.saveConfig();
