@@ -123,8 +123,48 @@ public enum FoliaScheduler implements BukkitScheduler, LifeCycleTask {
     }
 
     private BukkitTaskWrapper trackRepeatingTask(BukkitTaskWrapper wrapper) {
-        regionEntityTasks.add(wrapper);
-        return wrapper;
+        TrackedTaskWrapper tracked = new TrackedTaskWrapper(wrapper);
+        regionEntityTasks.add(tracked);
+        return tracked;
+    }
+
+    /**
+     * 包装一个 BukkitTaskWrapper, 在 cancel() 时自动从 regionEntityTasks 移除,
+     * 避免任务取消后仍被追踪导致内存泄漏。
+     */
+    private final class TrackedTaskWrapper implements BukkitTaskWrapper {
+
+        private final BukkitTaskWrapper delegate;
+
+        private TrackedTaskWrapper(BukkitTaskWrapper delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public void cancel() {
+            delegate.cancel();
+            regionEntityTasks.remove(this);
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return delegate.isCancelled();
+        }
+
+        @Override
+        public @NotNull Plugin owner() {
+            return delegate.owner();
+        }
+
+        @Override
+        public Integer taskId() {
+            return delegate.taskId();
+        }
+
+        @Override
+        public @NotNull Object platformTask() {
+            return delegate.platformTask();
+        }
     }
 
     /**
@@ -169,7 +209,10 @@ public enum FoliaScheduler implements BukkitScheduler, LifeCycleTask {
     }
 
     private long toSafeTick(long originTick) {
-        return originTick > 0 ? originTick : 1;
+        if (originTick <= 0) {
+            throw new IllegalArgumentException("Tick value must be positive, got " + originTick);
+        }
+        return originTick;
     }
 
     @Override

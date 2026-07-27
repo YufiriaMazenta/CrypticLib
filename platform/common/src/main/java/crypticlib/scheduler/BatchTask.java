@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -48,8 +49,8 @@ public class BatchTask<T, R> {
     private final int itemsPerTick;
     private final BatchCallback<T, R> callback;
     private final Scheduler scheduler;
-    private final List<T> failedItems = new ArrayList<>();
-    private final List<R> results = new ArrayList<>();
+    private final List<T> failedItems = new CopyOnWriteArrayList<>();
+    private final List<R> results = new CopyOnWriteArrayList<>();
     private final AtomicBoolean started = new AtomicBoolean(false);
     private volatile boolean completed = false;
 

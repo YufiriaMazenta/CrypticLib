@@ -119,7 +119,7 @@ public abstract class CrypticLibRunnable implements Runnable {
 
     protected void checkTaskNotNull() {
         if (this.taskWrapper != null) {
-            throw new IllegalArgumentException("Runnable is null");
+            throw new IllegalArgumentException("Task is already assigned; cancel the existing task before re-scheduling");
         }
     }
 
