@@ -135,9 +135,9 @@ public class Line extends ParticleObject implements Playable {
 
     @Override
     public void playNextPoint() {
-        currentStep += step;
         Vector vectorTemp = vector.clone().multiply(currentStep);
         spawnParticle(start.clone().add(vectorTemp));
+        currentStep += step;
 
         if (currentStep > length) {
             currentStep = 0D;

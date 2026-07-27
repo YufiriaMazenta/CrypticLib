@@ -49,6 +49,7 @@ public class Sphere extends ParticleObject implements Playable {
 
     public Sphere(Location origin, int sample, double radius, Color color) {
         this(origin, sample, radius);
+        setColor(color);
     }
 
     @Override
@@ -122,12 +123,12 @@ public class Sphere extends ParticleObject implements Playable {
 
     @Override
     public void playNextPoint() {
-        // 重置
-        if (currentSample + 1 == locations.size()) {
-            currentSample = 0;
-        }
         spawnParticle(locations.get(currentSample));
         currentSample++;
+        // 重置
+        if (currentSample >= locations.size()) {
+            currentSample = 0;
+        }
     }
 
     public int sample() {

@@ -104,7 +104,8 @@ public class Heart extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        currentT = -1.0D;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
                 if (currentT > 1.0D) {

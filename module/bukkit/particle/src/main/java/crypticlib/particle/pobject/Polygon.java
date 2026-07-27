@@ -136,7 +136,9 @@ public class Polygon extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        currentLoc = 0;
+        currentStep = 0D;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
                 Vector vectorTemp = currentVector.clone().normalize().multiply(currentStep);

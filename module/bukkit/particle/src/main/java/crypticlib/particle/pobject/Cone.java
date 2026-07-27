@@ -100,17 +100,17 @@ public class Cone extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        currentSample = 0;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
+                spawnParticle(locations.get(currentSample));
+                currentSample++;
                 // 进行关闭
-                if (currentSample + 1 == locations.size()) {
+                if (currentSample >= locations.size()) {
                     cancel();
                     return;
                 }
-                currentSample++;
-
-                spawnParticle(locations.get(currentSample));
             }
         }.syncTimer(0, period());
     }

@@ -72,17 +72,18 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
+        currentX = minX;
+        showTask = new CrypticLibRunnable() {
             @Override
             public void run() {
+                spawnParticle(getOriginLocation().clone().add(currentX, function.apply(currentX), 0));
+                currentX += dx;
                 // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
                 if (currentX > maxX) {
                     currentX = minX;
                     cancel();
                     return;
                 }
-                currentX += dx;
-                spawnParticle(getOriginLocation().clone().add(currentX, function.apply(currentX), 0));
             }
         }.syncTimer(0, period());
     }
