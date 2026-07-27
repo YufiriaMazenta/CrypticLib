@@ -7,10 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -24,18 +21,18 @@ public enum PluginScanner {
 
     //插件的所有类
     private final Map<String, Class<?>> pluginClassMap = new ConcurrentHashMap<>();
-    private final Map<Class<? extends Annotation>, List<Class<?>>> annotatedClassesMap = new ConcurrentHashMap<>();
+    private final Map<Class<? extends Annotation>, LinkedHashSet<Class<?>>> annotatedClassesMap = new ConcurrentHashMap<>();
 
     @ApiStatus.Internal
     public synchronized void scanJar(@NotNull File file) {
-        try {
-            scanJar(new JarFile(file));
+        try(JarFile jarFile = new JarFile(file)) {
+            scanJar(jarFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public synchronized void scanJar(@NotNull JarFile jarFile) {
+    private synchronized void scanJar(@NotNull JarFile jarFile) {
         pluginClassMap.clear();
         annotatedClassesMap.clear();
 
@@ -68,12 +65,10 @@ public enum PluginScanner {
                 for (Annotation annotation : clazz.getAnnotations()) {
                     Class<? extends Annotation> annotationClass = annotation.annotationType();
                     if (annotatedClassesMap.containsKey(annotationClass)) {
-                        List<Class<?>> annotatedClasses = annotatedClassesMap.get(annotationClass);
-                        if (!annotatedClasses.contains(clazz)) {
-                            annotatedClasses.add(clazz);
-                        }
+                        LinkedHashSet<Class<?>> annotatedClasses = annotatedClassesMap.get(annotationClass);
+                        annotatedClasses.add(clazz);
                     } else {
-                        List<Class<?>> annotatedClasses = new ArrayList<>();
+                        LinkedHashSet<Class<?>> annotatedClasses = new LinkedHashSet<>();
                         annotatedClasses.add(clazz);
                         annotatedClassesMap.put(annotationClass, annotatedClasses);
                     }
@@ -85,12 +80,6 @@ public enum PluginScanner {
                 //其余非 IO 级异常同样只跳过该类，保证扫描继续
                 IOHelper.debug("Failed to process class: " + className + ", " + throwable);
             }
-        }
-
-        try {
-            jarFile.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -104,8 +93,8 @@ public enum PluginScanner {
         return subClasses;
     }
 
-    public @NotNull List<Class<?>> getAnnotatedClasses(@NotNull Class<? extends Annotation> annotationClass) {
-        return annotatedClassesMap.containsKey(annotationClass) ? annotatedClassesMap.get(annotationClass) : new ArrayList<>();
+    public @NotNull LinkedHashSet<Class<?>> getAnnotatedClasses(@NotNull Class<? extends Annotation> annotationClass) {
+        return annotatedClassesMap.containsKey(annotationClass) ? annotatedClassesMap.get(annotationClass) : new LinkedHashSet<>();
     }
 
 }
