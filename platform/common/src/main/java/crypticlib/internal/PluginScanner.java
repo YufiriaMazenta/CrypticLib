@@ -4,8 +4,6 @@ import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -59,9 +57,6 @@ public enum PluginScanner {
             }
             //先做字节码级预扫描，只有引用了 crypticlib 的类才真正 loadClass，
             //避免把插件 shade 的大量依赖(kotlin-stdlib、gson 等)全部定义进 JVM
-            if (!referencesCrypticLib(jarFile, entry)) {
-                continue;
-            }
             String className = entryName
                 .replace('/', '.')
                 .substring(0, entryName.length() - 6);
@@ -97,69 +92,6 @@ public enum PluginScanner {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * 仅解析 class 文件的常量池，判断其是否引用了 crypticlib(类型、注解、方法签名等)，
-     * 用于在 loadClass 之前过滤掉与 crypticlib 无关的 shaded 依赖类。
-     * <p>
-     * 该方法不定义任何类到 JVM，且不依赖运行时对目标 class 版本的支持。解析失败或遇到
-     * 未知常量池标签时保守地返回 false(视为无关类，不加载)。
-     *
-     * @param jarFile 所在 jar
-     * @param entry   class 条目
-     * @return 常量池中是否出现 crypticlib 引用
-     */
-    private boolean referencesCrypticLib(@NotNull JarFile jarFile, @NotNull JarEntry entry) {
-        try (DataInputStream in = new DataInputStream(new BufferedInputStream(jarFile.getInputStream(entry)))) {
-            if (in.readInt() != 0xCAFEBABE) {
-                return false;
-            }
-            in.readUnsignedShort(); //minor version
-            in.readUnsignedShort(); //major version
-            int constantPoolCount = in.readUnsignedShort();
-            for (int i = 1; i < constantPoolCount; i++) {
-                int tag = in.readUnsignedByte();
-                switch (tag) {
-                    case 1: //CONSTANT_Utf8
-                        if (in.readUTF().contains("crypticlib")) {
-                            return true;
-                        }
-                        break;
-                    case 5: //CONSTANT_Long
-                    case 6: //CONSTANT_Double
-                        in.skipBytes(8);
-                        i++; //Long/Double 占用两个常量池槽位
-                        break;
-                    case 7:  //CONSTANT_Class
-                    case 8:  //CONSTANT_String
-                    case 16: //CONSTANT_MethodType
-                    case 19: //CONSTANT_Module
-                    case 20: //CONSTANT_Package
-                        in.skipBytes(2);
-                        break;
-                    case 15: //CONSTANT_MethodHandle
-                        in.skipBytes(3);
-                        break;
-                    case 3:  //CONSTANT_Integer
-                    case 4:  //CONSTANT_Float
-                    case 9:  //CONSTANT_Fieldref
-                    case 10: //CONSTANT_Methodref
-                    case 11: //CONSTANT_InterfaceMethodref
-                    case 12: //CONSTANT_NameAndType
-                    case 17: //CONSTANT_Dynamic
-                    case 18: //CONSTANT_InvokeDynamic
-                        in.skipBytes(4);
-                        break;
-                    default:
-                        //未知常量池标签，无法安全解析，保守跳过该类
-                        return false;
-                }
-            }
-        } catch (IOException | RuntimeException e) {
-            return false;
-        }
-        return false;
     }
 
     public <T> List<Class<T>> getSubClasses(Class<T> clazz) {
