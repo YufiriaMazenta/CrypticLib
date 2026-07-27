@@ -52,7 +52,10 @@ public enum ScriptEngine implements LifeCycleTask {
     private final ScriptCompiler compiler = new ScriptCompiler();
 
     /** 是否已初始化 */
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
+
+    /** 是否启用裸参数语法（如 say hello world），默认关闭，需使用括号调用 say("hello", "world") */
+    private boolean bareArgsEnabled = false;
 
     /**
      * 初始化脚本引擎
@@ -65,6 +68,25 @@ public enum ScriptEngine implements LifeCycleTask {
         registerModule(BuiltinScriptModule.INSTANCE);
         registerModule(MathScriptModule.INSTANCE);
         initialized = true;
+    }
+
+    /**
+     * 是否启用裸参数语法
+     * @return 裸参数语法开关状态
+     */
+    public boolean bareArgsEnabled() {
+        return bareArgsEnabled;
+    }
+
+    /**
+     * 设置是否启用裸参数语法
+     * 启用后可使用 {@code say hello world} 代替 {@code say("hello", "world")}
+     * @param bareArgsEnabled 是否启用
+     * @return this
+     */
+    public ScriptEngine setBareArgsEnabled(boolean bareArgsEnabled) {
+        this.bareArgsEnabled = bareArgsEnabled;
+        return this;
     }
 
     /**
@@ -86,7 +108,7 @@ public enum ScriptEngine implements LifeCycleTask {
         // 词法分析
         List<Token> tokens = new ScriptLexer(source).tokenize();
         // 语法分析
-        ASTNode ast = new ScriptParser(tokens).parse();
+        ASTNode ast = new ScriptParser(tokens, bareArgsEnabled).parse();
         // 编译
         return compiler.compile(name, ast);
     }

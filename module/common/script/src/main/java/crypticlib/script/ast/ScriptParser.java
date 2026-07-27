@@ -27,8 +27,8 @@ import java.util.List;
  *   additive      = multiplicative (("+" | "-") multiplicative)*
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
- *   call          = VARIABLE | IDENTIFIER "(" args ")" | IDENTIFIER bare_args | atom
- *   bare_args     = atom+
+ *   call          = VARIABLE | IDENTIFIER "(" args ")" | IDENTIFIER bare_args? | atom
+ *   bare_args     = atom+  （仅当 bareArgsEnabled=true 时生效）
  *   args          = (expression ("," expression)*)?
  *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN | VARIABLE | "(" expression ")"
  */
@@ -38,11 +38,17 @@ public class ScriptParser {
     private static final int MAX_DEPTH = 200;
 
     private final List<Token> tokens;
+    private final boolean bareArgsEnabled;
     private int pos;
     private int depth;
 
     public ScriptParser(List<Token> tokens) {
+        this(tokens, false);
+    }
+
+    public ScriptParser(List<Token> tokens, boolean bareArgsEnabled) {
         this.tokens = tokens;
+        this.bareArgsEnabled = bareArgsEnabled;
     }
 
     private void enterDepth() {
@@ -284,15 +290,17 @@ public class ScriptParser {
             // IDENTIFIER / VARIABLE 作为参数时递归解析为函数调用或变量引用（如 papi "%player_name%"、say ${player}）
             // 注意：不再把 "- 数字" 识别为负数裸参数，否则 "x - 1" 会被吞为 x(-1)；
             // 负数参数请使用括号调用形式 foo(-1)。
-            List<ASTNode> args = new ArrayList<>();
-            while (isBareArgToken()) {
-                if (check(Token.Type.IDENTIFIER) || check(Token.Type.VARIABLE)) {
-                    args.add(parseCall());
-                } else {
-                    args.add(parseAtom());
+            if (bareArgsEnabled) {
+                List<ASTNode> args = new ArrayList<>();
+                while (isBareArgToken()) {
+                    if (check(Token.Type.IDENTIFIER) || check(Token.Type.VARIABLE)) {
+                        args.add(parseCall());
+                    } else {
+                        args.add(parseAtom());
+                    }
                 }
+                return new ASTNode.FunctionCallNode(funcName, args, name.line());
             }
-            return new ASTNode.FunctionCallNode(funcName, args, name.line());
         }
 
         return parseAtom();

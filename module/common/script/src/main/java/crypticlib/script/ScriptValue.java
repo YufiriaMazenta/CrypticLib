@@ -174,7 +174,8 @@ public abstract class ScriptValue {
     public int compare(ScriptValue other) {
         // nil 只与 nil 相等，与任意其他类型比较均视为不相等（避免 nil == 0 / nil == "" 误判为真）
         if (this.isNull() || other.isNull()) {
-            return (this.isNull() && other.isNull()) ? 0 : 1;
+            if (this.isNull() && other.isNull()) return 0;
+            return this.isNull() ? -1 : 1;
         }
         if (this.isNumber() || other.isNumber()) {
             // 若一侧为非数字字符串，退回字符串比较，避免 "abc" == 0 误判为真
