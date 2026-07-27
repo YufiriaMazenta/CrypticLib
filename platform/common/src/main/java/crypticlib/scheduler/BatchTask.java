@@ -118,6 +118,9 @@ public class BatchTask<T, R> {
                     results.add(result);
                 }
             } catch (Throwable e) {
+                if (e instanceof Error) {
+                    throw new RuntimeException(e);
+                }
                 failedItems.add(items.get(i));
             }
         }
