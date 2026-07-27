@@ -91,6 +91,10 @@ subprojects {
         compileJava {
             options.encoding = "UTF-8"
         }
+        shadowJar {
+            // 排除 jar-relocator 的 Maven 元数据
+            exclude("META-INF/maven/me.lucko/**")
+        }
         build {
             dependsOn(shadowJar)
         }

@@ -15,7 +15,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.*;
@@ -392,7 +394,7 @@ public class DependencyDownloader extends AbstractXmlParser {
 
     @NotNull
     private File copyFile(@NotNull File source, @NotNull File dest) throws IOException {
-        Files.copy(source.toPath(), dest.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(source.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return dest;
     }
 
@@ -419,11 +421,11 @@ public class DependencyDownloader extends AbstractXmlParser {
             new JarRelocator(tempSource, tempOut, rules).run();
             try {
                 Files.move(tempOut.toPath(), rel.toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-                    java.nio.file.StandardCopyOption.ATOMIC_MOVE);
-            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
                 Files.move(tempOut.toPath(), rel.toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    StandardCopyOption.REPLACE_EXISTING);
             }
             IOHelper.info("Relocated to " + rel.getName());
         } finally {

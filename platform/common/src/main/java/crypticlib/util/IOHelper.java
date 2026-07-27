@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -320,7 +321,7 @@ public class IOHelper {
      */
     @NotNull
     public static String sha1Hex(@NotNull File file) throws Exception {
-        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-1");
+        MessageDigest digest = MessageDigest.getInstance("SHA-1");
         try (InputStream is = Files.newInputStream(file.toPath())) {
             byte[] buf = new byte[8192];
             int len;

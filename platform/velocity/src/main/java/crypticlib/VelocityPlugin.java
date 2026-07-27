@@ -35,6 +35,7 @@ import crypticlib.util.ReflectionHelper;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +62,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
                 try {
                     //使用 URI 让 JDK 正确解码路径中的空格/百分号转义,避免 URL.getFile() 残留字面 %20 导致找不到 jar
                     return new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-                } catch (java.net.URISyntaxException e) {
+                } catch (URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
             });
