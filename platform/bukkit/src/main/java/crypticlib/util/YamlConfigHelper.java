@@ -24,7 +24,7 @@ public class YamlConfigHelper {
             (key, value) -> {
                 if (value instanceof ConfigurationSection) {
                     map.put(key, configSection2Map((ConfigurationSection) value));
-                } else if (configSection instanceof List) {
+                } else if (value instanceof List) {
                     map.put(key, configList2List((List<?>) value));
                 } else {
                     map.put(key, value);

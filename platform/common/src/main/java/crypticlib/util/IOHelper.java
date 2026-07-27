@@ -140,7 +140,11 @@ public class IOHelper {
             FileChannel channelIn = fileIn.getChannel();
             FileChannel channelOut = fileOut.getChannel()
         ) {
-            channelIn.transferTo(0, channelIn.size(), channelOut);
+            long size = channelIn.size();
+            long transferred = 0;
+            while (transferred < size) {
+                transferred += channelIn.transferTo(transferred, size - transferred, channelOut);
+            }
         } catch (IOException e) {
             to.delete();  // 清理不完整的文件
             throw e;
@@ -293,6 +297,43 @@ public class IOHelper {
             //路径无效或无法计算相对路径时回退
             return file.toPath();
         }
+    }
+
+    /**
+     * 校验文件 SHA-1 是否与 .sha1 文件一致
+     */
+    public static boolean validateSha1(@NotNull File file, @NotNull File sha1File) {
+        if (!file.exists() || !sha1File.exists()) {
+            return false;
+        }
+        try {
+            String expected = new String(Files.readAllBytes(sha1File.toPath())).trim().split("\\s+")[0];
+            String actual = sha1Hex(file);
+            return expected.equalsIgnoreCase(actual);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * 计算文件的 SHA-1 十六进制摘要
+     */
+    @NotNull
+    public static String sha1Hex(@NotNull File file) throws Exception {
+        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-1");
+        try (InputStream is = Files.newInputStream(file.toPath())) {
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = is.read(buf)) > 0) {
+                digest.update(buf, 0, len);
+            }
+        }
+        byte[] hash = digest.digest();
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hash) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
 }

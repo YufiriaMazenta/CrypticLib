@@ -75,14 +75,14 @@ public class DependencyDownloader extends AbstractXmlParser {
                     file = relocateJar(dep, file);
                 }
                 ClassLoader loader = ClassAppender.addPath(file.toPath());
-                injectedDependencies.computeIfAbsent(dep, dependency -> new HashSet<>()).add(loader);
+                injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(loader);
             } else {
                 // JAR 不存在（可能是纯 POM 依赖），尝试下载一次
                 try {
                     loadDependency(repositories, dep);
                 } catch (IOException e) {
                     // 下载失败，标记为已处理避免无限递归
-                    injectedDependencies.computeIfAbsent(dep, dependency -> new HashSet<>()).add(ClassAppender.getClassLoader());
+                    injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(ClassAppender.getClassLoader());
                     continue;
                 }
                 // 下载成功后再次尝试注入（只重试一次）
@@ -92,10 +92,10 @@ public class DependencyDownloader extends AbstractXmlParser {
                         retryFile = relocateJar(dep, retryFile);
                     }
                     ClassLoader loader = ClassAppender.addPath(retryFile.toPath());
-                    injectedDependencies.computeIfAbsent(dep, dependency -> new HashSet<>()).add(loader);
+                    injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(loader);
                 } else {
                     // JAR 仍然不存在，标记为已处理
-                    injectedDependencies.computeIfAbsent(dep, dependency -> new HashSet<>()).add(ClassAppender.getClassLoader());
+                    injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(ClassAppender.getClassLoader());
                 }
             }
         }
@@ -120,7 +120,7 @@ public class DependencyDownloader extends AbstractXmlParser {
         File jar = dependency.findFile(baseDir, "jar");
         File jar1 = new File(jar.getPath() + ".sha1");
 
-        Set<Dependency> downloaded = new HashSet<>();
+        Set<Dependency> downloaded = ConcurrentHashMap.newKeySet();
         downloaded.add(dependency);
 
         // 检查是否已下载且完整（pom 与 jar 都需通过 sha1 校验; jar 不存在视为纯 POM 依赖）
@@ -194,7 +194,7 @@ public class DependencyDownloader extends AbstractXmlParser {
      */
     public Set<Dependency> loadDependency(@NotNull List<Repository> repos, @NotNull List<Dependency> dependencies) throws IOException {
         createBaseDir();
-        Set<Dependency> downloaded = new HashSet<>();
+        Set<Dependency> downloaded = ConcurrentHashMap.newKeySet();
         for (Dependency dep : dependencies) {
             try {
                 downloaded.addAll(loadDependency(repos, dep));
@@ -382,34 +382,12 @@ public class DependencyDownloader extends AbstractXmlParser {
     }
 
     private boolean validation(@NotNull File file, @NotNull File sha1File) {
-        if (!file.exists() || !sha1File.exists()) {
-            return false;
-        }
-        try {
-            String expected = new String(Files.readAllBytes(sha1File.toPath())).trim().split("\\s+")[0];
-            String actual = sha1Hex(file);
-            return expected.equalsIgnoreCase(actual);
-        } catch (Exception e) {
-            return false;
-        }
+        return IOHelper.validateSha1(file, sha1File);
     }
 
     @NotNull
     private String sha1Hex(@NotNull File file) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        try (InputStream is = Files.newInputStream(file.toPath())) {
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                digest.update(buf, 0, len);
-            }
-        }
-        byte[] hash = digest.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hash) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
+        return IOHelper.sha1Hex(file);
     }
 
     @NotNull
@@ -439,9 +417,14 @@ public class DependencyDownloader extends AbstractXmlParser {
         try {
             copyFile(file, tempSource);
             new JarRelocator(tempSource, tempOut, rules).run();
-            Files.move(tempOut.toPath(), rel.toPath(),
-                java.nio.file.StandardCopyOption.REPLACE_EXISTING,
-                java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            try {
+                Files.move(tempOut.toPath(), rel.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                Files.move(tempOut.toPath(), rel.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
             IOHelper.info("Relocated to " + rel.getName());
         } finally {
             tempSource.delete();

@@ -124,33 +124,11 @@ public enum DependencyLoader {
     }
 
     private boolean validation(@NotNull File file, @NotNull File sha1File) {
-        if (!file.exists() || !sha1File.exists()) {
-            return false;
-        }
-        try {
-            String expected = new String(java.nio.file.Files.readAllBytes(sha1File.toPath())).trim().split("\\s+")[0];
-            String actual = sha1Hex(file);
-            return expected.equalsIgnoreCase(actual);
-        } catch (Exception e) {
-            return false;
-        }
+        return IOHelper.validateSha1(file, sha1File);
     }
 
     @NotNull
     private String sha1Hex(@NotNull File file) throws Exception {
-        java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-1");
-        try (java.io.InputStream is = java.nio.file.Files.newInputStream(file.toPath())) {
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                digest.update(buf, 0, len);
-            }
-        }
-        byte[] hash = digest.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : hash) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
+        return IOHelper.sha1Hex(file);
     }
 }

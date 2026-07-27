@@ -1,6 +1,7 @@
 package crypticlib.util;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -21,7 +22,10 @@ public class InventoryHelper {
             return;
         }
         failed.forEach((_slot, item) -> {
-            location.getWorld().dropItem(location, item);
+            World world = location.getWorld();
+            if (world != null) {
+                world.dropItem(location, item);
+            }
         });
     }
 
