@@ -51,25 +51,27 @@ public class ClassAppender {
         String loaderClassName = loader.getClass().getName();
 
         // Application ClassLoader (现代 JVM)
-        if (loaderClassName.equals("jdk.internal.loader.ClassLoaders$AppClassLoader")) {
-            addURL(loader, ucp(loader.getClass()), file);
-        }
-        // LaunchClassLoader (Hybrid/旧版 Forge)
-        else if (loaderClassName.equals("net.minecraft.launchwrapper.LaunchClassLoader")) {
-            MethodHandle methodHandle = lookup.findVirtual(URLClassLoader.class, "addURL", MethodType.methodType(void.class, java.net.URL.class));
-            methodHandle.invoke(loader, file.toURI().toURL());
-        }
-        // Paper PaperPluginClassLoader — 注入到其 libraryLoader
-        // PaperSimplePluginClassLoader.findClass() 不会 fallback 到 super.findClass()，
-        // 因此往 ucp 注入的 URL 永远不会被遍历；但 PaperPluginClassLoader.loadClass() 的
-        // 第二步会委托给 libraryLoader.loadClass()，而 libraryLoader 是标准 URLClassLoader，
-        // 其 findClass 会查 ucp，所以注入到这里可以生效。
-        else if (loaderClassName.equals("io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader")) {
-            addPathToPaperLibraryLoader(loader, file);
-        }
-        // Bukkit PluginClassLoader
-        else {
-            addURL(loader, ucp(loader), file);
+        switch (loaderClassName) {
+            case "jdk.internal.loader.ClassLoaders$AppClassLoader":
+                addURL(loader, ucp(loader.getClass()), file);
+                break;
+            // LaunchClassLoader (Hybrid/旧版 Forge)
+            case "net.minecraft.launchwrapper.LaunchClassLoader":
+                MethodHandle methodHandle = lookup.findVirtual(URLClassLoader.class, "addURL", MethodType.methodType(void.class, URL.class));
+                methodHandle.invoke(loader, file.toURI().toURL());
+                break;
+            // Paper PaperPluginClassLoader — 注入到其 libraryLoader
+            // PaperSimplePluginClassLoader.findClass() 不会 fallback 到 super.findClass()，
+            // 因此往 ucp 注入的 URL 永远不会被遍历；但 PaperPluginClassLoader.loadClass() 的
+            // 第二步会委托给 libraryLoader.loadClass()，而 libraryLoader 是标准 URLClassLoader，
+            // 其 findClass 会查 ucp，所以注入到这里可以生效。
+            case "io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader":
+                addPathToPaperLibraryLoader(loader, file);
+                break;
+            // Bukkit PluginClassLoader
+            default:
+                addURL(loader, ucp(loader), file);
+                break;
         }
 
         return loader;
