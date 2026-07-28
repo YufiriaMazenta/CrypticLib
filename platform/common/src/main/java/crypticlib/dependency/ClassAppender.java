@@ -59,12 +59,41 @@ public class ClassAppender {
             MethodHandle methodHandle = lookup.findVirtual(URLClassLoader.class, "addURL", MethodType.methodType(void.class, java.net.URL.class));
             methodHandle.invoke(loader, file.toURI().toURL());
         }
+        // Paper PaperPluginClassLoader — 注入到其 libraryLoader
+        // PaperSimplePluginClassLoader.findClass() 不会 fallback 到 super.findClass()，
+        // 因此往 ucp 注入的 URL 永远不会被遍历；但 PaperPluginClassLoader.loadClass() 的
+        // 第二步会委托给 libraryLoader.loadClass()，而 libraryLoader 是标准 URLClassLoader，
+        // 其 findClass 会查 ucp，所以注入到这里可以生效。
+        else if (loaderClassName.equals("io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader")) {
+            addPathToPaperLibraryLoader(loader, file);
+        }
         // Bukkit PluginClassLoader
         else {
             addURL(loader, ucp(loader), file);
         }
 
         return loader;
+    }
+
+    /**
+     * 将 JAR 注入到 Paper PluginClassLoader 的 libraryLoader 中。
+     * PaperPluginClassLoader.loadClass() 的查找顺序：
+     *   1. super.loadClass → PaperSimplePluginClassLoader.findClass → 只查插件自身 JAR
+     *   2. libraryLoader.loadClass → 标准 URLClassLoader.findClass → 查 ucp（我们注入到这里）
+     *   3. PluginClassLoaderGroup → 查依赖插件
+     */
+    private static void addPathToPaperLibraryLoader(ClassLoader paperLoader, File file) throws Throwable {
+        Field field = paperLoader.getClass().getDeclaredField("libraryLoader");
+        long offset = unsafe.objectFieldOffset(field);
+        URLClassLoader libraryLoader = (URLClassLoader) unsafe.getObject(paperLoader, offset);
+
+        if (libraryLoader != null) {
+            addURL(libraryLoader, ucp(URLClassLoader.class), file);
+        } else {
+            // libraryLoader 为 null 的极端情况，降级到 AppClassLoader
+            ClassLoader app = ClassLoader.getSystemClassLoader();
+            addURL(app, ucp(app.getClass()), file);
+        }
     }
 
     /**
