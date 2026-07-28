@@ -50,8 +50,8 @@ public class ClassAppender {
 
         String loaderClassName = loader.getClass().getName();
 
-        // Application ClassLoader (现代 JVM)
         switch (loaderClassName) {
+            // Application ClassLoader (现代 JVM)
             case "jdk.internal.loader.ClassLoaders$AppClassLoader":
                 addURL(loader, ucp(loader.getClass()), file);
                 break;
@@ -81,7 +81,7 @@ public class ClassAppender {
      * 将 JAR 注入到 Paper PluginClassLoader 的 libraryLoader 中。
      * PaperPluginClassLoader.loadClass() 的查找顺序：
      *   1. super.loadClass → PaperSimplePluginClassLoader.findClass → 只查插件自身 JAR
-     *   2. libraryLoader.loadClass → 标准 URLClassLoader.findClass → 查 ucp（我们注入到这里）
+     *   2. libraryLoader.loadClass → 标准 URLClassLoader.findClass → 查 ucp
      *   3. PluginClassLoaderGroup → 查依赖插件
      */
     private static void addPathToPaperLibraryLoader(ClassLoader paperLoader, File file) throws Throwable {
