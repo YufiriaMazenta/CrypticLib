@@ -20,7 +20,7 @@ public enum BuiltinScriptModule implements ScriptModule {
     @Override
     public void register(ScriptFunctionRegistry registry) {
         registry.register("delay", this::delay);
-        registry.register("set", this::set);
+        registry.register("set_var", this::setVar);
         registry.register("context", this::context);
     }
 
@@ -42,9 +42,11 @@ public enum BuiltinScriptModule implements ScriptModule {
     }
 
     /**
-     * set("key", value) → 往上下文添加变量
+     * set_var("key", value) → 往上下文添加变量
+     * 与读取端 context("key") 配对。不叫 set 是为了避免占用全局短名 set，
+     * 那会与 obj.set 的短名冲突，导致 ${obj}.set(...) 方法调用无法解析。
      */
-    private ScriptValue set(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+    private ScriptValue setVar(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
         if (args.length < 2) {
             return ScriptValue.nil();
         }

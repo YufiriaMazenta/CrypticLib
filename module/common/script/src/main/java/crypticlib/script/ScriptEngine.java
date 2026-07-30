@@ -8,6 +8,7 @@ import crypticlib.script.ast.ASTNode;
 import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
 import crypticlib.script.compile.ScriptCompiler;
+import crypticlib.script.event.ObjectScriptModule;
 import crypticlib.script.func.BuiltinScriptModule;
 import crypticlib.script.func.MathScriptModule;
 import crypticlib.script.func.ScriptFunctionRegistry;
@@ -67,6 +68,7 @@ public enum ScriptEngine implements LifeCycleTask {
         }
         registerModule(BuiltinScriptModule.INSTANCE);
         registerModule(MathScriptModule.INSTANCE);
+        registerModule(ObjectScriptModule.INSTANCE);
         initialized = true;
     }
 

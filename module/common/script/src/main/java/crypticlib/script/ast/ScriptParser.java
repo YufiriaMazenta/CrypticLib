@@ -27,7 +27,11 @@ import java.util.List;
  *   additive      = multiplicative (("+" | "-") multiplicative)*
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
- *   call          = VARIABLE | IDENTIFIER "(" args ")" | IDENTIFIER bare_args? | atom
+ *   call          = VARIABLE method_chain?
+ *                 | IDENTIFIER "(" args ")" method_chain?
+ *                 | IDENTIFIER bare_args? method_chain?
+ *                 | atom method_chain?
+ *   method_chain  = ("." IDENTIFIER "(" args ")")*
  *   bare_args     = atom+  （仅当 bareArgsEnabled=true 时生效）
  *   args          = (expression ("," expression)*)?
  *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN | VARIABLE | "(" expression ")"
@@ -255,7 +259,8 @@ public class ScriptParser {
         // 变量引用 ${identifier}
         if (check(Token.Type.VARIABLE)) {
             Token var = advance();
-            return new ASTNode.VariableReferenceNode(var.value(), var.line());
+            ASTNode receiver = new ASTNode.VariableReferenceNode(var.value(), var.line());
+            return parseMethodChain(receiver);
         }
 
         if (check(Token.Type.IDENTIFIER)) {
@@ -281,7 +286,8 @@ public class ScriptParser {
                     }
                 }
                 expect(Token.Type.RPAREN, "Expected ')'");
-                return new ASTNode.FunctionCallNode(funcName, args, name.line());
+                ASTNode call = new ASTNode.FunctionCallNode(funcName, args, name.line());
+                return parseMethodChain(call);
             }
 
             // 情况2/3: 判断后面是否跟着可作为参数的 token
@@ -299,11 +305,49 @@ public class ScriptParser {
                         args.add(parseAtom());
                     }
                 }
-                return new ASTNode.FunctionCallNode(funcName, args, name.line());
+                ASTNode call = new ASTNode.FunctionCallNode(funcName, args, name.line());
+                return parseMethodChain(call);
             }
+
+            // 无参函数调用或标识符
+            ASTNode idOrCall = new ASTNode.IdentifierNode(funcName, name.line());
+            return parseMethodChain(idOrCall);
         }
 
-        return parseAtom();
+        ASTNode atom = parseAtom();
+        return parseMethodChain(atom);
+    }
+
+    /**
+     * 解析 .method(args) 链式调用
+     * 将 receiver 作为隐式第一个参数传给 method 函数
+     */
+    private ASTNode parseMethodChain(ASTNode receiver) {
+        while (match(Token.Type.DOT)) {
+            if (!check(Token.Type.IDENTIFIER)) {
+                throw new ScriptException("Expected method name after '.' at line " + previous().line());
+            }
+            Token methodToken = advance();
+            String methodName = methodToken.value();
+
+            expect(Token.Type.LPAREN, "Expected '(' after method name");
+            List<ASTNode> args = new ArrayList<>();
+            if (!check(Token.Type.RPAREN)) {
+                args.add(parseExpression());
+                while (match(Token.Type.COMMA)) {
+                    args.add(parseExpression());
+                }
+            }
+            expect(Token.Type.RPAREN, "Expected ')'");
+
+            // receiver 隐式作为第一个参数
+            List<ASTNode> fullArgs = new ArrayList<>(args.size() + 1);
+            fullArgs.add(receiver);
+            fullArgs.addAll(args);
+
+            receiver = new ASTNode.FunctionCallNode(methodName, fullArgs, methodToken.line());
+        }
+        return receiver;
     }
 
     private boolean isBareArgToken() {
