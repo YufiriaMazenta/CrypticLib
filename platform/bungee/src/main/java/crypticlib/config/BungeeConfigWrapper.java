@@ -12,8 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
@@ -72,24 +70,15 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
                 e.printStackTrace();
                 return;
             } catch (RuntimeException e) {
-                //解析失败: 保留用户原文件并另存.broken备份, 中止本次重载,
+                //解析失败: 把原文件移走另存为.broken, 中止本次重载,
                 //绝不能吞掉异常后以空配置继续, 否则后续saveConfig会把用户配置覆盖掉
                 backupBrokenConfigFile();
                 throw new IllegalStateException(
                     "Failed to parse config file " + configFile
-                        + ", the original file has been kept and a backup was saved as "
-                        + configFile.getName() + ".broken", e);
+                        + ", the original file has been moved to "
+                        + brokenConfigFile().getName(), e);
             }
             config = newConfig;
-        }
-    }
-
-    private void backupBrokenConfigFile() {
-        try {
-            File broken = new File(configFile.getAbsolutePath() + ".broken");
-            Files.copy(configFile.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
 

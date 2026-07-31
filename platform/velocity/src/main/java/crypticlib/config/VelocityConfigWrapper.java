@@ -10,9 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
@@ -62,24 +59,15 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
             try {
                 newConfig.load();
             } catch (ParsingException e) {
-                //YAML解析失败: 保留用户原文件并另存.broken备份, 中止本次重载,
+                //YAML解析失败: 把原文件移走另存为.broken, 中止本次重载,
                 //绝不能以空配置为基础在后续saveConfig时把用户的配置和注释覆盖掉
                 backupBrokenConfigFile();
                 throw new IllegalStateException(
                     "Failed to parse config file " + configFile
-                        + ", the original file has been kept and a backup was saved as "
-                        + configFile.getName() + ".broken", e);
+                        + ", the original file has been moved to "
+                        + brokenConfigFile().getName(), e);
             }
             config = newConfig;
-        }
-    }
-
-    private void backupBrokenConfigFile() {
-        try {
-            File broken = new File(configFile.getAbsolutePath() + ".broken");
-            Files.copy(configFile.toPath(), broken.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
 

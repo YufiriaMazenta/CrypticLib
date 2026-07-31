@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 /**
@@ -91,6 +92,16 @@ public abstract class ConfigWrapper<C> {
     public void saveDefaultConfigFile() {
         synchronized (lock) {
             if (!configFile.exists()) {
+                //存在同名.broken时拒绝释放默认配置: 源文件是被上一次解析失败移走的,
+                //此时若静默释放默认配置, 插件会带着一份默认值正常启动,
+                //管理员可能没注意到报错, 误以为自己的配置已生效, 实际所有自定义值都丢了
+                File broken = brokenConfigFile();
+                if (broken.exists()) {
+                    throw new IllegalStateException(
+                        "Refusing to write default config for " + configFile
+                            + " because a previous parse failure left " + broken.getName()
+                            + "; fix and rename it back, or delete it to start from defaults");
+                }
                 try (InputStream input = getResource(path)) {
                     IOHelper.createNewFile(configFile);
                     if (input == null) {
@@ -102,6 +113,33 @@ public abstract class ConfigWrapper<C> {
                         e.printStackTrace();
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * 返回解析失败时用于隔离原文件的.broken文件
+     *
+     * @return 与配置文件同目录的同名.broken文件
+     */
+    @NotNull
+    protected File brokenConfigFile() {
+        return new File(configFile.getAbsolutePath() + ".broken");
+    }
+
+    /**
+     * 解析失败时把原文件移走并另存为.broken, 供子类在解析异常分支中调用
+     * <p>
+     * 使用移动而非复制: 坏文件不会留在原位反复触发解析失败,
+     * 同时由{@link #saveDefaultConfigFile()}的.broken检查保证下次重载不会静默降级为默认配置。
+     * 已存在的.broken会被覆盖, 即只保留最近一次的坏文件。
+     */
+    protected void backupBrokenConfigFile() {
+        synchronized (lock) {
+            try {
+                Files.move(configFile.toPath(), brokenConfigFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
     }
