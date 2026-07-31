@@ -21,7 +21,6 @@ public class Token {
 
         // 标识符（函数名、变量名）
         IDENTIFIER,
-        VARIABLE,       // ${identifier} 变量引用
         INTERPOLATED_STRING, // 包含插值的字符串 "Hello ${name}!"
 
         // 运算符
@@ -47,6 +46,7 @@ public class Token {
         RPAREN,     // )
         COMMA,      // ,
         DOT,        // .
+        COLON,      // : 模块函数调用
 
         // 控制流
         IF,
@@ -54,6 +54,10 @@ public class Token {
         ELSEIF,
         ENDIF,
         RETURN,
+
+        // 变量
+        VAR,            // var 关键字
+        ASSIGN,         // = 赋值
 
         // 特殊
         NEWLINE,

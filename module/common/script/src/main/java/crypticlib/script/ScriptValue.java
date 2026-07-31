@@ -1,8 +1,9 @@
 package crypticlib.script;
 
+import crypticlib.script.object.PropertyResolver;
+
 import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * 脚本值的类型安全封装
@@ -56,6 +57,20 @@ public abstract class ScriptValue {
         return NullValue.NIL;
     }
 
+    public static ScriptValue of(Object value, PropertyResolver resolver) {
+        if (value == null) return nil();
+        if (value instanceof String) return of((String) value);
+        if (value instanceof Integer) return of((Integer) value);
+        if (value instanceof Long) return of((Long) value);
+        if (value instanceof Double) return of((Double) value);
+        if (value instanceof Float) return of((double) (Float) value);
+        if (value instanceof Boolean) return of((Boolean) value);
+        // BigDecimal 必须在 Number 之前判断，否则会走 doubleValue() 丢失精度
+        if (value instanceof BigDecimal) return of((BigDecimal) value);
+        if (value instanceof Number) return of(((Number) value).doubleValue());
+        return new ObjectValue(value, resolver);
+    }
+
     // ---- 类型判断 ----
     public boolean isString() {
         return this instanceof Str;
@@ -79,6 +94,10 @@ public abstract class ScriptValue {
 
     public boolean isNull() {
         return this instanceof NullValue;
+    }
+
+    public boolean isObject() {
+        return this instanceof ObjectValue;
     }
 
     public boolean isTruthy() {
@@ -110,16 +129,19 @@ public abstract class ScriptValue {
             return ((Num) this).value();
         }
         if (this instanceof Str) {
+            String raw = ((Str) this).value();
             try {
-                return new BigDecimal(((Str) this).value());
+                return new BigDecimal(raw);
             } catch (NumberFormatException e) {
-                return BigDecimal.ZERO;
+                // 非数字字符串不再静默当 0：否则 "hello".abs() 之类会算出 0 而非报错
+                throw new ScriptException("Cannot convert string \"" + raw + "\" to number");
             }
         }
         if (this instanceof Bool) {
             return ((Bool) this).value() ? BigDecimal.ONE : BigDecimal.ZERO;
         }
-        return BigDecimal.ZERO;
+        // nil 参与算术同样报错，避免 nil + 1 得到 1
+        throw new ScriptException("Cannot convert nil to number");
     }
 
     public double asNumber() {
@@ -134,20 +156,21 @@ public abstract class ScriptValue {
             return ((Num) this).value().longValue();
         }
         if (this instanceof Str) {
+            String raw = ((Str) this).value();
             try {
-                return Long.parseLong(((Str) this).value());
+                return Long.parseLong(raw);
             } catch (NumberFormatException e) {
                 try {
-                    return new BigDecimal(((Str) this).value()).longValue();
+                    return new BigDecimal(raw).longValue();
                 } catch (NumberFormatException e2) {
-                    return 0;
+                    throw new ScriptException("Cannot convert string \"" + raw + "\" to number");
                 }
             }
         }
         if (this instanceof Bool) {
             return ((Bool) this).value() ? 1 : 0;
         }
-        return 0;
+        throw new ScriptException("Cannot convert nil to number");
     }
 
     public int asInt() {
@@ -176,6 +199,15 @@ public abstract class ScriptValue {
         if (this.isNull() || other.isNull()) {
             if (this.isNull() && other.isNull()) return 0;
             return this.isNull() ? -1 : 1;
+        }
+        // 对象值只支持相等语义：用 equals 判定，不相等统一返回 1。
+        // compare() 是 CMP_EQ/CMP_NEQ/CMP_GT 等的共用入口，无法区分调用来源，
+        // 因此对象值的顺序比较（> < >= <=）结果无实际意义，只保证 == / != 正确。
+        if (this.isObject() || other.isObject()) {
+            if (!(this.isObject() && other.isObject())) return 1;
+            Object a = ((ObjectValue) this).value();
+            Object b = ((ObjectValue) other).value();
+            return Objects.equals(a, b) ? 0 : 1;
         }
         if (this.isNumber() || other.isNumber()) {
             // 若一侧为非数字字符串，退回字符串比较，避免 "abc" == 0 误判为真
@@ -289,6 +321,65 @@ public abstract class ScriptValue {
         @Override
         public String toString() {
             return "Null";
+        }
+    }
+
+    public static final class ObjectValue extends ScriptValue {
+        private final Object value;
+        private final PropertyResolver resolver;
+
+        public ObjectValue(Object value, PropertyResolver resolver) {
+            this.value = value;
+            this.resolver = resolver;
+        }
+
+        public Object value() {
+            return value;
+        }
+
+        public PropertyResolver resolver() {
+            return resolver;
+        }
+
+        @Override
+        public String asString() {
+            return value == null ? "" : value.toString();
+        }
+
+        @Override
+        public boolean isNull() {
+            return value == null;
+        }
+
+        @Override
+        public boolean isTruthy() {
+            return value != null;
+        }
+
+        // 对象值不能参与数值运算。父类的 fallback 会用 toString() 去解析，
+        // 导致 ${event} + 1 静默得到 0 而非报错，因此这里显式拒绝。
+        @Override
+        public BigDecimal asBigDecimal() {
+            throw new ScriptException("Cannot convert object " + typeName() + " to number");
+        }
+
+        @Override
+        public long asLong() {
+            throw new ScriptException("Cannot convert object " + typeName() + " to number");
+        }
+
+        @Override
+        public boolean asBoolean() {
+            return value != null;
+        }
+
+        private String typeName() {
+            return value == null ? "null" : value.getClass().getSimpleName();
+        }
+
+        @Override
+        public String toString() {
+            return "Object(" + (value == null ? "null" : value.getClass().getSimpleName()) + ")";
         }
     }
 }

@@ -8,6 +8,7 @@ import crypticlib.script.ast.ASTNode;
 import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
 import crypticlib.script.compile.ScriptCompiler;
+import crypticlib.script.object.ObjectScriptModule;
 import crypticlib.script.func.BuiltinScriptModule;
 import crypticlib.script.func.MathScriptModule;
 import crypticlib.script.func.ScriptFunctionRegistry;
@@ -54,9 +55,6 @@ public enum ScriptEngine implements LifeCycleTask {
     /** 是否已初始化 */
     private volatile boolean initialized = false;
 
-    /** 是否启用裸参数语法（如 say hello world），默认关闭，需使用括号调用 say("hello", "world") */
-    private boolean bareArgsEnabled = false;
-
     /**
      * 初始化脚本引擎
      * 使用方应在其生命周期的 ENABLE 阶段调用
@@ -67,26 +65,8 @@ public enum ScriptEngine implements LifeCycleTask {
         }
         registerModule(BuiltinScriptModule.INSTANCE);
         registerModule(MathScriptModule.INSTANCE);
+        registerModule(ObjectScriptModule.INSTANCE);
         initialized = true;
-    }
-
-    /**
-     * 是否启用裸参数语法
-     * @return 裸参数语法开关状态
-     */
-    public boolean bareArgsEnabled() {
-        return bareArgsEnabled;
-    }
-
-    /**
-     * 设置是否启用裸参数语法
-     * 启用后可使用 {@code say hello world} 代替 {@code say("hello", "world")}
-     * @param bareArgsEnabled 是否启用
-     * @return this
-     */
-    public ScriptEngine setBareArgsEnabled(boolean bareArgsEnabled) {
-        this.bareArgsEnabled = bareArgsEnabled;
-        return this;
     }
 
     /**
@@ -108,7 +88,7 @@ public enum ScriptEngine implements LifeCycleTask {
         // 词法分析
         List<Token> tokens = new ScriptLexer(source).tokenize();
         // 语法分析
-        ASTNode ast = new ScriptParser(tokens, bareArgsEnabled).parse();
+        ASTNode ast = new ScriptParser(tokens).parse();
         // 编译
         return compiler.compile(name, ast);
     }

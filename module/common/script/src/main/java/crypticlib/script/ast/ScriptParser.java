@@ -14,11 +14,13 @@ import java.util.List;
  *
  * 语法（EBNF）:
  *   program       = statement*
- *   statement     = if_stmt | expression NEWLINE
+ *   statement     = if_stmt | var_assignment | direct_assignment | expression NEWLINE
  *   if_stmt       = "if" expression NEWLINE block
  *                   ("elseif" expression NEWLINE block)*
  *                   ("else" NEWLINE block)?
  *                   "endif" NEWLINE
+ *   var_assignment = "var" IDENTIFIER "=" expression NEWLINE
+ *   direct_assignment = IDENTIFIER "=" expression NEWLINE
  *   block         = statement*
  *   expression    = or_expr
  *   or_expr       = and_expr ("||" and_expr)*
@@ -27,10 +29,14 @@ import java.util.List;
  *   additive      = multiplicative (("+" | "-") multiplicative)*
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
- *   call          = VARIABLE | IDENTIFIER "(" args ")" | IDENTIFIER bare_args? | atom
- *   bare_args     = atom+  （仅当 bareArgsEnabled=true 时生效）
+ *   call          = IDENTIFIER ":" IDENTIFIER "(" args ")" method_chain?
+ *                 | IDENTIFIER "(" args ")" method_chain?
+ *                 | IDENTIFIER method_chain?
+ *                 | atom method_chain?
+ *   method_chain  = ("." IDENTIFIER "(" args ")")*
  *   args          = (expression ("," expression)*)?
- *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN | VARIABLE | "(" expression ")"
+ *   atom          = STRING | INTERPOLATED_STRING | NUMBER | INTEGER | BOOLEAN | IDENTIFIER
+ *                 | "(" expression ")"
  */
 public class ScriptParser {
 
@@ -38,17 +44,11 @@ public class ScriptParser {
     private static final int MAX_DEPTH = 200;
 
     private final List<Token> tokens;
-    private final boolean bareArgsEnabled;
     private int pos;
     private int depth;
 
     public ScriptParser(List<Token> tokens) {
-        this(tokens, false);
-    }
-
-    public ScriptParser(List<Token> tokens, boolean bareArgsEnabled) {
         this.tokens = tokens;
-        this.bareArgsEnabled = bareArgsEnabled;
     }
 
     private void enterDepth() {
@@ -90,13 +90,47 @@ public class ScriptParser {
         if (check(Token.Type.RETURN)) {
             return parseReturn();
         }
+        if (check(Token.Type.VAR)) {
+            return parseVarAssignment();
+        }
         if (check(Token.Type.NEWLINE) || check(Token.Type.EOF)) {
             advance();
             return null;
         }
+        // 支持 name = expression 直接赋值（不需要 var）
+        if (check(Token.Type.IDENTIFIER) && checkNext(Token.Type.ASSIGN)) {
+            return parseDirectAssignment();
+        }
         ASTNode expr = parseExpression();
         expectNewlineOrEOF();
         return expr;
+    }
+
+    /**
+     * 解析 var name = expression
+     */
+    private ASTNode parseVarAssignment() {
+        int line = advance().line(); // 消费 var
+        if (!check(Token.Type.IDENTIFIER)) {
+            throw new ScriptException("Expected variable name after 'var' at line " + line);
+        }
+        String varName = advance().value();
+        expect(Token.Type.ASSIGN, "Expected '=' after variable name");
+        ASTNode value = parseExpression();
+        expectNewlineOrEOF();
+        return new ASTNode.VariableDeclarationNode(varName, value, line);
+    }
+
+    /**
+     * 解析 name = expression（不需要 var 关键字，变量必须已声明）
+     */
+    private ASTNode parseDirectAssignment() {
+        String varName = advance().value(); // 消费变量名
+        int line = previous().line();
+        expect(Token.Type.ASSIGN, "Expected '=' after variable name");
+        ASTNode value = parseExpression();
+        expectNewlineOrEOF();
+        return new ASTNode.VariableAssignmentNode(varName, value, line);
     }
 
     private ASTNode parseReturn() {
@@ -252,23 +286,26 @@ public class ScriptParser {
     }
 
     private ASTNode parseCall() {
-        // 变量引用 ${identifier}
-        if (check(Token.Type.VARIABLE)) {
-            Token var = advance();
-            return new ASTNode.VariableReferenceNode(var.value(), var.line());
-        }
-
         if (check(Token.Type.IDENTIFIER)) {
             Token name = advance();
             String funcName = name.value();
 
-            // 检查是否是 module.function 格式
-            if (match(Token.Type.DOT)) {
+            // 检查是否是 module:function 格式
+            boolean moduleCall = false;
+            if (match(Token.Type.COLON)) {
                 if (!check(Token.Type.IDENTIFIER)) {
-                    throw new ScriptException("Expected function name after '.' at line " + previous().line());
+                    throw new ScriptException("Expected function name after ':' at line " + previous().line());
                 }
                 Token funcToken = advance();
                 funcName = funcName + "." + funcToken.value();
+                moduleCall = true;
+            }
+
+            // 模块调用必须带括号：module:function 后若无 '(' 就报错，
+            // 否则会退化成名为 "module.function" 的变量引用（脚本无法声明这种名字），恒为 nil
+            if (moduleCall && !check(Token.Type.LPAREN)) {
+                throw new ScriptException("Module function '" + funcName.replace('.', ':')
+                    + "' must be called with parentheses at line " + name.line());
             }
 
             // 情况1: 有括号的函数调用 name(...)
@@ -281,37 +318,49 @@ public class ScriptParser {
                     }
                 }
                 expect(Token.Type.RPAREN, "Expected ')'");
-                return new ASTNode.FunctionCallNode(funcName, args, name.line());
+                ASTNode call = new ASTNode.FunctionCallNode(funcName, args, name.line());
+                return parseMethodChain(call);
             }
 
-            // 情况2/3: 判断后面是否跟着可作为参数的 token
-            // （STRING/INTERPOLATED_STRING/NUMBER/INTEGER/BOOLEAN/IDENTIFIER/VARIABLE）
-            // 如果是，收集为裸参数；否则是无参调用
-            // IDENTIFIER / VARIABLE 作为参数时递归解析为函数调用或变量引用（如 papi "%player_name%"、say ${player}）
-            // 注意：不再把 "- 数字" 识别为负数裸参数，否则 "x - 1" 会被吞为 x(-1)；
-            // 负数参数请使用括号调用形式 foo(-1)。
-            if (bareArgsEnabled) {
-                List<ASTNode> args = new ArrayList<>();
-                while (isBareArgToken()) {
-                    if (check(Token.Type.IDENTIFIER) || check(Token.Type.VARIABLE)) {
-                        args.add(parseCall());
-                    } else {
-                        args.add(parseAtom());
-                    }
-                }
-                return new ASTNode.FunctionCallNode(funcName, args, name.line());
-            }
+            // 无参：后面没有括号，当作变量引用
+            ASTNode varRef = new ASTNode.VariableReferenceNode(funcName, name.line());
+            return parseMethodChain(varRef);
         }
 
-        return parseAtom();
+        ASTNode atom = parseAtom();
+        return parseMethodChain(atom);
     }
 
-    private boolean isBareArgToken() {
-        if (isAtEnd()) return false;
-        Token.Type type = tokens.get(pos).type();
-        return type == Token.Type.STRING || type == Token.Type.INTERPOLATED_STRING
-            || type == Token.Type.NUMBER || type == Token.Type.INTEGER
-            || type == Token.Type.BOOLEAN || type == Token.Type.VARIABLE;
+    /**
+     * 解析 .method(args) 链式调用
+     * 将 receiver 作为隐式第一个参数传给 method 函数
+     */
+    private ASTNode parseMethodChain(ASTNode receiver) {
+        while (match(Token.Type.DOT)) {
+            if (!check(Token.Type.IDENTIFIER)) {
+                throw new ScriptException("Expected method name after '.' at line " + previous().line());
+            }
+            Token methodToken = advance();
+            String methodName = methodToken.value();
+
+            expect(Token.Type.LPAREN, "Expected '(' after method name");
+            List<ASTNode> args = new ArrayList<>();
+            if (!check(Token.Type.RPAREN)) {
+                args.add(parseExpression());
+                while (match(Token.Type.COMMA)) {
+                    args.add(parseExpression());
+                }
+            }
+            expect(Token.Type.RPAREN, "Expected ')'");
+
+            // receiver 隐式作为第一个参数
+            List<ASTNode> fullArgs = new ArrayList<>(args.size() + 1);
+            fullArgs.add(receiver);
+            fullArgs.addAll(args);
+
+            receiver = new ASTNode.FunctionCallNode(methodName, fullArgs, methodToken.line());
+        }
+        return receiver;
     }
 
     private ASTNode parseAtom() {
@@ -333,8 +382,6 @@ public class ScriptParser {
             return new ASTNode.LiteralNode(Boolean.parseBoolean(tok.value()), tok.line());
         } else if (type == Token.Type.IDENTIFIER) {
             return new ASTNode.IdentifierNode(tok.value(), tok.line());
-        } else if (type == Token.Type.VARIABLE) {
-            return new ASTNode.VariableReferenceNode(tok.value(), tok.line());
         } else if (type == Token.Type.LPAREN) {
             ASTNode expr = parseExpression();
             expect(Token.Type.RPAREN, "Expected ')'");
@@ -360,6 +407,10 @@ public class ScriptParser {
 
     private boolean check(Token.Type type) {
         return !isAtEnd() && tokens.get(pos).type() == type;
+    }
+
+    private boolean checkNext(Token.Type type) {
+        return pos + 1 < tokens.size() && tokens.get(pos + 1).type() == type;
     }
 
     private boolean match(Token.Type type) {

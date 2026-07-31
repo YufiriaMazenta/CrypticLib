@@ -31,6 +31,8 @@ public enum OpCode {
 
     // 变量操作
     LOAD_VAR,       // LOAD_VAR varName → 从上下文加载变量
+    VAR_DECLARE,    // VAR_DECLARE varName → 声明变量（无条件写入）
+    VAR_ASSIGN,     // VAR_ASSIGN varName → 变量赋值（变量必须已存在）
 
     // 函数调用
     CALL,           // CALL funcName argCount → 调用函数
