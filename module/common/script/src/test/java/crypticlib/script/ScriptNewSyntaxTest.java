@@ -74,7 +74,7 @@ public class ScriptNewSyntaxTest {
         });
 
         ScriptContext ctx = createContext();
-        ScriptValue val = execute("test.echo(\"hello\")", ctx);
+        ScriptValue val = execute("test:echo(\"hello\")", ctx);
         assertEquals("hello", val.asString());
     }
 

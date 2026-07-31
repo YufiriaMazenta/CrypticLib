@@ -29,14 +29,14 @@ import java.util.List;
  *   additive      = multiplicative (("+" | "-") multiplicative)*
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
- *   call          = VARIABLE method_chain?
- *                 | IDENTIFIER "." IDENTIFIER "(" args ")" method_chain?
+ *   call          = IDENTIFIER method_chain?
+ *                 | IDENTIFIER "::" IDENTIFIER "(" args ")" method_chain?
  *                 | IDENTIFIER "(" args ")" method_chain?
  *                 | IDENTIFIER method_chain?
  *                 | atom method_chain?
  *   method_chain  = ("." IDENTIFIER "(" args ")")*
  *   args          = (expression ("," expression)*)?
- *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN | VARIABLE | "(" expression ")"
+ *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN " | "(" expression ")"
  */
 public class ScriptParser {
 
@@ -286,21 +286,14 @@ public class ScriptParser {
     }
 
     private ASTNode parseCall() {
-        // 变量引用 ${identifier}
-        if (check(Token.Type.VARIABLE)) {
-            Token var = advance();
-            ASTNode receiver = new ASTNode.VariableReferenceNode(var.value(), var.line());
-            return parseMethodChain(receiver);
-        }
-
         if (check(Token.Type.IDENTIFIER)) {
             Token name = advance();
             String funcName = name.value();
 
-            // 检查是否是 module.function 格式
-            if (match(Token.Type.DOT)) {
+            // 检查是否是 module:function 格式
+            if (match(Token.Type.COLON)) {
                 if (!check(Token.Type.IDENTIFIER)) {
-                    throw new ScriptException("Expected function name after '.' at line " + previous().line());
+                    throw new ScriptException("Expected function name after ':' at line " + previous().line());
                 }
                 Token funcToken = advance();
                 funcName = funcName + "." + funcToken.value();
@@ -380,8 +373,6 @@ public class ScriptParser {
             return new ASTNode.LiteralNode(Boolean.parseBoolean(tok.value()), tok.line());
         } else if (type == Token.Type.IDENTIFIER) {
             return new ASTNode.IdentifierNode(tok.value(), tok.line());
-        } else if (type == Token.Type.VARIABLE) {
-            return new ASTNode.VariableReferenceNode(tok.value(), tok.line());
         } else if (type == Token.Type.LPAREN) {
             ASTNode expr = parseExpression();
             expect(Token.Type.RPAREN, "Expected ')'");

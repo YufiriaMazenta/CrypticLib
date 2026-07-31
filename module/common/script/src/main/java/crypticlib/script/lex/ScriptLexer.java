@@ -79,12 +79,6 @@ public class ScriptLexer {
                 continue;
             }
 
-            // 变量引用 ${identifier}
-            if (c == '$' && peek() == '{') {
-                readVariable();
-                continue;
-            }
-
             // 运算符
             if (tryReadOperator()) continue;
 
@@ -92,6 +86,7 @@ public class ScriptLexer {
             if (c == '(') { tokens.add(new Token(Token.Type.LPAREN, "(", line)); pos++; continue; }
             if (c == ')') { tokens.add(new Token(Token.Type.RPAREN, ")", line)); pos++; continue; }
             if (c == ',') { tokens.add(new Token(Token.Type.COMMA, ",", line)); pos++; continue; }
+            if (c == ':' && peek() != ':') { tokens.add(new Token(Token.Type.COLON, ":", line)); pos++; continue; }
             if (c == '.') { tokens.add(new Token(Token.Type.DOT, ".", line)); pos++; continue; }
 
             // 标识符 / 关键字
@@ -118,26 +113,6 @@ public class ScriptLexer {
     private void skipLineComment() {
         pos += 2;
         while (pos < source.length() && source.charAt(pos) != '\n') pos++;
-    }
-
-    /**
-     * 读取 ${identifier} 变量引用
-     */
-    private void readVariable() {
-        pos += 2; // 跳过 ${
-        int start = pos;
-        while (pos < source.length() && (isAlphaNumeric(source.charAt(pos)) || source.charAt(pos) == '_')) {
-            pos++;
-        }
-        if (pos >= source.length() || source.charAt(pos) != '}') {
-            throw new ScriptException("Expected '}' after variable name at line " + line);
-        }
-        String varName = source.substring(start, pos);
-        if (varName.isEmpty()) {
-            throw new ScriptException("Empty variable name at line " + line);
-        }
-        pos++; // 跳过 }
-        tokens.add(new Token(Token.Type.VARIABLE, varName, line));
     }
 
     private void readString() {

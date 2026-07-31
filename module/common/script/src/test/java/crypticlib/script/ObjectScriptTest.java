@@ -62,22 +62,22 @@ public class ObjectScriptTest {
 
         // Method-call syntax
         System.out.println("\n--- Method call syntax ---");
-        testMethodCall("${obj}.get(\"name\")", "Steve",
+        testMethodCall("obj.get(\"name\")", "Steve",
             "obj", new DummyPlayer("Steve"));
-        testMethodCall("${obj}.get(\"name\") == \"Steve\"", true,
+        testMethodCall("obj.get(\"name\") == \"Steve\"", true,
             "obj", new DummyPlayer("Steve"));
-        testMethodCall("${obj}.get(\"name\") != \"Alex\"", true,
+        testMethodCall("obj.get(\"name\") != \"Alex\"", true,
             "obj", new DummyPlayer("Steve"));
 
         // Chained method calls
         System.out.println("\n--- Chained method calls ---");
-        testMethodCall("${event}.get(\"player\").get(\"name\")", "Alex",
+        testMethodCall("event.get(\"player\").get(\"name\")", "Alex",
             "event", new DummyEvent(false, new DummyPlayer("Alex")));
-        testMethodCall("${event}.get(\"player\").get(\"name\") == \"Alex\"", true,
+        testMethodCall("event.get(\"player\").get(\"name\") == \"Alex\"", true,
             "event", new DummyEvent(false, new DummyPlayer("Alex")));
-        testMethodCall("${event}.get(\"cancelled\") == false", true,
+        testMethodCall("event.get(\"cancelled\") == false", true,
             "event", new DummyEvent(false, new DummyPlayer("Steve")));
-        testMethodCall("${event}.get(\"player\").get(\"level\")", 10,
+        testMethodCall("event.get(\"player\").get(\"level\")", 10,
             "event", new DummyEvent(false, new DummyPlayer("Steve", 10)));
 
         // set method
@@ -86,13 +86,13 @@ public class ObjectScriptTest {
 
         // invoke
         System.out.println("\n--- invoke ---");
-        testCallMethod("call no-arg method", "${obj}.invoke(\"getName\")", "Steve",
+        testCallMethod("call no-arg method", "obj.invoke(\"getName\")", "Steve",
             new DummyPlayer("Steve"));
-        testCallMethod("call method with arg", "${obj}.invoke(\"greet\", \"Hi\")", "Hi Steve",
+        testCallMethod("call method with arg", "obj.invoke(\"greet\", \"Hi\")", "Hi Steve",
             new DummyPlayer("Steve"));
-        testCallMethod("call chained then method", "${event}.get(\"player\").invoke(\"getName\")", "Alex",
+        testCallMethod("call chained then method", "event.get(\"player\").invoke(\"getName\")", "Alex",
             new DummyEvent(false, new DummyPlayer("Alex")));
-        testCallMethod("call void method", "${obj}.invoke(\"setName\", \"Alex\")", null,
+        testCallMethod("call void method", "obj.invoke(\"setName\", \"Alex\")", null,
             new DummyPlayer("Steve"));
 
         // invoke with object arg
@@ -118,9 +118,9 @@ public class ObjectScriptTest {
 
         // Write / invoke failures must be loud
         System.out.println("\n--- Loud failures ---");
-        testThrows("set nonexistent property", "${obj}.set(\"nonexistent\", 1)", new DummyPlayer("Steve"));
-        testThrows("invoke missing method", "${obj}.invoke(\"noSuchMethod\")", new DummyPlayer("Steve"));
-        testThrows("invoke arg type mismatch", "${obj}.invoke(\"greet\", ${obj})", new DummyPlayer("Steve"));
+        testThrows("set nonexistent property", "obj.set(\"nonexistent\", 1)", new DummyPlayer("Steve"));
+        testThrows("invoke missing method", "obj.invoke(\"noSuchMethod\")", new DummyPlayer("Steve"));
+        testThrows("invoke arg type mismatch", "obj.invoke(\"greet\", obj)", new DummyPlayer("Steve"));
         testThrows("get on non-object receiver", "\"plain\".get(\"name\")", null);
         testInvokeRuntimeExceptionPropagates();
 
@@ -131,13 +131,13 @@ public class ObjectScriptTest {
         // Condition scripts
         System.out.println("\n--- Condition scripts ---");
         testConditionScript("event not cancelled",
-            "${event}.get(\"cancelled\") == false", true,
+            "event.get(\"cancelled\") == false", true,
             "event", new DummyEvent(false, null));
         testConditionScript("player name matches",
-            "${event}.get(\"player\").get(\"name\") == \"Steve\"", true,
+            "event.get(\"player\").get(\"name\") == \"Steve\"", true,
             "event", new DummyEvent(false, new DummyPlayer("Steve")));
         testConditionScript("player name mismatch",
-            "${event}.get(\"player\").get(\"name\") == \"Alex\"", false,
+            "event.get(\"player\").get(\"name\") == \"Alex\"", false,
             "event", new DummyEvent(false, new DummyPlayer("Steve")));
 
         // Result
@@ -289,7 +289,7 @@ public class ObjectScriptTest {
             DummyEvent event = new DummyEvent(false, null);
             ScriptContext ctx = createContext();
             ctx.setVariable("event", ScriptValue.of(event, ReflectPropertyResolver.INSTANCE));
-            String script = "${event}.set(\"" + property + "\", \"" + expected + "\")";
+            String script = "event.set(\"" + property + "\", \"" + expected + "\")";
             execute(script, ctx);
             ScriptValue result = ReflectPropertyResolver.INSTANCE.getProperty(event, property);
             String actual = result.asString();
@@ -449,13 +449,13 @@ public class ObjectScriptTest {
 
     /**
      * 验证对象不能参与数值运算。修复前 ObjectValue 未覆写 asBigDecimal()，
-     * 父类 fallback 用 toString() 解析失败后返回 ZERO，${obj} + 1 静默得到 1。
+     * 父类 fallback 用 toString() 解析失败后返回 ZERO，obj + 1 静默得到 1。
      */
     private static void testObjectArithmeticThrows() {
         ScriptContext ctx = createContext();
         ctx.setVariable("obj", ScriptValue.of(new DummyPlayer("Steve"), ReflectPropertyResolver.INSTANCE));
         try {
-            ScriptValue result = execute("${obj} + 1", ctx);
+            ScriptValue result = execute("obj + 1", ctx);
             System.out.println("[FAIL] object arithmetic should throw, got " + result);
             failed++;
         } catch (ScriptException e) {
@@ -476,7 +476,7 @@ public class ObjectScriptTest {
         ScriptContext ctx = createContext();
         ctx.setVariable("obj", ScriptValue.of(player, ReflectPropertyResolver.INSTANCE));
         try {
-            ScriptValue result = execute("${obj}.get(\"selfDestruct\")", ctx);
+            ScriptValue result = execute("obj.get(\"selfDestruct\")", ctx);
             boolean sideEffectHappened = player.destroyed;
             if (result.isNull() && !sideEffectHappened) {
                 System.out.println("[PASS] bare method not exposed as property -> nil, no side effect");
@@ -499,7 +499,7 @@ public class ObjectScriptTest {
         ScriptContext ctx = createContext();
         ctx.setVariable("obj", ScriptValue.of(new DummyPlayer("Steve"), ReflectPropertyResolver.INSTANCE));
         try {
-            execute("${obj}.invoke(\"boom\")", ctx);
+            execute("obj.invoke(\"boom\")", ctx);
             System.out.println("[FAIL] invoke of throwing method should propagate, but returned normally");
             failed++;
         } catch (ScriptException e) {
@@ -562,7 +562,7 @@ public class ObjectScriptTest {
             DummyEvent event = new DummyEvent(false, null);
             ScriptContext ctx = createContext();
             ctx.setVariable("event", ScriptValue.of(event, ReflectPropertyResolver.INSTANCE));
-            execute("${event}.set(\"cancelled\", true)", ctx);
+            execute("event.set(\"cancelled\", true)", ctx);
             if (event.isCancelled()) {
                 System.out.println("[PASS] obj.set short name resolves after builtin rename");
                 passed++;
