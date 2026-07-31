@@ -240,19 +240,19 @@ public class ScriptVM {
                     stack.push(value != null ? value : ScriptValue.nil());
                     break;
                 }
-                case STORE_VAR: {
+                case VAR_DECLARE: {
                     String varName = inst.funcName();
-                    ScriptValue value = popStack("STORE_VAR");
+                    ScriptValue value = popStack("VAR_DECLARE");
                     context.setVariable(varName, value);
                     break;
                 }
-                case REASSIGN_VAR: {
+                case VAR_ASSIGN: {
                     String varName = inst.funcName();
                     ScriptValue existing = context.getVariable(varName);
                     if (existing == null) {
                         throw new ScriptException("Variable '" + varName + "' is not defined (use 'var' to declare)");
                     }
-                    ScriptValue value = popStack("REASSIGN_VAR");
+                    ScriptValue value = popStack("VAR_ASSIGN");
                     context.setVariable(varName, value);
                     break;
                 }

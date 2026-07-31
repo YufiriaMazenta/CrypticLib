@@ -8,7 +8,7 @@ import crypticlib.script.ast.ASTNode;
 import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
 import crypticlib.script.compile.ScriptCompiler;
-import crypticlib.script.event.ObjectScriptModule;
+import crypticlib.script.object.ObjectScriptModule;
 import crypticlib.script.func.BuiltinScriptModule;
 import crypticlib.script.func.MathScriptModule;
 import crypticlib.script.func.ScriptFunctionRegistry;

@@ -1,6 +1,6 @@
 package crypticlib.script;
 
-import crypticlib.script.event.PropertyResolver;
+import crypticlib.script.object.PropertyResolver;
 
 import java.math.BigDecimal;
 import java.util.Objects;

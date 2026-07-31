@@ -46,12 +46,12 @@ public class Instruction {
         return new Instruction(OpCode.LOAD_VAR, null, varName, 0, line);
     }
 
-    public static Instruction storeVar(String varName, int line) {
-        return new Instruction(OpCode.STORE_VAR, null, varName, 0, line);
+    public static Instruction varDeclare(String varName, int line) {
+        return new Instruction(OpCode.VAR_DECLARE, null, varName, 0, line);
     }
 
-    public static Instruction reassignVar(String varName, int line) {
-        return new Instruction(OpCode.REASSIGN_VAR, null, varName, 0, line);
+    public static Instruction varAssign(String varName, int line) {
+        return new Instruction(OpCode.VAR_ASSIGN, null, varName, 0, line);
     }
 
     public OpCode opCode()     { return opCode; }

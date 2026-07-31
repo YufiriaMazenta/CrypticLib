@@ -118,7 +118,7 @@ public class ScriptParser {
         expect(Token.Type.ASSIGN, "Expected '=' after variable name");
         ASTNode value = parseExpression();
         expectNewlineOrEOF();
-        return new ASTNode.VarAssignmentNode(varName, value, line);
+        return new ASTNode.VariableDeclarationNode(varName, value, line);
     }
 
     /**
@@ -130,7 +130,7 @@ public class ScriptParser {
         expect(Token.Type.ASSIGN, "Expected '=' after variable name");
         ASTNode value = parseExpression();
         expectNewlineOrEOF();
-        return new ASTNode.ReassignNode(varName, value, line);
+        return new ASTNode.VariableAssignmentNode(varName, value, line);
     }
 
     private ASTNode parseReturn() {

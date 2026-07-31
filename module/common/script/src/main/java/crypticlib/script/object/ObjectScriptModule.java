@@ -1,4 +1,4 @@
-package crypticlib.script.event;
+package crypticlib.script.object;
 
 import crypticlib.script.ScriptContext;
 import crypticlib.script.ScriptException;
