@@ -29,14 +29,14 @@ import java.util.List;
  *   additive      = multiplicative (("+" | "-") multiplicative)*
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
- *   call          = IDENTIFIER method_chain?
- *                 | IDENTIFIER "::" IDENTIFIER "(" args ")" method_chain?
+ *   call          = IDENTIFIER ":" IDENTIFIER "(" args ")" method_chain?
  *                 | IDENTIFIER "(" args ")" method_chain?
  *                 | IDENTIFIER method_chain?
  *                 | atom method_chain?
  *   method_chain  = ("." IDENTIFIER "(" args ")")*
  *   args          = (expression ("," expression)*)?
- *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN " | "(" expression ")"
+ *   atom          = STRING | INTERPOLATED_STRING | NUMBER | INTEGER | BOOLEAN | IDENTIFIER
+ *                 | "(" expression ")"
  */
 public class ScriptParser {
 
@@ -291,12 +291,21 @@ public class ScriptParser {
             String funcName = name.value();
 
             // 检查是否是 module:function 格式
+            boolean moduleCall = false;
             if (match(Token.Type.COLON)) {
                 if (!check(Token.Type.IDENTIFIER)) {
                     throw new ScriptException("Expected function name after ':' at line " + previous().line());
                 }
                 Token funcToken = advance();
                 funcName = funcName + "." + funcToken.value();
+                moduleCall = true;
+            }
+
+            // 模块调用必须带括号：module:function 后若无 '(' 就报错，
+            // 否则会退化成名为 "module.function" 的变量引用（脚本无法声明这种名字），恒为 nil
+            if (moduleCall && !check(Token.Type.LPAREN)) {
+                throw new ScriptException("Module function '" + funcName.replace('.', ':')
+                    + "' must be called with parentheses at line " + name.line());
             }
 
             // 情况1: 有括号的函数调用 name(...)

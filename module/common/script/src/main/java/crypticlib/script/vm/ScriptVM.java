@@ -237,7 +237,14 @@ public class ScriptVM {
                 case LOAD_VAR: {
                     String varName = inst.funcName();
                     ScriptValue value = context.getVariable(varName);
-                    stack.push(value != null ? value : ScriptValue.nil());
+                    // 未声明的变量直接报错，不静默当作 nil：
+                    // 拼写错误（playreName）与漏改的旧式模块调用（math.abs(-5) 会先读变量 math）
+                    // 都能立刻暴露，而不是算出 0 / nil 这类看似合理的值
+                    if (value == null) {
+                        throw new ScriptException("Variable '" + varName + "' is not defined at line "
+                            + inst.line() + " in script: " + script.sourceName());
+                    }
+                    stack.push(value);
                     break;
                 }
                 case VAR_DECLARE: {
@@ -248,11 +255,12 @@ public class ScriptVM {
                 }
                 case VAR_ASSIGN: {
                     String varName = inst.funcName();
-                    ScriptValue existing = context.getVariable(varName);
-                    if (existing == null) {
-                        throw new ScriptException("Variable '" + varName + "' is not defined (use 'var' to declare)");
-                    }
+                    // 先弹栈再校验，与 VAR_DECLARE 保持一致：
+                    // 否则抛异常时值残留在栈上，将来若加异常恢复或循环会读到脏数据
                     ScriptValue value = popStack("VAR_ASSIGN");
+                    if (context.getVariable(varName) == null) {
+                        throw new ScriptException("Variable '" + varName + "' is not defined (use 'var' to declare) at line " + inst.line());
+                    }
                     context.setVariable(varName, value);
                     break;
                 }

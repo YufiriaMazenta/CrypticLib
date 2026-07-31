@@ -129,16 +129,19 @@ public abstract class ScriptValue {
             return ((Num) this).value();
         }
         if (this instanceof Str) {
+            String raw = ((Str) this).value();
             try {
-                return new BigDecimal(((Str) this).value());
+                return new BigDecimal(raw);
             } catch (NumberFormatException e) {
-                return BigDecimal.ZERO;
+                // 非数字字符串不再静默当 0：否则 "hello".abs() 之类会算出 0 而非报错
+                throw new ScriptException("Cannot convert string \"" + raw + "\" to number");
             }
         }
         if (this instanceof Bool) {
             return ((Bool) this).value() ? BigDecimal.ONE : BigDecimal.ZERO;
         }
-        return BigDecimal.ZERO;
+        // nil 参与算术同样报错，避免 nil + 1 得到 1
+        throw new ScriptException("Cannot convert nil to number");
     }
 
     public double asNumber() {
@@ -153,20 +156,21 @@ public abstract class ScriptValue {
             return ((Num) this).value().longValue();
         }
         if (this instanceof Str) {
+            String raw = ((Str) this).value();
             try {
-                return Long.parseLong(((Str) this).value());
+                return Long.parseLong(raw);
             } catch (NumberFormatException e) {
                 try {
-                    return new BigDecimal(((Str) this).value()).longValue();
+                    return new BigDecimal(raw).longValue();
                 } catch (NumberFormatException e2) {
-                    return 0;
+                    throw new ScriptException("Cannot convert string \"" + raw + "\" to number");
                 }
             }
         }
         if (this instanceof Bool) {
             return ((Bool) this).value() ? 1 : 0;
         }
-        return 0;
+        throw new ScriptException("Cannot convert nil to number");
     }
 
     public int asInt() {

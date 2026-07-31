@@ -6,581 +6,429 @@ import crypticlib.script.ast.ASTNode;
 import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
 import crypticlib.script.compile.ScriptCompiler;
-import crypticlib.script.object.ObjectScriptModule;
-import crypticlib.script.object.ReflectPropertyResolver;
-import crypticlib.script.func.BuiltinScriptModule;
 import crypticlib.script.func.MathScriptModule;
 import crypticlib.script.func.ScriptFunctionRegistry;
 import crypticlib.script.lex.ScriptLexer;
 import crypticlib.script.lex.Token;
+import crypticlib.script.object.ObjectScriptModule;
+import crypticlib.script.object.ReflectPropertyResolver;
 import crypticlib.script.vm.ScriptVM;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Event object manipulation tests.
- * Tests ObjectValue, PropertyResolver, method-call syntax, chained access.
+ * Java 对象操作测试：ObjectValue 包装、PropertyResolver 反射读写、
+ * 方法调用语法 obj.get/set/invoke、链式访问、错误语义。
  */
 public class ObjectScriptTest {
 
-    private static int passed = 0;
-    private static int failed = 0;
-
-    public static void main(String[] args) {
-        BuiltinScriptModule.INSTANCE.register(ScriptFunctionRegistry.INSTANCE);
+    @BeforeAll
+    static void registerModules() {
         MathScriptModule.INSTANCE.register(ScriptFunctionRegistry.INSTANCE);
         ObjectScriptModule.INSTANCE.register(ScriptFunctionRegistry.INSTANCE);
-
-        System.out.println("=== Event Script Tests ===\n");
-
-        // ObjectValue basics
-        System.out.println("--- ObjectValue ---");
-        testObjectValue("String unboxes to Str", "hello", true, false, false);
-        testObjectValue("Integer unboxes to Int", 42, false, true, false);
-        testObjectValue("Long unboxes to Int", 42L, false, true, false);
-        testObjectValue("Double unboxes to Num", 3.14, false, false, true);
-        testObjectValue("Boolean unboxes to Bool", true, false, false, false);
-        testObjectValue("Complex object wraps to ObjectValue", new DummyPlayer("Steve"), false, false, false);
-
-        // Wrap null vs non-null
-        System.out.println("\n--- Wrap null ---");
-        testWrapNull("null wraps to nil", null, true);
-        testWrapNull("complex object not nil", new DummyPlayer("Alex"), false);
-
-        // ReflectPropertyResolver getter
-        System.out.println("\n--- Resolver getter ---");
-        testGetProperty("getXxx()", new DummyPlayer("Steve"), "name", "Steve");
-        testGetProperty("isXxx()", new DummyEvent(true, null), "cancelled", true);
-        testGetProperty("Map.get()", createMapEvent(), "message", "hello");
-        testGetProperty("missing property returns nil", new DummyPlayer("Steve"), "nonexistent", null);
-
-        // ReflectPropertyResolver setter
-        System.out.println("\n--- Resolver setter ---");
-        testSetProperty("set boolean", "cancelled", true);
-        testSetProperty("set string", "message", "world");
-
-        // Method-call syntax
-        System.out.println("\n--- Method call syntax ---");
-        testMethodCall("obj.get(\"name\")", "Steve",
-            "obj", new DummyPlayer("Steve"));
-        testMethodCall("obj.get(\"name\") == \"Steve\"", true,
-            "obj", new DummyPlayer("Steve"));
-        testMethodCall("obj.get(\"name\") != \"Alex\"", true,
-            "obj", new DummyPlayer("Steve"));
-
-        // Chained method calls
-        System.out.println("\n--- Chained method calls ---");
-        testMethodCall("event.get(\"player\").get(\"name\")", "Alex",
-            "event", new DummyEvent(false, new DummyPlayer("Alex")));
-        testMethodCall("event.get(\"player\").get(\"name\") == \"Alex\"", true,
-            "event", new DummyEvent(false, new DummyPlayer("Alex")));
-        testMethodCall("event.get(\"cancelled\") == false", true,
-            "event", new DummyEvent(false, new DummyPlayer("Steve")));
-        testMethodCall("event.get(\"player\").get(\"level\")", 10,
-            "event", new DummyEvent(false, new DummyPlayer("Steve", 10)));
-
-        // set method
-        System.out.println("\n--- set method ---");
-        testSetViaScript("set modifies property", "message", "new value");
-
-        // invoke
-        System.out.println("\n--- invoke ---");
-        testCallMethod("call no-arg method", "obj.invoke(\"getName\")", "Steve",
-            new DummyPlayer("Steve"));
-        testCallMethod("call method with arg", "obj.invoke(\"greet\", \"Hi\")", "Hi Steve",
-            new DummyPlayer("Steve"));
-        testCallMethod("call chained then method", "event.get(\"player\").invoke(\"getName\")", "Alex",
-            new DummyEvent(false, new DummyPlayer("Alex")));
-        testCallMethod("call void method", "obj.invoke(\"setName\", \"Alex\")", null,
-            new DummyPlayer("Steve"));
-
-        // invoke with object arg
-        System.out.println("\n--- invoke with object arg ---");
-        testCallMethodWithObjectArg("pass object as arg");
-
-        // Null safety
-        System.out.println("\n--- Null safety ---");
-        testMethodCallNil("nil receiver get returns nil", "obj", null);
-        testMethodCallNil("nil player get returns nil", "event", new DummyEvent(false, null));
-
-        // Object equality (compare() object branch)
-        System.out.println("\n--- Object equality ---");
-        testObjectEquality();
-
-        // Object rejects arithmetic instead of silently yielding 0
-        System.out.println("\n--- Object arithmetic rejected ---");
-        testObjectArithmeticThrows();
-
-        // Bare no-arg method must NOT be reachable as a property
-        System.out.println("\n--- Getter safety ---");
-        testBareMethodNotAProperty();
-
-        // Write / invoke failures must be loud
-        System.out.println("\n--- Loud failures ---");
-        testThrows("set nonexistent property", "obj.set(\"nonexistent\", 1)", new DummyPlayer("Steve"));
-        testThrows("invoke missing method", "obj.invoke(\"noSuchMethod\")", new DummyPlayer("Steve"));
-        testThrows("invoke arg type mismatch", "obj.invoke(\"greet\", obj)", new DummyPlayer("Steve"));
-        testThrows("get on non-object receiver", "\"plain\".get(\"name\")", null);
-        testInvokeRuntimeExceptionPropagates();
-
-        // Builtin set_var rename
-        System.out.println("\n--- var assignment ---");
-        testVarAssignment();
-
-        // Condition scripts
-        System.out.println("\n--- Condition scripts ---");
-        testConditionScript("event not cancelled",
-            "event.get(\"cancelled\") == false", true,
-            "event", new DummyEvent(false, null));
-        testConditionScript("player name matches",
-            "event.get(\"player\").get(\"name\") == \"Steve\"", true,
-            "event", new DummyEvent(false, new DummyPlayer("Steve")));
-        testConditionScript("player name mismatch",
-            "event.get(\"player\").get(\"name\") == \"Alex\"", false,
-            "event", new DummyEvent(false, new DummyPlayer("Steve")));
-
-        // Result
-        System.out.println("\n=============================");
-        System.out.println("Passed: " + passed + "  Failed: " + failed);
-        System.out.println("=============================");
     }
 
-    // ==================== Test methods ====================
+    // ==================== ObjectValue 包装 ====================
 
-    private static void testObjectValue(String name, Object input, boolean expectStr, boolean expectInt, boolean expectFloat) {
-        try {
-            ScriptValue val = ScriptValue.of(input, ReflectPropertyResolver.INSTANCE);
-            boolean isStr = val.isString();
-            boolean isInt = val.isInteger();
-            boolean isFloat = val.isFloat();
-            boolean isObj = val.isObject();
-            boolean isBool = val.isBoolean();
-            boolean isNil = val.isNull();
+    @Nested
+    @DisplayName("ObjectValue 包装")
+    class Wrapping {
 
-            if (isStr == expectStr && isInt == expectInt && isFloat == expectFloat) {
-                System.out.println("[PASS] " + name + ": " + val + " (str=" + isStr + " int=" + isInt + " float=" + isFloat + " obj=" + isObj + " bool=" + isBool + " nil=" + isNil + ")");
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": isStr=" + isStr + ", isInt=" + isInt + ", isFloat=" + isFloat);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
+        @Test
+        @DisplayName("标量类型拆箱为对应 ScriptValue，不包成 ObjectValue")
+        void scalarsUnbox() {
+            assertTrue(wrap("hello").isString());
+            assertTrue(wrap(42).isInteger());
+            assertTrue(wrap(42L).isInteger());
+            assertTrue(wrap(3.14).isFloat());
+            assertTrue(wrap(true).isBoolean());
+        }
+
+        @Test
+        @DisplayName("BigDecimal 保留精度，不经 double 中转")
+        void bigDecimalKeepsPrecision() {
+            BigDecimal precise = new BigDecimal("0.1000000000000000055511151231257827");
+            ScriptValue v = wrap(precise);
+            assertTrue(v.isFloat());
+            assertEquals(precise, v.asBigDecimal());
+        }
+
+        @Test
+        @DisplayName("复杂对象包成 ObjectValue")
+        void complexObjectWraps() {
+            ScriptValue v = wrap(new DummyPlayer("Steve"));
+            assertTrue(v.isObject());
+            assertFalse(v.isString());
+            assertFalse(v.isNull());
+        }
+
+        @Test
+        @DisplayName("null 包成 nil")
+        void nullWrapsToNil() {
+            assertTrue(wrap(null).isNull());
         }
     }
 
-    private static void testWrapNull(String name, Object input, boolean expectNull) {
-        try {
-            ScriptValue val = ScriptValue.of(input, ReflectPropertyResolver.INSTANCE);
-            if (val.isNull() == expectNull) {
-                System.out.println("[PASS] " + name + ": " + val);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected null=" + expectNull + ", got " + val);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
+    // ==================== 反射读属性 ====================
+
+    @Nested
+    @DisplayName("属性读取")
+    class PropertyRead {
+
+        @Test
+        @DisplayName("getXxx() 与 isXxx() 均可识别")
+        void beansGetters() {
+            assertEquals("Steve", read(new DummyPlayer("Steve"), "name").asString());
+            assertTrue(read(new DummyEvent(true, null), "cancelled").asBoolean());
+        }
+
+        @Test
+        @DisplayName("Map 按 key 读取")
+        void mapAccess() {
+            Map<String, Object> map = new HashMap<>();
+            map.put("message", "hello");
+            assertEquals("hello", read(map, "message").asString());
+        }
+
+        @Test
+        @DisplayName("属性不存在返回 nil，使链式访问可安全传播")
+        void missingPropertyReturnsNil() {
+            assertTrue(read(new DummyPlayer("Steve"), "nonexistent").isNull());
+        }
+
+        @Test
+        @DisplayName("裸无参方法不暴露为属性，且不触发副作用")
+        void bareMethodNotExposedAsProperty() {
+            // 反射若回退到 clazz.getMethod(name)，get("selfDestruct") 会真的执行该方法，
+            // 在 Bukkit 上等价于 get("remove") 删实体
+            DummyPlayer player = new DummyPlayer("Steve");
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(player));
+
+            assertTrue(exec("obj.get(\"selfDestruct\")", ctx).isNull());
+            assertFalse(player.destroyed, "读属性绝不应触发方法副作用");
+        }
+
+        @Test
+        @DisplayName("getter 内部抛异常时上抛，不静默变 nil")
+        void getterExceptionPropagates() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            ScriptException e = assertThrows(ScriptException.class, () -> exec("obj.get(\"broken\")", ctx));
+            assertTrue(e.getMessage().contains("intentional"), "应保留原始异常信息: " + e.getMessage());
         }
     }
 
-    private static void testGetProperty(String name, Object target, String property, Object expected) {
-        try {
-            ScriptValue val = ReflectPropertyResolver.INSTANCE.getProperty(target, property);
-            if (expected == null) {
-                if (val.isNull()) {
-                    System.out.println("[PASS] " + name + ": " + property + " -> nil");
-                    passed++;
-                } else {
-                    System.out.println("[FAIL] " + name + ": expected nil, got " + val);
-                    failed++;
-                }
-                return;
-            }
-            Object actual;
-            if (expected instanceof String) actual = val.asString();
-            else if (expected instanceof Boolean) actual = val.asBoolean();
-            else if (expected instanceof Integer) actual = val.asInt();
-            else actual = val.asString();
+    // ==================== 反射写属性 ====================
 
-            if (expected.equals(actual)) {
-                System.out.println("[PASS] " + name + ": " + property + " -> " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected " + expected + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
+    @Nested
+    @DisplayName("属性写入")
+    class PropertyWrite {
 
-    private static void testSetProperty(String name, String property, Object value) {
-        try {
+        @Test
+        @DisplayName("setter 可写入布尔与字符串")
+        void settersWork() {
             DummyEvent event = new DummyEvent(false, null);
-            ScriptValue scriptVal = (value instanceof Boolean)
-                ? ScriptValue.of((boolean) value)
-                : ScriptValue.of((String) value);
-            ReflectPropertyResolver.INSTANCE.setProperty(event, property, scriptVal);
-            ScriptValue result = ReflectPropertyResolver.INSTANCE.getProperty(event, property);
-            Object actual = (value instanceof Boolean) ? result.asBoolean() : result.asString();
-            if (value.equals(actual)) {
-                System.out.println("[PASS] " + name + ": set " + property + " = " + value);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected " + value + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
+            ReflectPropertyResolver.INSTANCE.setProperty(event, "cancelled", ScriptValue.of(true));
+            assertTrue(event.isCancelled());
+
+            ReflectPropertyResolver.INSTANCE.setProperty(event, "message", ScriptValue.of("world"));
+            assertEquals("world", event.getMessage());
         }
-    }
 
-    private static void testMethodCall(String source, Object expected, String varName, Object varValue) {
-        try {
-            ScriptContext ctx = createContext();
-            if (varName != null) {
-                if (varValue != null) {
-                    ctx.setVariable(varName, ScriptValue.of(varValue, ReflectPropertyResolver.INSTANCE));
-                } else {
-                    ctx.setVariable(varName, ScriptValue.nil());
-                }
-            }
-            ScriptValue result = execute(source, ctx);
-
-            if (expected == null) {
-                if (result.isNull()) {
-                    System.out.println("[PASS] " + source + " -> nil");
-                    passed++;
-                } else {
-                    System.out.println("[FAIL] " + source + " -> expected nil, got " + result);
-                    failed++;
-                }
-                return;
-            }
-
-            Object actual;
-            if (expected instanceof String) actual = result.asString();
-            else if (expected instanceof Boolean) actual = result.asBoolean();
-            else if (expected instanceof Integer) actual = result.asInt();
-            else if (expected instanceof Long) actual = result.asLong();
-            else actual = result.asString();
-
-            if (expected.equals(actual)) {
-                System.out.println("[PASS] " + source + " -> " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + source + " -> expected " + expected + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + source + " -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
-
-    private static void testSetViaScript(String name, String property, Object expected) {
-        try {
+        @Test
+        @DisplayName("脚本 set 修改属性")
+        void setViaScript() {
             DummyEvent event = new DummyEvent(false, null);
-            ScriptContext ctx = createContext();
-            ctx.setVariable("event", ScriptValue.of(event, ReflectPropertyResolver.INSTANCE));
-            String script = "event.set(\"" + property + "\", \"" + expected + "\")";
-            execute(script, ctx);
-            ScriptValue result = ReflectPropertyResolver.INSTANCE.getProperty(event, property);
-            String actual = result.asString();
-            if (expected.equals(actual)) {
-                System.out.println("[PASS] " + name + ": " + property + " = " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected " + expected + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
+            ScriptContext ctx = ctx();
+            ctx.setVariable("event", wrap(event));
+
+            exec("event.set(\"message\", \"new value\")", ctx);
+            assertEquals("new value", event.getMessage());
+        }
+
+        @Test
+        @DisplayName("写不存在的属性抛异常，不静默失败")
+        void writeMissingPropertyThrows() {
+            // 写操作有副作用，静默失败会让"事件没被取消"这类问题无从排查
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertThrows(ScriptException.class, () -> exec("obj.set(\"nonexistent\", 1)", ctx));
+        }
+
+        @Test
+        @DisplayName("写入类型不兼容时抛异常")
+        void writeIncompatibleTypeThrows() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyEvent(false, null)));
+            ctx.setVariable("other", wrap(new DummyPlayer("Steve")));
+            // message 是 String 字段，传对象无法转换
+            assertThrows(ScriptException.class, () -> exec("obj.set(\"player\", \"notAPlayer\")", ctx));
         }
     }
 
-    private static void testCallMethod(String name, String source, Object expected, Object varValue) {
-        try {
-            ScriptContext ctx = createContext();
-            ctx.setVariable("obj", ScriptValue.of(varValue, ReflectPropertyResolver.INSTANCE));
-            ctx.setVariable("event", ScriptValue.of(varValue, ReflectPropertyResolver.INSTANCE));
-            ScriptValue result = execute(source, ctx);
-            if (expected == null) {
-                if (result.isNull()) {
-                    System.out.println("[PASS] " + name + " -> nil");
-                    passed++;
-                } else {
-                    System.out.println("[FAIL] " + name + " -> expected nil, got " + result);
-                    failed++;
-                }
-                return;
-            }
-            Object actual;
-            if (expected instanceof String) actual = result.asString();
-            else if (expected instanceof Boolean) actual = result.asBoolean();
-            else if (expected instanceof Integer) actual = result.asInt();
-            else actual = result.asString();
-            if (expected.equals(actual)) {
-                System.out.println("[PASS] " + name + " -> " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + " -> expected " + expected + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
+    // ==================== 方法调用 ====================
 
-    private static void testConditionScript(String name, String condition, boolean expected, String varName, Object varValue) {
-        try {
-            ScriptContext ctx = createContext();
-            if (varName != null && varValue != null) {
-                ctx.setVariable(varName, ScriptValue.of(varValue, ReflectPropertyResolver.INSTANCE));
-            }
-            ScriptValue result = execute(condition, ctx);
-            boolean actual = result.asBoolean();
-            if (actual == expected) {
-                System.out.println("[PASS] " + name + ": " + condition + " -> " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected " + expected + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
+    @Nested
+    @DisplayName("方法调用语法")
+    class MethodCallSyntax {
 
-    private static void testMethodCallNil(String name, String varName, Object varValue) {
-        try {
-            ScriptContext ctx = createContext();
-            if (varName != null) {
-                if (varValue != null) {
-                    ctx.setVariable(varName, ScriptValue.of(varValue, ReflectPropertyResolver.INSTANCE));
-                } else {
-                    ctx.setVariable(varName, ScriptValue.nil());
-                }
-            }
-            String source = "${" + varName + "}.get(\"name\")";
-            ScriptValue result = execute(source, ctx);
-            if (result.isNull()) {
-                System.out.println("[PASS] " + name + " -> nil");
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + " -> expected nil, got " + result);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
-
-    private static void testCallMethodWithObjectArg(String name) {
-        try {
-            // Scenario: get player from event, then set it on another event via invoke
-            DummyEvent sourceEvent = new DummyEvent(false, new DummyPlayer("Steve"));
-            DummyEvent targetEvent = new DummyEvent(false, new DummyPlayer("Alex"));
-            ScriptContext ctx = createContext();
-            ctx.setVariable("src", ScriptValue.of(sourceEvent, ReflectPropertyResolver.INSTANCE));
-            ctx.setVariable("tgt", ScriptValue.of(targetEvent, ReflectPropertyResolver.INSTANCE));
-
-            // src.get("player") returns ObjectValue(Player), pass it to tgt.setPlayer(...)
-            execute("${tgt}.invoke(\"setPlayer\", ${src}.get(\"player\"))", ctx);
-
-            // targetEvent's player should now be Steve
-            String actual = targetEvent.getPlayer().getName();
-            if ("Steve".equals(actual)) {
-                System.out.println("[PASS] " + name + ": tgt.player.name = " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected Steve, got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            e.printStackTrace();
-            failed++;
-        }
-    }
-
-    /**
-     * 验证 compare() 的对象分支：同一实例相等，不同实例不相等，对象与非对象永不相等。
-     * 修复前两个 ObjectValue 相比会退化为 toString() 字典序。
-     */
-    private static void testObjectEquality() {
-        DummyPlayer steve = new DummyPlayer("Steve");
-        DummyPlayer alsoSteve = new DummyPlayer("Steve");
-        checkBool("same instance ==", "${a} == ${b}", true, steve, steve);
-        checkBool("same instance !=", "${a} != ${b}", false, steve, steve);
-        // 不同实例即使字段相同也不相等（DummyPlayer 未覆写 equals）
-        checkBool("different instance ==", "${a} == ${b}", false, steve, alsoSteve);
-        checkBool("object vs string ==", "${a} == \"Steve\"", false, steve, steve);
-    }
-
-    private static void checkBool(String name, String source, boolean expected, Object a, Object b) {
-        try {
-            ScriptContext ctx = createContext();
-            ctx.setVariable("a", ScriptValue.of(a, ReflectPropertyResolver.INSTANCE));
-            ctx.setVariable("b", ScriptValue.of(b, ReflectPropertyResolver.INSTANCE));
-            boolean actual = execute(source, ctx).asBoolean();
-            if (actual == expected) {
-                System.out.println("[PASS] " + name + ": " + source + " -> " + actual);
-                passed++;
-            } else {
-                System.out.println("[FAIL] " + name + ": expected " + expected + ", got " + actual);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + " -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
-
-    /**
-     * 验证对象不能参与数值运算。修复前 ObjectValue 未覆写 asBigDecimal()，
-     * 父类 fallback 用 toString() 解析失败后返回 ZERO，obj + 1 静默得到 1。
-     */
-    private static void testObjectArithmeticThrows() {
-        ScriptContext ctx = createContext();
-        ctx.setVariable("obj", ScriptValue.of(new DummyPlayer("Steve"), ReflectPropertyResolver.INSTANCE));
-        try {
-            ScriptValue result = execute("obj + 1", ctx);
-            System.out.println("[FAIL] object arithmetic should throw, got " + result);
-            failed++;
-        } catch (ScriptException e) {
-            System.out.println("[PASS] object arithmetic throws: " + e.getMessage());
-            passed++;
-        } catch (Exception e) {
-            System.out.println("[FAIL] expected ScriptException, got " + e.getClass().getSimpleName() + ": " + e.getMessage());
-            failed++;
-        }
-    }
-
-    /**
-     * 验证裸方法名不再被当作属性读取。修复前 findGetter 回退到 clazz.getMethod(name)，
-     * get("selfDestruct") 会真的执行该方法 —— 在 Bukkit 上等价于 get("remove") 删实体。
-     */
-    private static void testBareMethodNotAProperty() {
-        DummyPlayer player = new DummyPlayer("Steve");
-        ScriptContext ctx = createContext();
-        ctx.setVariable("obj", ScriptValue.of(player, ReflectPropertyResolver.INSTANCE));
-        try {
-            ScriptValue result = execute("obj.get(\"selfDestruct\")", ctx);
-            boolean sideEffectHappened = player.destroyed;
-            if (result.isNull() && !sideEffectHappened) {
-                System.out.println("[PASS] bare method not exposed as property -> nil, no side effect");
-                passed++;
-            } else {
-                System.out.println("[FAIL] bare method leak: result=" + result + ", destroyed=" + sideEffectHappened);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] bare method probe -> Exception: " + e.getMessage());
-            failed++;
-        }
-    }
-
-    /**
-     * 验证方法内部抛出的异常会上抛而非被吞掉。
-     * 修复前 catch (Exception ignored) 会让 setCancelled 之类的失败完全静默。
-     */
-    private static void testInvokeRuntimeExceptionPropagates() {
-        ScriptContext ctx = createContext();
-        ctx.setVariable("obj", ScriptValue.of(new DummyPlayer("Steve"), ReflectPropertyResolver.INSTANCE));
-        try {
-            execute("obj.invoke(\"boom\")", ctx);
-            System.out.println("[FAIL] invoke of throwing method should propagate, but returned normally");
-            failed++;
-        } catch (ScriptException e) {
-            boolean mentionsCause = e.getMessage() != null && e.getMessage().contains("intentional");
-            if (mentionsCause) {
-                System.out.println("[PASS] invoke propagates cause: " + e.getMessage());
-                passed++;
-            } else {
-                System.out.println("[FAIL] ScriptException lost original cause: " + e.getMessage());
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] expected ScriptException, got " + e.getClass().getSimpleName());
-            failed++;
-        }
-    }
-
-    /** 断言脚本执行抛出 ScriptException；varValue 为 null 时不注入 obj 变量 */
-    private static void testThrows(String name, String source, Object varValue) {
-        ScriptContext ctx = createContext();
-        if (varValue != null) {
-            ctx.setVariable("obj", ScriptValue.of(varValue, ReflectPropertyResolver.INSTANCE));
-        }
-        try {
-            ScriptValue result = execute(source, ctx);
-            System.out.println("[FAIL] " + name + ": expected ScriptException, got " + result);
-            failed++;
-        } catch (ScriptException e) {
-            System.out.println("[PASS] " + name + " throws: " + e.getMessage());
-            passed++;
-        } catch (Exception e) {
-            System.out.println("[FAIL] " + name + ": expected ScriptException, got "
-                + e.getClass().getSimpleName() + ": " + e.getMessage());
-            failed++;
-        }
-    }
-
-    /**
-     * 验证 var 语法可用于变量赋值，且 obj.set 的短名可用。
-     */
-    private static void testVarAssignment() {
-        try {
-            ScriptContext ctx = createContext();
-            execute("var k = 42", ctx);
-            ScriptValue got = execute("${k}", ctx);
-            if (got.asLong() == 42L) {
-                System.out.println("[PASS] var assignment + ${k} -> " + got.asLong());
-                passed++;
-            } else {
-                System.out.println("[FAIL] var assignment: expected 42, got " + got);
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] var assignment -> Exception: " + e.getMessage());
-            failed++;
+        @Test
+        @DisplayName("裸变量可直接调用方法")
+        void bareVariableMethodCall() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertEquals("Steve", exec("obj.get(\"name\")", ctx).asString());
         }
 
-        // obj.set 的短名必须可用（若被 builtin set 占用会判冲突而移除）
-        try {
+        @Test
+        @DisplayName("方法调用结果可参与比较")
+        void resultInComparison() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertTrue(exec("obj.get(\"name\") == \"Steve\"", ctx).asBoolean());
+            assertTrue(exec("obj.get(\"name\") != \"Alex\"", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("链式访问逐级解包")
+        void chainedAccess() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("event", wrap(new DummyEvent(false, new DummyPlayer("Alex", 10))));
+
+            assertEquals("Alex", exec("event.get(\"player\").get(\"name\")", ctx).asString());
+            assertEquals(10, exec("event.get(\"player\").get(\"level\")", ctx).asInt());
+            assertTrue(exec("event.get(\"player\").get(\"name\") == \"Alex\"", ctx).asBoolean());
+            assertTrue(exec("event.get(\"cancelled\") == false", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("变量名与模块名相同时仍解析为方法调用")
+        void variableNameShadowingModuleName() {
+            // obj 既是变量名也是 ObjectScriptModule 的模块名；
+            // 冒号语法把两者分开后，obj.set(...) 必须作用到变量指向的对象
             DummyEvent event = new DummyEvent(false, null);
-            ScriptContext ctx = createContext();
-            ctx.setVariable("event", ScriptValue.of(event, ReflectPropertyResolver.INSTANCE));
-            execute("event.set(\"cancelled\", true)", ctx);
-            if (event.isCancelled()) {
-                System.out.println("[PASS] obj.set short name resolves after builtin rename");
-                passed++;
-            } else {
-                System.out.println("[FAIL] obj.set did not take effect");
-                failed++;
-            }
-        } catch (Exception e) {
-            System.out.println("[FAIL] obj.set short name -> Exception: " + e.getMessage());
-            failed++;
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(event));
+
+            exec("obj.set(\"cancelled\", true)", ctx);
+            assertTrue(event.isCancelled(), "receiver 不应丢失");
+        }
+
+        @Test
+        @DisplayName("invoke 调用无参与带参方法")
+        void invokeMethods() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+
+            assertEquals("Steve", exec("obj.invoke(\"getName\")", ctx).asString());
+            assertEquals("Hi Steve", exec("obj.invoke(\"greet\", \"Hi\")", ctx).asString());
+        }
+
+        @Test
+        @DisplayName("invoke void 方法返回 nil 且副作用生效")
+        void invokeVoidMethod() {
+            DummyPlayer player = new DummyPlayer("Steve");
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(player));
+
+            assertTrue(exec("obj.invoke(\"setName\", \"Alex\")", ctx).isNull());
+            assertEquals("Alex", player.getName());
+        }
+
+        @Test
+        @DisplayName("链式后接 invoke")
+        void chainedThenInvoke() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("event", wrap(new DummyEvent(false, new DummyPlayer("Alex"))));
+            assertEquals("Alex", exec("event.get(\"player\").invoke(\"getName\")", ctx).asString());
+        }
+
+        @Test
+        @DisplayName("对象可作为实参传给另一个对象的方法")
+        void objectAsArgument() {
+            DummyEvent source = new DummyEvent(false, new DummyPlayer("Steve"));
+            DummyEvent target = new DummyEvent(false, new DummyPlayer("Alex"));
+            ScriptContext ctx = ctx();
+            ctx.setVariable("src", wrap(source));
+            ctx.setVariable("tgt", wrap(target));
+
+            exec("tgt.invoke(\"setPlayer\", src.get(\"player\"))", ctx);
+            assertEquals("Steve", target.getPlayer().getName());
         }
     }
 
-    // ==================== Helpers ====================
+    // ==================== 错误语义 ====================
 
-    private static ScriptContext createContext() {
+    @Nested
+    @DisplayName("错误语义")
+    class ErrorSemantics {
+
+        @Test
+        @DisplayName("receiver 为 nil 时链式访问返回 nil 而非报错")
+        void nilReceiverPropagates() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", ScriptValue.nil());
+            assertTrue(exec("obj.get(\"name\")", ctx).isNull());
+        }
+
+        @Test
+        @DisplayName("中间层属性为 nil 时链式访问返回 nil")
+        void nilIntermediatePropagates() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("event", wrap(new DummyEvent(false, null)));
+            assertTrue(exec("event.get(\"player\").get(\"name\")", ctx).isNull());
+        }
+
+        @Test
+        @DisplayName("receiver 类型不对时报错")
+        void nonObjectReceiverThrows() {
+            ScriptException e = assertThrows(ScriptException.class, () -> eval("\"plain\".get(\"name\")"));
+            assertTrue(e.getMessage().contains("object receiver"), e.getMessage());
+        }
+
+        @Test
+        @DisplayName("调用不存在的方法报错")
+        void invokeMissingMethodThrows() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertThrows(ScriptException.class, () -> exec("obj.invoke(\"noSuchMethod\")", ctx));
+        }
+
+        @Test
+        @DisplayName("实参类型不匹配报错，不静默传 null")
+        void argTypeMismatchThrows() {
+            // convertArg 若返回 null，重载误选时会把 null 静默传进方法
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertThrows(ScriptException.class, () -> exec("obj.invoke(\"greet\", obj)", ctx));
+        }
+
+        @Test
+        @DisplayName("方法内部抛异常时保留原因并上抛")
+        void invokeExceptionPropagatesCause() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            ScriptException e = assertThrows(ScriptException.class, () -> exec("obj.invoke(\"boom\")", ctx));
+            assertTrue(e.getMessage().contains("intentional"), "应保留原始异常信息: " + e.getMessage());
+        }
+    }
+
+    // ==================== 对象值的比较与运算 ====================
+
+    @Nested
+    @DisplayName("对象值比较与运算")
+    class ObjectValueSemantics {
+
+        @Test
+        @DisplayName("同一实例相等，不同实例不相等")
+        void identityEquality() {
+            DummyPlayer steve = new DummyPlayer("Steve");
+            DummyPlayer alsoSteve = new DummyPlayer("Steve");
+
+            ScriptContext ctx = ctx();
+            ctx.setVariable("a", wrap(steve));
+            ctx.setVariable("b", wrap(steve));
+            assertTrue(exec("a == b", ctx).asBoolean());
+            assertFalse(exec("a != b", ctx).asBoolean());
+
+            ScriptContext ctx2 = ctx();
+            ctx2.setVariable("a", wrap(steve));
+            ctx2.setVariable("b", wrap(alsoSteve));
+            // DummyPlayer 未覆写 equals，字段相同但实例不同即不相等
+            assertFalse(exec("a == b", ctx2).asBoolean());
+        }
+
+        @Test
+        @DisplayName("对象与非对象永不相等")
+        void objectNeverEqualsScalar() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("a", wrap(new DummyPlayer("Steve")));
+            assertFalse(exec("a == \"Steve\"", ctx).asBoolean());
+            assertFalse(exec("a == 1", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("对象参与算术抛异常，不静默归零")
+        void objectArithmeticThrows() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            ScriptException e = assertThrows(ScriptException.class, () -> exec("obj + 1", ctx));
+            assertTrue(e.getMessage().contains("DummyPlayer"), "错误信息应含类型名: " + e.getMessage());
+        }
+
+        @Test
+        @DisplayName("对象在条件判断中按非 null 取真")
+        void objectTruthiness() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertTrue(exec("obj", ctx).asBoolean());
+        }
+    }
+
+    // ==================== 变量与条件脚本 ====================
+
+    @Nested
+    @DisplayName("变量与条件脚本")
+    class VariablesAndConditions {
+
+        @Test
+        @DisplayName("var 声明后可用于方法调用")
+        void varDeclarationThenMethodCall() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("event", wrap(new DummyEvent(false, new DummyPlayer("Steve"))));
+
+            assertEquals("Steve", exec("var p = event.get(\"player\")\np.get(\"name\")", ctx).asString());
+        }
+
+        @Test
+        @DisplayName("条件脚本按属性值判定")
+        void conditionScripts() {
+            ScriptContext notCancelled = ctx();
+            notCancelled.setVariable("event", wrap(new DummyEvent(false, null)));
+            assertTrue(exec("event.get(\"cancelled\") == false", notCancelled).asBoolean());
+
+            ScriptContext steve = ctx();
+            steve.setVariable("event", wrap(new DummyEvent(false, new DummyPlayer("Steve"))));
+            assertTrue(exec("event.get(\"player\").get(\"name\") == \"Steve\"", steve).asBoolean());
+            assertFalse(exec("event.get(\"player\").get(\"name\") == \"Alex\"", steve).asBoolean());
+        }
+    }
+
+    // ==================== 辅助方法 ====================
+
+    private static ScriptValue wrap(Object javaObject) {
+        return ScriptValue.of(javaObject, ReflectPropertyResolver.INSTANCE);
+    }
+
+    private static ScriptValue read(Object target, String property) {
+        return ReflectPropertyResolver.INSTANCE.getProperty(target, property);
+    }
+
+    private static ScriptValue eval(String source) {
+        return exec(source, ctx());
+    }
+
+    private static ScriptValue exec(String source, ScriptContext context) {
+        List<Token> tokens = new ScriptLexer(source).tokenize();
+        ASTNode.BlockNode ast = new ScriptParser(tokens).parse();
+        CompiledScript compiled = new ScriptCompiler().compile("test", ast);
+        return new ScriptVM(compiled, context).execute();
+    }
+
+    private static ScriptContext ctx() {
         return new ScriptContext(new Invoker() {
-            @Override public @NotNull Object platformInvoker() { return null; }
+            @Override public @NotNull Object platformInvoker() { return this; }
             @Override public @NotNull String name() { return "Console"; }
             @Override public void sendMsg(String msg, Map<String, String> replaceMap) {}
             @Override public boolean hasPermission(String permission) { return true; }
@@ -591,30 +439,17 @@ public class ObjectScriptTest {
         });
     }
 
-    private static ScriptValue execute(String source, ScriptContext ctx) {
-        List<Token> tokens = new ScriptLexer(source).tokenize();
-        ASTNode.BlockNode ast = new ScriptParser(tokens).parse();
-        CompiledScript compiled = new ScriptCompiler().compile("test", ast);
-        ScriptVM vm = new ScriptVM(compiled, ctx);
-        return vm.execute();
-    }
-
-    private static Object createMapEvent() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", "hello");
-        return map;
-    }
-
-    // ==================== Test POJOs ====================
+    // ==================== 测试用 POJO ====================
 
     public static class DummyPlayer {
         private String name;
         private final int level;
-        /** 被 get("selfDestruct") 误触发时会置 true，用于检测裸方法名泄漏 */
+        /** 被 get("selfDestruct") 误触发时置 true，用于检测裸方法名泄漏 */
         public boolean destroyed = false;
 
         public DummyPlayer(String name) { this(name, 10); }
         public DummyPlayer(String name, int level) { this.name = name; this.level = level; }
+
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public int getLevel() { return level; }
@@ -623,7 +458,10 @@ public class ObjectScriptTest {
         /** 模拟 Bukkit Entity#remove() 这类有副作用的无参方法，绝不应被当作属性读取 */
         public void selfDestruct() { destroyed = true; }
 
-        /** 模拟方法内部抛异常，验证异常会上抛而非被吞掉 */
+        /** getter 内部抛异常，验证异常上抛而非静默变 nil */
+        public String getBroken() { throw new IllegalStateException("intentional getter failure"); }
+
+        /** 方法内部抛异常，验证 invoke 保留原因 */
         public void boom() { throw new IllegalStateException("intentional failure"); }
     }
 
@@ -634,14 +472,16 @@ public class ObjectScriptTest {
 
         public DummyEvent(boolean cancelled, DummyPlayer player) { this(cancelled, player, "default"); }
         public DummyEvent(boolean cancelled, DummyPlayer player, String message) {
-            this.cancelled = cancelled; this.player = player; this.message = message;
+            this.cancelled = cancelled;
+            this.player = player;
+            this.message = message;
         }
+
         public boolean isCancelled() { return cancelled; }
         public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
         public DummyPlayer getPlayer() { return player; }
         public void setPlayer(DummyPlayer player) { this.player = player; }
         public String getMessage() { return message; }
         public void setMessage(String message) { this.message = message; }
-        public String describePlayer() { return player == null ? "nobody" : player.getName(); }
     }
 }
