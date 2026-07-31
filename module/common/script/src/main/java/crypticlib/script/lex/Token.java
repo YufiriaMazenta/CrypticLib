@@ -55,6 +55,10 @@ public class Token {
         ENDIF,
         RETURN,
 
+        // 变量
+        VAR,            // var 关键字
+        ASSIGN,         // = 赋值
+
         // 特殊
         NEWLINE,
         EOF;

@@ -125,8 +125,8 @@ public class ObjectScriptTest {
         testInvokeRuntimeExceptionPropagates();
 
         // Builtin set_var rename
-        System.out.println("\n--- set_var (renamed from set) ---");
-        testSetVar();
+        System.out.println("\n--- var assignment ---");
+        testVarAssignment();
 
         // Condition scripts
         System.out.println("\n--- Condition scripts ---");
@@ -538,22 +538,22 @@ public class ObjectScriptTest {
     }
 
     /**
-     * 验证 Builtin 的 set 改名为 set_var 后仍可用，且 obj.set 的短名不再被它占用。
+     * 验证 var 语法可用于变量赋值，且 obj.set 的短名可用。
      */
-    private static void testSetVar() {
+    private static void testVarAssignment() {
         try {
             ScriptContext ctx = createContext();
-            execute("set_var(\"k\", 42)", ctx);
-            ScriptValue got = execute("context(\"k\")", ctx);
+            execute("var k = 42", ctx);
+            ScriptValue got = execute("${k}", ctx);
             if (got.asLong() == 42L) {
-                System.out.println("[PASS] set_var + context roundtrip -> " + got.asLong());
+                System.out.println("[PASS] var assignment + ${k} -> " + got.asLong());
                 passed++;
             } else {
-                System.out.println("[FAIL] set_var + context: expected 42, got " + got);
+                System.out.println("[FAIL] var assignment: expected 42, got " + got);
                 failed++;
             }
         } catch (Exception e) {
-            System.out.println("[FAIL] set_var -> Exception: " + e.getMessage());
+            System.out.println("[FAIL] var assignment -> Exception: " + e.getMessage());
             failed++;
         }
 

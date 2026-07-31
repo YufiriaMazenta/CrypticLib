@@ -157,6 +157,37 @@ public abstract class ASTNode {
         public ASTNode value() { return value; }
     }
 
+    public static final class VarAssignmentNode extends ASTNode {
+        private final String variableName;
+        private final ASTNode value;
+
+        public VarAssignmentNode(String variableName, ASTNode value, int line) {
+            super(line);
+            this.variableName = variableName;
+            this.value = value;
+        }
+
+        public String variableName() { return variableName; }
+        public ASTNode value() { return value; }
+    }
+
+    /**
+     * 变量重新赋值（不需要 var，但变量必须已声明）
+     */
+    public static final class ReassignNode extends ASTNode {
+        private final String variableName;
+        private final ASTNode value;
+
+        public ReassignNode(String variableName, ASTNode value, int line) {
+            super(line);
+            this.variableName = variableName;
+            this.value = value;
+        }
+
+        public String variableName() { return variableName; }
+        public ASTNode value() { return value; }
+    }
+
     /**
      * 变量引用节点 ${variable}
      */

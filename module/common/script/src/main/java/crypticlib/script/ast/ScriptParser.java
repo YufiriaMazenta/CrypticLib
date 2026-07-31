@@ -14,11 +14,13 @@ import java.util.List;
  *
  * 语法（EBNF）:
  *   program       = statement*
- *   statement     = if_stmt | expression NEWLINE
+ *   statement     = if_stmt | var_assignment | direct_assignment | expression NEWLINE
  *   if_stmt       = "if" expression NEWLINE block
  *                   ("elseif" expression NEWLINE block)*
  *                   ("else" NEWLINE block)?
  *                   "endif" NEWLINE
+ *   var_assignment = "var" IDENTIFIER "=" expression NEWLINE
+ *   direct_assignment = IDENTIFIER "=" expression NEWLINE
  *   block         = statement*
  *   expression    = or_expr
  *   or_expr       = and_expr ("||" and_expr)*
@@ -28,11 +30,11 @@ import java.util.List;
  *   multiplicative = unary (("*" | "/" | "%") unary)*
  *   unary         = ("!" | "-") unary | call
  *   call          = VARIABLE method_chain?
+ *                 | IDENTIFIER "." IDENTIFIER "(" args ")" method_chain?
  *                 | IDENTIFIER "(" args ")" method_chain?
- *                 | IDENTIFIER bare_args? method_chain?
+ *                 | IDENTIFIER method_chain?
  *                 | atom method_chain?
  *   method_chain  = ("." IDENTIFIER "(" args ")")*
- *   bare_args     = atom+  （仅当 bareArgsEnabled=true 时生效）
  *   args          = (expression ("," expression)*)?
  *   atom          = STRING | INTERPOLATED_STRING | NUMBER | BOOLEAN | VARIABLE | "(" expression ")"
  */
@@ -42,17 +44,11 @@ public class ScriptParser {
     private static final int MAX_DEPTH = 200;
 
     private final List<Token> tokens;
-    private final boolean bareArgsEnabled;
     private int pos;
     private int depth;
 
     public ScriptParser(List<Token> tokens) {
-        this(tokens, false);
-    }
-
-    public ScriptParser(List<Token> tokens, boolean bareArgsEnabled) {
         this.tokens = tokens;
-        this.bareArgsEnabled = bareArgsEnabled;
     }
 
     private void enterDepth() {
@@ -94,13 +90,47 @@ public class ScriptParser {
         if (check(Token.Type.RETURN)) {
             return parseReturn();
         }
+        if (check(Token.Type.VAR)) {
+            return parseVarAssignment();
+        }
         if (check(Token.Type.NEWLINE) || check(Token.Type.EOF)) {
             advance();
             return null;
         }
+        // 支持 name = expression 直接赋值（不需要 var）
+        if (check(Token.Type.IDENTIFIER) && checkNext(Token.Type.ASSIGN)) {
+            return parseDirectAssignment();
+        }
         ASTNode expr = parseExpression();
         expectNewlineOrEOF();
         return expr;
+    }
+
+    /**
+     * 解析 var name = expression
+     */
+    private ASTNode parseVarAssignment() {
+        int line = advance().line(); // 消费 var
+        if (!check(Token.Type.IDENTIFIER)) {
+            throw new ScriptException("Expected variable name after 'var' at line " + line);
+        }
+        String varName = advance().value();
+        expect(Token.Type.ASSIGN, "Expected '=' after variable name");
+        ASTNode value = parseExpression();
+        expectNewlineOrEOF();
+        return new ASTNode.VarAssignmentNode(varName, value, line);
+    }
+
+    /**
+     * 解析 name = expression（不需要 var 关键字，变量必须已声明）
+     */
+    private ASTNode parseDirectAssignment() {
+        String varName = advance().value(); // 消费变量名
+        int line = previous().line();
+        expect(Token.Type.ASSIGN, "Expected '=' after variable name");
+        ASTNode value = parseExpression();
+        expectNewlineOrEOF();
+        return new ASTNode.ReassignNode(varName, value, line);
     }
 
     private ASTNode parseReturn() {
@@ -290,28 +320,9 @@ public class ScriptParser {
                 return parseMethodChain(call);
             }
 
-            // 情况2/3: 判断后面是否跟着可作为参数的 token
-            // （STRING/INTERPOLATED_STRING/NUMBER/INTEGER/BOOLEAN/IDENTIFIER/VARIABLE）
-            // 如果是，收集为裸参数；否则是无参调用
-            // IDENTIFIER / VARIABLE 作为参数时递归解析为函数调用或变量引用（如 papi "%player_name%"、say ${player}）
-            // 注意：不再把 "- 数字" 识别为负数裸参数，否则 "x - 1" 会被吞为 x(-1)；
-            // 负数参数请使用括号调用形式 foo(-1)。
-            if (bareArgsEnabled) {
-                List<ASTNode> args = new ArrayList<>();
-                while (isBareArgToken()) {
-                    if (check(Token.Type.IDENTIFIER) || check(Token.Type.VARIABLE)) {
-                        args.add(parseCall());
-                    } else {
-                        args.add(parseAtom());
-                    }
-                }
-                ASTNode call = new ASTNode.FunctionCallNode(funcName, args, name.line());
-                return parseMethodChain(call);
-            }
-
-            // 无参函数调用或标识符
-            ASTNode idOrCall = new ASTNode.IdentifierNode(funcName, name.line());
-            return parseMethodChain(idOrCall);
+            // 无参：后面没有括号，当作变量引用
+            ASTNode varRef = new ASTNode.VariableReferenceNode(funcName, name.line());
+            return parseMethodChain(varRef);
         }
 
         ASTNode atom = parseAtom();
@@ -348,14 +359,6 @@ public class ScriptParser {
             receiver = new ASTNode.FunctionCallNode(methodName, fullArgs, methodToken.line());
         }
         return receiver;
-    }
-
-    private boolean isBareArgToken() {
-        if (isAtEnd()) return false;
-        Token.Type type = tokens.get(pos).type();
-        return type == Token.Type.STRING || type == Token.Type.INTERPOLATED_STRING
-            || type == Token.Type.NUMBER || type == Token.Type.INTEGER
-            || type == Token.Type.BOOLEAN || type == Token.Type.VARIABLE;
     }
 
     private ASTNode parseAtom() {
@@ -404,6 +407,10 @@ public class ScriptParser {
 
     private boolean check(Token.Type type) {
         return !isAtEnd() && tokens.get(pos).type() == type;
+    }
+
+    private boolean checkNext(Token.Type type) {
+        return pos + 1 < tokens.size() && tokens.get(pos + 1).type() == type;
     }
 
     private boolean match(Token.Type type) {

@@ -257,6 +257,9 @@ public class ScriptLexer {
             case "return":
                 type = Token.Type.RETURN;
                 break;
+            case "var":
+                type = Token.Type.VAR;
+                break;
             case "true":
             case "false":
                 type = Token.Type.BOOLEAN;
@@ -273,6 +276,7 @@ public class ScriptLexer {
         char next = peek();
 
         if (c == '=' && next == '=') { tokens.add(new Token(Token.Type.EQ, "==", line)); pos += 2; return true; }
+        if (c == '=' && next != '=') { tokens.add(new Token(Token.Type.ASSIGN, "=", line)); pos++; return true; }
         if (c == '!' && next == '=') { tokens.add(new Token(Token.Type.NEQ, "!=", line)); pos += 2; return true; }
         if (c == '!' && next != '=') { tokens.add(new Token(Token.Type.NOT, "!", line)); pos++; return true; }
         if (c == '>' && next == '=') { tokens.add(new Token(Token.Type.GTE, ">=", line)); pos += 2; return true; }

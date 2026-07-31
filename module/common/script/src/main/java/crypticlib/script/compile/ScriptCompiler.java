@@ -46,6 +46,10 @@ public class ScriptCompiler {
             emitIf((ASTNode.IfNode) node, instructions);
         } else if (node instanceof ASTNode.ReturnNode) {
             emitReturn((ASTNode.ReturnNode) node, instructions);
+        } else if (node instanceof ASTNode.VarAssignmentNode) {
+            emitVarAssignment((ASTNode.VarAssignmentNode) node, instructions);
+        } else if (node instanceof ASTNode.ReassignNode) {
+            emitReassign((ASTNode.ReassignNode) node, instructions);
         } else if (node instanceof ASTNode.BlockNode) {
             emitBlock((ASTNode.BlockNode) node, instructions);
         }
@@ -228,6 +232,16 @@ public class ScriptCompiler {
             instructions.add(Instruction.push(ScriptValue.nil(), node.line()));
         }
         instructions.add(Instruction.of(OpCode.RETURN, node.line()));
+    }
+
+    private void emitVarAssignment(ASTNode.VarAssignmentNode node, List<Instruction> instructions) {
+        emitNode(node.value(), instructions);
+        instructions.add(Instruction.storeVar(node.variableName(), node.line()));
+    }
+
+    private void emitReassign(ASTNode.ReassignNode node, List<Instruction> instructions) {
+        emitNode(node.value(), instructions);
+        instructions.add(Instruction.reassignVar(node.variableName(), node.line()));
     }
 
     private void patchJump(int instructionIndex, List<Instruction> instructions) {
