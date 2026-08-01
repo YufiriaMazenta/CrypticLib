@@ -128,6 +128,9 @@ public enum MinecraftVersion {
         int x = version / 10000;
         int y =  (version % 10000) / 100;
         int z = version % 100;
+        if (z == 0) {
+            return x + "." + y;
+        }
         return x + "." + y + "." + z;
     }
 
