@@ -11,6 +11,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,7 +107,7 @@ public class YamlFormat implements ConfigFormat<CommentedConfig> {
             || type == String.class
             || type == java.util.Date.class
             || type == java.sql.Date.class
-            || type == java.sql.Timestamp.class
+            || type == Timestamp.class
             || type == byte[].class
             || type == Object[].class
             || Number.class.isAssignableFrom(type)

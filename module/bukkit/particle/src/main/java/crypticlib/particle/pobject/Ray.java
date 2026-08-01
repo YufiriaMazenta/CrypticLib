@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 代表一个射线
@@ -282,7 +283,7 @@ public class Ray extends ParticleObject implements Playable {
      * 设置实体过滤器
      * <p>
      * 注意: 该过滤器的语义为"排除", 即 {@code test} 返回 {@code true} 的实体会被排除在命中候选之外,
-     * 与 {@link java.util.stream.Stream#filter} 保留 true 的惯例相反。
+     * 与 {@link Stream#filter} 保留 true 的惯例相反。
      *
      * @param entityFilter 实体过滤器(返回 true 表示排除该实体)
      * @return {@link Ray}
