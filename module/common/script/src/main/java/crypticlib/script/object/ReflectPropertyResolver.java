@@ -24,9 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *       因为它们带副作用，静默失败会让"事件没被取消"这类问题无从排查</li>
  * </ul>
  */
-public class ReflectPropertyResolver implements PropertyResolver {
+public enum ReflectPropertyResolver implements PropertyResolver {
 
-    public static final ReflectPropertyResolver INSTANCE = new ReflectPropertyResolver();
+    INSTANCE;
 
     /** 类 → (属性名 → getter)，Optional.empty() 用于负向缓存，避免缺失属性每次重跑反射 */
     private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Optional<Method>>> getterCache = new ConcurrentHashMap<>();
