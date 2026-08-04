@@ -1,9 +1,8 @@
-package crypticlib.internal;
+package crypticlib;
 
-import crypticlib.CrypticLib;
-import crypticlib.PlatformSide;
 import crypticlib.chat.MsgSender;
 import crypticlib.command.CommandManager;
+import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
@@ -12,27 +11,38 @@ import crypticlib.lifecycle.TaskRule;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-@ApiStatus.Internal
+/**
+ * CrypticLib插件定义接口
+ * 提供一些CrypticLib所必须的方法
+ */
 public interface CrypticLibPlugin {
 
+    @NotNull
     String pluginName();
 
+    @NotNull
     CommandManager<?, ?> commandManager();
 
+    @NotNull
     Scheduler scheduler();
 
+    @NotNull
     MsgSender msgSender();
 
+    @NotNull
     PermManager permManager();
 
-    default void runLifeCycleTasks(Object plugin, LifeCycle lifeCycle) {
+    @NotNull
+    Invoker getConsoleInvoker();
+
+    default void runLifeCycleTasks(LifeCycle lifeCycle) {
         List<LifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
         PluginScanner.INSTANCE.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
             taskClass -> {
@@ -77,7 +87,7 @@ public interface CrypticLibPlugin {
         );
         taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
         for (LifeCycleTaskWrapper taskWrapper : taskWrappers) {
-            taskWrapper.runLifecycleTask(plugin, lifeCycle);
+            taskWrapper.runLifecycleTask(this, lifeCycle);
         }
     }
 

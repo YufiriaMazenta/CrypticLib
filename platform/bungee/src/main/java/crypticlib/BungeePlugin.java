@@ -9,7 +9,6 @@ import crypticlib.command.annotation.Command;
 import crypticlib.config.BungeeConfigContainer;
 import crypticlib.config.BungeeConfigWrapper;
 import crypticlib.config.ConfigHandler;
-import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
@@ -19,6 +18,7 @@ import crypticlib.scheduler.BungeeScheduler;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
@@ -38,7 +38,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        runLifeCycleTasks(this, LifeCycle.INIT);
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
@@ -61,7 +61,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(this, LifeCycle.LOAD);
+        runLifeCycleTasks(LifeCycle.LOAD);
     }
 
     @Override
@@ -108,13 +108,13 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(this, LifeCycle.ENABLE);
-        getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(this, LifeCycle.ACTIVE));
+        runLifeCycleTasks(LifeCycle.ENABLE);
+        getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE));
     }
 
     @Override
     public final void onDisable() {
-        runLifeCycleTasks(this, LifeCycle.DISABLE);
+        runLifeCycleTasks(LifeCycle.DISABLE);
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         //cancelTasks 同时取消官方调度器任务与 BungeeScheduler 私有线程池中的任务,避免禁用后周期任务继续运行
@@ -149,7 +149,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(this, LifeCycle.RELOAD);
+        runLifeCycleTasks(LifeCycle.RELOAD);
     }
     
     public final @NotNull Configuration getConfig() {
@@ -210,28 +210,33 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     }
 
     @Override
-    public String pluginName() {
+    public @NotNull String pluginName() {
         return getDescription().getName();
     }
 
     @Override
-    public CommandManager<?, ?> commandManager() {
+    public @NotNull CommandManager<?, ?> commandManager() {
         return BungeeCommandManager.INSTANCE;
     }
 
     @Override
-    public Scheduler scheduler() {
+    public @NotNull Scheduler scheduler() {
         return BungeeScheduler.INSTANCE;
     }
 
     @Override
-    public MsgSender msgSender() {
+    public @NotNull MsgSender msgSender() {
         return BungeeMsgSender.INSTANCE;
     }
 
     @Override
-    public PermManager permManager() {
+    public @NotNull PermManager permManager() {
         return BungeePermManager.INSTANCE;
+    }
+
+    @Override
+    public @NotNull Invoker getConsoleInvoker() {
+        return BungeeInvoker.byCommandSender(ProxyServer.getInstance().getConsole());
     }
 
 }

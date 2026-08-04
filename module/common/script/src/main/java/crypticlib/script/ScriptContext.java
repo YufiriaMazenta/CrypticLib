@@ -1,5 +1,6 @@
 package crypticlib.script;
 
+import crypticlib.CrypticLib;
 import crypticlib.Invoker;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,13 @@ public class ScriptContext {
     // 使用 ConcurrentHashMap：脚本经 delay 暂停后会在调度器线程恢复并继续读写该 Map，
     // 与创建上下文的插件线程可能并发，普通 HashMap 并发写在扩容时会损坏结构。
     private final @NotNull Map<String, ScriptValue> variables = new ConcurrentHashMap<>();
+
+    /**
+     * 以控制台身份创建一个上下文
+     */
+    public ScriptContext() {
+        this(CrypticLib.pluginInstance().getConsoleInvoker());
+    }
 
     public ScriptContext(@NotNull Invoker invoker) {
         this.invoker = Objects.requireNonNull(invoker);

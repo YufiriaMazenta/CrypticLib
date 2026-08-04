@@ -305,7 +305,7 @@ public class ScriptVM {
     /**
      * 中断执行并调度延迟恢复
      * <p>
-     * <b>Folia 线程语义警告：</b>本方法使用通用 {@link CrypticLib#scheduler()} 的 syncLater，
+     * <b>Folia 线程语义警告：</b>本方法使用通用 {@link crypticlib.scheduler.Scheduler})} 的 syncLater，
      * 在 Folia 上其恢复任务被调度到全局区域线程（GlobalRegionScheduler）。若脚本在某玩家/实体的
      * 区域线程上开始执行（如事件处理），delay 恢复后的后续函数一旦操作该实体/世界（传送、发消息、给物品等），
      * 在 Folia 上会触发 IllegalStateException 线程检查失败或数据竞争；而在 Spigot/Paper 上恢复线程为主线程、行为正常。
@@ -315,7 +315,7 @@ public class ScriptVM {
      */
     public void pauseAndScheduleResume(long delayTicks) {
         paused = true;
-        CrypticLib.scheduler().syncLater(this::resume, delayTicks);
+        CrypticLib.pluginInstance().scheduler().syncLater(this::resume, delayTicks);
     }
 
     /**

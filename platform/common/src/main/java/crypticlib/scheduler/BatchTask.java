@@ -76,7 +76,7 @@ public class BatchTask<T, R> {
         int itemsPerTick,
         @Nullable BatchCallback<T, R> callback
     ) {
-        this.scheduler = CrypticLib.scheduler();
+        this.scheduler = CrypticLib.pluginInstance().scheduler();
         this.items = items;
         this.processor = processor;
         this.itemsPerTick = itemsPerTick;

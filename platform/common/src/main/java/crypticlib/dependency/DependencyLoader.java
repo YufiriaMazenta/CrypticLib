@@ -18,7 +18,7 @@ public enum DependencyLoader {
 
     INSTANCE;
 
-    public static final String DEFAULT_DEPENDENCY_FOLDER = "plugins/" + CrypticLib.pluginName() + "/libs";
+    public static final String DEFAULT_DEPENDENCY_FOLDER = "plugins/" + CrypticLib.pluginInstance().pluginName() + "/libs";
 
     /**
      * 加载依赖

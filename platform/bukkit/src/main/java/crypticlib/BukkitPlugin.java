@@ -9,7 +9,6 @@ import crypticlib.command.annotation.Command;
 import crypticlib.config.BukkitConfigContainer;
 import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.config.ConfigHandler;
-import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
@@ -23,6 +22,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +38,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
         ReflectionHelper.setPluginInstance(this);
-        runLifeCycleTasks(this, LifeCycle.INIT);
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Override
@@ -61,7 +61,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
             }
         );
         whenLoad();
-        runLifeCycleTasks(this, LifeCycle.LOAD);
+        runLifeCycleTasks(LifeCycle.LOAD);
     }
 
     @Override
@@ -108,15 +108,15 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
             }
         );
         whenEnable();
-        runLifeCycleTasks(this, LifeCycle.ENABLE);
+        runLifeCycleTasks(LifeCycle.ENABLE);
         CrypticLibBukkit.scheduler().sync(() -> {
-            runLifeCycleTasks(this, LifeCycle.ACTIVE);
+            runLifeCycleTasks(LifeCycle.ACTIVE);
         });
     }
 
     @Override
     public final void onDisable() {
-        runLifeCycleTasks(this, LifeCycle.DISABLE);
+        runLifeCycleTasks(LifeCycle.DISABLE);
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.scheduler().cancelTasks();
@@ -150,7 +150,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(this, LifeCycle.RELOAD);
+        runLifeCycleTasks(LifeCycle.RELOAD);
     }
 
     @Override
@@ -215,28 +215,33 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     }
 
     @Override
-    public String pluginName() {
+    public @NonNull String pluginName() {
         return getDescription().getName();
     }
 
     @Override
-    public CommandManager<?, ?> commandManager() {
+    public @NonNull CommandManager<?, ?> commandManager() {
         return BukkitCommandManager.INSTANCE;
     }
 
     @Override
-    public Scheduler scheduler() {
+    public @NonNull Scheduler scheduler() {
         return CrypticLibBukkit.scheduler();
     }
 
     @Override
-    public MsgSender msgSender() {
+    public @NonNull MsgSender msgSender() {
         return BukkitMsgSender.INSTANCE;
     }
 
     @Override
-    public PermManager permManager() {
+    public @NonNull PermManager permManager() {
         return BukkitPermManager.INSTANCE;
+    }
+
+    @Override
+    public @NotNull Invoker getConsoleInvoker() {
+        return BukkitInvoker.byCommandSender(Bukkit.getConsoleSender());
     }
 
 }

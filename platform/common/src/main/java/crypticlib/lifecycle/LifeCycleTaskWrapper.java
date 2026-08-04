@@ -1,6 +1,6 @@
 package crypticlib.lifecycle;
 
-import crypticlib.internal.CrypticLibPlugin;
+import crypticlib.CrypticLibPlugin;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ public class LifeCycleTaskWrapper {
         this.priority = priority;
     }
 
-    public void runLifecycleTask(Object plugin, LifeCycle lifeCycle) {
+    public void runLifecycleTask(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         try {
             lifeCycleTask.lifecycle(plugin, lifeCycle);
         } catch (Throwable throwable) {

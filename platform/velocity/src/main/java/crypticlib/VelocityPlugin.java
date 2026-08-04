@@ -20,7 +20,6 @@ import crypticlib.command.annotation.Command;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.VelocityConfigContainer;
 import crypticlib.config.VelocityConfigWrapper;
-import crypticlib.internal.CrypticLibPlugin;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
@@ -32,6 +31,7 @@ import crypticlib.scheduler.Scheduler;
 import crypticlib.scheduler.VelocityScheduler;
 import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -68,7 +68,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
             });
         pluginScanner.scanJar(pluginFile);
         ReflectionHelper.setPluginInstance(this);
-        runLifeCycleTasks(this, LifeCycle.INIT);
+        runLifeCycleTasks(LifeCycle.INIT);
     }
 
     @Subscribe
@@ -91,7 +91,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(this, LifeCycle.LOAD);
+        runLifeCycleTasks(LifeCycle.LOAD);
 
         //Enable 阶段
         pluginScanner.getAnnotatedClasses(EventListener.class).forEach(
@@ -134,13 +134,13 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(this, LifeCycle.ENABLE);
-        proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(this, LifeCycle.ACTIVE)).schedule();
+        runLifeCycleTasks(LifeCycle.ENABLE);
+        proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE)).schedule();
     }
 
     @Subscribe
     public final void onProxyShutdown(ProxyShutdownEvent event) {
-        runLifeCycleTasks(this, LifeCycle.DISABLE);
+        runLifeCycleTasks(LifeCycle.DISABLE);
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
         scheduler().cancelTasks();
@@ -185,7 +185,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(this, LifeCycle.RELOAD);
+        runLifeCycleTasks(LifeCycle.RELOAD);
     }
 
     public final void reloadConfig() {
@@ -265,28 +265,33 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     }
 
     @Override
-    public String pluginName() {
+    public @NotNull String pluginName() {
         return pluginContainer.getDescription().getName().orElse(pluginContainer.getDescription().getId());
     }
 
     @Override
-    public CommandManager<?, ?> commandManager() {
+    public @NotNull CommandManager<?, ?> commandManager() {
         return VelocityCommandManager.INSTANCE;
     }
 
     @Override
-    public Scheduler scheduler() {
+    public @NotNull Scheduler scheduler() {
         return VelocityScheduler.INSTANCE;
     }
 
     @Override
-    public MsgSender msgSender() {
+    public @NotNull MsgSender msgSender() {
         return VelocityMsgSender.INSTANCE;
     }
 
     @Override
-    public PermManager permManager() {
+    public @NotNull PermManager permManager() {
         return VelocityPermManager.INSTANCE;
+    }
+
+    @Override
+    public @NotNull Invoker getConsoleInvoker() {
+        return VelocityInvoker.byCommandSource(proxyServer.getConsoleCommandSource());
     }
 
 }

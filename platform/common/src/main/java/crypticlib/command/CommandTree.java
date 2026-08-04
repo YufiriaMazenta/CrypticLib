@@ -40,7 +40,7 @@ public class CommandTree extends CommandNode {
     public final void register() {
         scanSubCommands();
         registerPerms();
-        CrypticLib.commandManager().register(this);
+        CrypticLib.pluginInstance().commandManager().register(this);
     }
     
 }
