@@ -83,7 +83,7 @@ public enum BungeeMsgSender implements MsgSender.ComponentSender<BaseComponent> 
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        msg = "&7[" + CrypticLib.pluginInstance().pluginName() + "] " + msg;
+        msg = "&7[" + CrypticLib.plugin().pluginName() + "] " + msg;
         sendMsg(BungeeInvoker.byCommandSender(ProxyServer.getInstance().getConsole()), msg, replaceMap);
     }
 

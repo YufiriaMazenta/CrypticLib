@@ -1,5 +1,6 @@
 package crypticlib.scheduler;
 
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTask;
@@ -88,7 +89,7 @@ public enum BungeeScheduler implements Scheduler, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = (Plugin) plugin;
     }
 

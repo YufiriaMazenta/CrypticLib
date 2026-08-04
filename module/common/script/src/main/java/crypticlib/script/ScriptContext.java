@@ -25,7 +25,7 @@ public class ScriptContext {
      * 以控制台身份创建一个上下文
      */
     public ScriptContext() {
-        this(CrypticLib.pluginInstance().getConsoleInvoker());
+        this(CrypticLib.plugin().getConsoleInvoker());
     }
 
     public ScriptContext(@NotNull Invoker invoker) {

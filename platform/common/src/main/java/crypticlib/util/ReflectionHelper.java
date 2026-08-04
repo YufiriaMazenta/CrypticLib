@@ -1,7 +1,6 @@
 package crypticlib.util;
 
 import crypticlib.CrypticLib;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +21,6 @@ public class ReflectionHelper {
     private final static Map<Class<?>, Map<String, Field>> fieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Map<String, Field>> declaredFieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<>();
-    private static Object PLUGIN_INSTANCE = null;
 
     public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
         Field cacheField = getFieldCache(fieldCaches, clazz, fieldName);
@@ -202,8 +200,8 @@ public class ReflectionHelper {
      */
     @SuppressWarnings("unchecked")
     public static <T> T getSingletonClassInstance(Class<T> clazz, Object...objects) throws NoClassDefFoundError, ClassNotFoundException {
-        if (PLUGIN_INSTANCE.getClass().isAssignableFrom(clazz)) {
-            return (T) PLUGIN_INSTANCE;
+        if (CrypticLib.plugin().getClass().isAssignableFrom(clazz)) {
+            return (T) CrypticLib.plugin();
         } else if (singletonObjectMap.containsKey(clazz)) {
             return (T) singletonObjectMap.get(clazz);
         } else {
@@ -228,18 +226,6 @@ public class ReflectionHelper {
             singletonObjectMap.put(clazz, object);
             return object;
         }
-    }
-
-    @ApiStatus.Internal
-    public static void setPluginInstance(Object pluginInstance) {
-        if (PLUGIN_INSTANCE != null) {
-            throw new UnsupportedOperationException("Plugin instance already set");
-        }
-        PLUGIN_INSTANCE = pluginInstance;
-    }
-
-    public static Object getPluginInstance() {
-        return PLUGIN_INSTANCE;
     }
 
 }

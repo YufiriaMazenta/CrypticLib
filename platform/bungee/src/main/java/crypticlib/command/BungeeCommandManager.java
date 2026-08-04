@@ -1,5 +1,6 @@
 package crypticlib.command;
 
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycleTask;
@@ -75,7 +76,7 @@ public enum BungeeCommandManager implements CommandManager<Command, Command>, Li
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         this.pluginInstance = (Plugin) plugin;
     }
 

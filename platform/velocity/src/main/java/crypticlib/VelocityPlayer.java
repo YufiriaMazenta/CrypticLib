@@ -3,7 +3,6 @@ package crypticlib;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import crypticlib.chat.VelocityTextProcessor;
-import crypticlib.util.ReflectionHelper;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -25,7 +24,7 @@ public class VelocityPlayer extends VelocityInvoker implements CommonPlayer {
     protected VelocityPlayer(@NotNull Player platformPlayer) {
         super(platformPlayer);
         this.playerId = platformPlayer.getUniqueId();
-        this.proxyServer = ((VelocityPlugin) ReflectionHelper.getPluginInstance()).proxyServer;
+        this.proxyServer = ((VelocityPlugin) CrypticLib.plugin()).proxyServer;
     }
 
     @Override

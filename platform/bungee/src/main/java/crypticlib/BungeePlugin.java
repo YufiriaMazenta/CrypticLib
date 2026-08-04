@@ -37,7 +37,6 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     public BungeePlugin() {
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
-        ReflectionHelper.setPluginInstance(this);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

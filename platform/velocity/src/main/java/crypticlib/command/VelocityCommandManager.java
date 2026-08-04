@@ -2,6 +2,7 @@ package crypticlib.command;
 
 import com.velocitypowered.api.command.Command;
 import com.velocitypowered.api.command.CommandMeta;
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
@@ -9,7 +10,6 @@ import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.TaskRule;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -80,7 +80,7 @@ public enum VelocityCommandManager implements LifeCycleTask, CommandManager<Comm
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

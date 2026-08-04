@@ -1,5 +1,6 @@
 package crypticlib.lang;
 
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lang.entry.LangEntry;
@@ -155,7 +156,7 @@ public enum LangManager implements LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         switch (lifeCycle) {
             case ENABLE:
                 Plugin bukkitPlugin = (Plugin) plugin;

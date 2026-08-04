@@ -1,5 +1,6 @@
 package crypticlib.script;
 
+import crypticlib.CrypticLibPlugin;
 import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
@@ -167,7 +168,7 @@ public enum ScriptEngine implements LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         switch (lifeCycle) {
             case ENABLE:
                 init();

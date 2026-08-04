@@ -4,7 +4,6 @@ import crypticlib.CrypticLib;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,7 +75,7 @@ public class BatchTask<T, R> {
         int itemsPerTick,
         @Nullable BatchCallback<T, R> callback
     ) {
-        this.scheduler = CrypticLib.pluginInstance().scheduler();
+        this.scheduler = CrypticLib.plugin().scheduler();
         this.items = items;
         this.processor = processor;
         this.itemsPerTick = itemsPerTick;

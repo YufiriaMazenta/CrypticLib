@@ -240,7 +240,7 @@ public class IOHelper {
      * @param msg 发送的文本
      */
     public static void info(String msg) {
-        CrypticLib.pluginInstance().msgSender().info(msg);
+        CrypticLib.plugin().msgSender().info(msg);
     }
 
     /**
@@ -250,7 +250,7 @@ public class IOHelper {
      * @param replacements 需要替换的文本
      */
     public static void info(String msg, Map<String, String> replacements) {
-        CrypticLib.pluginInstance().msgSender().info(msg, replacements);
+        CrypticLib.plugin().msgSender().info(msg, replacements);
     }
 
     /**
@@ -259,7 +259,7 @@ public class IOHelper {
      * @param msg        发送的文本
      */
     public static void debug(String msg) {
-        CrypticLib.pluginInstance().msgSender().debug(msg);
+        CrypticLib.plugin().msgSender().debug(msg);
     }
 
     /**
@@ -269,7 +269,7 @@ public class IOHelper {
      * @param replacements 需要替换的文本
      */
     public static void debug(String msg, Map<String, String> replacements) {
-        CrypticLib.pluginInstance().msgSender().debug(msg, replacements);
+        CrypticLib.plugin().msgSender().debug(msg, replacements);
     }
 
     /**

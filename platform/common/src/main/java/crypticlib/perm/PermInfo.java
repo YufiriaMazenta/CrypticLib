@@ -26,7 +26,7 @@ public class PermInfo {
     }
 
     public void register() {
-        CrypticLib.pluginInstance().permManager().regPerm(this);
+        CrypticLib.plugin().permManager().regPerm(this);
     }
 
     public boolean hasPermission(Invoker invoker) {

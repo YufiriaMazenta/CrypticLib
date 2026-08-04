@@ -14,7 +14,7 @@ public enum BuiltinScriptModule implements ScriptModule {
 
     @Override
     public String moduleName() {
-        return CrypticLib.pluginInstance().pluginName().toLowerCase() + "_builtin";
+        return CrypticLib.plugin().pluginName().toLowerCase() + "_builtin";
     }
 
     @Override

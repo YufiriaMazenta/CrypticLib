@@ -1,5 +1,6 @@
 package crypticlib.ui.handler;
 
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycleTask;
@@ -60,7 +61,7 @@ public enum MenuHandler implements Listener, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         //当插件disable时,关闭所有正在使用的页面
         for (Player player : Bukkit.getOnlinePlayers()) {
             MenuHelper.getOpeningMenu(player).ifPresent(

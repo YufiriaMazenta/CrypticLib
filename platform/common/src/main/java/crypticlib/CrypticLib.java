@@ -37,7 +37,7 @@ public class CrypticLib {
         crypticLibPlugin = plugin;
     }
 
-    public static CrypticLibPlugin pluginInstance() {
+    public static CrypticLibPlugin plugin() {
         return crypticLibPlugin;
     }
 

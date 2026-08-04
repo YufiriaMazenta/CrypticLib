@@ -315,7 +315,7 @@ public class ScriptVM {
      */
     public void pauseAndScheduleResume(long delayTicks) {
         paused = true;
-        CrypticLib.pluginInstance().scheduler().syncLater(this::resume, delayTicks);
+        CrypticLib.plugin().scheduler().syncLater(this::resume, delayTicks);
     }
 
     /**

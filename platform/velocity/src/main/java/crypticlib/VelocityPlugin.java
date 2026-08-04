@@ -67,7 +67,6 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
                 }
             });
         pluginScanner.scanJar(pluginFile);
-        ReflectionHelper.setPluginInstance(this);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

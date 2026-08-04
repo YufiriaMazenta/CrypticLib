@@ -37,7 +37,6 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     public BukkitPlugin() {
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
-        ReflectionHelper.setPluginInstance(this);
         runLifeCycleTasks(LifeCycle.INIT);
     }
 

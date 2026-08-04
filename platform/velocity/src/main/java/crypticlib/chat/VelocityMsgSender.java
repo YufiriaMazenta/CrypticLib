@@ -2,18 +2,11 @@ package crypticlib.chat;
 
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
-import crypticlib.CrypticLib;
-import crypticlib.PlatformSide;
-import crypticlib.VelocityPlugin;
-import crypticlib.Invoker;
-import crypticlib.CommonPlayer;
-import crypticlib.VelocityInvoker;
-import crypticlib.VelocityPlayer;
+import crypticlib.*;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycle;
 import crypticlib.lifecycle.LifeCycleTask;
 import crypticlib.lifecycle.TaskRule;
-import crypticlib.util.ReflectionHelper;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +29,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
      */
     private VelocityPlugin plugin() {
         if (plugin == null) {
-            plugin = (VelocityPlugin) ReflectionHelper.getPluginInstance();
+            plugin = (VelocityPlugin) CrypticLib.plugin();
         }
         return plugin;
     }
@@ -119,12 +112,12 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
 
     @Override
     public void info(String msg, Map<String, String> replaceMap) {
-        msg = "&7[" + CrypticLib.pluginName() + "] " + msg;
+        msg = "&7[" + CrypticLib.plugin().pluginName() + "] " + msg;
         sendMsg(VelocityInvoker.byCommandSource(plugin().proxyServer().getConsoleCommandSource()), msg, replaceMap);
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

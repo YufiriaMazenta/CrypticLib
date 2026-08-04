@@ -1,6 +1,7 @@
 package crypticlib.scheduler;
 
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
 import crypticlib.lifecycle.LifeCycle;
@@ -71,7 +72,7 @@ public enum VelocityScheduler implements Scheduler, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

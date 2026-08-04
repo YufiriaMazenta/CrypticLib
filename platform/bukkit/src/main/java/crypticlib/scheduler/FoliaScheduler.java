@@ -1,5 +1,6 @@
 package crypticlib.scheduler;
 
+import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifeCycleTaskSettings;
 import crypticlib.lifecycle.LifeCycleTask;
@@ -216,7 +217,7 @@ public enum FoliaScheduler implements BukkitScheduler, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(Object plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
         this.plugin = (Plugin) plugin;
     }
     
