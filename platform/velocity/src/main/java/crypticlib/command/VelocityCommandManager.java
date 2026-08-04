@@ -5,10 +5,10 @@ import com.velocitypowered.api.command.CommandMeta;
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
-import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.LifeCycle;
-import crypticlib.lifecycle.LifeCycleTask;
-import crypticlib.lifecycle.TaskRule;
+import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleTask;
+import crypticlib.lifecycle.LifecycleRule;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -16,13 +16,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@LifeCycleTaskSettings(
+@LifecycleTaskSettings(
     rules = {
-        @TaskRule(lifeCycle = LifeCycle.INIT)
+        @LifecycleRule(lifeCycle = Lifecycle.INIT)
     },
     platforms = PlatformSide.VELOCITY
 )
-public enum VelocityCommandManager implements LifeCycleTask, CommandManager<Command, Command> {
+public enum VelocityCommandManager implements LifecycleTask, CommandManager<Command, Command> {
 
     INSTANCE;
 
@@ -80,7 +80,7 @@ public enum VelocityCommandManager implements LifeCycleTask, CommandManager<Comm
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

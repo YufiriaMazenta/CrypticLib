@@ -5,9 +5,9 @@ import java.lang.annotation.*;
 @Documented
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface TaskRule {
+public @interface LifecycleRule {
 
-    LifeCycle lifeCycle();
+    Lifecycle lifeCycle();
 
     int priority() default 0;
 

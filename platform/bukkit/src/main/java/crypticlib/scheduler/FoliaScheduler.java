@@ -2,10 +2,10 @@ package crypticlib.scheduler;
 
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
-import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.LifeCycleTask;
-import crypticlib.lifecycle.LifeCycle;
-import crypticlib.lifecycle.TaskRule;
+import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.LifecycleTask;
+import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleRule;
 import crypticlib.scheduler.task.FoliaTaskWrapper;
 import crypticlib.scheduler.task.BukkitTaskWrapper;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
@@ -23,11 +23,11 @@ import java.util.function.Consumer;
 /**
  * Folia平台的调度器
  */
-@LifeCycleTaskSettings(
-    rules = @TaskRule(lifeCycle = LifeCycle.INIT),
+@LifecycleTaskSettings(
+    rules = @LifecycleRule(lifeCycle = Lifecycle.INIT),
     platforms = PlatformSide.BUKKIT
 )
-public enum FoliaScheduler implements BukkitScheduler, LifeCycleTask {
+public enum FoliaScheduler implements BukkitScheduler, LifecycleTask {
 
     INSTANCE;
 
@@ -217,7 +217,7 @@ public enum FoliaScheduler implements BukkitScheduler, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
         this.plugin = (Plugin) plugin;
     }
     

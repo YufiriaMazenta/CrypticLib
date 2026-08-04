@@ -3,11 +3,11 @@ package crypticlib;
 import crypticlib.chat.MsgSender;
 import crypticlib.command.CommandManager;
 import crypticlib.internal.PluginScanner;
-import crypticlib.lifecycle.LifeCycle;
-import crypticlib.lifecycle.LifeCycleTask;
-import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.LifeCycleTaskWrapper;
-import crypticlib.lifecycle.TaskRule;
+import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleTask;
+import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.LifecycleTaskWrapper;
+import crypticlib.lifecycle.LifecycleRule;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
@@ -42,15 +42,15 @@ public interface CrypticLibPlugin {
     @NotNull
     Invoker getConsoleInvoker();
 
-    default void runLifeCycleTasks(LifeCycle lifeCycle) {
-        List<LifeCycleTaskWrapper> taskWrappers = new ArrayList<>();
-        PluginScanner.INSTANCE.getAnnotatedClasses(LifeCycleTaskSettings.class).forEach(
+    default void runLifecycleTasks(Lifecycle lifeCycle) {
+        List<LifecycleTaskWrapper> taskWrappers = new ArrayList<>();
+        PluginScanner.INSTANCE.getAnnotatedClasses(LifecycleTaskSettings.class).forEach(
             taskClass -> {
                 try {
-                    if (!LifeCycleTask.class.isAssignableFrom(taskClass)) {
+                    if (!LifecycleTask.class.isAssignableFrom(taskClass)) {
                         return;
                     }
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
+                    LifecycleTaskSettings annotation = taskClass.getAnnotation(LifecycleTaskSettings.class);
                     if (annotation == null) {
                         return;
                     }
@@ -58,20 +58,20 @@ public interface CrypticLibPlugin {
                     if (platforms.length > 0 && !Arrays.asList(platforms).contains(CrypticLib.CURRENT_PLATFORM)) {
                         return;
                     }
-                    for (TaskRule taskRule : annotation.rules()) {
-                        LifeCycle annotationLifeCycle = taskRule.lifeCycle();
-                        int priority = taskRule.priority();
-                        if (annotationLifeCycle.equals(lifeCycle)) {
-                            LifeCycleTask task = (LifeCycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
+                    for (LifecycleRule lifecycleRule : annotation.rules()) {
+                        Lifecycle annotationLifecycle = lifecycleRule.lifeCycle();
+                        int priority = lifecycleRule.priority();
+                        if (annotationLifecycle.equals(lifeCycle)) {
+                            LifecycleTask task = (LifecycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
                             List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
                             List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
-                            LifeCycleTaskWrapper wrapper = new LifeCycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
+                            LifecycleTaskWrapper wrapper = new LifecycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
                             taskWrappers.add(wrapper);
                             return;
                         }
                     }
                 } catch (Throwable throwable) {
-                    LifeCycleTaskSettings annotation = taskClass.getAnnotation(LifeCycleTaskSettings.class);
+                    LifecycleTaskSettings annotation = taskClass.getAnnotation(LifecycleTaskSettings.class);
                     List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
                     if (isExceptionMatched(ignoreExceptions, throwable)) {
                         return;
@@ -85,8 +85,8 @@ public interface CrypticLibPlugin {
                 }
             }
         );
-        taskWrappers.sort(Comparator.comparingInt(LifeCycleTaskWrapper::priority));
-        for (LifeCycleTaskWrapper taskWrapper : taskWrappers) {
+        taskWrappers.sort(Comparator.comparingInt(LifecycleTaskWrapper::priority));
+        for (LifecycleTaskWrapper taskWrapper : taskWrappers) {
             taskWrapper.runLifecycleTask(this, lifeCycle);
         }
     }

@@ -37,7 +37,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     public BungeePlugin() {
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
-        runLifeCycleTasks(LifeCycle.INIT);
+        runLifecycleTasks(Lifecycle.INIT);
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifecycleTasks(Lifecycle.LOAD);
     }
 
     @Override
@@ -107,13 +107,13 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(LifeCycle.ENABLE);
-        getProxy().getScheduler().runAsync(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE));
+        runLifecycleTasks(Lifecycle.ENABLE);
+        getProxy().getScheduler().runAsync(this, () -> runLifecycleTasks(Lifecycle.ACTIVE));
     }
 
     @Override
     public final void onDisable() {
-        runLifeCycleTasks(LifeCycle.DISABLE);
+        runLifecycleTasks(Lifecycle.DISABLE);
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         //cancelTasks 同时取消官方调度器任务与 BungeeScheduler 私有线程池中的任务,避免禁用后周期任务继续运行
@@ -148,7 +148,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(LifeCycle.RELOAD);
+        runLifecycleTasks(Lifecycle.RELOAD);
     }
     
     public final @NotNull Configuration getConfig() {

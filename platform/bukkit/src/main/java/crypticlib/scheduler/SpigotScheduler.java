@@ -2,10 +2,10 @@ package crypticlib.scheduler;
 
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
-import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.LifeCycleTask;
-import crypticlib.lifecycle.LifeCycle;
-import crypticlib.lifecycle.TaskRule;
+import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.LifecycleTask;
+import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleRule;
 import crypticlib.scheduler.task.SpigotTaskWrapper;
 import crypticlib.scheduler.task.BukkitTaskWrapper;
 import org.bukkit.Bukkit;
@@ -17,11 +17,11 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Bukkit平台的调度器
  */
-@LifeCycleTaskSettings(
-    rules = @TaskRule(lifeCycle = LifeCycle.INIT),
+@LifecycleTaskSettings(
+    rules = @LifecycleRule(lifeCycle = Lifecycle.INIT),
     platforms = PlatformSide.BUKKIT
 )
-public enum SpigotScheduler implements BukkitScheduler, LifeCycleTask {
+public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
 
     INSTANCE;
     
@@ -125,7 +125,7 @@ public enum SpigotScheduler implements BukkitScheduler, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
         this.plugin = (Plugin) plugin;
     }
     

@@ -1,6 +1,6 @@
 package crypticlib.lifecycle;
 
-public enum LifeCycle {
+public enum Lifecycle {
 
     INIT, //插件实例初始化时
     LOAD, //插件调用onLoad方法时

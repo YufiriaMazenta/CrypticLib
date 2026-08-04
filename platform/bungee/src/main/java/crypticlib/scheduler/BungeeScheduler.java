@@ -2,10 +2,10 @@ package crypticlib.scheduler;
 
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
-import crypticlib.lifecycle.LifeCycle;
-import crypticlib.lifecycle.LifeCycleTask;
-import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.TaskRule;
+import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleTask;
+import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.LifecycleRule;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,11 +16,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-@LifeCycleTaskSettings(
-    rules = @TaskRule(lifeCycle = LifeCycle.INIT),
+@LifecycleTaskSettings(
+    rules = @LifecycleRule(lifeCycle = Lifecycle.INIT),
     platforms = PlatformSide.BUNGEE
 )
-public enum BungeeScheduler implements Scheduler, LifeCycleTask {
+public enum BungeeScheduler implements Scheduler, LifecycleTask {
 
     INSTANCE;
 
@@ -89,7 +89,7 @@ public enum BungeeScheduler implements Scheduler, LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
         this.plugin = (Plugin) plugin;
     }
 

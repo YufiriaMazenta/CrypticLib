@@ -67,7 +67,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
                 }
             });
         pluginScanner.scanJar(pluginFile);
-        runLifeCycleTasks(LifeCycle.INIT);
+        runLifecycleTasks(Lifecycle.INIT);
     }
 
     @Subscribe
@@ -90,7 +90,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
             }
         );
         whenLoad();
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifecycleTasks(Lifecycle.LOAD);
 
         //Enable 阶段
         pluginScanner.getAnnotatedClasses(EventListener.class).forEach(
@@ -133,13 +133,13 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
             }
         );
         whenEnable();
-        runLifeCycleTasks(LifeCycle.ENABLE);
-        proxyServer.getScheduler().buildTask(this, () -> runLifeCycleTasks(LifeCycle.ACTIVE)).schedule();
+        runLifecycleTasks(Lifecycle.ENABLE);
+        proxyServer.getScheduler().buildTask(this, () -> runLifecycleTasks(Lifecycle.ACTIVE)).schedule();
     }
 
     @Subscribe
     public final void onProxyShutdown(ProxyShutdownEvent event) {
-        runLifeCycleTasks(LifeCycle.DISABLE);
+        runLifecycleTasks(Lifecycle.DISABLE);
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
         scheduler().cancelTasks();
@@ -184,7 +184,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(LifeCycle.RELOAD);
+        runLifecycleTasks(Lifecycle.RELOAD);
     }
 
     public final void reloadConfig() {

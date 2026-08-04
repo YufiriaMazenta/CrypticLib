@@ -1,10 +1,10 @@
 package crypticlib.script;
 
 import crypticlib.CrypticLibPlugin;
-import crypticlib.lifecycle.LifeCycleTask;
-import crypticlib.lifecycle.LifeCycle;
-import crypticlib.lifecycle.LifeCycleTaskSettings;
-import crypticlib.lifecycle.TaskRule;
+import crypticlib.lifecycle.LifecycleTask;
+import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.LifecycleRule;
 import crypticlib.script.ast.ASTNode;
 import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
@@ -39,11 +39,11 @@ import java.util.concurrent.ConcurrentHashMap;
  *   CompiledScript script = ScriptEngine.INSTANCE.compile("my_script", source);
  *   script.execute(context);
  */
-@LifeCycleTaskSettings(rules = {
-    @TaskRule(lifeCycle = LifeCycle.ENABLE),
-    @TaskRule(lifeCycle = LifeCycle.RELOAD)
+@LifecycleTaskSettings(rules = {
+    @LifecycleRule(lifeCycle = Lifecycle.ENABLE),
+    @LifecycleRule(lifeCycle = Lifecycle.RELOAD)
 })
-public enum ScriptEngine implements LifeCycleTask {
+public enum ScriptEngine implements LifecycleTask {
 
     INSTANCE;
 
@@ -168,7 +168,7 @@ public enum ScriptEngine implements LifeCycleTask {
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, LifeCycle lifeCycle) {
+    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
         switch (lifeCycle) {
             case ENABLE:
                 init();

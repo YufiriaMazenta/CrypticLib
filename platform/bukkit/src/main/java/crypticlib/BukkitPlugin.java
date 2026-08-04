@@ -37,7 +37,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     public BukkitPlugin() {
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
-        runLifeCycleTasks(LifeCycle.INIT);
+        runLifecycleTasks(Lifecycle.INIT);
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
             }
         );
         whenLoad();
-        runLifeCycleTasks(LifeCycle.LOAD);
+        runLifecycleTasks(Lifecycle.LOAD);
     }
 
     @Override
@@ -107,15 +107,15 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
             }
         );
         whenEnable();
-        runLifeCycleTasks(LifeCycle.ENABLE);
+        runLifecycleTasks(Lifecycle.ENABLE);
         CrypticLibBukkit.scheduler().sync(() -> {
-            runLifeCycleTasks(LifeCycle.ACTIVE);
+            runLifecycleTasks(Lifecycle.ACTIVE);
         });
     }
 
     @Override
     public final void onDisable() {
-        runLifeCycleTasks(LifeCycle.DISABLE);
+        runLifecycleTasks(Lifecycle.DISABLE);
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.scheduler().cancelTasks();
@@ -149,7 +149,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifeCycleTasks(LifeCycle.RELOAD);
+        runLifecycleTasks(Lifecycle.RELOAD);
     }
 
     @Override

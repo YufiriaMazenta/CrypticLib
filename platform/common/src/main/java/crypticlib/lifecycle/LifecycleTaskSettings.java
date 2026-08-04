@@ -7,13 +7,13 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface LifeCycleTaskSettings {
+public @interface LifecycleTaskSettings {
 
     /**
      * 用于标记该生命周期任务的执行规则
      * @return
      */
-    TaskRule[] rules();
+    LifecycleRule[] rules();
 
     /**
      * 指定该任务在哪些平台执行
