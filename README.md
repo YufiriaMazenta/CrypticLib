@@ -26,7 +26,7 @@ pom.xml
 <repositories>
 	<repository>
 	    <id>crypticlib</id>
-	    <url>https://repo.crypticlib.incrafttime.top/repository/maven-public/</url>
+	    <url>https://repo.crypticlib.com/repository/maven-public/</url>
 	</repository>
 </repositories>
 ```
@@ -46,7 +46,7 @@ build.gradle.kts
 ```kotlin
 repositories {
     //CrypticLib
-    maven("https://repo.crypticlib.incrafttime.top/repository/maven-public/")
+    maven("https://repo.crypticlib.com/repository/maven-public/")
 }
 ```
 
@@ -61,7 +61,7 @@ build.gradle
 ```groovy
 repositories {
     maven {
-        url = "https://repo.crypticlib.incrafttime.top/repository/maven-public/"
+        url = "https://repo.crypticlib.com/repository/maven-public/"
     }
 }
 ```
