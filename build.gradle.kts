@@ -7,7 +7,7 @@ rootProject.version = rootProject.findProperty("version").toString()
 // 有API变动(新增/删除/更改声明)时更新修订号
 // 仅内部修改,例如BUG修复时更新额外版本号
 
-var repositoryUrl = "https://repo.crypticlib.incrafttime.top/repository/"
+var repositoryUrl = "https://repo.crypticlib.com/repository/"
 repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
     repositoryUrl.plus("maven-snapshots/")
 } else {
@@ -69,7 +69,7 @@ subprojects {
         maven("https://repo.codemc.io/repository/nms/")
         maven("https://libraries.minecraft.net")
         //CrypticLib(自有仓库, 同时托管 folia-api 与 velocity 构件)
-        maven("https://repo.crypticlib.incrafttime.top/repository/maven-public/") {
+        maven("https://repo.crypticlib.com/repository/maven-public/") {
             content {
                 includeGroup("com.crypticlib")
                 includeGroup("dev.folia")
