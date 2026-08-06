@@ -10,7 +10,7 @@ import java.util.Objects;
  * <p>
  * 格式为 "namespace:key",例如 "minecraft:stone"
  */
-public final class MinecraftKey implements Comparable<MinecraftKey> {
+public final class Key implements Comparable<Key> {
 
     /**
      * 默认命名空间
@@ -20,7 +20,7 @@ public final class MinecraftKey implements Comparable<MinecraftKey> {
     private final String namespace;
     private final String key;
 
-    private MinecraftKey(@NotNull String namespace, @NotNull String key) {
+    private Key(@NotNull String namespace, @NotNull String key) {
         this.namespace = namespace;
         this.key = key;
     }
@@ -35,7 +35,7 @@ public final class MinecraftKey implements Comparable<MinecraftKey> {
      * @param string 格式为 "namespace:key" 的字符串
      * @return Key实例,如果格式不合法则返回null
      */
-    public static @Nullable MinecraftKey key(@NotNull String string) {
+    public static @Nullable Key key(@NotNull String string) {
         int index = string.indexOf(':');
         if (index == -1) {
             return key(DEFAULT_NAMESPACE, string);
@@ -52,14 +52,14 @@ public final class MinecraftKey implements Comparable<MinecraftKey> {
      * @param key 键
      * @return Key实例,如果格式不合法则返回null
      */
-    public static @Nullable MinecraftKey key(@NotNull String namespace, @NotNull String key) {
+    public static @Nullable Key key(@NotNull String namespace, @NotNull String key) {
         if (!isValidNamespace(namespace)) {
             return null;
         }
         if (!isValidKey(key)) {
             return null;
         }
-        return new MinecraftKey(namespace, key);
+        return new Key(namespace, key);
     }
 
     /**
@@ -150,7 +150,7 @@ public final class MinecraftKey implements Comparable<MinecraftKey> {
     }
 
     @Override
-    public int compareTo(@NotNull MinecraftKey other) {
+    public int compareTo(@NotNull Key other) {
         int namespaceCompare = this.namespace.compareTo(other.namespace);
         if (namespaceCompare != 0) {
             return namespaceCompare;
@@ -161,8 +161,8 @@ public final class MinecraftKey implements Comparable<MinecraftKey> {
     @Override
     public boolean equals(@Nullable Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof MinecraftKey)) return false;
-        MinecraftKey other = (MinecraftKey) obj;
+        if (!(obj instanceof Key)) return false;
+        Key other = (Key) obj;
         return this.namespace.equals(other.namespace) && this.key.equals(other.key);
     }
 
