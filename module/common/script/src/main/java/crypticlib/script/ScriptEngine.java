@@ -170,7 +170,7 @@ public enum ScriptEngine implements LifecycleTask {
     @Override
     public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
         switch (lifeCycle) {
-            case ENABLE:
+            case LOAD:
                 init();
                 break;
             case RELOAD:
