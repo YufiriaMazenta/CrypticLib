@@ -1,6 +1,9 @@
 package crypticlib.util;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,7 +13,7 @@ import java.util.Map;
 /**
  * Yaml配置文件相关工具类
  */
-public class YamlConfigHelper {
+public class BukkitConfigHelper {
 
     /**
      * 将yaml config转化为map
@@ -32,6 +35,20 @@ public class YamlConfigHelper {
             }
         );
         return map;
+    }
+
+    public static @NotNull ConfigurationSection map2ConfigSection(Map<?, ?> map) {
+        MemoryConfiguration memoryConfigSection = new MemoryConfiguration();
+        for (Map.Entry<?, ?> e : map.entrySet()) {
+            String key = String.valueOf(e.getKey());
+            Object value = e.getValue();
+            if (value instanceof Map<?, ?>) {
+                memoryConfigSection.set(key, map2ConfigSection((Map<?, ?>) value));
+            } else {
+                memoryConfigSection.set(key, value);
+            }
+        }
+        return memoryConfigSection;
     }
 
     /**
