@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *   script.execute(context);
  */
 @LifecycleTaskSettings(rules = {
-    @LifecycleRule(lifeCycle = Lifecycle.ENABLE),
+    @LifecycleRule(lifeCycle = Lifecycle.LOAD),
     @LifecycleRule(lifeCycle = Lifecycle.RELOAD)
 })
 public enum ScriptEngine implements LifecycleTask {
