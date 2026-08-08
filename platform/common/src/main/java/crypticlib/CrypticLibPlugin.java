@@ -87,6 +87,7 @@ public interface CrypticLibPlugin {
         );
         taskWrappers.sort(Comparator.comparingInt(LifecycleTaskWrapper::priority));
         for (LifecycleTaskWrapper taskWrapper : taskWrappers) {
+            CrypticLib.debug("Call lifecycle task | Lifecycle: " + lifeCycle.name() + ", Class: " + taskWrapper.lifeCycleTask().getClass().getName());
             taskWrapper.runLifecycleTask(this, lifeCycle);
         }
     }
