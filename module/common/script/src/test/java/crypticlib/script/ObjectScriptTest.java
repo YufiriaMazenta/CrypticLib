@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -373,6 +374,125 @@ public class ObjectScriptTest {
             ScriptContext ctx = ctx();
             ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
             assertTrue(exec("obj", ctx).asBoolean());
+        }
+    }
+
+    // ==================== 类型检查函数 ====================
+
+    @Nested
+    @DisplayName("类型检查函数")
+    class TypeCheckFunctions {
+
+        @Test
+        @DisplayName("get_class 返回完整类名")
+        void getClassReturnsFullName() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            String className = exec("obj.get_class()", ctx).asString();
+            assertEquals("crypticlib.script.ObjectScriptTest$DummyPlayer", className);
+        }
+
+        @Test
+        @DisplayName("get_class 对 null receiver 返回 nil")
+        void getClassWithNullReceiver() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", ScriptValue.nil());
+            assertTrue(exec("obj.get_class()", ctx).isNull());
+        }
+
+        @Test
+        @DisplayName("is_subclass_of 判断子类关系")
+        void isSubclassOf() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("child", wrap(new ArrayList<>()));
+            ctx.setVariable("parent", wrap(new Object()));
+            assertTrue(exec("child.is_subclass_of(parent)", ctx).asBoolean());
+            assertFalse(exec("parent.is_subclass_of(child)", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("is_subclass_of 同类型返回 false")
+        void isSubclassOfSameType() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("a", wrap(new ArrayList<>()));
+            ctx.setVariable("b", wrap(new ArrayList<>()));
+            assertFalse(exec("a.is_subclass_of(b)", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("is_superclass_of 判断父类关系")
+        void isSuperclassOf() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("parent", wrap(new Object()));
+            ctx.setVariable("child", wrap(new ArrayList<>()));
+            assertTrue(exec("parent.is_superclass_of(child)", ctx).asBoolean());
+            assertFalse(exec("child.is_superclass_of(parent)", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("is_instance_of 判断实例类型")
+        void isInstanceOf() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertTrue(exec("obj.is_instance_of(\"java.lang.Object\")", ctx).asBoolean());
+            assertTrue(exec("obj.is_instance_of(\"crypticlib.script.ObjectScriptTest$DummyPlayer\")", ctx).asBoolean());
+            assertFalse(exec("obj.is_instance_of(\"java.lang.String\")", ctx).asBoolean());
+        }
+
+        @Test
+        @DisplayName("is_instance_of 对不存在的类抛异常")
+        void isInstanceOfNonexistentClass() {
+            ScriptContext ctx = ctx();
+            ctx.setVariable("obj", wrap(new DummyPlayer("Steve")));
+            assertThrows(ScriptException.class, () -> exec("obj.is_instance_of(\"com.nonexistent.Foo\")", ctx));
+        }
+    }
+
+    // ==================== 对象创建函数 ====================
+
+    @Nested
+    @DisplayName("对象创建函数")
+    class ObjectCreationFunctions {
+
+        @Test
+        @DisplayName("new_instance 创建无参构造对象")
+        void newInstanceNoArgs() {
+            ScriptContext ctx = ctx();
+            ScriptValue result = exec("new_instance(\"java.lang.StringBuilder\")", ctx);
+            assertTrue(result.isObject());
+            assertEquals("java.lang.StringBuilder", exec("new_instance(\"java.lang.StringBuilder\").get_class()", ctx).asString());
+        }
+
+        @Test
+        @DisplayName("new_instance 创建带参构造对象")
+        void newInstanceWithArgs() {
+            ScriptContext ctx = ctx();
+            ScriptValue result = exec("new_instance(\"java.lang.StringBuilder\", \"Hello\")", ctx);
+            assertTrue(result.isObject());
+            assertEquals("Hello", exec("new_instance(\"java.lang.StringBuilder\", \"Hello\").invoke(\"toString\")", ctx).asString());
+        }
+
+        @Test
+        @DisplayName("new_instance 创建 Integer")
+        void newInstanceInteger() {
+            ScriptContext ctx = ctx();
+            ScriptValue result = exec("new_instance(\"java.lang.Integer\", 42)", ctx);
+            assertTrue(result.isObject());
+            assertEquals(42, exec("new_instance(\"java.lang.Integer\", 42).invoke(\"intValue\")", ctx).asInt());
+        }
+
+        @Test
+        @DisplayName("new_instance 对不存在的类抛异常")
+        void newInstanceNonexistentClass() {
+            ScriptContext ctx = ctx();
+            assertThrows(ScriptException.class, () -> exec("new_instance(\"com.nonexistent.Foo\")", ctx));
+        }
+
+        @Test
+        @DisplayName("new_instance 对不匹配的构造函数抛异常")
+        void newInstanceNoMatchingConstructor() {
+            ScriptContext ctx = ctx();
+            assertThrows(ScriptException.class, () -> exec("new_instance(\"java.lang.Integer\", \"notANumber\")", ctx));
         }
     }
 

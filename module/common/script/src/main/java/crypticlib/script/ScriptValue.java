@@ -326,15 +326,26 @@ public abstract class ScriptValue {
 
     public static final class ObjectValue extends ScriptValue {
         private final Object value;
+        private final Class<?> type;
         private final PropertyResolver resolver;
 
         public ObjectValue(Object value, PropertyResolver resolver) {
             this.value = value;
+            this.type = value == null ? null : value.getClass();
             this.resolver = resolver;
         }
 
         public Object value() {
             return value;
+        }
+
+        /**
+         * 获取对象的类型
+         *
+         * @return 对象的类型，如果对象为null则返回null
+         */
+        public Class<?> type() {
+            return type;
         }
 
         public PropertyResolver resolver() {
@@ -373,13 +384,13 @@ public abstract class ScriptValue {
             return value != null;
         }
 
-        private String typeName() {
-            return value == null ? "null" : value.getClass().getSimpleName();
+        public String typeName() {
+            return type == null ? "null" : type.getName();
         }
 
         @Override
         public String toString() {
-            return "Object(" + (value == null ? "null" : value.getClass().getSimpleName()) + ")";
+            return "Object(" + typeName() + ")";
         }
     }
 }
