@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
@@ -387,17 +388,6 @@ public class DependencyDownloader extends AbstractXmlParser {
         return IOHelper.validateSha1(file, sha1File);
     }
 
-    @NotNull
-    private String sha1Hex(@NotNull File file) throws Exception {
-        return IOHelper.sha1Hex(file);
-    }
-
-    @NotNull
-    private File copyFile(@NotNull File source, @NotNull File dest) throws IOException {
-        Files.copy(source.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        return dest;
-    }
-
     /**
      * 对 JAR 执行重定位。
      * 先写入与目标同目录的临时文件, 完成后原子 rename 到目标, 避免中途失败留下非空但损坏的产物;
@@ -417,7 +407,7 @@ public class DependencyDownloader extends AbstractXmlParser {
         File tempSource = File.createTempFile(file.getName(), ".jar");
         File tempOut = File.createTempFile(name, "_r2.jar", file.getParentFile());
         try {
-            copyFile(file, tempSource);
+            IOHelper.copyFile(file.toPath(), tempSource.toPath(), StandardCopyOption.REPLACE_EXISTING);
             new JarRelocator(tempSource, tempOut, rules).run();
             try {
                 Files.move(tempOut.toPath(), rel.toPath(),

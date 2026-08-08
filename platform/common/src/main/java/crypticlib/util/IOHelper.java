@@ -11,6 +11,8 @@ import java.net.URLConnection;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -124,33 +126,30 @@ public class IOHelper {
     }
 
     /**
-     * 复制文件
+     * 复制文件，底层委托给 Files.copy，但增加了“失败自动清理残骸”的能力。
      *
-     * @param from 原始文件
-     * @param to   复制结果
-     * @return 复制后的文件
-     * @throws IOException 复制失败时抛出
+     * @param source      源文件路径
+     * @param target      目标文件路径
+     * @param options     复制选项（如 REPLACE_EXISTING, COPY_ATTRIBUTES 等）
+     * @return 目标文件路径（即传入的 target）
+     * @throws IOException 复制失败时抛出，且会清理不完整的目标文件（特殊场景除外）
      */
     @NotNull
-    public static File copyFile(File from, File to) throws IOException {
-        try (
-            FileInputStream fileIn = new FileInputStream(from);
-            FileOutputStream fileOut = new FileOutputStream(to);
-            FileChannel channelIn = fileIn.getChannel();
-            FileChannel channelOut = fileOut.getChannel()
-        ) {
-            long size = channelIn.size();
-            long transferred = 0;
-            while (transferred < size) {
-                transferred += channelIn.transferTo(transferred, size - transferred, channelOut);
-            }
+    public static Path copyFile(Path source, Path target, CopyOption... options) throws IOException {
+        try {
+            // 直接调用 JDK 原生方法，性能最优
+            return Files.copy(source, target, options);
         } catch (IOException e) {
-            to.delete();  // 清理不完整的文件
+            if (!(e instanceof FileAlreadyExistsException)) {
+                // 尝试删除可能留下的不完整/空文件。删除失败（如权限不足）则静默忽略，
+                try {
+                    Files.deleteIfExists(target);
+                } catch (IOException ignored) {
+                }
+            }
             throw e;
         }
-        return to;
     }
-
 
     /**
      * 下载文件
