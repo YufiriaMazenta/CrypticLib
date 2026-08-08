@@ -1,5 +1,6 @@
 package crypticlib.dependency;
 
+import crypticlib.CrypticLib;
 import crypticlib.util.IOHelper;
 import me.lucko.jarrelocator.JarRelocator;
 import me.lucko.jarrelocator.Relocation;
@@ -18,7 +19,6 @@ import java.io.InputStream;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.security.MessageDigest;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -202,7 +202,7 @@ public class DependencyDownloader extends AbstractXmlParser {
                 downloaded.addAll(loadDependency(repos, dep));
             } catch (IOException e) {
                 // 传递依赖下载失败时跳过，不影响主依赖加载
-                IOHelper.info("Warning: Failed to download transitive dependency " + dep);
+                CrypticLib.info("Warning: Failed to download transitive dependency " + dep);
             }
         }
         return downloaded;
@@ -413,7 +413,7 @@ public class DependencyDownloader extends AbstractXmlParser {
         List<Relocation> rules = relocation.stream()
             .map(JarRelocation::toRelocation)
             .collect(Collectors.toList());
-        IOHelper.info("Relocating " + dep + "...");
+        CrypticLib.info("Relocating " + dep + "...");
         File tempSource = File.createTempFile(file.getName(), ".jar");
         File tempOut = File.createTempFile(name, "_r2.jar", file.getParentFile());
         try {
@@ -427,7 +427,7 @@ public class DependencyDownloader extends AbstractXmlParser {
                 Files.move(tempOut.toPath(), rel.toPath(),
                     StandardCopyOption.REPLACE_EXISTING);
             }
-            IOHelper.info("Relocated to " + rel.getName());
+            CrypticLib.info("Relocated to " + rel.getName());
         } finally {
             tempSource.delete();
             if (tempOut.exists()) {

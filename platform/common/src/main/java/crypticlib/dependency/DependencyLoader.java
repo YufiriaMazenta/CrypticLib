@@ -60,7 +60,7 @@ public enum DependencyLoader {
         String url = dependency.toString();
         String[] args = url.split(":");
 
-        IOHelper.info("Loading " + args[0] + ":" + args[1] + ":" + args[2] + (transitive ? " (transitive)" : ""));
+        CrypticLib.info("Loading " + args[0] + ":" + args[1] + ":" + args[2] + (transitive ? " (transitive)" : ""));
 
         DependencyDownloader downloader = new DependencyDownloader(baseDir, relocation);
 
@@ -87,7 +87,7 @@ public enum DependencyLoader {
                 String pom = String.format("%s/%s/%s/%s/%s-%s.pom",
                     repo.url(), args[0].replace('.', '/'), args[1], args[2], args[1], args[2]);
                 try {
-                    IOHelper.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + " from " + repo.url() + "...");
+                    CrypticLib.info("Downloading " + args[0] + ":" + args[1] + ":" + args[2] + " from " + repo.url() + "...");
                     URLConnection conn = new URL(pom).openConnection();
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(30000);
@@ -113,7 +113,7 @@ public enum DependencyLoader {
 
         // 注入所有依赖
         downloader.injectClasspath(allDeps);
-        IOHelper.info("Done loading " + args[0] + ":" + args[1] + ":" + args[2]);
+        CrypticLib.info("Done loading " + args[0] + ":" + args[1] + ":" + args[2]);
     }
 
     /**

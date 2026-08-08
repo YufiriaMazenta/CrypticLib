@@ -15,7 +15,6 @@ import crypticlib.listener.EventListener;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
-import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -56,7 +55,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
                 BukkitConfigContainer configContainer = new BukkitConfigContainer(configClass, configWrapper);
                 configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
-                IOHelper.debug("Loaded config file: " + path);
+                CrypticLib.debug("Loaded config file: " + path);
             }
         );
         whenLoad();
@@ -73,7 +72,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
                     }
                     Listener listener = (Listener) ReflectionHelper.getSingletonClassInstance(listenerClass);
                     Bukkit.getPluginManager().registerEvents(listener, this);
-                    IOHelper.debug("Registered listener for class: " + listenerClass.getName());
+                    CrypticLib.debug("Registered listener for class: " + listenerClass.getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     EventListener annotation = listenerClass.getAnnotation(EventListener.class);
                     if (!annotation.ignoreClassNotFound()) {
@@ -96,7 +95,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
                     }
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
-                    IOHelper.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
+                    CrypticLib.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();

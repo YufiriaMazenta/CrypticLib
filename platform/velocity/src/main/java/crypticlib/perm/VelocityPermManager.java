@@ -1,6 +1,6 @@
 package crypticlib.perm;
 
-import crypticlib.util.IOHelper;
+import crypticlib.CrypticLib;
 
 import java.util.Collections;
 import java.util.Map;
@@ -24,7 +24,7 @@ public enum VelocityPermManager implements PermManager {
             permissions.put(permission.permission(), permission);
         } else {
             //Velocity 没有 OP 概念,OP/NOT_OP/FALSE 无法映射,仅记录 debug 日志说明该默认值不生效
-            IOHelper.debug("Velocity does not support PermDef " + permission.permDef()
+            CrypticLib.debug("Velocity does not support PermDef " + permission.permDef()
                 + " for permission '" + permission.permission() + "', its default value will not take effect");
         }
         return this;

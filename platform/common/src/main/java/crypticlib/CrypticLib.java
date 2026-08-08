@@ -1,5 +1,6 @@
 package crypticlib;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class CrypticLib {
@@ -39,6 +40,44 @@ public class CrypticLib {
 
     public static CrypticLibPlugin plugin() {
         return crypticLibPlugin;
+    }
+
+    /**
+     * 给控制台发送一条文本，此文本会处理颜色代码
+     *
+     * @param msg 发送的文本
+     */
+    public static void info(String msg) {
+        plugin().msgSender().info(msg);
+    }
+
+    /**
+     * 给控制台发送一条文本，此文本会处理颜色代码，并根据replaceMap的内容替换源文本
+     *
+     * @param msg        发送的文本
+     * @param replacements 需要替换的文本
+     */
+    public static void info(String msg, Map<String, String> replacements) {
+        plugin().msgSender().info(msg, replacements);
+    }
+
+    /**
+     * 向后台发送一条DEBUG文本
+     *
+     * @param msg        发送的文本
+     */
+    public static void debug(String msg) {
+        plugin().msgSender().debug(msg);
+    }
+
+    /**
+     * 向后台发送一条DEBUG文本
+     *
+     * @param msg        发送的文本
+     * @param replacements 需要替换的文本
+     */
+    public static void debug(String msg, Map<String, String> replacements) {
+        plugin().msgSender().debug(msg, replacements);
     }
 
 }

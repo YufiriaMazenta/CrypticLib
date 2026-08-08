@@ -1,6 +1,5 @@
 package crypticlib.util;
 
-import crypticlib.CrypticLib;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +16,6 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -232,44 +230,6 @@ public class IOHelper {
             }
             return stream.toByteArray();
         }
-    }
-
-    /**
-     * 给控制台发送一条文本，此文本会处理颜色代码
-     *
-     * @param msg 发送的文本
-     */
-    public static void info(String msg) {
-        CrypticLib.plugin().msgSender().info(msg);
-    }
-
-    /**
-     * 给控制台发送一条文本，此文本会处理颜色代码，并根据replaceMap的内容替换源文本
-     *
-     * @param msg        发送的文本
-     * @param replacements 需要替换的文本
-     */
-    public static void info(String msg, Map<String, String> replacements) {
-        CrypticLib.plugin().msgSender().info(msg, replacements);
-    }
-
-    /**
-     * 向后台发送一条DEBUG文本
-     *
-     * @param msg        发送的文本
-     */
-    public static void debug(String msg) {
-        CrypticLib.plugin().msgSender().debug(msg);
-    }
-
-    /**
-     * 向后台发送一条DEBUG文本
-     *
-     * @param msg        发送的文本
-     * @param replacements 需要替换的文本
-     */
-    public static void debug(String msg, Map<String, String> replacements) {
-        CrypticLib.plugin().msgSender().debug(msg, replacements);
     }
 
     /**

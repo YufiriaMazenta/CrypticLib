@@ -1,6 +1,6 @@
 package crypticlib.internal;
 
-import crypticlib.util.IOHelper;
+import crypticlib.CrypticLib;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -59,7 +59,7 @@ public enum PluginScanner {
                 .substring(0, entryName.length() - 6);
             try {
                 Class<?> clazz = classLoader.loadClass(className);
-                IOHelper.debug("Loaded class: " + className);
+                CrypticLib.debug("Loaded class: " + className);
                 pluginClassMap.put(className, clazz);
                 //添加注解缓存
                 for (Annotation annotation : clazz.getAnnotations()) {
@@ -75,10 +75,10 @@ public enum PluginScanner {
                 }
             } catch (LinkageError | ClassNotFoundException e) {
                 //单个类无法加载(缺依赖、class 版本过高等)不应中断整个扫描，仅跳过该类
-                IOHelper.debug("Failed to load class: " + className + ", " + e);
+                CrypticLib.debug("Failed to load class: " + className + ", " + e);
             } catch (Throwable throwable) {
                 //其余非 IO 级异常同样只跳过该类，保证扫描继续
-                IOHelper.debug("Failed to process class: " + className + ", " + throwable);
+                CrypticLib.debug("Failed to process class: " + className + ", " + throwable);
             }
         }
     }

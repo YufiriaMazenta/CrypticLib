@@ -29,7 +29,6 @@ import crypticlib.perm.PermManager;
 import crypticlib.perm.VelocityPermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.scheduler.VelocityScheduler;
-import crypticlib.util.IOHelper;
 import crypticlib.util.ReflectionHelper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -86,7 +85,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
                 VelocityConfigContainer configContainer = new VelocityConfigContainer(configClass, configWrapper);
                 configContainerMap.put(configClass, configContainer);
                 configContainer.reload();
-                IOHelper.debug("Loaded config file: " + path);
+                CrypticLib.debug("Loaded config file: " + path);
             }
         );
         whenLoad();
@@ -98,7 +97,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
                 try {
                     Object listener = ReflectionHelper.getSingletonClassInstance(listenerClass);
                     proxyServer.getEventManager().register(this, listener);
-                    IOHelper.debug("Registered listener for class: " + listenerClass.getName());
+                    CrypticLib.debug("Registered listener for class: " + listenerClass.getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     EventListener annotation = listenerClass.getAnnotation(EventListener.class);
                     if (!annotation.ignoreClassNotFound()) {
@@ -122,7 +121,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
                     }
                     CommandTree commandTree = (CommandTree) ReflectionHelper.getSingletonClassInstance(commandClass);
                     commandTree.register();
-                    IOHelper.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
+                    CrypticLib.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     if (!annotation.ignoreClassNotFound()) {
                         e.printStackTrace();
