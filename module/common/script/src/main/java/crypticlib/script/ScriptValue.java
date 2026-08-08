@@ -100,6 +100,22 @@ public abstract class ScriptValue {
         return this instanceof ObjectValue;
     }
 
+    /**
+     * 返回此值在方法匹配时代表的 Java 类型。
+     * 用于反射方法缓存的类型签名 key：相同 actualType 的值总是映射到同一个缓存条目。
+     */
+    public Class<?> actualType() {
+        if (this instanceof Str) return String.class;
+        if (this instanceof Int) return long.class;
+        if (this instanceof Num) return BigDecimal.class;
+        if (this instanceof Bool) return boolean.class;
+        if (this instanceof ObjectValue) {
+            Object raw = ((ObjectValue) this).value();
+            return raw != null ? raw.getClass() : Object.class;
+        }
+        return Void.class;  // NullValue
+    }
+
     public boolean isTruthy() {
         return !isNull() && !(this instanceof Bool && !((Bool) this).value());
     }
