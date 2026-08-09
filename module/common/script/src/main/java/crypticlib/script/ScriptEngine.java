@@ -10,6 +10,7 @@ import crypticlib.script.ast.ScriptParser;
 import crypticlib.script.compile.CompiledScript;
 import crypticlib.script.compile.ScriptCompiler;
 import crypticlib.script.object.ObjectScriptModule;
+import crypticlib.script.object.ReflectPropertyResolver;
 import crypticlib.script.func.BuiltinScriptModule;
 import crypticlib.script.func.MathScriptModule;
 import crypticlib.script.func.ScriptFunctionRegistry;
@@ -41,7 +42,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @LifecycleTaskSettings(rules = {
     @LifecycleRule(lifeCycle = Lifecycle.LOAD),
-    @LifecycleRule(lifeCycle = Lifecycle.RELOAD)
+    @LifecycleRule(lifeCycle = Lifecycle.RELOAD),
+    @LifecycleRule(lifeCycle = Lifecycle.DISABLE)
 })
 public enum ScriptEngine implements LifecycleTask {
 
@@ -158,6 +160,7 @@ public enum ScriptEngine implements LifecycleTask {
      */
     public void clearCache() {
         cache.clear();
+        ReflectPropertyResolver.INSTANCE.clearAllCaches();
     }
 
     /**
@@ -174,6 +177,7 @@ public enum ScriptEngine implements LifecycleTask {
                 init();
                 break;
             case RELOAD:
+            case DISABLE:
                 clearCache();
                 break;
         }
