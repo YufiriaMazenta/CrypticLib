@@ -16,6 +16,7 @@ import crypticlib.chat.VelocityMsgSender;
 import crypticlib.command.CommandManager;
 import crypticlib.command.CommandTree;
 import crypticlib.command.VelocityCommandManager;
+import crypticlib.util.ReflectionHelper;
 import crypticlib.command.annotation.Command;
 import crypticlib.config.ConfigHandler;
 import crypticlib.config.VelocityConfigContainer;
@@ -142,6 +143,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
         scheduler().cancelTasks();
+        ReflectionHelper.clearAllCaches();
         whenDisable();
     }
 

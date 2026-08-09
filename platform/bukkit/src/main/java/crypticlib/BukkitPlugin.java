@@ -19,6 +19,7 @@ import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
+import crypticlib.util.ReflectionHelper;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -118,6 +119,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
         configContainerMap.clear();
         BukkitCommandManager.INSTANCE.unregisterAll();
         CrypticLibBukkit.scheduler().cancelTasks();
+        ReflectionHelper.clearAllCaches();
         whenDisable();
     }
 

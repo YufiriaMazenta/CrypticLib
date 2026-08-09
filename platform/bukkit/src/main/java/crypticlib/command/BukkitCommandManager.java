@@ -43,7 +43,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
             serverCommandMapKnownCommands = ReflectionHelper.getDeclaredFieldObj(knownCommandsField, serverCommandMap);
             pluginCommandConstructor = ReflectionHelper.getDeclaredConstructor(PluginCommand.class, String.class, Plugin.class);
             serverSyncCommandsMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "syncCommands");
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException("Failed to initialize BukkitCommandManager", e);
         }
     }

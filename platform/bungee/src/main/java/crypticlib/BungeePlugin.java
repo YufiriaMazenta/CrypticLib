@@ -19,6 +19,7 @@ import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Listener;
+import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
@@ -117,6 +118,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
         BungeeCommandManager.INSTANCE.unregisterAll();
         //cancelTasks 同时取消官方调度器任务与 BungeeScheduler 私有线程池中的任务,避免禁用后周期任务继续运行
         scheduler().cancelTasks();
+        ReflectionHelper.clearAllCaches();
         whenDisable();
     }
     

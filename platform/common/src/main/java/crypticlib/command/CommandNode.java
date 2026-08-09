@@ -253,7 +253,12 @@ public class CommandNode {
             if (!field.isAnnotationPresent(Subcommand.class))
                 continue;
             if (CommandNode.class.isAssignableFrom(field.getType())) {
-                CommandNode commandHandler = ReflectionHelper.getDeclaredFieldObj(field, this);
+                CommandNode commandHandler;
+                try {
+                    commandHandler = ReflectionHelper.getDeclaredFieldObj(field, this);
+                } catch (IllegalAccessException e) {
+                    continue;
+                }
                 this.regSub(commandHandler);
             }
         }

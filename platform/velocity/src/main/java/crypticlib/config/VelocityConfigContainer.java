@@ -21,7 +21,12 @@ public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapp
             for (Field field : c.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers()))
                     continue;
-                Object obj = ReflectionHelper.getDeclaredFieldObj(field, null);
+                Object obj;
+                try {
+                    obj = ReflectionHelper.getDeclaredFieldObj(field, null);
+                } catch (IllegalAccessException e) {
+                    continue;
+                }
                 if (obj instanceof VelocityConfigNode<?>) {
                     VelocityConfigNode<?> config = (VelocityConfigNode<?>) obj;
                     if (config.configContainer() == null)

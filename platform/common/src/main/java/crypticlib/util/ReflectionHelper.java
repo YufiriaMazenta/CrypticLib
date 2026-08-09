@@ -35,30 +35,73 @@ public class ReflectionHelper {
     private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<Constructor<?>>>> constructorCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<Constructor<?>>>> declaredConstructorCache = new ConcurrentHashMap<>();
 
-    public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) {
+    // ===== 缓存清理 =====
+
+    /**
+     * 清理指定类的方法缓存
+     */
+    public static void clearMethodCache(@NotNull Class<?> clazz) {
+        methodCache.remove(clazz);
+        declaredMethodCache.remove(clazz);
+    }
+
+    /**
+     * 清理指定类的构造器缓存
+     */
+    public static void clearConstructorCache(@NotNull Class<?> clazz) {
+        constructorCache.remove(clazz);
+        declaredConstructorCache.remove(clazz);
+    }
+
+    /**
+     * 清理指定类的字段缓存
+     */
+    public static void clearFieldCache(@NotNull Class<?> clazz) {
+        fieldCaches.remove(clazz);
+        declaredFieldCaches.remove(clazz);
+    }
+
+    /**
+     * 清理指定类的所有反射缓存
+     */
+    public static void clearCache(@NotNull Class<?> clazz) {
+        clearMethodCache(clazz);
+        clearConstructorCache(clazz);
+        clearFieldCache(clazz);
+        singletonObjectMap.remove(clazz);
+    }
+
+    /**
+     * 清理所有反射缓存
+     */
+    public static void clearAllCaches() {
+        methodCache.clear();
+        declaredMethodCache.clear();
+        constructorCache.clear();
+        declaredConstructorCache.clear();
+        fieldCaches.clear();
+        declaredFieldCaches.clear();
+        singletonObjectMap.clear();
+    }
+
+    // ===== 字段 =====
+
+    public static Field getField(@NotNull Class<?> clazz, @NotNull String fieldName) throws NoSuchFieldException {
         Field cacheField = getFieldCache(fieldCaches, clazz, fieldName);
         if (cacheField != null)
             return cacheField;
-        try {
-            Field field = clazz.getField(fieldName);
-            putFieldCache(fieldCaches, clazz, fieldName, field);
-            return field;
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
+        Field field = clazz.getField(fieldName);
+        putFieldCache(fieldCaches, clazz, fieldName, field);
+        return field;
     }
 
-    public static Field getDeclaredField(@NotNull Class<?> clazz, @NotNull String fieldName) {
+    public static Field getDeclaredField(@NotNull Class<?> clazz, @NotNull String fieldName) throws NoSuchFieldException {
         Field cacheField = getFieldCache(declaredFieldCaches, clazz, fieldName);
         if (cacheField != null)
             return cacheField;
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            putFieldCache(declaredFieldCaches, clazz, fieldName, field);
-            return field;
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
+        Field field = clazz.getDeclaredField(fieldName);
+        putFieldCache(declaredFieldCaches, clazz, fieldName, field);
+        return field;
     }
 
     private static Field getFieldCache(Map<Class<?>, Map<String, Field>> caches, Class<?> clazz, String fieldName) {
@@ -71,90 +114,46 @@ public class ReflectionHelper {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getFieldObj(@NotNull Field field, @Nullable Object owner) {
-        try {
-            return (T) field.get(owner);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static <T> T getFieldObj(@NotNull Field field, @Nullable Object owner) throws IllegalAccessException {
+        return (T) field.get(owner);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T getDeclaredFieldObj(@NotNull Field field, @Nullable Object owner) {
-        try {
-            field.setAccessible(true);
-            return (T) field.get(owner);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static <T> T getDeclaredFieldObj(@NotNull Field field, @Nullable Object owner) throws IllegalAccessException {
+        field.setAccessible(true);
+        return (T) field.get(owner);
     }
 
-    /**
-     * 修改一个变量的值
-     * @param field 变量
-     * @param owner 所属对象
-     * @param value 新的值
-     * @param <T> 变量的类型
-     */
-    public static <T> void setFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) {
-        try {
-            field.set(owner, value);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    public static <T> void setFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) throws IllegalAccessException {
+        field.set(owner, value);
     }
 
-    /**
-     * 修改一个私有变量的值
-     * @param field 变量
-     * @param owner 所属对象
-     * @param value 新的值
-     * @param <T> 变量的类型
-     */
-    public static <T> void setDeclaredFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) {
-        try {
-            field.setAccessible(true);
-            field.set(owner, value);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    public static <T> void setDeclaredFieldObj(@NotNull Field field, @Nullable Object owner, @NotNull T value) throws IllegalAccessException {
+        field.setAccessible(true);
+        field.set(owner, value);
     }
+
+    // ===== 方法 =====
 
     public static Method getMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) throws NoSuchMethodException {
-        // 查缓存
-        ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<Method>>> nameMap = methodCache.get(clazz);
-        if (nameMap != null) {
-            ConcurrentHashMap<ArgSig, Optional<Method>> sigMap = nameMap.get(methodName);
-            if (sigMap != null) {
-                Optional<Method> opt = sigMap.get(new ArgSig(argClasses));
-                if (opt != null) {
-                    return opt.orElse(null);
-                }
-            }
+        ArgSig sig = new ArgSig(argClasses);
+        Optional<Method> cached = getMethodFromCache(methodCache, clazz, methodName, sig);
+        if (cached != null) {
+            return cached.orElse(null);
         }
-        // 缓存未命中
         Method found = clazz.getMethod(methodName, argClasses);
-        cacheMethod(clazz, methodName, argClasses, found);
+        putMethodCache(methodCache, clazz, methodName, sig, found);
         return found;
     }
 
     public static Method getDeclaredMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) throws NoSuchMethodException {
-        // 查缓存
-        ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<Method>>> nameMap = declaredMethodCache.get(clazz);
-        if (nameMap != null) {
-            ConcurrentHashMap<ArgSig, Optional<Method>> sigMap = nameMap.get(methodName);
-            if (sigMap != null) {
-                Optional<Method> opt = sigMap.get(new ArgSig(argClasses));
-                if (opt != null) {
-                    return opt.orElse(null);
-                }
-            }
+        ArgSig sig = new ArgSig(argClasses);
+        Optional<Method> cached = getMethodFromCache(declaredMethodCache, clazz, methodName, sig);
+        if (cached != null) {
+            return cached.orElse(null);
         }
-        // 缓存未命中
         Method found = clazz.getDeclaredMethod(methodName, argClasses);
-        declaredMethodCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
-            .computeIfAbsent(methodName, k -> new ConcurrentHashMap<>())
-            .putIfAbsent(new ArgSig(argClasses), Optional.of(found));
+        putMethodCache(declaredMethodCache, clazz, methodName, sig, found);
         return found;
     }
 
@@ -168,15 +167,6 @@ public class ReflectionHelper {
         return method.invoke(invokeObj, args);
     }
 
-    /**
-     * 按参数个数查找所有同名候选方法（含缓存）。
-     * 用于需要遍历重载的场景（如 setter 匹配）。
-     *
-     * @param clazz 目标类
-     * @param methodName 方法名
-     * @param paramCount 参数个数
-     * @return 候选方法列表（可能为空）
-     */
     @NotNull
     public static List<Method> collectCandidates(@NotNull Class<?> clazz, @NotNull String methodName, int paramCount) {
         List<Method> found = new ArrayList<>();
@@ -188,46 +178,29 @@ public class ReflectionHelper {
         return found;
     }
 
-    /**
-     * 缓存方法解析结果（包括负向结果 Optional.empty()）
-     */
-    private static void cacheMethod(@NotNull Class<?> clazz, @NotNull String methodName, @NotNull Class<?>[] argTypes, @Nullable Method method) {
-        methodCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
-            .computeIfAbsent(methodName, k -> new ConcurrentHashMap<>())
-            .putIfAbsent(new ArgSig(argTypes), Optional.ofNullable(method));
-    }
+    // ===== 构造器 =====
 
     @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?>... argClasses) throws NoSuchMethodException {
-        // 查缓存
-        ConcurrentHashMap<ArgSig, Optional<Constructor<?>>> sigMap = constructorCache.get(clazz);
-        if (sigMap != null) {
-            Optional<Constructor<?>> opt = sigMap.get(new ArgSig(argClasses));
-            if (opt != null) {
-                return (Constructor<T>) opt.orElse(null);
-            }
+        ArgSig sig = new ArgSig(argClasses);
+        Optional<Constructor<?>> cached = getConstructorFromCache(constructorCache, clazz, sig);
+        if (cached != null) {
+            return (Constructor<T>) cached.orElse(null);
         }
-        // 缓存未命中
         Constructor<T> found = clazz.getConstructor(argClasses);
-        constructorCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
-            .putIfAbsent(new ArgSig(argClasses), Optional.of(found));
+        putConstructorCache(constructorCache, clazz, sig, found);
         return found;
     }
 
     @SuppressWarnings("unchecked")
     public static <T> Constructor<T> getDeclaredConstructor(@NotNull Class<T> clazz, Class<?>... argClasses) throws NoSuchMethodException {
-        // 查缓存
-        ConcurrentHashMap<ArgSig, Optional<Constructor<?>>> sigMap = declaredConstructorCache.get(clazz);
-        if (sigMap != null) {
-            Optional<Constructor<?>> opt = sigMap.get(new ArgSig(argClasses));
-            if (opt != null) {
-                return (Constructor<T>) opt.orElse(null);
-            }
+        ArgSig sig = new ArgSig(argClasses);
+        Optional<Constructor<?>> cached = getConstructorFromCache(declaredConstructorCache, clazz, sig);
+        if (cached != null) {
+            return (Constructor<T>) cached.orElse(null);
         }
-        // 缓存未命中
         Constructor<T> found = clazz.getDeclaredConstructor(argClasses);
-        declaredConstructorCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
-            .putIfAbsent(new ArgSig(argClasses), Optional.of(found));
+        putConstructorCache(declaredConstructorCache, clazz, sig, found);
         return found;
     }
 
@@ -258,57 +231,85 @@ public class ReflectionHelper {
         return invokeDeclaredConstructor(constructor, args);
     }
 
-    /**
-     * 获取某类对应的实例，如果某类已经在注解处理器注册实例，则获取已经注册的实例
-     * @param clazz 需要获取实例的类
-     * @return 类对应的实例
-     * @param <T> 类的类型
-     */
+    // ===== 单例 =====
+
     @SuppressWarnings("unchecked")
     public static <T> T getSingletonClassInstance(Class<T> clazz, Object...objects) throws NoClassDefFoundError, ClassNotFoundException {
         if (CrypticLib.plugin().getClass().isAssignableFrom(clazz)) {
             return (T) CrypticLib.plugin();
-        } else if (singletonObjectMap.containsKey(clazz)) {
-            return (T) singletonObjectMap.get(clazz);
-        } else {
-            T object;
-            if (clazz.isEnum()) {
-                //如果是枚举，则使用它的第一个枚举值
-                object = clazz.getEnumConstants()[0];
-            } else {
-                try {
-                    //尝试获取名为INSTANCE的静态变量，判断是否为该类的实例，若是则用作其实例
-                    Field instanceField = ReflectionHelper.getDeclaredField(clazz, "INSTANCE");
-                    if (Modifier.isStatic(instanceField.getModifiers()) && instanceField.getType().equals(clazz)) {
-                        object = getDeclaredFieldObj(instanceField, null);
-                    } else {
-                        object = ReflectionHelper.newDeclaredInstance(clazz, objects);
-                    }
-                } catch (RuntimeException | NoSuchMethodException | InstantiationException |
-                         IllegalAccessException | InvocationTargetException e) {
-                    //当没有INSTANCE名字的变量时，则新建一个对象
-                    try {
-                        object = ReflectionHelper.newDeclaredInstance(clazz, objects);
-                    } catch (NoSuchMethodException | InstantiationException |
-                             IllegalAccessException | InvocationTargetException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
+        }
+        return (T) singletonObjectMap.computeIfAbsent(clazz, k -> createSingleton(clazz, objects));
+    }
+
+    private static <T> T createSingleton(Class<T> clazz, Object... objects) {
+        if (clazz.isEnum()) {
+            return clazz.getEnumConstants()[0];
+        }
+        try {
+            Field instanceField = ReflectionHelper.getDeclaredField(clazz, "INSTANCE");
+            if (Modifier.isStatic(instanceField.getModifiers()) && instanceField.getType().equals(clazz)) {
+                return getDeclaredFieldObj(instanceField, null);
             }
-            singletonObjectMap.put(clazz, object);
-            return object;
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
+        }
+        try {
+            return ReflectionHelper.newDeclaredInstance(clazz, objects);
+        } catch (NoSuchMethodException | InstantiationException |
+                 IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    // ===== 通用缓存模板 =====
+
+    private static Optional<Method> getMethodFromCache(
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<Method>>>> cache,
+        Class<?> clazz, String methodName, ArgSig sig
+    ) {
+        ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<Method>>> nameMap = cache.get(clazz);
+        if (nameMap == null) return null;
+        ConcurrentHashMap<ArgSig, Optional<Method>> sigMap = nameMap.get(methodName);
+        if (sigMap == null) return null;
+        return sigMap.get(sig);
+    }
+
+    private static void putMethodCache(
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<Method>>>> cache,
+        Class<?> clazz, String methodName, ArgSig sig, Method method
+    ) {
+        cache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
+            .computeIfAbsent(methodName, k -> new ConcurrentHashMap<>())
+            .putIfAbsent(sig, Optional.ofNullable(method));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Optional<Constructor<?>> getConstructorFromCache(
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<Constructor<?>>>> cache,
+        Class<?> clazz, ArgSig sig
+    ) {
+        ConcurrentHashMap<ArgSig, Optional<Constructor<?>>> sigMap = cache.get(clazz);
+        if (sigMap == null) return null;
+        return sigMap.get(sig);
+    }
+
+    private static void putConstructorCache(
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<Constructor<?>>>> cache,
+        Class<?> clazz, ArgSig sig, Constructor<?> constructor
+    ) {
+        cache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
+            .putIfAbsent(sig, Optional.ofNullable(constructor));
+    }
+
     /**
-     * 参数类型签名，用作缓存 key
+     * 参数类型签名，用作缓存 key。
+     * 构造时做防御性拷贝，隔离外部修改。
      */
     private static final class ArgSig {
         private final Class<?>[] types;
         private final int hash;
 
         ArgSig(Class<?>[] types) {
-            this.types = types;
+            this.types = types.clone();
             this.hash = Arrays.hashCode(types);
         }
 

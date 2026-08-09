@@ -80,7 +80,12 @@ public class LangEntryContainer {
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
-            Object object = ReflectionHelper.getDeclaredFieldObj(field, null);
+            Object object;
+            try {
+                object = ReflectionHelper.getDeclaredFieldObj(field, null);
+            } catch (IllegalAccessException e) {
+                continue;
+            }
             if (!(object instanceof LangEntry))
                 continue;
             LangEntry<?> langEntry = (LangEntry<?>) object;
