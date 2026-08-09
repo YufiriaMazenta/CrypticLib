@@ -33,9 +33,6 @@ public enum ReflectPropertyResolver implements PropertyResolver {
     private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, Optional<Method>>> getterCache = new ConcurrentHashMap<>();
     /** 类 → (方法名 → (参数签名 → Method))，setter 与 callMethod 共用 */
     private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<Method>>>> resolvedMethodCache = new ConcurrentHashMap<>();
-    /** 类 → (name#paramCount → 候选方法列表) */
-    private final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, List<Method>>> candidatesCache = new ConcurrentHashMap<>();
-
     private static final Object SENTINEL = new Object();
 
     /**
@@ -44,7 +41,6 @@ public enum ReflectPropertyResolver implements PropertyResolver {
     public void clearAllCaches() {
         getterCache.clear();
         resolvedMethodCache.clear();
-        candidatesCache.clear();
     }
 
     /**
@@ -53,7 +49,6 @@ public enum ReflectPropertyResolver implements PropertyResolver {
     public void clearCache(Class<?> clazz) {
         getterCache.remove(clazz);
         resolvedMethodCache.remove(clazz);
-        candidatesCache.remove(clazz);
     }
 
     @Override
@@ -209,18 +204,12 @@ public enum ReflectPropertyResolver implements PropertyResolver {
     }
 
     private List<Method> collectCandidates(Class<?> clazz, String methodName, int paramCount) {
-        String cacheKey = methodName + "#" + paramCount;
-        ConcurrentHashMap<String, List<Method>> candMap = candidatesCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>());
-        List<Method> result = candMap.get(cacheKey);
-        if (result != null) return result;
-
         List<Method> found = new ArrayList<>();
         for (Method m : clazz.getMethods()) {
             if (m.getName().equals(methodName) && m.getParameterCount() == paramCount) {
                 found.add(m);
             }
         }
-        candMap.put(cacheKey, found);
         return found;
     }
 
@@ -273,10 +262,20 @@ public enum ReflectPropertyResolver implements PropertyResolver {
         return getterCache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
             .computeIfAbsent(propertyName, name -> {
                 String cap = capitalize(name);
+                // 1. getXxx()
                 try {
                     return Optional.of(clazz.getMethod("get" + cap));
                 } catch (NoSuchMethodException ignored) {
                 }
+                // 2. xxx() — 仅匹配有返回值的无参方法（record 访问器或自定义 getter 风格）
+                try {
+                    Method m = clazz.getMethod(name);
+                    if (m.getParameterCount() == 0 && m.getReturnType() != void.class) {
+                        return Optional.of(m);
+                    }
+                } catch (NoSuchMethodException ignored) {
+                }
+                // 3. isXxx()
                 try {
                     return Optional.of(clazz.getMethod("is" + cap));
                 } catch (NoSuchMethodException ignored) {
