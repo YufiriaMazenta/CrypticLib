@@ -96,6 +96,22 @@ public class InventoryViewHelper {
     }
 
     /**
+     * 获取人类实体正在打开的上方页面
+     * @param humanEntity 人类实体
+     */
+    public static Inventory getTopInventory(HumanEntity humanEntity) {
+        return getTopInventory(getOpenInventory(humanEntity));
+    }
+
+    /**
+     * 获取页面事件所属的InventoryView的上方页面
+     * @param event 页面事件
+     */
+    public static Inventory getTopInventory(InventoryEvent event) {
+        return getTopInventory(getInventoryView(event));
+    }
+
+    /**
      * 关闭该窗口视图
      */
     public static void close(Object inventoryView) {
