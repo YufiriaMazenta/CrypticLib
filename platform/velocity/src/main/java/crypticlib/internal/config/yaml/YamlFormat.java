@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +106,7 @@ public class YamlFormat implements ConfigFormat<CommentedConfig> {
             || type.isEnum()
             || type == Boolean.class
             || type == String.class
-            || type == java.util.Date.class
+            || type == Date.class
             || type == java.sql.Date.class
             || type == Timestamp.class
             || type == byte[].class
