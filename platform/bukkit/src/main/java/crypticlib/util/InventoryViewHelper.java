@@ -7,8 +7,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
 
 /**
  * InventoryView兼容工具类
@@ -16,25 +15,25 @@ import java.lang.reflect.Method;
  */
 public class InventoryViewHelper {
 
-    private static final Method inventoryEventGetViewMethod;
-    private static final Method playerGetOpenInventoryMethod;
-    private static final Method inventoryViewCloseMethod;
-    private static final Method inventoryViewConvertSlotMethod;
-    private static final Method inventoryViewCountSlotsMethod;
-    private static final Method inventoryViewGetBottomInventoryMethod;
-    private static final Method inventoryViewGetCursorMethod;
-    private static final Method inventoryViewGetInventoryMethod;
-    private static final Method inventoryViewGetItemMethod;
-    private static final Method inventoryViewGetOriginalTitleMethod;
-    private static final Method inventoryViewGetPlayerMethod;
-    private static final Method inventoryViewGetSlotTypeMethod;
-    private static final Method inventoryViewGetTitleMethod;
-    private static final Method inventoryViewGetTopInventoryMethod;
-    private static final Method inventoryViewGetTypeMethod;
-    private static final Method inventoryViewSetCursorMethod;
-    private static final Method inventoryViewSetItemMethod;
-    private static final Method inventoryViewSetPropertyMethod;
-    private static final Method inventoryViewSetTitleMethod;
+    private static final MethodHandle inventoryEventGetViewMethod;
+    private static final MethodHandle playerGetOpenInventoryMethod;
+    private static final MethodHandle inventoryViewCloseMethod;
+    private static final MethodHandle inventoryViewConvertSlotMethod;
+    private static final MethodHandle inventoryViewCountSlotsMethod;
+    private static final MethodHandle inventoryViewGetBottomInventoryMethod;
+    private static final MethodHandle inventoryViewGetCursorMethod;
+    private static final MethodHandle inventoryViewGetInventoryMethod;
+    private static final MethodHandle inventoryViewGetItemMethod;
+    private static final MethodHandle inventoryViewGetOriginalTitleMethod;
+    private static final MethodHandle inventoryViewGetPlayerMethod;
+    private static final MethodHandle inventoryViewGetSlotTypeMethod;
+    private static final MethodHandle inventoryViewGetTitleMethod;
+    private static final MethodHandle inventoryViewGetTopInventoryMethod;
+    private static final MethodHandle inventoryViewGetTypeMethod;
+    private static final MethodHandle inventoryViewSetCursorMethod;
+    private static final MethodHandle inventoryViewSetItemMethod;
+    private static final MethodHandle inventoryViewSetPropertyMethod;
+    private static final MethodHandle inventoryViewSetTitleMethod;
 
     static {
         try {
@@ -50,7 +49,7 @@ public class InventoryViewHelper {
             inventoryViewGetInventoryMethod = ReflectionHelper.getMethod(inventoryViewClass, "getInventory", int.class);
             inventoryViewGetItemMethod = ReflectionHelper.getMethod(inventoryViewClass, "getItem", int.class);
             //getOriginalTitle是Spigot 1.20才加入的API,旧版本缺失时置为null,不阻断整个类的初始化
-            Method getOriginalTitleMethod;
+            MethodHandle getOriginalTitleMethod;
             try {
                 getOriginalTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "getOriginalTitle");
             } catch (NoSuchMethodException e) {
@@ -67,14 +66,14 @@ public class InventoryViewHelper {
             Class<?> inventoryViewPropertyClass = Class.forName("org.bukkit.inventory.InventoryView$Property");
             inventoryViewSetPropertyMethod = ReflectionHelper.getMethod(inventoryViewClass, "setProperty", inventoryViewPropertyClass, int.class);
             //setTitle(String)是Spigot 1.20才加入的API,旧版本缺失时置为null,不阻断整个类的初始化
-            Method setTitleMethod;
+            MethodHandle setTitleMethod;
             try {
                 setTitleMethod = ReflectionHelper.getMethod(inventoryViewClass, "setTitle", String.class);
             } catch (NoSuchMethodException e) {
                 setTitleMethod = null;
             }
             inventoryViewSetTitleMethod = setTitleMethod;
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
@@ -248,10 +247,10 @@ public class InventoryViewHelper {
         return inventoryViewSetTitleMethod != null;
     }
 
-    private static Object invoke(Method method, Object obj, Object... args) {
+    private static Object invoke(MethodHandle handle, Object obj, Object... args) {
         try {
-            return ReflectionHelper.invokeMethod(method, obj, args);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+            return handle.invoke(obj, args);
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }

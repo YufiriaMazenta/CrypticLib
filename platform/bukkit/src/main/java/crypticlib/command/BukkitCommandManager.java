@@ -8,15 +8,13 @@ import crypticlib.lifecycle.Lifecycle;
 import crypticlib.lifecycle.LifecycleRule;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
 import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
@@ -31,19 +29,19 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
     private Plugin pluginInstance;
     private final CommandMap serverCommandMap;
     private final Map<String, Command> serverCommandMapKnownCommands;
-    private final Constructor<?> pluginCommandConstructor;
+    private final MethodHandle pluginCommandConstructor;
     private final Map<String, PluginCommand> registeredCommands = new ConcurrentHashMap<>();
-    private final Method serverSyncCommandsMethod;
+    private final MethodHandle serverSyncCommandsMethod;
 
     BukkitCommandManager() {
         try {
-            Method getCommandMapMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "getCommandMap");
+            MethodHandle getCommandMapMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "getCommandMap");
             serverCommandMap = (CommandMap) ReflectionHelper.invokeMethod(getCommandMapMethod, Bukkit.getServer());
             Field knownCommandsField = ReflectionHelper.getDeclaredField(SimpleCommandMap.class, "knownCommands");
             serverCommandMapKnownCommands = ReflectionHelper.getDeclaredFieldObj(knownCommandsField, serverCommandMap);
             pluginCommandConstructor = ReflectionHelper.getDeclaredConstructor(PluginCommand.class, String.class, Plugin.class);
             serverSyncCommandsMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "syncCommands");
-        } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
+        } catch (Throwable e) {
             throw new RuntimeException("Failed to initialize BukkitCommandManager", e);
         }
     }
@@ -53,7 +51,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
         PluginCommand pluginCommand;
         try {
             pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), pluginInstance);
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (Throwable e) {
             throw new RuntimeException("Failed to create PluginCommand", e);
         }
         pluginCommand.setAliases(commandInfo.aliases());
@@ -133,7 +131,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
     public void syncCommands() {
         try {
             ReflectionHelper.invokeMethod(serverSyncCommandsMethod, Bukkit.getServer());
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (Throwable e) {
             throw new RuntimeException("Failed to sync commands", e);
         }
     }
