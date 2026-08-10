@@ -18,7 +18,7 @@ public abstract class ScriptValue {
     private static final Int[] SMALL_INTS = new Int[256];
     static {
         for (int i = 0; i < 256; i++) {
-            SMALL_INTS[i] = new Int(i - 128);
+            SMALL_INTS[i] = new Int(i - 128, int.class);
         }
     }
 
@@ -35,18 +35,25 @@ public abstract class ScriptValue {
         return new Num(value);
     }
 
+    public static ScriptValue of(long value, boolean explicitLong) {
+        if (!explicitLong && value >= -128 && value < 128) {
+            return SMALL_INTS[(int) value + 128];
+        }
+        return new Int(value, explicitLong ? long.class : long.class);
+    }
+
     public static ScriptValue of(long value) {
         if (value >= -128 && value < 128) {
             return SMALL_INTS[(int) value + 128];
         }
-        return new Int(value);
+        return new Int(value, long.class);
     }
 
     public static ScriptValue of(int value) {
         if (value >= -128 && value < 128) {
             return SMALL_INTS[value + 128];
         }
-        return new Int(value);
+        return new Int(value, int.class);
     }
 
     public static ScriptValue of(boolean value) {
@@ -106,8 +113,8 @@ public abstract class ScriptValue {
      */
     public Class<?> actualType() {
         if (this instanceof Str) return String.class;
-        if (this instanceof Int) return long.class;
-        if (this instanceof Num) return BigDecimal.class;
+        if (this instanceof Int) return ((Int) this).valueType();
+        if (this instanceof Num) return double.class;
         if (this instanceof Bool) return boolean.class;
         if (this instanceof ObjectValue) {
             Object raw = ((ObjectValue) this).value();
@@ -272,18 +279,24 @@ public abstract class ScriptValue {
 
     public static final class Int extends ScriptValue {
         private final long value;
+        private final Class<?> valueType; // int.class 或 long.class
 
-        public Int(long value) {
+        public Int(long value, Class<?> valueType) {
             this.value = value;
+            this.valueType = valueType;
         }
 
         public long value() {
             return value;
         }
 
+        public Class<?> valueType() {
+            return valueType;
+        }
+
         @Override
         public String toString() {
-            return "Int(" + value + ")";
+            return "Int(" + value + (valueType == long.class ? "L" : "") + ")";
         }
     }
 

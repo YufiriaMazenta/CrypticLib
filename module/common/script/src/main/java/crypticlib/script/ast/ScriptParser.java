@@ -377,7 +377,17 @@ public class ScriptParser {
         } else if (type == Token.Type.NUMBER) {
             return new ASTNode.LiteralNode(new BigDecimal(tok.value()), tok.line());
         } else if (type == Token.Type.INTEGER) {
-            return new ASTNode.LiteralNode(Long.parseLong(tok.value()), tok.line());
+            String val = tok.value();
+            boolean isLong = val.endsWith("|long");
+            if (isLong) {
+                val = val.substring(0, val.length() - 5);
+            }
+            long longVal = Long.parseLong(val);
+            if (isLong || longVal > Integer.MAX_VALUE || longVal < Integer.MIN_VALUE) {
+                return new ASTNode.LiteralNode(longVal, tok.line());
+            } else {
+                return new ASTNode.LiteralNode((int) longVal, tok.line());
+            }
         } else if (type == Token.Type.BOOLEAN) {
             return new ASTNode.LiteralNode(Boolean.parseBoolean(tok.value()), tok.line());
         } else if (type == Token.Type.IDENTIFIER) {

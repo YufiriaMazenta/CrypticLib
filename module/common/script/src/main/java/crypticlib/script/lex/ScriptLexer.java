@@ -199,14 +199,23 @@ public class ScriptLexer {
         if (source.charAt(pos) == '-') pos++;
         while (pos < source.length() && isDigit(source.charAt(pos))) pos++;
         boolean isFloat = false;
+        boolean isLong = false;
         if (pos < source.length() && source.charAt(pos) == '.') {
             isFloat = true;
             do {
                 pos++;
             } while (pos < source.length() && isDigit(source.charAt(pos)));
         }
+        // 检查 L 后缀（仅整数）
+        if (!isFloat && pos < source.length() && (source.charAt(pos) == 'L' || source.charAt(pos) == 'l')) {
+            isLong = true;
+            pos++;
+        }
+        String numStr = source.substring(start, pos);
         Token.Type type = isFloat ? Token.Type.NUMBER : Token.Type.INTEGER;
-        tokens.add(new Token(type, source.substring(start, pos), line));
+        // 将类型信息存入 token value，格式: "数值|long" 或 "数值"
+        String tokenValue = isLong ? numStr + "|long" : numStr;
+        tokens.add(new Token(type, tokenValue, line));
     }
 
     private void readIdentifier() {
