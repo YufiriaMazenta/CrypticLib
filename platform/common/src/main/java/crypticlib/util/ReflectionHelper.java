@@ -10,11 +10,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,18 +21,18 @@ public class ReflectionHelper {
 
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
-    // 字段缓存：存储 Field + MethodHandle getter/setter
+    // 字段缓存
     private final static Map<Class<?>, Map<String, FieldEntry>> fieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Map<String, FieldEntry>> declaredFieldCaches = new ConcurrentHashMap<>();
     private final static Map<Class<?>, Object> singletonObjectMap = new ConcurrentHashMap<>();
 
-    // ===== 方法缓存 =====
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>>> methodCache = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>>> declaredMethodCache = new ConcurrentHashMap<>();
+    // 方法缓存
+    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, MethodHandle>>> methodCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, MethodHandle>>> declaredMethodCache = new ConcurrentHashMap<>();
 
-    // ===== 构造器缓存 =====
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>> constructorCache = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>> declaredConstructorCache = new ConcurrentHashMap<>();
+    // 构造器缓存
+    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, MethodHandle>> constructorCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, MethodHandle>> declaredConstructorCache = new ConcurrentHashMap<>();
 
     // ===== 缓存清理 =====
 
@@ -77,7 +74,7 @@ public class ReflectionHelper {
         FieldEntry entry = getFieldEntry(fieldCaches, clazz, fieldName);
         if (entry != null) return entry.field;
         Field field = clazz.getField(fieldName);
-        putFieldEntry(fieldCaches, clazz, fieldName, field);
+        putFieldEntry(fieldCaches, field.getDeclaringClass(), fieldName, field);
         return field;
     }
 
@@ -94,7 +91,11 @@ public class ReflectionHelper {
         FieldEntry entry = findFieldEntry(fieldCaches, field);
         if (entry != null && entry.getter != null) {
             try {
-                return (T) entry.getter.invoke(owner);
+                if (Modifier.isStatic(field.getModifiers())) {
+                    return (T) entry.getter.invoke();
+                } else {
+                    return (T) entry.getter.invoke(owner);
+                }
             } catch (Throwable e) {
                 if (e instanceof IllegalAccessException) throw (IllegalAccessException) e;
                 throw new RuntimeException(e);
@@ -108,7 +109,11 @@ public class ReflectionHelper {
         FieldEntry entry = findFieldEntry(declaredFieldCaches, field);
         if (entry != null && entry.getter != null) {
             try {
-                return (T) entry.getter.invoke(owner);
+                if (Modifier.isStatic(field.getModifiers())) {
+                    return (T) entry.getter.invoke();
+                } else {
+                    return (T) entry.getter.invoke(owner);
+                }
             } catch (Throwable e) {
                 if (e instanceof IllegalAccessException) throw (IllegalAccessException) e;
                 throw new RuntimeException(e);
@@ -122,7 +127,11 @@ public class ReflectionHelper {
         FieldEntry entry = findFieldEntry(fieldCaches, field);
         if (entry != null && entry.setter != null) {
             try {
-                entry.setter.invoke(owner, value);
+                if (Modifier.isStatic(field.getModifiers())) {
+                    entry.setter.invoke(value);
+                } else {
+                    entry.setter.invoke(owner, value);
+                }
                 return;
             } catch (Throwable e) {
                 if (e instanceof IllegalAccessException) throw (IllegalAccessException) e;
@@ -136,7 +145,11 @@ public class ReflectionHelper {
         FieldEntry entry = findFieldEntry(declaredFieldCaches, field);
         if (entry != null && entry.setter != null) {
             try {
-                entry.setter.invoke(owner, value);
+                if (Modifier.isStatic(field.getModifiers())) {
+                    entry.setter.invoke(value);
+                } else {
+                    entry.setter.invoke(owner, value);
+                }
                 return;
             } catch (Throwable e) {
                 if (e instanceof IllegalAccessException) throw (IllegalAccessException) e;
@@ -175,10 +188,8 @@ public class ReflectionHelper {
 
     public static MethodHandle getMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) throws NoSuchMethodException, IllegalAccessException {
         ArgSig sig = new ArgSig(argClasses);
-        Optional<MethodHandle> cached = getMethodFromCache(methodCache, clazz, methodName, sig);
-        if (cached != null) {
-            return cached.orElse(null);
-        }
+        MethodHandle cached = getMethodFromCache(methodCache, clazz, methodName, sig);
+        if (cached != null) return cached;
         Method method = clazz.getMethod(methodName, argClasses);
         method.setAccessible(true);
         MethodHandle handle = LOOKUP.unreflect(method);
@@ -188,10 +199,8 @@ public class ReflectionHelper {
 
     public static MethodHandle getDeclaredMethod(@NotNull Class<?> clazz, @NotNull String methodName, Class<?>... argClasses) throws NoSuchMethodException, IllegalAccessException {
         ArgSig sig = new ArgSig(argClasses);
-        Optional<MethodHandle> cached = getMethodFromCache(declaredMethodCache, clazz, methodName, sig);
-        if (cached != null) {
-            return cached.orElse(null);
-        }
+        MethodHandle cached = getMethodFromCache(declaredMethodCache, clazz, methodName, sig);
+        if (cached != null) return cached;
         Method method = clazz.getDeclaredMethod(methodName, argClasses);
         method.setAccessible(true);
         MethodHandle handle = LOOKUP.unreflect(method);
@@ -199,33 +208,12 @@ public class ReflectionHelper {
         return handle;
     }
 
-    public static Object invokeMethod(@NotNull MethodHandle handle, @Nullable Object invokeObj, Object... args) throws Throwable {
-        return handle.invoke(invokeObj, args);
-    }
-
-    public static Object invokeDeclaredMethod(@NotNull MethodHandle handle, @Nullable Object invokeObj, Object... args) throws Throwable {
-        return handle.invoke(invokeObj, args);
-    }
-
-    @NotNull
-    public static List<Method> collectCandidates(@NotNull Class<?> clazz, @NotNull String methodName, int paramCount) {
-        List<Method> found = new ArrayList<>();
-        for (Method m : clazz.getMethods()) {
-            if (m.getName().equals(methodName) && m.getParameterCount() == paramCount) {
-                found.add(m);
-            }
-        }
-        return found;
-    }
-
     // ===== 构造器 =====
 
     public static MethodHandle getConstructor(@NotNull Class<?> clazz, Class<?>... argClasses) throws NoSuchMethodException, IllegalAccessException {
         ArgSig sig = new ArgSig(argClasses);
-        Optional<MethodHandle> cached = getConstructorFromCache(constructorCache, clazz, sig);
-        if (cached != null) {
-            return cached.orElse(null);
-        }
+        MethodHandle cached = getConstructorFromCache(constructorCache, clazz, sig);
+        if (cached != null) return cached;
         Constructor<?> constructor = clazz.getConstructor(argClasses);
         constructor.setAccessible(true);
         MethodHandle handle = LOOKUP.unreflectConstructor(constructor);
@@ -235,10 +223,8 @@ public class ReflectionHelper {
 
     public static MethodHandle getDeclaredConstructor(@NotNull Class<?> clazz, Class<?>... argClasses) throws NoSuchMethodException, IllegalAccessException {
         ArgSig sig = new ArgSig(argClasses);
-        Optional<MethodHandle> cached = getConstructorFromCache(declaredConstructorCache, clazz, sig);
-        if (cached != null) {
-            return cached.orElse(null);
-        }
+        MethodHandle cached = getConstructorFromCache(declaredConstructorCache, clazz, sig);
+        if (cached != null) return cached;
         Constructor<?> constructor = clazz.getDeclaredConstructor(argClasses);
         constructor.setAccessible(true);
         MethodHandle handle = LOOKUP.unreflectConstructor(constructor);
@@ -246,46 +232,59 @@ public class ReflectionHelper {
         return handle;
     }
 
-    public static Object invokeConstructor(@NotNull MethodHandle handle, Object... args) throws Throwable {
-        return handle.invoke(args);
-    }
+    // ===== 创建实例（显式传入参数类型） =====
 
-    public static Object invokeDeclaredConstructor(@NotNull MethodHandle handle, Object... args) throws Throwable {
-        return handle.invoke(args);
-    }
-
-    public static <T> T newInstance(Class<T> clazz, Object... args) throws Throwable {
-        Class<?>[] argClasses = new Class[args.length];
-        for (int i = 0; i < args.length; i++) {
-            argClasses[i] = args[i].getClass();
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(Class<T> clazz, Class<?>[] argTypes, Object... args) throws Throwable {
+        // 处理 null，视为空数组
+        if (argTypes == null) {
+            argTypes = new Class[0];
         }
-        MethodHandle handle = getConstructor(clazz, argClasses);
-        return (T) handle.invoke(args);
+        if (args == null) {
+            args = new Object[0];
+        }
+        // 长度校验
+        if (argTypes.length != args.length) {
+            throw new IllegalArgumentException(
+                "Argument types length (" + argTypes.length + ") does not match argument values length (" + args.length + ")"
+            );
+        }
+        MethodHandle handle = getConstructor(clazz, argTypes);
+        return (T) handle.invokeWithArguments(args);
     }
 
-    public static <T> T newDeclaredInstance(Class<T> clazz, Object... args) throws Throwable {
-        Class<?>[] argClasses = new Class[args.length];
-        for (int i = 0; i < args.length; i++) {
-            argClasses[i] = args[i].getClass();
+    @SuppressWarnings("unchecked")
+    public static <T> T newDeclaredInstance(Class<T> clazz, Class<?>[] argTypes, Object... args) throws Throwable {
+        if (argTypes == null) {
+            argTypes = new Class[0];
         }
-        MethodHandle handle = getDeclaredConstructor(clazz, argClasses);
-        return (T) handle.invoke(args);
+        if (args == null) {
+            args = new Object[0];
+        }
+        if (argTypes.length != args.length) {
+            throw new IllegalArgumentException(
+                "Argument types length (" + argTypes.length + ") does not match argument values length (" + args.length + ")"
+            );
+        }
+        MethodHandle handle = getDeclaredConstructor(clazz, argTypes);
+        return (T) handle.invokeWithArguments(args);
     }
 
     // ===== 单例 =====
 
     @SuppressWarnings("unchecked")
-    public static <T> T getSingletonClassInstance(Class<T> clazz, Object...objects) throws NoClassDefFoundError, ClassNotFoundException {
-        if (CrypticLib.plugin().getClass().isAssignableFrom(clazz)) {
+    public static <T> T getSingletonClassInstance(Class<T> clazz) throws NoClassDefFoundError, ClassNotFoundException {
+        if (clazz.isInstance(CrypticLib.plugin())) {
             return (T) CrypticLib.plugin();
         }
-        return (T) singletonObjectMap.computeIfAbsent(clazz, k -> createSingleton(clazz, objects));
+        return (T) singletonObjectMap.computeIfAbsent(clazz, k -> createSingleton(clazz));
     }
 
-    private static <T> T createSingleton(Class<T> clazz, Object... objects) {
+    private static <T> T createSingleton(Class<T> clazz) {
         if (clazz.isEnum()) {
             return clazz.getEnumConstants()[0];
         }
+        // 优先尝试静态 INSTANCE 字段
         try {
             Field instanceField = ReflectionHelper.getDeclaredField(clazz, "INSTANCE");
             if (Modifier.isStatic(instanceField.getModifiers()) && instanceField.getType().equals(clazz)) {
@@ -293,55 +292,55 @@ public class ReflectionHelper {
             }
         } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
+        // 其次尝试无参构造器
         try {
-            return ReflectionHelper.newDeclaredInstance(clazz, objects);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+            Constructor<T> constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create singleton instance of " + clazz.getName(), e);
         }
     }
 
-    // ===== 通用缓存模板 =====
+    // ===== 缓存操作（直接存 MethodHandle） =====
 
-    private static Optional<MethodHandle> getMethodFromCache(
-        ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>>> cache,
+    private static MethodHandle getMethodFromCache(
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, MethodHandle>>> cache,
         Class<?> clazz, String methodName, ArgSig sig
     ) {
-        ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>> nameMap = cache.get(clazz);
+        ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, MethodHandle>> nameMap = cache.get(clazz);
         if (nameMap == null) return null;
-        ConcurrentHashMap<ArgSig, Optional<MethodHandle>> sigMap = nameMap.get(methodName);
-        if (sigMap == null) return null;
-        return sigMap.get(sig);
+        ConcurrentHashMap<ArgSig, MethodHandle> sigMap = nameMap.get(methodName);
+        return sigMap != null ? sigMap.get(sig) : null;
     }
 
     private static void putMethodCache(
-        ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>>> cache,
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<String, ConcurrentHashMap<ArgSig, MethodHandle>>> cache,
         Class<?> clazz, String methodName, ArgSig sig, MethodHandle handle
     ) {
         cache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
             .computeIfAbsent(methodName, k -> new ConcurrentHashMap<>())
-            .putIfAbsent(sig, Optional.ofNullable(handle));
+            .putIfAbsent(sig, handle);
     }
 
-    private static Optional<MethodHandle> getConstructorFromCache(
-        ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>> cache,
+    private static MethodHandle getConstructorFromCache(
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, MethodHandle>> cache,
         Class<?> clazz, ArgSig sig
     ) {
-        ConcurrentHashMap<ArgSig, Optional<MethodHandle>> sigMap = cache.get(clazz);
-        if (sigMap == null) return null;
-        return sigMap.get(sig);
+        ConcurrentHashMap<ArgSig, MethodHandle> sigMap = cache.get(clazz);
+        return sigMap != null ? sigMap.get(sig) : null;
     }
 
     private static void putConstructorCache(
-        ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, Optional<MethodHandle>>> cache,
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<ArgSig, MethodHandle>> cache,
         Class<?> clazz, ArgSig sig, MethodHandle handle
     ) {
         cache.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
-            .putIfAbsent(sig, Optional.ofNullable(handle));
+            .putIfAbsent(sig, handle);
     }
 
-    /**
-     * 字段缓存条目，包含 Field 和 MethodHandle getter/setter
-     */
+    // ===== 内部类 =====
+
     private static final class FieldEntry {
         final Field field;
         final MethodHandle getter;
@@ -354,10 +353,6 @@ public class ReflectionHelper {
         }
     }
 
-    /**
-     * 参数类型签名，用作缓存 key。
-     * 构造时做防御性拷贝，隔离外部修改。
-     */
     private static final class ArgSig {
         private final Class<?>[] types;
         private final int hash;
@@ -379,5 +374,4 @@ public class ReflectionHelper {
             return hash;
         }
     }
-
 }

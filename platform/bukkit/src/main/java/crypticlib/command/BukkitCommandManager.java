@@ -36,7 +36,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
     BukkitCommandManager() {
         try {
             MethodHandle getCommandMapMethod = ReflectionHelper.getMethod(Bukkit.getServer().getClass(), "getCommandMap");
-            serverCommandMap = (CommandMap) ReflectionHelper.invokeMethod(getCommandMapMethod, Bukkit.getServer());
+            serverCommandMap = (CommandMap) getCommandMapMethod.invoke(Bukkit.getServer());
             Field knownCommandsField = ReflectionHelper.getDeclaredField(SimpleCommandMap.class, "knownCommands");
             serverCommandMapKnownCommands = ReflectionHelper.getDeclaredFieldObj(knownCommandsField, serverCommandMap);
             pluginCommandConstructor = ReflectionHelper.getDeclaredConstructor(PluginCommand.class, String.class, Plugin.class);
@@ -50,7 +50,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
     public PluginCommand register(@NotNull CommandInfo commandInfo, @NotNull TabExecutor commandExecutor) {
         PluginCommand pluginCommand;
         try {
-            pluginCommand = (PluginCommand) ReflectionHelper.invokeDeclaredConstructor(pluginCommandConstructor, commandInfo.name(), pluginInstance);
+            pluginCommand = (PluginCommand) pluginCommandConstructor.invoke(commandInfo.name(), pluginInstance);
         } catch (Throwable e) {
             throw new RuntimeException("Failed to create PluginCommand", e);
         }
@@ -130,7 +130,7 @@ public enum BukkitCommandManager implements CommandManager<TabExecutor, PluginCo
      */
     public void syncCommands() {
         try {
-            ReflectionHelper.invokeMethod(serverSyncCommandsMethod, Bukkit.getServer());
+            serverSyncCommandsMethod.invoke(Bukkit.getServer());
         } catch (Throwable e) {
             throw new RuntimeException("Failed to sync commands", e);
         }

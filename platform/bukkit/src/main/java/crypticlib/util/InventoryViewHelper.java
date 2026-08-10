@@ -11,7 +11,7 @@ import java.lang.invoke.MethodHandle;
 
 /**
  * InventoryView兼容工具类
- * InventoryView在低版本和高版本中API有较大变化,使用此工具类统一处理
+ * InventoryView在1.20.6开始由抽象类修改为接口,导致存在不兼容问题,使用此工具类统一处理
  */
 public class InventoryViewHelper {
 
@@ -83,7 +83,11 @@ public class InventoryViewHelper {
      * @param event 页面事件
      */
     public static Object getInventoryView(InventoryEvent event) {
-        return invoke(inventoryEventGetViewMethod, event);
+        try {
+            return inventoryEventGetViewMethod.invoke(event);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -91,7 +95,11 @@ public class InventoryViewHelper {
      * @param humanEntity 人类实体
      */
     public static Object getOpenInventory(HumanEntity humanEntity) {
-        return invoke(playerGetOpenInventoryMethod, humanEntity);
+        try {
+            return playerGetOpenInventoryMethod.invoke(humanEntity);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -114,49 +122,77 @@ public class InventoryViewHelper {
      * 关闭该窗口视图
      */
     public static void close(Object inventoryView) {
-        invoke(inventoryViewCloseMethod, inventoryView);
+        try {
+            inventoryViewCloseMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 将原始槽位id转换为本地槽位id (本地槽位id适用于当前正在查看的两个物品栏).
      */
     public static int convertSlot(Object inventoryView, int slot) {
-        return (int) invoke(inventoryViewConvertSlotMethod, inventoryView, slot);
+        try {
+            return (int) inventoryViewConvertSlotMethod.invoke(inventoryView, slot);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * Check the total number of slots in this view, combining the upper and lower inventories.
+     * 检查此界面中的总槽位数，包括上层容器和下层容器
      */
     public static int countSlots(Object inventoryView) {
-        return (int) invoke(inventoryViewCountSlotsMethod, inventoryView);
+        try {
+            return (int) inventoryViewCountSlotsMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取此窗口视图下方的容器 (通常是玩家背包).
      */
     public static Inventory getBottomInventory(Object inventoryView) {
-        return (Inventory) invoke(inventoryViewGetBottomInventoryMethod, inventoryView);
+        try {
+            return (Inventory) inventoryViewGetBottomInventoryMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取玩家客户端鼠标光标上的物品
      */
     public static ItemStack getCursorItem(Object inventoryView) {
-        return (ItemStack) invoke(inventoryViewGetCursorMethod, inventoryView);
+        try {
+            return (ItemStack) inventoryViewGetCursorMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取原始槽位所处的页面
      */
     public static Inventory getInventory(Object inventoryView, int rawSlot) {
-        return (Inventory) invoke(inventoryViewGetInventoryMethod, inventoryView, rawSlot);
+        try {
+            return (Inventory) inventoryViewGetInventoryMethod.invoke(inventoryView, rawSlot);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取该物品栏指定槽位的物品.
      */
     public static ItemStack getItem(Object inventoryView, int slot) {
-        return (ItemStack) invoke(inventoryViewGetItemMethod, inventoryView, slot);
+        try {
+            return (ItemStack) inventoryViewGetItemMethod.invoke(inventoryView, slot);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -165,7 +201,11 @@ public class InventoryViewHelper {
     public static String getOriginalTitle(Object inventoryView) {
         if (inventoryViewGetOriginalTitleMethod == null)
             throw new UnsupportedOperationException("InventoryView#getOriginalTitle is not supported on this server version (requires 1.20+)");
-        return (String) invoke(inventoryViewGetOriginalTitleMethod, inventoryView);
+        try {
+            return (String) inventoryViewGetOriginalTitleMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -179,56 +219,88 @@ public class InventoryViewHelper {
      * 获取正在查看此窗口的玩家
      */
     public static HumanEntity getViewingPlayer(Object inventoryView) {
-        return (HumanEntity) invoke(inventoryViewGetPlayerMethod, inventoryView);
+        try {
+            return (HumanEntity) inventoryViewGetPlayerMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取此槽位的类型
      */
     public static InventoryType.SlotType getSlotType(Object inventoryView, int slot) {
-        return (InventoryType.SlotType) invoke(inventoryViewGetSlotTypeMethod, inventoryView, slot);
+        try {
+            return (InventoryType.SlotType) inventoryViewGetSlotTypeMethod.invoke(inventoryView, slot);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取此窗口的标题
      */
     public static String getTitle(Object inventoryView) {
-        return (String) invoke(inventoryViewGetTitleMethod, inventoryView);
+        try {
+            return (String) inventoryViewGetTitleMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取此窗口上方的容器
      */
     public static Inventory getTopInventory(Object inventoryView) {
-        return (Inventory) invoke(inventoryViewGetTopInventoryMethod, inventoryView);
+        try {
+            return (Inventory) inventoryViewGetTopInventoryMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 获取此窗口的类型
      */
     public static InventoryType getInventoryType(Object inventoryView) {
-        return (InventoryType) invoke(inventoryViewGetTypeMethod, inventoryView);
+        try {
+            return (InventoryType) inventoryViewGetTypeMethod.invoke(inventoryView);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 设置玩家鼠标上的物品
      */
     public static void setCursor(Object inventoryView, ItemStack item) {
-        invoke(inventoryViewSetCursorMethod, inventoryView, item);
+        try {
+            inventoryViewSetCursorMethod.invoke(inventoryView, item);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
      * 设置指定槽位的物品
      */
     public static void setItem(Object inventoryView, int slot, ItemStack item) {
-        invoke(inventoryViewSetItemMethod, inventoryView, slot, item);
+        try {
+            inventoryViewSetItemMethod.invoke(inventoryView, slot, item);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
-     * Sets an extra property of this inventory if supported by that inventory, for example the state of a progress bar.
+     * 如果该容器支持，则设置此容器的额外属性，例如进度条的状态
      */
     public static void setProperty(Object inventoryView, Object property, int value) {
-        invoke(inventoryViewSetPropertyMethod, inventoryView, property, value);
+        try {
+            inventoryViewSetPropertyMethod.invoke(inventoryView, property, value);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -237,7 +309,11 @@ public class InventoryViewHelper {
     public static void setTitle(Object inventoryView, String title) {
         if (inventoryViewSetTitleMethod == null)
             throw new UnsupportedOperationException("InventoryView#setTitle is not supported on this server version (requires 1.20+)");
-        invoke(inventoryViewSetTitleMethod, inventoryView, title);
+        try {
+            inventoryViewSetTitleMethod.invoke(inventoryView, title);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -245,14 +321,6 @@ public class InventoryViewHelper {
      */
     public static boolean isSetTitleSupported() {
         return inventoryViewSetTitleMethod != null;
-    }
-
-    private static Object invoke(MethodHandle handle, Object obj, Object... args) {
-        try {
-            return handle.invoke(obj, args);
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
