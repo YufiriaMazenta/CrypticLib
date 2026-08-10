@@ -39,13 +39,10 @@ public abstract class ScriptValue {
         if (!explicitLong && value >= -128 && value < 128) {
             return SMALL_INTS[(int) value + 128];
         }
-        return new Int(value, explicitLong ? long.class : long.class);
+        return new Int(value, long.class);
     }
 
     public static ScriptValue of(long value) {
-        if (value >= -128 && value < 128) {
-            return SMALL_INTS[(int) value + 128];
-        }
         return new Int(value, long.class);
     }
 

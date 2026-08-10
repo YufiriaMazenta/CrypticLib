@@ -69,6 +69,63 @@ public class ScriptTest {
         }
     }
 
+    // ==================== 显式 long 类型 ====================
+
+    @Nested
+    @DisplayName("显式 long 类型声明")
+    class ExplicitLong {
+
+        @Test
+        @DisplayName("普通整数 actualType 为 int.class")
+        void plainIntegerIsInt() {
+            ScriptValue val = eval("10");
+            assertTrue(val.isInteger());
+            assertEquals(int.class, val.actualType());
+        }
+
+        @Test
+        @DisplayName("L 后缀整数 actualType 为 long.class")
+        void longSuffixIsLong() {
+            ScriptValue val = eval("10L");
+            assertTrue(val.isInteger());
+            assertEquals(long.class, val.actualType());
+        }
+
+        @Test
+        @DisplayName("小写 l 后缀也可声明 long")
+        void lowercaseLSuffix() {
+            ScriptValue val = eval("10l");
+            assertTrue(val.isInteger());
+            assertEquals(long.class, val.actualType());
+        }
+
+        @Test
+        @DisplayName("超出 int 范围自动识别为 long")
+        void overflowBecomesLong() {
+            ScriptValue val = eval("3000000000");
+            assertTrue(val.isInteger());
+            assertEquals(long.class, val.actualType());
+            assertEquals(3000000000L, val.asLong());
+        }
+
+        @Test
+        @DisplayName("负数 L 后缀")
+        void negativeLong() {
+            ScriptValue val = eval("-100L");
+            assertTrue(val.isInteger());
+            assertEquals(long.class, val.actualType());
+            assertEquals(-100L, val.asLong());
+        }
+
+        @Test
+        @DisplayName("Num 类型 actualType 为 double.class")
+        void numActualTypeIsDouble() {
+            ScriptValue val = eval("3.14");
+            assertTrue(val.isFloat());
+            assertEquals(double.class, val.actualType());
+        }
+    }
+
     // ==================== 数值转换 ====================
 
     @Nested
