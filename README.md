@@ -129,13 +129,13 @@ public class MyTask implements LifecycleTask {
 ```java
 // Evaluate a condition
 boolean result = ScriptEngine.INSTANCE.evaluate(
-    "perm \"my.permission\"",
+    "perm(\"my.permission\")",
     ScriptContext.builder().player(player).build()
 );
 
 // Execute an action
 ScriptEngine.INSTANCE.execute(
-    "command \"give %player% diamond\"",
+    "command(\"give %player% diamond\")",
     ScriptContext.builder().player(player).build()
 );
 ```
