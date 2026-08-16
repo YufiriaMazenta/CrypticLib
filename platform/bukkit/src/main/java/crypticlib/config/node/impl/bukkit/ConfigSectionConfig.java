@@ -3,13 +3,14 @@ package crypticlib.config.node.impl.bukkit;
 import crypticlib.config.node.BukkitConfigNode;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.MemorySection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> {
 
-    private final Map<String, Object> default_;
 
     public ConfigSectionConfig(@NotNull String key) {
         this(key, new ArrayList<>());
@@ -20,21 +21,19 @@ public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> 
     }
 
     public ConfigSectionConfig(@NotNull String key, @NotNull List<String> defComments) {
-        this(key, null, defComments);
+        this(key, new MemoryConfiguration(), defComments);
     }
 
-    public ConfigSectionConfig(@NotNull String key, Map<String, Object> default_) {
-        this(key, default_, new ArrayList<>());
+    public ConfigSectionConfig(@NotNull String key, ConfigurationSection def) {
+        this(key, def, new ArrayList<>());
     }
 
-    public ConfigSectionConfig(String key, Map<String, Object> default_, @NotNull String defComment) {
-        super(key, null, defComment);
-        this.default_ = default_;
+    public ConfigSectionConfig(String key, ConfigurationSection def, @NotNull String defComment) {
+        super(key, def, defComment);
     }
 
-    public ConfigSectionConfig(@NotNull String key, Map<String, Object> default_, @NotNull List<String> defComments) {
-        super(key, null, defComments);
-        this.default_ = default_;
+    public ConfigSectionConfig(@NotNull String key, ConfigurationSection def, @NotNull List<String> defComments) {
+        super(key, def, defComments);
     }
 
     @Override
@@ -58,10 +57,7 @@ public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> 
     @Override
     public void saveDef(@NotNull ConfigurationSection config) {
         if (!config.contains(key)) {
-            if (default_ != null)
-                config.createSection(key, default_);
-            else
-                config.createSection(key);
+            config.set(key, def);
         }
     }
 }
