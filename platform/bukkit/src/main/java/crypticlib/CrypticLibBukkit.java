@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 public class CrypticLibBukkit {
 
     private static ServerAdapter serverAdapter;
+    private static boolean isFolia, isPaper;
 
     static {
         loadServerAdapter();
@@ -35,19 +36,25 @@ public class CrypticLibBukkit {
             Class<?> pluginMetaClass = Class.forName("io.papermc.paper.plugin.configuration.PluginMeta");
             pluginMetaClass.getMethod("isFoliaSupported");
             serverAdapter = FoliaServerAdapter.INSTANCE;
+            isFolia = true;
+            isPaper = true;
         } catch (ClassNotFoundException e) {
             serverAdapter = BukkitServerAdapter.INSTANCE;
+            isFolia = false;
+            isPaper = false;
         } catch (NoSuchMethodException e) {
             serverAdapter = PaperServerAdapter.INSTANCE;
+            isPaper = true;
+            isFolia = false;
         }
     }
 
     public static boolean isFolia() {
-        return serverAdapter.type().equals(ServerAdapter.ServerType.FOLIA);
+        return isFolia;
     }
 
     public static boolean isPaper() {
-        return serverAdapter.type().equals(ServerAdapter.ServerType.PAPER) || serverAdapter.type().equals(ServerAdapter.ServerType.FOLIA);
+        return isPaper;
     }
 
 }
