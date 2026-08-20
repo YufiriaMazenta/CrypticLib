@@ -210,10 +210,10 @@ public enum FoliaScheduler implements BukkitScheduler, LifecycleTask {
     }
 
     private long toSafeTick(long originTick) {
-        if (originTick <= 0) {
+        if (originTick < 0) {
             throw new IllegalArgumentException("Tick value must be positive, got " + originTick);
         }
-        return originTick;
+        return originTick != 0 ? originTick : 1;
     }
 
     @Override
