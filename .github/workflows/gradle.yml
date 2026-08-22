@@ -32,23 +32,3 @@ jobs:
         with:
           name: Cryptic Artifact
           path: build/libs/*.jar
-
-  release:
-    if: github.event_name == 'push' && startsWith(github.event.head_commit.message, 'release:')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Read version from gradle.properties
-        id: version
-        run: |
-          VERSION=$(grep '^version=' gradle.properties | cut -d'=' -f2)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release create "${{ steps.version.outputs.version }}" \
-            --title "Release ${{ steps.version.outputs.version }}" \
-            --generate-notes
