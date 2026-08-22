@@ -14,6 +14,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+
 /**
  * Bukkit平台的调度器
  */
@@ -72,8 +74,10 @@ public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
 
     @Override
     public BukkitTaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
+        UUID entityId = entity.getUniqueId();
         return syncLater(() -> {
-            if (entity == null || !entity.isValid()) {
+            Entity currentEntity = Bukkit.getServer().getEntity(entityId);
+            if (currentEntity == null || !currentEntity.isValid()) {
                 if (retriedTask != null) {
                     retriedTask.run();
                 }
@@ -87,9 +91,11 @@ public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
     public BukkitTaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
         // Spigot 没有 Folia 的 EntityScheduler, 这里在每个周期检查实体有效性以逼近其语义:
         // 实体失效时取消定时任务并执行 retriedTask (Folia 的 retired 回调)。
+        UUID entityId = entity.getUniqueId();
         final BukkitTaskWrapper[] holder = new BukkitTaskWrapper[1];
         BukkitTaskWrapper wrapper = syncTimer(() -> {
-            if (entity == null || !entity.isValid()) {
+            Entity currentEntity = Bukkit.getServer().getEntity(entityId);
+            if (currentEntity == null || !currentEntity.isValid()) {
                 if (holder[0] != null) {
                     holder[0].cancel();
                 }
