@@ -1,5 +1,6 @@
 package crypticlib;
 
+import crypticlib.chat.BukkitMsgSender;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.util.StringHelper;
 import org.bukkit.command.BlockCommandSender;
@@ -69,7 +70,13 @@ public class BukkitInvoker implements Invoker {
     }
 
     public static BukkitInvoker byCommandSender(CommandSender commandSender) {
-        return new BukkitInvoker(commandSender);
+        if (commandSender instanceof Player)  {
+            return new BukkitPlayer((Player) commandSender);
+        } else if (commandSender instanceof Entity) {
+            return new BukkitEntity((Entity) commandSender);
+        } else {
+            return new BukkitInvoker(commandSender);
+        }
     }
 
     @Override

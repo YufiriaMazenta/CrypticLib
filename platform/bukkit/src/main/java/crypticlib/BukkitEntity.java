@@ -1,6 +1,7 @@
 package crypticlib;
 
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -9,7 +10,7 @@ public class BukkitEntity extends BukkitInvoker {
 
     protected final @NotNull UUID uuid;
 
-    public BukkitEntity(@NotNull Entity entity) {
+    protected BukkitEntity(@NotNull Entity entity) {
         super(entity);
         this.uuid = entity.getUniqueId();
     }
@@ -19,6 +20,9 @@ public class BukkitEntity extends BukkitInvoker {
     }
 
     public static BukkitEntity byEntity(@NotNull Entity entity) {
+        if (entity instanceof Player) {
+            return new BukkitPlayer((Player) entity);
+        }
         return new BukkitEntity(entity);
     }
 

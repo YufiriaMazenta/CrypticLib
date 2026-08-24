@@ -72,6 +72,9 @@ public class BungeeInvoker implements Invoker {
     }
 
     public static BungeeInvoker byCommandSender(CommandSender commandSender) {
+        if (commandSender instanceof ProxiedPlayer)  {
+            return new BungeePlayer((ProxiedPlayer) commandSender);
+        }
         return new BungeeInvoker(commandSender);
     }
 

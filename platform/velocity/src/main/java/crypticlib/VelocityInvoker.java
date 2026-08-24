@@ -80,6 +80,9 @@ public class VelocityInvoker implements Invoker {
     }
 
     public static VelocityInvoker byCommandSource(CommandSource commandSource) {
+        if (commandSource instanceof Player)  {
+            return new VelocityPlayer((Player) commandSource);
+        }
         return new VelocityInvoker(commandSource);
     }
 
