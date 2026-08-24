@@ -76,7 +76,7 @@ public class Conversation {
 
     public void start() {
         ConversationHandler.INSTANCE.startChat(who, this);
-        BukkitMsgSender.INSTANCE.sendMsg(BukkitPlayer.byPlayer(who), prompt.promptText(data));
+        BukkitMsgSender.INSTANCE.sendComponent(BukkitPlayer.byPlayer(who), prompt.promptText(data));
         scheduleTimeout();
     }
 
@@ -114,7 +114,7 @@ public class Conversation {
                 end();
                 return;
             }
-            BukkitMsgSender.INSTANCE.sendMsg(BukkitPlayer.byPlayer(who), prompt.promptText(data));
+            BukkitMsgSender.INSTANCE.sendComponent(BukkitPlayer.byPlayer(who), prompt.promptText(data));
             scheduleTimeout();
         }, () -> ConversationHandler.INSTANCE.endChat(who, this));
     }

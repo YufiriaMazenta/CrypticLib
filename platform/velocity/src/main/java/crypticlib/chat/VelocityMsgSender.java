@@ -17,7 +17,7 @@ import java.util.Map;
     rules = @LifecycleRule(lifeCycle = Lifecycle.LOAD),
     platforms = PlatformSide.VELOCITY
 )
-public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, LifecycleTask {
+public enum VelocityMsgSender implements MsgSender, ComponentSender<Component>, LifecycleTask {
 
     INSTANCE;
 
@@ -35,7 +35,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     }
 
     @Override
-    public void sendMsg(Invoker receiver, @NotNull Component... baseComponents) {
+    public void sendComponents(Invoker receiver, @NotNull Component... baseComponents) {
         if (receiver == null)
             return;
         Component component = Component.text().build();
@@ -46,14 +46,14 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     }
 
     @Override
-    public void sendMsg(Invoker receiver, @NotNull Component baseComponent) {
+    public void sendComponent(Invoker receiver, @NotNull Component baseComponent) {
         if (receiver == null)
             return;
         ((CommandSource) receiver.platformInvoker()).sendMessage(baseComponent);
     }
 
     @Override
-    public void sendActionBar(CommonPlayer player, Component component) {
+    public void sendActionbarComponent(CommonPlayer player, Component component) {
         if (player == null)
             return;
         player.getPlatformPlayer((uuid) -> plugin().getPlayer(uuid).orElse(null)).ifPresent(vcPlayer -> {
@@ -62,7 +62,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     }
 
     @Override
-    public void sendActionBar(CommonPlayer player, Component... components) {
+    public void sendActionbarComponents(CommonPlayer player, Component... components) {
         if (player == null)
             return;
         Component component = Component.text().build();
@@ -88,7 +88,7 @@ public enum VelocityMsgSender implements MsgSender.ComponentSender<Component>, L
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : plugin().proxyServer().getAllPlayers()) {
-            sendActionBar(VelocityPlayer.byPlayer(player), msg);
+            sendActionbar(VelocityPlayer.byPlayer(player), msg);
         }
     }
 

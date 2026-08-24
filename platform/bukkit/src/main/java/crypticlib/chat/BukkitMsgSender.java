@@ -16,24 +16,24 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> {
+public enum BukkitMsgSender implements MsgSender, ComponentSender<BaseComponent> {
 
     INSTANCE;
 
     @Override
-    public void sendMsg(Invoker receiver, @NotNull BaseComponent... baseComponents) {
-        sendMsg(receiver, new TextComponent(baseComponents));
+    public void sendComponents(Invoker receiver, @NotNull BaseComponent... baseComponents) {
+        sendComponent(receiver, new TextComponent(baseComponents));
     }
 
     @Override
-    public void sendMsg(Invoker receiver, @NotNull BaseComponent baseComponent) {
+    public void sendComponent(Invoker receiver, @NotNull BaseComponent baseComponent) {
         if (receiver == null)
             return;
         ((CommandSender) receiver.platformInvoker()).spigot().sendMessage(baseComponent);
     }
 
     @Override
-    public void sendActionBar(CommonPlayer player, BaseComponent component) {
+    public void sendActionbarComponent(CommonPlayer player, BaseComponent component) {
         if (player == null)
             return;
         player.getPlatformPlayer(Bukkit::getPlayer).ifPresent(bukkitPlayer -> {
@@ -42,8 +42,8 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     }
 
     @Override
-    public void sendActionBar(CommonPlayer player, BaseComponent... baseComponents) {
-        sendActionBar(player, new TextComponent(baseComponents));
+    public void sendActionbarComponents(CommonPlayer player, BaseComponent... baseComponents) {
+        sendActionbarComponent(player, new TextComponent(baseComponents));
     }
 
     @Override
@@ -59,7 +59,7 @@ public enum BukkitMsgSender implements MsgSender.ComponentSender<BaseComponent> 
     public void broadcastActionbar(String msg, Map<String, String> replaceMap) {
         msg = StringHelper.replaceStrings(msg, replaceMap);
         for (Player player : Bukkit.getOnlinePlayers()) {
-            sendActionBar(BukkitPlayer.byPlayer(player), msg);
+            sendActionbar(BukkitPlayer.byPlayer(player), msg);
         }
     }
 

@@ -8,6 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 消息发送器接口，用于给玩家、控制台等对象发送消息
+ */
 public interface MsgSender {
 
     /**
@@ -70,11 +73,11 @@ public interface MsgSender {
      * @param player 发送的玩家
      * @param text   发送的ActionBar文本
      */
-    default void sendActionBar(CommonPlayer player, String text) {
-        sendActionBar(player, text, new HashMap<>());
+    default void sendActionbar(CommonPlayer player, String text) {
+        sendActionbar(player, text, new HashMap<>());
     }
 
-    default void sendActionBar(CommonPlayer player, String text, Map<String, String> replaceMap) {
+    default void sendActionbar(CommonPlayer player, String text, Map<String, String> replaceMap) {
         if (player == null)
             return;
         player.sendActionBar(text, replaceMap);
@@ -171,23 +174,5 @@ public interface MsgSender {
      * @param replaceMap 需要替换的文本
      */
     void info(String msg, Map<String, String> replaceMap);
-
-    /**
-     * 处理聊天组件的子接口
-     * 提供基于平台Component类型的发送方法
-     *
-     * @param <Component> 平台聊天组件类型
-     */
-    interface ComponentSender<Component> extends MsgSender {
-
-        void sendMsg(Invoker receiver, @NotNull Component... components);
-
-        void sendMsg(Invoker receiver, @NotNull Component component);
-
-        void sendActionBar(CommonPlayer player, Component component);
-
-        void sendActionBar(CommonPlayer player, Component... components);
-
-    }
 
 }
