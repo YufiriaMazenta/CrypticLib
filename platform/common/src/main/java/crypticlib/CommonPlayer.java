@@ -33,4 +33,18 @@ public interface CommonPlayer extends Invoker {
 
     void sendActionBar(String text, Map<String, String> replaceMap);
 
+    static Optional<CommonPlayer> fromUuid(UUID playerId) {
+        if (playerId == null) {
+            return Optional.empty();
+        }
+        return CrypticLib.plugin().getCrypticLibPlayer(playerId);
+    }
+
+    static Optional<CommonPlayer> fromName(String playerName) {
+        if (playerName == null) {
+            return Optional.empty();
+        }
+        return CrypticLib.plugin().getCrypticLibPlayer(playerName);
+    }
+
 }

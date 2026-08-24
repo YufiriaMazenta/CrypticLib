@@ -13,10 +13,7 @@ import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * CrypticLib插件定义接口
@@ -41,6 +38,10 @@ public interface CrypticLibPlugin {
 
     @NotNull
     Invoker getConsoleInvoker();
+
+    Optional<CommonPlayer> getCrypticLibPlayer(UUID uuid);
+
+    Optional<CommonPlayer> getCrypticLibPlayer(String playerName);
 
     default void runLifecycleTasks(Lifecycle lifeCycle) {
         List<LifecycleTaskWrapper> taskWrappers = new ArrayList<>();

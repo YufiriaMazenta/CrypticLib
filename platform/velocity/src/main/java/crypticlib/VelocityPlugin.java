@@ -30,7 +30,6 @@ import crypticlib.perm.PermManager;
 import crypticlib.perm.VelocityPermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.scheduler.VelocityScheduler;
-import crypticlib.util.ReflectionHelper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
@@ -292,6 +291,18 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     @Override
     public @NotNull Invoker getConsoleInvoker() {
         return VelocityInvoker.byCommandSource(proxyServer.getConsoleCommandSource());
+    }
+
+    @Override
+    public Optional<CommonPlayer> getCrypticLibPlayer(UUID uuid) {
+        Optional<Player> vcPlayerOpt = getPlayer(uuid);
+        return vcPlayerOpt.map(VelocityPlayer::byPlayer);
+    }
+
+    @Override
+    public Optional<CommonPlayer> getCrypticLibPlayer(String playerName) {
+        Optional<Player> vcPlayerOpt = getPlayer(playerName);
+        return vcPlayerOpt.map(VelocityPlayer::byPlayer);
     }
 
 }

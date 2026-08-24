@@ -18,6 +18,7 @@ import crypticlib.scheduler.BungeeScheduler;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
 import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -237,6 +238,24 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     @Override
     public @NotNull Invoker getConsoleInvoker() {
         return BungeeInvoker.byCommandSender(ProxyServer.getInstance().getConsole());
+    }
+
+    @Override
+    public Optional<CommonPlayer> getCrypticLibPlayer(UUID uuid) {
+        ProxiedPlayer bcPlayer = ProxyServer.getInstance().getPlayer(uuid);
+        if (bcPlayer == null) {
+            return Optional.empty();
+        }
+        return Optional.of(BungeePlayer.byProxiedPlayer(bcPlayer));
+    }
+
+    @Override
+    public Optional<CommonPlayer> getCrypticLibPlayer(String playerName) {
+        ProxiedPlayer bcPlayer = ProxyServer.getInstance().getPlayer(playerName);
+        if (bcPlayer == null) {
+            return Optional.empty();
+        }
+        return Optional.of(BungeePlayer.byProxiedPlayer(bcPlayer));
     }
 
 }

@@ -18,6 +18,7 @@ import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import crypticlib.util.ReflectionHelper;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -242,6 +243,24 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     @Override
     public @NotNull Invoker getConsoleInvoker() {
         return BukkitInvoker.byCommandSender(Bukkit.getConsoleSender());
+    }
+
+    @Override
+    public Optional<CommonPlayer> getCrypticLibPlayer(UUID uuid) {
+        Player bukkitPlayer = Bukkit.getPlayer(uuid);
+        if (bukkitPlayer == null) {
+            return Optional.empty();
+        }
+        return Optional.of(BukkitPlayer.byPlayer(bukkitPlayer));
+    }
+
+    @Override
+    public Optional<CommonPlayer> getCrypticLibPlayer(String playerName) {
+        Player bukkitPlayer = Bukkit.getPlayer(playerName);
+        if (bukkitPlayer == null) {
+            return Optional.empty();
+        }
+        return Optional.of(BukkitPlayer.byPlayer(bukkitPlayer));
     }
 
 }
