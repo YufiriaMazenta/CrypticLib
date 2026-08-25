@@ -1,7 +1,8 @@
 package crypticlib.ui.menu;
 
 import crypticlib.CrypticLibBukkit;
-import crypticlib.DataHolder;
+import crypticlib.data.DataHolder;
+import crypticlib.data.SimpleDataHolder;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
@@ -33,7 +34,7 @@ public class Menu implements InventoryHolder, DataHolder {
     protected MenuDisplay display;
     protected final Map<Character, List<Integer>> layoutSlotMap;
     protected @Nullable Inventory inventoryCache;
-    protected final Map<String, Object> dataMap = new ConcurrentHashMap<>();
+    private DataHolder dataHolder = new SimpleDataHolder();
 
     public Menu(@NotNull Player player) {
         this(player, new MenuDisplay());
@@ -430,31 +431,27 @@ public class Menu implements InventoryHolder, DataHolder {
 
     @Override
     public Map<String, Object> allData() {
-        return dataMap;
+        return dataHolder.allData();
     }
 
     @Override
     public void setAllData(Map<String, Object> data) {
-        this.dataMap.clear();
-        this.dataMap.putAll(data);
+        dataHolder.setAllData(data);
     }
 
     @Override
     public Optional<Object> getData(String key) {
-        if (dataMap.containsKey(key)) {
-            return Optional.ofNullable(dataMap.get(key));
-        }
-        return Optional.empty();
+        return dataHolder.getData(key);
     }
 
     @Override
     public Object putData(String key, Object value) {
-        return dataMap.put(key, value);
+        return dataHolder.putData(key, value);
     }
 
     @Override
     public void clearData() {
-        dataMap.clear();
+        dataHolder.clearData();
     }
 
     public enum MenuOpenResult {

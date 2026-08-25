@@ -1,4 +1,4 @@
-package crypticlib;
+package crypticlib.data;
 
 import java.util.Map;
 import java.util.Optional;
