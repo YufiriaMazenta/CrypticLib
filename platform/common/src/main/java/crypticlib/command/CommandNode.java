@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class CommandNode {
 
-    protected final Map<String, CommandNode> subcommands = new HashMap<>();
+    protected final Map<String, CommandNode> nodes = new HashMap<>();
     protected final CommandInfo commandInfo;
 
     public CommandNode(@NotNull CommandInfo commandInfo) {
@@ -103,7 +103,7 @@ public class CommandNode {
             description.add(desc);
         }
         //别名与主名共享同一节点,去重后再生成描述,避免同一子命令重复输出
-        for (CommandNode subcommand : new LinkedHashSet<>(subcommands.values())) {
+        for (CommandNode subcommand : new LinkedHashSet<>(nodes.values())) {
             if (!subcommand.hasPermission(invoker)) {
                 continue;
             }
@@ -151,10 +151,10 @@ public class CommandNode {
      *
      * @param commandHandler 注册的命令
      */
-    public CommandNode regSub(@NotNull CommandNode commandHandler) {
-        subcommands.put(commandHandler.commandInfo().name(), commandHandler);
+    public CommandNode addNode(@NotNull CommandNode commandHandler) {
+        nodes.put(commandHandler.commandInfo().name(), commandHandler);
         for (String alias : commandHandler.commandInfo().aliases()) {
-            subcommands.put(alias, commandHandler);
+            nodes.put(alias, commandHandler);
         }
         return this;
     }
@@ -164,8 +164,8 @@ public class CommandNode {
      *
      * @return 命令的子命令表
      */
-    public final @NotNull Map<String, CommandNode> subcommands() {
-        return subcommands;
+    public final @NotNull Map<String, CommandNode> nodes() {
+        return nodes;
     }
 
     /**
@@ -176,7 +176,7 @@ public class CommandNode {
      */
     public final void onCommand(Invoker invoker, List<String> args) {
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
-        if (args.isEmpty() || subcommands.isEmpty() || !subcommands.containsKey(args.get(0))) {
+        if (args.isEmpty() || nodes.isEmpty() || !nodes.containsKey(args.get(0))) {
             if (hasPermission(invoker)) {
                 execute(invoker, args);
             } else {
@@ -185,7 +185,7 @@ public class CommandNode {
             return;
         }
         //执行对应的子命令
-        CommandNode commandHandler = subcommands.get(args.get(0));
+        CommandNode commandHandler = nodes.get(args.get(0));
         if (commandHandler != null) {
             commandHandler.onCommand(invoker, args.subList(1, args.size()));
         }
@@ -208,9 +208,9 @@ public class CommandNode {
         }
 
         //尝试获取子命令的补全内容
-        if (!subcommands.isEmpty()) {
+        if (!nodes.isEmpty()) {
             if (args.size() > 1) {
-                CommandNode commandHandler = subcommands.get(args.get(0));
+                CommandNode commandHandler = nodes.get(args.get(0));
                 if (commandHandler != null) {
                     if (commandHandler.hasPermission(invoker)) {
                         return commandHandler.onTabComplete(invoker, args.subList(1, args.size()));
@@ -221,8 +221,8 @@ public class CommandNode {
                 //首参不匹配任何子命令时,回退到自定义tabComplete的结果,
                 //与onCommand对自由参数的处理保持一致
             } else {
-                for (String arg : subcommands.keySet()) {
-                    CommandNode commandHandler = subcommands.get(arg);
+                for (String arg : nodes.keySet()) {
+                    CommandNode commandHandler = nodes.get(arg);
                     if (commandHandler.hasPermission(invoker)) {
                         arguments.add(arg);
                     }
@@ -238,7 +238,7 @@ public class CommandNode {
 
     public final void registerPerms() {
         //扫描子命令,注册子命令所需权限(别名共享节点,去重后避免重复递归)
-        for (CommandNode commandTreeNode : new LinkedHashSet<>(subcommands.values())) {
+        for (CommandNode commandTreeNode : new LinkedHashSet<>(nodes.values())) {
             commandTreeNode.registerPerms();
         }
         //注册自己的权限节点
@@ -247,7 +247,7 @@ public class CommandNode {
             permission.register();
     }
 
-    public final void scanSubCommands() {
+    public final void scanNodes() {
         //先注册自己的子命令
         for (Field field : this.getClass().getDeclaredFields()) {
             if (!field.isAnnotationPresent(Subcommand.class))
@@ -259,13 +259,13 @@ public class CommandNode {
                 } catch (IllegalAccessException e) {
                     continue;
                 }
-                this.regSub(commandHandler);
+                this.addNode(commandHandler);
             }
         }
 
         //再注册子命令的子命令(别名共享节点,去重后避免重复递归)
-        for (CommandNode commandHandler : new LinkedHashSet<>(subcommands.values())) {
-            commandHandler.scanSubCommands();
+        for (CommandNode commandHandler : new LinkedHashSet<>(nodes.values())) {
+            commandHandler.scanNodes();
         }
     }
 

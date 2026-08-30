@@ -33,12 +33,12 @@ public class CommandTree extends CommandNode {
     }
 
     @Override
-    public CommandTree regSub(@NotNull CommandNode commandHandler) {
-        return (CommandTree) super.regSub(commandHandler);
+    public CommandTree addNode(@NotNull CommandNode commandHandler) {
+        return (CommandTree) super.addNode(commandHandler);
     }
 
     public final void register() {
-        scanSubCommands();
+        scanNodes();
         registerPerms();
         CrypticLib.plugin().commandManager().register(this);
     }
