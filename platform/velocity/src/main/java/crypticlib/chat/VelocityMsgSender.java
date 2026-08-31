@@ -3,18 +3,18 @@ package crypticlib.chat;
 import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.Player;
 import crypticlib.*;
-import crypticlib.lifecycle.LifecycleTaskSettings;
-import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleTaskConfig;
+import crypticlib.lifecycle.LifecyclePhase;
 import crypticlib.lifecycle.LifecycleTask;
-import crypticlib.lifecycle.LifecycleRule;
+import crypticlib.lifecycle.LifecycleSchedule;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
-@LifecycleTaskSettings(
-    rules = @LifecycleRule(lifeCycle = Lifecycle.LOAD),
+@LifecycleTaskConfig(
+    schedules = @LifecycleSchedule(phase = LifecyclePhase.LOAD),
     platforms = PlatformSide.VELOCITY
 )
 public enum VelocityMsgSender implements MsgSender, ComponentSender<Component>, LifecycleTask {
@@ -117,7 +117,7 @@ public enum VelocityMsgSender implements MsgSender, ComponentSender<Component>, 
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
+    public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

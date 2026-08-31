@@ -5,10 +5,10 @@ import com.velocitypowered.api.command.CommandMeta;
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
-import crypticlib.lifecycle.LifecycleTaskSettings;
-import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecycleTaskConfig;
+import crypticlib.lifecycle.LifecyclePhase;
 import crypticlib.lifecycle.LifecycleTask;
-import crypticlib.lifecycle.LifecycleRule;
+import crypticlib.lifecycle.LifecycleSchedule;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@LifecycleTaskSettings(
-    rules = {
-        @LifecycleRule(lifeCycle = Lifecycle.INIT)
+@LifecycleTaskConfig(
+    schedules = {
+        @LifecycleSchedule(phase = LifecyclePhase.INIT)
     },
     platforms = PlatformSide.VELOCITY
 )
@@ -80,7 +80,7 @@ public enum VelocityCommandManager implements LifecycleTask, CommandManager<Comm
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
+    public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

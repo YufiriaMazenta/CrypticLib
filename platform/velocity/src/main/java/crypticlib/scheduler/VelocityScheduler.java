@@ -4,16 +4,16 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.VelocityPlugin;
-import crypticlib.lifecycle.Lifecycle;
+import crypticlib.lifecycle.LifecyclePhase;
 import crypticlib.lifecycle.LifecycleTask;
-import crypticlib.lifecycle.LifecycleTaskSettings;
-import crypticlib.lifecycle.LifecycleRule;
+import crypticlib.lifecycle.LifecycleTaskConfig;
+import crypticlib.lifecycle.LifecycleSchedule;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
 
-@LifecycleTaskSettings(
-    rules = @LifecycleRule(lifeCycle = Lifecycle.INIT),
+@LifecycleTaskConfig(
+    schedules = @LifecycleSchedule(phase = LifecyclePhase.INIT),
     platforms = PlatformSide.VELOCITY
 )
 public enum VelocityScheduler implements Scheduler, LifecycleTask {
@@ -72,7 +72,7 @@ public enum VelocityScheduler implements Scheduler, LifecycleTask {
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
+    public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
         this.plugin = (VelocityPlugin) plugin;
     }
 

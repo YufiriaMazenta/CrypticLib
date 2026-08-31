@@ -5,10 +5,10 @@ import crypticlib.PlatformSide;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lang.entry.LangEntry;
 import crypticlib.lang.entry.StringLangEntry;
-import crypticlib.lifecycle.LifecycleTaskSettings;
+import crypticlib.lifecycle.LifecycleTaskConfig;
 import crypticlib.lifecycle.LifecycleTask;
-import crypticlib.lifecycle.Lifecycle;
-import crypticlib.lifecycle.LifecycleRule;
+import crypticlib.lifecycle.LifecyclePhase;
+import crypticlib.lifecycle.LifecycleSchedule;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -21,11 +21,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@LifecycleTaskSettings(
-    rules = {
-        @LifecycleRule(lifeCycle = Lifecycle.ENABLE, priority = Integer.MIN_VALUE, isAsync = true),
-        @LifecycleRule(lifeCycle = Lifecycle.RELOAD, priority = Integer.MIN_VALUE, isAsync = true),
-        @LifecycleRule(lifeCycle = Lifecycle.DISABLE, priority = Integer.MAX_VALUE)
+@LifecycleTaskConfig(
+    schedules = {
+        @LifecycleSchedule(phase = LifecyclePhase.ENABLE, priority = Integer.MIN_VALUE, isAsync = true),
+        @LifecycleSchedule(phase = LifecyclePhase.RELOAD, priority = Integer.MIN_VALUE, isAsync = true),
+        @LifecycleSchedule(phase = LifecyclePhase.DISABLE, priority = Integer.MAX_VALUE)
     },
     platforms = PlatformSide.BUKKIT
 )
@@ -156,8 +156,8 @@ public enum LangManager implements LifecycleTask {
     }
 
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
-        switch (lifeCycle) {
+    public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
+        switch (lifecyclePhase) {
             case ENABLE:
                 Plugin bukkitPlugin = (Plugin) plugin;
                 PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(

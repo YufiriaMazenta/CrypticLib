@@ -20,7 +20,6 @@ import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Listener;
-import crypticlib.util.ReflectionHelper;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +37,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     public BungeePlugin() {
         CrypticLib.init(this);
         pluginScanner.scanJar(this.getFile());
-        runLifecycleTasks(Lifecycle.INIT);
+        runLifecycleTasks(LifecyclePhase.INIT);
     }
 
     @Override
@@ -61,7 +60,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
             }
         );
         whenLoad();
-        runLifecycleTasks(Lifecycle.LOAD);
+        runLifecycleTasks(LifecyclePhase.LOAD);
     }
 
     @Override
@@ -108,13 +107,13 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
             }
         );
         whenEnable();
-        runLifecycleTasks(Lifecycle.ENABLE);
-        getProxy().getScheduler().runAsync(this, () -> runLifecycleTasks(Lifecycle.ACTIVE));
+        runLifecycleTasks(LifecyclePhase.ENABLE);
+        getProxy().getScheduler().runAsync(this, () -> runLifecycleTasks(LifecyclePhase.ACTIVE));
     }
 
     @Override
     public final void onDisable() {
-        runLifecycleTasks(Lifecycle.DISABLE);
+        runLifecycleTasks(LifecyclePhase.DISABLE);
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         //cancelTasks 同时取消官方调度器任务与 BungeeScheduler 私有线程池中的任务,避免禁用后周期任务继续运行
@@ -150,7 +149,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     public final void reloadPlugin() {
         reloadConfig();
         whenReload();
-        runLifecycleTasks(Lifecycle.RELOAD);
+        runLifecycleTasks(LifecyclePhase.RELOAD);
     }
     
     public final @NotNull Configuration getConfig() {
