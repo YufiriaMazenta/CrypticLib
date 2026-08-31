@@ -44,7 +44,8 @@ public interface CrypticLibPlugin {
     Optional<CommonPlayer> getCrypticLibPlayer(String playerName);
 
     default void runLifecycleTasks(Lifecycle lifeCycle) {
-        List<LifecycleTaskWrapper> taskWrappers = new ArrayList<>();
+        List<LifecycleTaskWrapper> syncTaskWrappers = new ArrayList<>();
+        List<LifecycleTaskWrapper> asyncTaskWrappers = new ArrayList<>();
         PluginScanner.INSTANCE.getAnnotatedClasses(LifecycleTaskSettings.class).forEach(
             taskClass -> {
                 try {
@@ -62,12 +63,17 @@ public interface CrypticLibPlugin {
                     for (LifecycleRule lifecycleRule : annotation.rules()) {
                         Lifecycle annotationLifecycle = lifecycleRule.lifeCycle();
                         int priority = lifecycleRule.priority();
+                        boolean async = lifecycleRule.isAsync();
                         if (annotationLifecycle.equals(lifeCycle)) {
                             LifecycleTask task = (LifecycleTask) ReflectionHelper.getSingletonClassInstance(taskClass);
                             List<Class<? extends Throwable>> ignoreExceptions = Arrays.asList(annotation.ignoreExceptions());
                             List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
                             LifecycleTaskWrapper wrapper = new LifecycleTaskWrapper(task, priority, ignoreExceptions, printExceptions);
-                            taskWrappers.add(wrapper);
+                            if (async) {
+                                asyncTaskWrappers.add(wrapper);
+                            } else {
+                                syncTaskWrappers.add(wrapper);
+                            }
                             return;
                         }
                     }
@@ -86,10 +92,39 @@ public interface CrypticLibPlugin {
                 }
             }
         );
-        taskWrappers.sort(Comparator.comparingInt(LifecycleTaskWrapper::priority));
-        for (LifecycleTaskWrapper taskWrapper : taskWrappers) {
-            CrypticLib.debug("Call lifecycle task | Lifecycle: " + lifeCycle.name() + ", Class: " + taskWrapper.lifeCycleTask().getClass().getName());
-            taskWrapper.runLifecycleTask(this, lifeCycle);
+
+        if (!syncTaskWrappers.isEmpty()) {
+            syncTaskWrappers.sort(Comparator.comparingInt(LifecycleTaskWrapper::priority));
+            for (LifecycleTaskWrapper syncTaskWrapper : syncTaskWrappers) {
+                CrypticLib.debug("Call lifecycle task | Lifecycle: " + lifeCycle.name() + ", Class: " + syncTaskWrapper.lifeCycleTask().getClass().getName());
+                syncTaskWrapper.runLifecycleTask(this, lifeCycle);
+            }
+        }
+        if (asyncTaskWrappers.isEmpty()) {
+            return;
+        }
+        asyncTaskWrappers.sort(Comparator.comparing(LifecycleTaskWrapper::priority));
+        Runnable asyncTasksRunnable = () -> {
+            for (LifecycleTaskWrapper asyncTaskWrapper : asyncTaskWrappers) {
+                CrypticLib.debug("Call async lifecycle task | Lifecycle: " + lifeCycle.name() + ", Class: " + asyncTaskWrapper.lifeCycleTask().getClass().getName());
+                asyncTaskWrapper.runLifecycleTask(this, lifeCycle);
+            }
+        };
+        switch (lifeCycle) {
+            case INIT:
+            case LOAD:
+            case ENABLE:
+                //init, load和enable阶段无法使用bukkit等平台的调度器,只能自己临时new一个线程来执行
+                new Thread(asyncTasksRunnable, "CrypticLibAsyncLifecycleTask-" + lifeCycle.name()).start();
+                break;
+            case ACTIVE:
+            case RELOAD:
+                CrypticLib.plugin().scheduler().async(asyncTasksRunnable);
+                break;
+            case DISABLE:
+                //这个阶段大部分情况下是服务器关闭,这时候异步线程无法保证一定正确执行,所以同步执行
+                asyncTasksRunnable.run();
+                break;
         }
     }
 

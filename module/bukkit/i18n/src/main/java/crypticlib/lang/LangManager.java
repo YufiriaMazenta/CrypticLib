@@ -23,9 +23,9 @@ import java.util.regex.Pattern;
 
 @LifecycleTaskSettings(
     rules = {
-        @LifecycleRule(lifeCycle = Lifecycle.ENABLE, priority = Integer.MIN_VALUE),
-        @LifecycleRule(lifeCycle = Lifecycle.RELOAD),
-        @LifecycleRule(lifeCycle = Lifecycle.DISABLE)
+        @LifecycleRule(lifeCycle = Lifecycle.ENABLE, priority = Integer.MIN_VALUE, isAsync = true),
+        @LifecycleRule(lifeCycle = Lifecycle.RELOAD, priority = Integer.MIN_VALUE, isAsync = true),
+        @LifecycleRule(lifeCycle = Lifecycle.DISABLE, priority = Integer.MAX_VALUE)
     },
     platforms = PlatformSide.BUKKIT
 )
