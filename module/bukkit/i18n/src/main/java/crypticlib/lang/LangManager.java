@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 @LifecycleTaskConfig(
     schedules = {
-        @LifecycleSchedule(phase = LifecyclePhase.ENABLE, priority = Integer.MIN_VALUE, isAsync = true),
+        @LifecycleSchedule(phase = LifecyclePhase.ENABLE, priority = Integer.MIN_VALUE),
         @LifecycleSchedule(phase = LifecyclePhase.RELOAD, priority = Integer.MIN_VALUE, isAsync = true),
         @LifecycleSchedule(phase = LifecyclePhase.DISABLE, priority = Integer.MAX_VALUE)
     },
