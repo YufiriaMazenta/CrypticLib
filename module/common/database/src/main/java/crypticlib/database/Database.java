@@ -1,7 +1,7 @@
 package crypticlib.database;
 
-import crypticlib.dependency.Dependency;
-import crypticlib.dependency.DependencyLoader;
+import crypticlib.env.dependency.Dependency;
+import crypticlib.env.dependency.DependencyLoader;
 
 public class Database {
 

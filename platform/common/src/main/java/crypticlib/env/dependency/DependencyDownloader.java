@@ -1,6 +1,7 @@
-package crypticlib.dependency;
+package crypticlib.env.dependency;
 
 import crypticlib.CrypticLib;
+import crypticlib.env.ClassAppender;
 import crypticlib.util.IOHelper;
 import me.lucko.jarrelocator.JarRelocator;
 import me.lucko.jarrelocator.Relocation;
@@ -17,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.AtomicMoveNotSupportedException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.ParseException;

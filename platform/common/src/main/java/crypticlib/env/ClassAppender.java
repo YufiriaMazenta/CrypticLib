@@ -1,5 +1,6 @@
-package crypticlib.dependency;
+package crypticlib.env;
 
+import crypticlib.env.dependency.DependencyLoader;
 import sun.misc.Unsafe;
 
 import java.io.File;

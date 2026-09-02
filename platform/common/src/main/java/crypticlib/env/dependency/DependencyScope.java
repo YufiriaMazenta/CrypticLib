@@ -1,4 +1,4 @@
-package crypticlib.dependency;
+package crypticlib.env.dependency;
 
 /**
  * Maven 依赖范围

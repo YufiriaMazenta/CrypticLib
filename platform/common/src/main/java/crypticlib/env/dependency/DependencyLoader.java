@@ -1,6 +1,7 @@
-package crypticlib.dependency;
+package crypticlib.env.dependency;
 
 import crypticlib.CrypticLib;
+import crypticlib.env.ClassAppender;
 import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
 

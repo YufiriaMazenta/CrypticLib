@@ -1,4 +1,4 @@
-package crypticlib.dependency;
+package crypticlib.env.dependency;
 
 import me.lucko.jarrelocator.Relocation;
 import org.jetbrains.annotations.NotNull;

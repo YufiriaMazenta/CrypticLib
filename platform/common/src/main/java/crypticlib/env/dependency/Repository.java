@@ -1,4 +1,4 @@
-package crypticlib.dependency;
+package crypticlib.env.dependency;
 
 import crypticlib.util.IOHelper;
 import org.jetbrains.annotations.NotNull;
