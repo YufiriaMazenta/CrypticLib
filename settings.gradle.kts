@@ -8,7 +8,6 @@ include(
     "module:bukkit:particle",
 )
 include(
-    "module:common:database",
     "module:common:compat",
     "module:common:script"
 )
