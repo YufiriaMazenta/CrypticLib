@@ -2,9 +2,9 @@ package crypticlib.database.dao;
 
 import crypticlib.database.connection.ConnectionSource;
 import crypticlib.database.dialect.DatabaseDialect;
-import crypticlib.database.query.DeleteBuilder;
-import crypticlib.database.query.QueryBuilder;
-import crypticlib.database.query.UpdateBuilder;
+import crypticlib.database.statement.DeleteBuilder;
+import crypticlib.database.statement.QueryBuilder;
+import crypticlib.database.statement.UpdateBuilder;
 import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 

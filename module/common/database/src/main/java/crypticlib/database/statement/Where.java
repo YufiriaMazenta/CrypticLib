@@ -1,7 +1,6 @@
-package crypticlib.database.query;
+package crypticlib.database.statement;
 
 import crypticlib.database.dialect.DatabaseDialect;
-import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
 import java.util.ArrayList;

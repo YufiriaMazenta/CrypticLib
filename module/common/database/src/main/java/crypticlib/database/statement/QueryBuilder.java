@@ -1,4 +1,4 @@
-package crypticlib.database.query;
+package crypticlib.database.statement;
 
 import crypticlib.database.connection.ConnectionSource;
 import crypticlib.database.dao.Dao;
