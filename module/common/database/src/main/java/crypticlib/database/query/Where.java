@@ -5,6 +5,7 @@ import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -147,8 +148,7 @@ public class Where<P> {
         }
 
         StringBuilder sqlBuilder = new StringBuilder(" WHERE ");
-        for (int i = 0; i < conditions.size(); i++) {
-            Condition condition = conditions.get(i);
+        for (Condition condition : conditions) {
             sqlBuilder.append(condition.toSql());
         }
         return sqlBuilder.toString();
@@ -157,13 +157,12 @@ public class Where<P> {
     /**
      * 收集 WHERE 子句的参数值
      */
-    List<Object> collectParameters(List<Object> parameters) {
+    void collectParameters(List<Object> parameters) {
         for (Condition condition : conditions) {
             if (!condition.isLogical) {
                 condition.collectParameters(parameters);
             }
         }
-        return parameters;
     }
 
     /**
@@ -221,9 +220,7 @@ public class Where<P> {
 
         @Override
         void collectParameters(List<Object> parameters) {
-            for (Object value : values) {
-                parameters.add(value);
-            }
+            parameters.addAll(Arrays.asList(values));
         }
     }
 

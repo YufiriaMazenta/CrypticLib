@@ -25,6 +25,10 @@ public class JdbcConnectionSource implements ConnectionSource {
         this(url, null, null);
     }
 
+    public JdbcConnectionSource(String url, DatabaseDialect dialect) {
+        this(url, null, null, dialect);
+    }
+
     public JdbcConnectionSource(String url, String user, String password) {
         this.url = url;
         this.user = user;

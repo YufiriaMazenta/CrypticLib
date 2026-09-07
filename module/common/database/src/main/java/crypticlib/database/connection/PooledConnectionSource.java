@@ -39,6 +39,10 @@ public class PooledConnectionSource implements ConnectionSource {
         this(url, null, null);
     }
 
+    public PooledConnectionSource(String url, DatabaseDialect dialect) {
+        this(url, null, null, dialect);
+    }
+
     public PooledConnectionSource(String url, String user, String password) {
         this.url = url;
         this.user = user;
