@@ -134,6 +134,11 @@ public class PooledConnectionSource implements ConnectionSource {
     }
 
     @Override
+    public boolean isOpen() {
+        return !closed;
+    }
+
+    @Override
     public void close() {
         closed = true;
         if (heartbeatExecutor != null) {

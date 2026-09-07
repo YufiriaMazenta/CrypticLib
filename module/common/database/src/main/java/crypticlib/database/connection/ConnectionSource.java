@@ -35,6 +35,13 @@ public interface ConnectionSource extends Closeable {
     DatabaseDialect getDialect();
 
     /**
+     * 检查连接源是否处于开启状态
+     *
+     * @return 连接源是否可用
+     */
+    boolean isOpen();
+
+    /**
      * 关闭连接源，释放所有资源
      */
     @Override

@@ -73,6 +73,17 @@ public class JdbcConnectionSource implements ConnectionSource {
         closed = true;
     }
 
+    @Override
+    public boolean isOpen() {
+        if (closed) return false;
+        if (connection == null) return true;
+        try {
+            return !connection.isClosed();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
     private void checkClosed() {
         if (closed) {
             throw new IllegalStateException("ConnectionSource 已关闭");
