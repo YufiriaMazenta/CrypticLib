@@ -9,15 +9,17 @@ import java.util.List;
 
 /**
  * WHERE 条件构建器
+ *
+ * @param <P> 父构建器类型
  */
-public class Where {
+public class Where<P> {
 
-    private final Object parentBuilder;
+    private final P parentBuilder;
     private final TableInfo tableInfo;
     private final DatabaseDialect dialect;
     private final List<Condition> conditions = new ArrayList<>();
 
-    public Where(Object parentBuilder, TableInfo tableInfo, DatabaseDialect dialect) {
+    public Where(P parentBuilder, TableInfo tableInfo, DatabaseDialect dialect) {
         this.parentBuilder = parentBuilder;
         this.tableInfo = tableInfo;
         this.dialect = dialect;
@@ -26,7 +28,7 @@ public class Where {
     /**
      * 等于条件
      */
-    public Where equals(String column, Object value) {
+    public Where<P> equals(String column, Object value) {
         conditions.add(new Condition(column, "=", value));
         return this;
     }
@@ -34,7 +36,7 @@ public class Where {
     /**
      * 不等于条件
      */
-    public Where notEquals(String column, Object value) {
+    public Where<P> notEquals(String column, Object value) {
         conditions.add(new Condition(column, "<>", value));
         return this;
     }
@@ -42,7 +44,7 @@ public class Where {
     /**
      * 大于条件
      */
-    public Where greaterThan(String column, Object value) {
+    public Where<P> greaterThan(String column, Object value) {
         conditions.add(new Condition(column, ">", value));
         return this;
     }
@@ -50,7 +52,7 @@ public class Where {
     /**
      * 大于等于条件
      */
-    public Where greaterThanOrEquals(String column, Object value) {
+    public Where<P> greaterThanOrEquals(String column, Object value) {
         conditions.add(new Condition(column, ">=", value));
         return this;
     }
@@ -58,7 +60,7 @@ public class Where {
     /**
      * 小于条件
      */
-    public Where lessThan(String column, Object value) {
+    public Where<P> lessThan(String column, Object value) {
         conditions.add(new Condition(column, "<", value));
         return this;
     }
@@ -66,7 +68,7 @@ public class Where {
     /**
      * 小于等于条件
      */
-    public Where lessThanOrEquals(String column, Object value) {
+    public Where<P> lessThanOrEquals(String column, Object value) {
         conditions.add(new Condition(column, "<=", value));
         return this;
     }
@@ -74,7 +76,7 @@ public class Where {
     /**
      * LIKE 条件
      */
-    public Where like(String column, String value) {
+    public Where<P> like(String column, String value) {
         conditions.add(new Condition(column, "LIKE", value));
         return this;
     }
@@ -82,7 +84,7 @@ public class Where {
     /**
      * IN 条件
      */
-    public Where in(String column, Object... values) {
+    public Where<P> in(String column, Object... values) {
         conditions.add(new InCondition(column, values));
         return this;
     }
@@ -90,7 +92,7 @@ public class Where {
     /**
      * IS NULL 条件
      */
-    public Where isNull(String column) {
+    public Where<P> isNull(String column) {
         conditions.add(new IsNullCondition(column));
         return this;
     }
@@ -98,7 +100,7 @@ public class Where {
     /**
      * IS NOT NULL 条件
      */
-    public Where isNotNull(String column) {
+    public Where<P> isNotNull(String column) {
         conditions.add(new IsNotNullCondition(column));
         return this;
     }
@@ -106,7 +108,7 @@ public class Where {
     /**
      * AND 连接下一个条件
      */
-    public Where and() {
+    public Where<P> and() {
         if (!conditions.isEmpty()) {
             conditions.add(new Condition(null, null, null, true) {
                 @Override
@@ -119,7 +121,7 @@ public class Where {
     /**
      * OR 连接下一个条件
      */
-    public Where or() {
+    public Where<P> or() {
         if (!conditions.isEmpty()) {
             conditions.add(new Condition(null, null, null, true) {
                 @Override
@@ -132,9 +134,8 @@ public class Where {
     /**
      * 返回父构建器继续构建
      */
-    @SuppressWarnings("unchecked")
-    public <P> P done() {
-        return (P) parentBuilder;
+    public P done() {
+        return parentBuilder;
     }
 
     /**

@@ -20,19 +20,19 @@ public class DeleteBuilder<T> {
     private final ConnectionSource connectionSource;
     private final TableInfo tableInfo;
     private final DatabaseDialect dialect;
-    private final Where where;
+    private final Where<DeleteBuilder<T>> where;
 
     public DeleteBuilder(ConnectionSource connectionSource, TableInfo tableInfo) {
         this.connectionSource = connectionSource;
         this.tableInfo = tableInfo;
         this.dialect = connectionSource.getDialect();
-        this.where = new Where(this, tableInfo, dialect);
+        this.where = new Where<>(this, tableInfo, dialect);
     }
 
     /**
      * 获取 WHERE 条件构建器
      */
-    public Where where() {
+    public Where<DeleteBuilder<T>> where() {
         return where;
     }
 

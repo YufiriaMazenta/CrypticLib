@@ -159,28 +159,24 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int replace(T entity) throws SQLException {
+        ColumnInfo idColumn = tableInfo.getIdColumn();
+        // 自增主键且未赋值时，走普通 INSERT
+        if (idColumn != null && idColumn.isGenerated()) {
+            Object idValue = idColumn.getValue(entity);
+            if (idValue instanceof Number && ((Number) idValue).longValue() == 0) {
+                return create(entity);
+            }
+        }
         String sql = dialect.generateReplaceSql(tableInfo);
         Connection connection = connectionSource.getConnection();
         try {
             PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            List<ColumnInfo> nonIdColumns = tableInfo.getNonIdColumns();
-            for (int i = 0; i < nonIdColumns.size(); i++) {
-                Object value = nonIdColumns.get(i).getValue(entity);
-                setParameter(statement, i + 1, value, nonIdColumns.get(i).getJavaType());
+            List<ColumnInfo> columns = tableInfo.getColumns();
+            for (int i = 0; i < columns.size(); i++) {
+                Object value = columns.get(i).getValue(entity);
+                setParameter(statement, i + 1, value, columns.get(i).getJavaType());
             }
-            int result = statement.executeUpdate();
-
-            // 设置自动生成的 ID
-            ColumnInfo idColumn = tableInfo.getIdColumn();
-            if (idColumn != null && idColumn.isGenerated()) {
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    Object generatedId = getGeneratedId(generatedKeys, idColumn.getJavaType());
-                    idColumn.setValue(entity, generatedId);
-                }
-            }
-
-            return result;
+            return statement.executeUpdate();
         } finally {
             connectionSource.releaseConnection(connection);
         }

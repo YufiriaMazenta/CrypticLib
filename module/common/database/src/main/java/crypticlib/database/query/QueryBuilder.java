@@ -18,7 +18,7 @@ public class QueryBuilder<T> {
     private final Dao<T> dao;
     private final ConnectionSource connectionSource;
     private final TableInfo tableInfo;
-    private final Where where;
+    private final Where<QueryBuilder<T>> where;
     private final List<OrderBy> orderByList = new ArrayList<>();
     private long limit = -1;
     private long offset = 0;
@@ -27,13 +27,13 @@ public class QueryBuilder<T> {
         this.dao = dao;
         this.connectionSource = connectionSource;
         this.tableInfo = tableInfo;
-        this.where = new Where(this, tableInfo, connectionSource.getDialect());
+        this.where = new Where<>(this, tableInfo, connectionSource.getDialect());
     }
 
     /**
      * 获取 WHERE 条件构建器
      */
-    public Where where() {
+    public Where<QueryBuilder<T>> where() {
         return where;
     }
 

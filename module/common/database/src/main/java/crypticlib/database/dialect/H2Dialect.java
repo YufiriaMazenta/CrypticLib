@@ -34,20 +34,17 @@ public class H2Dialect extends AbstractDialect {
 
     @Override
     public String generateReplaceSql(TableInfo tableInfo) {
-        // H2 使用 MERGE INTO
+        // H2 使用 MERGE INTO，需要包含所有列（包括主键）
         ColumnInfo idColumn = tableInfo.getIdColumn();
-        List<ColumnInfo> columns = tableInfo.getNonIdColumns();
+        List<ColumnInfo> columns = tableInfo.getColumns();
         StringJoiner columnJoiner = new StringJoiner(", ");
         StringJoiner placeholderJoiner = new StringJoiner(", ");
-        StringJoiner updateJoiner = new StringJoiner(", ");
 
         for (ColumnInfo column : columns) {
             columnJoiner.add(quoteIdentifier(column.getColumnName()));
             placeholderJoiner.add("?");
-            updateJoiner.add(quoteIdentifier(column.getColumnName()) + " = " + quoteIdentifier(tableInfo.getTableName()) + "." + quoteIdentifier(column.getColumnName()));
         }
 
-        // 先尝试插入，如果主键冲突则更新
         return "MERGE INTO " + quoteIdentifier(tableInfo.getTableName())
             + " (" + columnJoiner + ") KEY (" + quoteIdentifier(idColumn.getColumnName()) + ") VALUES (" + placeholderJoiner + ")";
     }
