@@ -9,5 +9,6 @@ include(
 )
 include(
     "module:common:compat",
-    "module:common:script"
+    "module:common:script",
+    "module:common:database"
 )
