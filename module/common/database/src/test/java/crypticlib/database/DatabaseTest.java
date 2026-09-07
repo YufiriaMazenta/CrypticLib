@@ -36,6 +36,8 @@ public class DatabaseTest {
         TableUtils.clearTable(source, TestUser.class);
     }
 
+    // ========== 基础 CRUD ==========
+
     @Test
     @DisplayName("插入并查询")
     void testInsertAndQuery() throws SQLException {
@@ -53,6 +55,13 @@ public class DatabaseTest {
     }
 
     @Test
+    @DisplayName("查询不存在的 ID 返回 null")
+    void testQueryNonExistentId() throws SQLException {
+        TestUser found = dao.queryForId(99999L);
+        assertNull(found);
+    }
+
+    @Test
     @DisplayName("查询所有")
     void testQueryForAll() throws SQLException {
         dao.create(new TestUser("Steve", 20, 100.0));
@@ -61,6 +70,14 @@ public class DatabaseTest {
 
         List<TestUser> users = dao.queryForAll();
         assertEquals(3, users.size());
+    }
+
+    @Test
+    @DisplayName("空表查询所有返回空列表")
+    void testQueryForAllEmpty() throws SQLException {
+        List<TestUser> users = dao.queryForAll();
+        assertNotNull(users);
+        assertTrue(users.isEmpty());
     }
 
     @Test
@@ -77,6 +94,7 @@ public class DatabaseTest {
         TestUser found = dao.queryForId(user.getId());
         assertEquals(999.0, found.getBalance(), 0.001);
         assertEquals(21, found.getAge());
+        assertEquals("Steve", found.getUsername());
     }
 
     @Test
@@ -91,6 +109,24 @@ public class DatabaseTest {
         TestUser found = dao.queryForId(user.getId());
         assertNull(found);
     }
+
+    @Test
+    @DisplayName("删除后再查询返回 null")
+    void testDeleteThenQuery() throws SQLException {
+        TestUser user = new TestUser("Steve", 20, 100.0);
+        dao.create(user);
+        long id = user.getId();
+
+        dao.delete(user);
+        assertNull(dao.queryForId(id));
+
+        // 再插入同名用户，ID 应该不同
+        TestUser user2 = new TestUser("Steve", 20, 100.0);
+        dao.create(user2);
+        assertNotEquals(id, user2.getId());
+    }
+
+    // ========== replace ==========
 
     @Test
     @DisplayName("replace 插入新记录")
@@ -119,43 +155,152 @@ public class DatabaseTest {
         TestUser found = dao.queryForId(originalId);
         assertNotNull(found);
         assertEquals(999.0, found.getBalance(), 0.001);
+        assertEquals(originalId, found.getId(), "replace 应该保持原 ID");
     }
 
+    // ========== QueryBuilder ==========
+
     @Test
-    @DisplayName("QueryBuilder 条件查询")
-    void testQueryBuilder() throws SQLException {
+    @DisplayName("QueryBuilder equals 查询")
+    void testQueryEquals() throws SQLException {
         dao.create(new TestUser("Steve", 20, 100.0));
         dao.create(new TestUser("Alex", 25, 200.0));
-        dao.create(new TestUser("Bob", 30, 50.0));
 
-        // 等于
         List<TestUser> results = dao.queryBuilder()
             .where().equals("username", "Steve").done()
             .query();
         assertEquals(1, results.size());
         assertEquals("Steve", results.get(0).getUsername());
+    }
 
-        // 大于
-        results = dao.queryBuilder()
+    @Test
+    @DisplayName("QueryBuilder notEquals 查询")
+    void testQueryNotEquals() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 300.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().notEquals("username", "Steve").done()
+            .query();
+        assertEquals(2, results.size());
+        assertTrue(results.stream().noneMatch(u -> u.getUsername().equals("Steve")));
+    }
+
+    @Test
+    @DisplayName("QueryBuilder greaterThan 查询")
+    void testQueryGreaterThan() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
             .where().greaterThan("age", 20).done()
             .query();
         assertEquals(2, results.size());
         assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Alex")));
         assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Bob")));
+    }
 
-        // 多条件 AND
-        results = dao.queryBuilder()
-            .where()
-            .greaterThanOrEquals("age", 25)
-            .and()
-            .lessThan("balance", 200.0)
-            .done()
+    @Test
+    @DisplayName("QueryBuilder lessThanOrEquals 查询")
+    void testQueryLessThanOrEquals() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().lessThanOrEquals("age", 25).done()
+            .query();
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Steve")));
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Alex")));
+    }
+
+    @Test
+    @DisplayName("QueryBuilder LIKE 查询")
+    void testQueryLike() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("stephen", 30, 300.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().like("username", "%ph%").done()
             .query();
         assertEquals(1, results.size());
-        assertEquals("Bob", results.get(0).getUsername());
+        assertEquals("stephen", results.get(0).getUsername());
+    }
 
-        // 排序 + 限制
-        results = dao.queryBuilder()
+    @Test
+    @DisplayName("QueryBuilder IN 查询")
+    void testQueryIn() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().in("username", "Steve", "Bob").done()
+            .query();
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Steve")));
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Bob")));
+    }
+
+    @Test
+    @DisplayName("QueryBuilder IS NOT NULL 查询")
+    void testQueryIsNotNull() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().isNotNull("username").done()
+            .query();
+        assertEquals(1, results.size());
+    }
+
+    @Test
+    @DisplayName("QueryBuilder OR 条件")
+    void testQueryOr() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where()
+            .equals("username", "Steve")
+            .or()
+            .equals("username", "Bob")
+            .done()
+            .query();
+        assertEquals(2, results.size());
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Steve")));
+        assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Bob")));
+    }
+
+    @Test
+    @DisplayName("QueryBuilder 排序升序")
+    void testQueryOrderByAsc() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().greaterThan("balance", 0.0).done()
+            .orderBy("balance", true)
+            .query();
+        assertEquals(3, results.size());
+        assertEquals("Bob", results.get(0).getUsername());
+        assertEquals("Steve", results.get(1).getUsername());
+        assertEquals("Alex", results.get(2).getUsername());
+    }
+
+    @Test
+    @DisplayName("QueryBuilder 排序降序 + 限制")
+    void testQueryOrderByDescLimit() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
             .where().greaterThan("balance", 0.0).done()
             .orderBy("balance", false)
             .limit(2)
@@ -164,6 +309,56 @@ public class DatabaseTest {
         assertEquals("Alex", results.get(0).getUsername());
         assertEquals("Steve", results.get(1).getUsername());
     }
+
+    @Test
+    @DisplayName("QueryBuilder 偏移量")
+    void testQueryOffset() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().greaterThan("balance", 0.0).done()
+            .orderBy("balance", false)
+            .limit(2)
+            .offset(1)
+            .query();
+        assertEquals(2, results.size());
+        assertEquals("Steve", results.get(0).getUsername());
+        assertEquals("Bob", results.get(1).getUsername());
+    }
+
+    @Test
+    @DisplayName("QueryBuilder 多条件 AND")
+    void testQueryMultipleAnd() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+        dao.create(new TestUser("Bob", 30, 50.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where()
+            .greaterThanOrEquals("age", 25)
+            .and()
+            .lessThan("balance", 200.0)
+            .done()
+            .query();
+        assertEquals(1, results.size());
+        assertEquals("Bob", results.get(0).getUsername());
+    }
+
+    @Test
+    @DisplayName("QueryBuilder 无结果查询返回空列表")
+    void testQueryNoResults() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+
+        List<TestUser> results = dao.queryBuilder()
+            .where().equals("username", "NotExist").done()
+            .query();
+        assertNotNull(results);
+        assertTrue(results.isEmpty());
+    }
+
+    // ========== UpdateBuilder ==========
 
     @Test
     @DisplayName("UpdateBuilder 条件更新")
@@ -190,6 +385,42 @@ public class DatabaseTest {
     }
 
     @Test
+    @DisplayName("UpdateBuilder 更新多列")
+    void testUpdateBuilderMultipleColumns() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+
+        int updated = dao.updateBuilder()
+            .set("age", 99)
+            .set("balance", 9999.0)
+            .where().equals("username", "Steve").done()
+            .execute();
+
+        assertEquals(1, updated);
+
+        TestUser found = dao.queryForAll().get(0);
+        assertEquals(99, found.getAge());
+        assertEquals(9999.0, found.getBalance(), 0.001);
+    }
+
+    @Test
+    @DisplayName("UpdateBuilder 无匹配时不更新")
+    void testUpdateBuilderNoMatch() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+
+        int updated = dao.updateBuilder()
+            .set("balance", 0.0)
+            .where().equals("username", "NotExist").done()
+            .execute();
+
+        assertEquals(0, updated);
+
+        TestUser found = dao.queryForAll().get(0);
+        assertEquals(100.0, found.getBalance(), 0.001);
+    }
+
+    // ========== DeleteBuilder ==========
+
+    @Test
     @DisplayName("DeleteBuilder 条件删除")
     void testDeleteBuilder() throws SQLException {
         dao.create(new TestUser("Steve", 20, 100.0));
@@ -205,6 +436,35 @@ public class DatabaseTest {
         List<TestUser> remaining = dao.queryForAll();
         assertEquals(2, remaining.size());
     }
+
+    @Test
+    @DisplayName("DeleteBuilder 无匹配时不删除")
+    void testDeleteBuilderNoMatch() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+
+        int deleted = dao.deleteBuilder()
+            .where().equals("username", "NotExist").done()
+            .execute();
+
+        assertEquals(0, deleted);
+        assertEquals(1, dao.queryForAll().size());
+    }
+
+    @Test
+    @DisplayName("DeleteBuilder 删除全部")
+    void testDeleteBuilderAll() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+
+        int deleted = dao.deleteBuilder()
+            .where().greaterThan("id", 0L).done()
+            .execute();
+
+        assertEquals(2, deleted);
+        assertTrue(dao.queryForAll().isEmpty());
+    }
+
+    // ========== 事务 ==========
 
     @Test
     @DisplayName("事务提交")
@@ -231,6 +491,58 @@ public class DatabaseTest {
 
         List<TestUser> all = dao.queryForAll();
         assertEquals(0, all.size(), "事务回滚后应该没有数据");
+    }
+
+    @Test
+    @DisplayName("事务回调返回值")
+    void testTransactionCallable() throws SQLException {
+        String result = TransactionManager.withTransaction(source, () -> {
+            dao.create(new TestUser("Steve", 20, 100.0));
+            return "done";
+        });
+
+        assertEquals("done", result);
+        assertEquals(1, dao.queryForAll().size());
+    }
+
+    // ========== DaoManager ==========
+
+    @Test
+    @DisplayName("DaoManager 缓存")
+    void testDaoManagerCache() throws SQLException {
+        Dao<TestUser> dao1 = DaoManager.createDao(source, TestUser.class);
+        Dao<TestUser> dao2 = DaoManager.createDao(source, TestUser.class);
+        assertSame(dao1, dao2, "相同实体类应该返回同一个 DAO 实例");
+    }
+
+    @Test
+    @DisplayName("DaoManager createDaoNoCache 不缓存")
+    void testDaoManagerNoCache() throws SQLException {
+        Dao<TestUser> dao1 = DaoManager.createDaoNoCache(source, TestUser.class);
+        Dao<TestUser> dao2 = DaoManager.createDaoNoCache(source, TestUser.class);
+        assertNotSame(dao1, dao2, "createDaoNoCache 应该返回不同实例");
+    }
+
+    // ========== TableUtils ==========
+
+    @Test
+    @DisplayName("dropTable 后建表")
+    void testDropAndCreate() throws SQLException {
+        TableUtils.dropTable(source, TestUser.class);
+        TableUtils.createTableIfNotExists(source, TestUser.class);
+
+        dao.create(new TestUser("Steve", 20, 100.0));
+        assertEquals(1, dao.queryForAll().size());
+    }
+
+    @Test
+    @DisplayName("clearTable 清空数据")
+    void testClearTable() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        dao.create(new TestUser("Alex", 25, 200.0));
+
+        TableUtils.clearTable(source, TestUser.class);
+        assertTrue(dao.queryForAll().isEmpty());
     }
 
 }
