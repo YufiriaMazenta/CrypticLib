@@ -33,7 +33,6 @@ public class BaseDao<T> implements Dao<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public T queryForId(Object id) throws SQLException {
         String sql = dialect.generateQueryByIdSql(tableInfo);
         Connection connection = connectionSource.getConnection();
@@ -42,7 +41,7 @@ public class BaseDao<T> implements Dao<T> {
             setParameter(statement, 1, id, tableInfo.getIdColumn().getJavaType());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                return (T) mapResultSetToEntity(resultSet);
+                return mapResultSetToEntity(resultSet);
             }
             return null;
         } finally {
@@ -51,7 +50,6 @@ public class BaseDao<T> implements Dao<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<T> queryForAll() throws SQLException {
         String sql = dialect.generateQueryAllSql(tableInfo);
         Connection connection = connectionSource.getConnection();
@@ -60,7 +58,7 @@ public class BaseDao<T> implements Dao<T> {
             ResultSet resultSet = statement.executeQuery();
             List<T> results = new ArrayList<>();
             while (resultSet.next()) {
-                results.add((T) mapResultSetToEntity(resultSet));
+                results.add(mapResultSetToEntity(resultSet));
             }
             return results;
         } finally {
@@ -69,7 +67,6 @@ public class BaseDao<T> implements Dao<T> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<T> query(QueryBuilder<T> queryBuilder) throws SQLException {
         String sql = queryBuilder.buildSql();
         Connection connection = connectionSource.getConnection();
@@ -82,7 +79,7 @@ public class BaseDao<T> implements Dao<T> {
             ResultSet resultSet = statement.executeQuery();
             List<T> results = new ArrayList<>();
             while (resultSet.next()) {
-                results.add((T) mapResultSetToEntity(resultSet));
+                results.add(mapResultSetToEntity(resultSet));
             }
             return results;
         } finally {
@@ -196,12 +193,12 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public UpdateBuilder<T> updateBuilder() {
-        return new UpdateBuilder<>(this, connectionSource, tableInfo);
+        return new UpdateBuilder<>(connectionSource, tableInfo);
     }
 
     @Override
     public DeleteBuilder<T> deleteBuilder() {
-        return new DeleteBuilder<>(this, connectionSource, tableInfo);
+        return new DeleteBuilder<>(connectionSource, tableInfo);
     }
 
     @Override

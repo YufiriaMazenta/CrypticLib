@@ -1,7 +1,6 @@
 package crypticlib.database.query;
 
 import crypticlib.database.connection.ConnectionSource;
-import crypticlib.database.dao.BaseDao;
 import crypticlib.database.dialect.DatabaseDialect;
 import crypticlib.database.table.TableInfo;
 
@@ -14,19 +13,16 @@ import java.util.List;
 /**
  * DELETE 语句构建器
  *
- * @param <T>  实体类型
- * @param <ID> 主键类型
+ * @param <T> 实体类型
  */
 public class DeleteBuilder<T> {
 
-    private final BaseDao<T> dao;
     private final ConnectionSource connectionSource;
     private final TableInfo tableInfo;
     private final DatabaseDialect dialect;
     private final Where where;
 
-    public DeleteBuilder(BaseDao<T> dao, ConnectionSource connectionSource, TableInfo tableInfo) {
-        this.dao = dao;
+    public DeleteBuilder(ConnectionSource connectionSource, TableInfo tableInfo) {
         this.connectionSource = connectionSource;
         this.tableInfo = tableInfo;
         this.dialect = connectionSource.getDialect();

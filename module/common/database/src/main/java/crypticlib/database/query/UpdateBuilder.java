@@ -1,9 +1,7 @@
 package crypticlib.database.query;
 
 import crypticlib.database.connection.ConnectionSource;
-import crypticlib.database.dao.BaseDao;
 import crypticlib.database.dialect.DatabaseDialect;
-import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
 import java.sql.Connection;
@@ -18,20 +16,17 @@ import java.util.StringJoiner;
 /**
  * UPDATE 语句构建器
  *
- * @param <T>  实体类型
- * @param <ID> 主键类型
+ * @param <T> 实体类型
  */
 public class UpdateBuilder<T> {
 
-    private final BaseDao<T> dao;
     private final ConnectionSource connectionSource;
     private final TableInfo tableInfo;
     private final DatabaseDialect dialect;
     private final Where where;
     private final Map<String, Object> setValues = new LinkedHashMap<>();
 
-    public UpdateBuilder(BaseDao<T> dao, ConnectionSource connectionSource, TableInfo tableInfo) {
-        this.dao = dao;
+    public UpdateBuilder(ConnectionSource connectionSource, TableInfo tableInfo) {
         this.connectionSource = connectionSource;
         this.tableInfo = tableInfo;
         this.dialect = connectionSource.getDialect();

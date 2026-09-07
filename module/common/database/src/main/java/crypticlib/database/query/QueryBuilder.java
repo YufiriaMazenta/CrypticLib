@@ -1,7 +1,7 @@
 package crypticlib.database.query;
 
 import crypticlib.database.connection.ConnectionSource;
-import crypticlib.database.dao.BaseDao;
+import crypticlib.database.dao.Dao;
 import crypticlib.database.table.TableInfo;
 
 import java.sql.SQLException;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class QueryBuilder<T> {
 
-    private final BaseDao<T> dao;
+    private final Dao<T> dao;
     private final ConnectionSource connectionSource;
     private final TableInfo tableInfo;
     private final Where where;
@@ -23,7 +23,7 @@ public class QueryBuilder<T> {
     private long limit = -1;
     private long offset = 0;
 
-    public QueryBuilder(BaseDao<T> dao, ConnectionSource connectionSource, TableInfo tableInfo) {
+    public QueryBuilder(Dao<T> dao, ConnectionSource connectionSource, TableInfo tableInfo) {
         this.dao = dao;
         this.connectionSource = connectionSource;
         this.tableInfo = tableInfo;

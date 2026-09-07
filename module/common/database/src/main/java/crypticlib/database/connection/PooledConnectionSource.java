@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 连接池数据库连接源（线程安全）
@@ -21,8 +22,8 @@ public class PooledConnectionSource implements ConnectionSource {
     private final String password;
     private final DatabaseDialect dialect;
 
-    private final BlockingQueue<Connection> freeConnections = new LinkedBlockingQueue<>();
-    private final Map<Connection, Long> activeConnections = new ConcurrentHashMap<>();
+    private final BlockingQueue<PooledConnection> freeConnections = new LinkedBlockingQueue<>();
+    private final Map<Connection, PooledConnection> activeConnections = new ConcurrentHashMap<>();
 
     private int maxConnections = 10;
     private long maxIdleTimeMs = 600_000; // 10 分钟
@@ -32,7 +33,7 @@ public class PooledConnectionSource implements ConnectionSource {
 
     private ScheduledExecutorService heartbeatExecutor;
     private volatile boolean closed = false;
-    private volatile int totalConnections = 0;
+    private final AtomicInteger totalConnections = new AtomicInteger(0);
 
     public PooledConnectionSource(String url) {
         this(url, null, null);
@@ -59,38 +60,41 @@ public class PooledConnectionSource implements ConnectionSource {
         checkClosed();
 
         // 1. 尝试从空闲队列获取
-        Connection connection = freeConnections.poll();
-        while (connection != null) {
-            if (isConnectionValid(connection)) {
-                activeConnections.put(connection, System.currentTimeMillis());
-                return connection;
+        PooledConnection pooled = freeConnections.poll();
+        while (pooled != null) {
+            if (isPooledConnectionValid(pooled)) {
+                pooled.updateLastUsedTime();
+                activeConnections.put(pooled.getConnection(), pooled);
+                return pooled.getConnection();
             }
-            closeQuietly(connection);
-            totalConnections--;
-            connection = freeConnections.poll();
+            closeQuietly(pooled.getConnection());
+            totalConnections.decrementAndGet();
+            pooled = freeConnections.poll();
         }
 
         // 2. 创建新连接（不超过最大连接数）
-        if (totalConnections < maxConnections) {
-            connection = createNewConnection();
-            activeConnections.put(connection, System.currentTimeMillis());
-            totalConnections++;
+        if (totalConnections.get() < maxConnections) {
+            Connection connection = createNewConnection();
+            pooled = new PooledConnection(connection);
+            activeConnections.put(connection, pooled);
+            totalConnections.incrementAndGet();
             return connection;
         }
 
         // 3. 等待空闲连接
         try {
-            connection = freeConnections.poll(10, TimeUnit.SECONDS);
-            if (connection == null) {
+            pooled = freeConnections.poll(10, TimeUnit.SECONDS);
+            if (pooled == null) {
                 throw new SQLException("获取连接超时，连接池已满且无空闲连接");
             }
-            if (!isConnectionValid(connection)) {
-                closeQuietly(connection);
-                totalConnections--;
+            if (!isPooledConnectionValid(pooled)) {
+                closeQuietly(pooled.getConnection());
+                totalConnections.decrementAndGet();
                 return getConnection(); // 重试
             }
-            activeConnections.put(connection, System.currentTimeMillis());
-            return connection;
+            pooled.updateLastUsedTime();
+            activeConnections.put(pooled.getConnection(), pooled);
+            return pooled.getConnection();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new SQLException("获取连接被中断", e);
@@ -100,17 +104,23 @@ public class PooledConnectionSource implements ConnectionSource {
     @Override
     public void releaseConnection(Connection connection) {
         if (connection == null) return;
-        activeConnections.remove(connection);
+        PooledConnection pooled = activeConnections.remove(connection);
 
         if (closed || !isConnectionValid(connection)) {
             closeQuietly(connection);
-            totalConnections--;
+            totalConnections.decrementAndGet();
             return;
         }
 
-        if (!freeConnections.offer(connection)) {
+        if (pooled != null) {
+            pooled.updateLastUsedTime();
+            if (!freeConnections.offer(pooled)) {
+                closeQuietly(connection);
+                totalConnections.decrementAndGet();
+            }
+        } else {
             closeQuietly(connection);
-            totalConnections--;
+            totalConnections.decrementAndGet();
         }
     }
 
@@ -126,16 +136,16 @@ public class PooledConnectionSource implements ConnectionSource {
             heartbeatExecutor.shutdownNow();
         }
         // 关闭所有活跃连接
-        for (Connection conn : activeConnections.keySet()) {
-            closeQuietly(conn);
+        for (PooledConnection pooled : activeConnections.values()) {
+            closeQuietly(pooled.getConnection());
         }
         activeConnections.clear();
         // 关闭所有空闲连接
-        Connection conn;
-        while ((conn = freeConnections.poll()) != null) {
-            closeQuietly(conn);
+        PooledConnection pooled;
+        while ((pooled = freeConnections.poll()) != null) {
+            closeQuietly(pooled.getConnection());
         }
-        totalConnections = 0;
+        totalConnections.set(0);
     }
 
     private Connection createNewConnection() throws SQLException {
@@ -151,6 +161,18 @@ public class PooledConnectionSource implements ConnectionSource {
         } catch (SQLException e) {
             return false;
         }
+    }
+
+    private boolean isPooledConnectionValid(PooledConnection pooled) {
+        if (!isConnectionValid(pooled.getConnection())) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        // 检查最大存活时间
+        if (now - pooled.getCreatedTime() > maxLifetimeMs) {
+            return false;
+        }
+        return true;
     }
 
     private void closeQuietly(Connection connection) {
@@ -179,15 +201,29 @@ public class PooledConnectionSource implements ConnectionSource {
     private void checkConnections() {
         if (closed) return;
         long now = System.currentTimeMillis();
-        Connection conn;
-        while ((conn = freeConnections.peek()) != null) {
-            if (!isConnectionValid(conn)) {
-                freeConnections.poll();
-                closeQuietly(conn);
-                totalConnections--;
-                continue;
+        PooledConnection pooled;
+        while ((pooled = freeConnections.peek()) != null) {
+            boolean shouldEvict = false;
+            // 检查连接是否无效
+            if (!isConnectionValid(pooled.getConnection())) {
+                shouldEvict = true;
             }
-            break;
+            // 检查空闲超时
+            else if (maxIdleTimeMs > 0 && now - pooled.getLastUsedTime() > maxIdleTimeMs) {
+                shouldEvict = true;
+            }
+            // 检查最大存活时间
+            else if (maxLifetimeMs > 0 && now - pooled.getCreatedTime() > maxLifetimeMs) {
+                shouldEvict = true;
+            }
+
+            if (shouldEvict) {
+                freeConnections.poll();
+                closeQuietly(pooled.getConnection());
+                totalConnections.decrementAndGet();
+            } else {
+                break; // 队列是 FIFO，后面的更新，遇到有效的就停
+            }
         }
     }
 
@@ -222,8 +258,16 @@ public class PooledConnectionSource implements ConnectionSource {
         return maxConnections;
     }
 
+    public long getMaxIdleTimeMs() {
+        return maxIdleTimeMs;
+    }
+
+    public long getMaxLifetimeMs() {
+        return maxLifetimeMs;
+    }
+
     public int getTotalConnections() {
-        return totalConnections;
+        return totalConnections.get();
     }
 
     public int getFreeConnections() {
@@ -232,6 +276,37 @@ public class PooledConnectionSource implements ConnectionSource {
 
     public int getActiveConnections() {
         return activeConnections.size();
+    }
+
+    /**
+     * 池化连接包装，记录创建时间和最后使用时间
+     */
+    private static class PooledConnection {
+        private final Connection connection;
+        private final long createdTime;
+        private volatile long lastUsedTime;
+
+        PooledConnection(Connection connection) {
+            this.connection = connection;
+            this.createdTime = System.currentTimeMillis();
+            this.lastUsedTime = this.createdTime;
+        }
+
+        Connection getConnection() {
+            return connection;
+        }
+
+        long getCreatedTime() {
+            return createdTime;
+        }
+
+        long getLastUsedTime() {
+            return lastUsedTime;
+        }
+
+        void updateLastUsedTime() {
+            this.lastUsedTime = System.currentTimeMillis();
+        }
     }
 
 }
