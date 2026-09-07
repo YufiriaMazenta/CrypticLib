@@ -26,7 +26,7 @@ public class Where {
     /**
      * 等于条件
      */
-    public Where eq(String column, Object value) {
+    public Where equals(String column, Object value) {
         conditions.add(new Condition(column, "=", value));
         return this;
     }
@@ -34,7 +34,7 @@ public class Where {
     /**
      * 不等于条件
      */
-    public Where ne(String column, Object value) {
+    public Where notEquals(String column, Object value) {
         conditions.add(new Condition(column, "<>", value));
         return this;
     }
@@ -42,7 +42,7 @@ public class Where {
     /**
      * 大于条件
      */
-    public Where gt(String column, Object value) {
+    public Where greaterThan(String column, Object value) {
         conditions.add(new Condition(column, ">", value));
         return this;
     }
@@ -50,7 +50,7 @@ public class Where {
     /**
      * 大于等于条件
      */
-    public Where gte(String column, Object value) {
+    public Where greaterThanOrEquals(String column, Object value) {
         conditions.add(new Condition(column, ">=", value));
         return this;
     }
@@ -58,7 +58,7 @@ public class Where {
     /**
      * 小于条件
      */
-    public Where lt(String column, Object value) {
+    public Where lessThan(String column, Object value) {
         conditions.add(new Condition(column, "<", value));
         return this;
     }
@@ -66,7 +66,7 @@ public class Where {
     /**
      * 小于等于条件
      */
-    public Where lte(String column, Object value) {
+    public Where lessThanOrEquals(String column, Object value) {
         conditions.add(new Condition(column, "<=", value));
         return this;
     }
