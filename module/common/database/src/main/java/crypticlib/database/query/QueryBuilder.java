@@ -2,6 +2,7 @@ package crypticlib.database.query;
 
 import crypticlib.database.connection.ConnectionSource;
 import crypticlib.database.dao.Dao;
+import crypticlib.database.dialect.DatabaseDialect;
 import crypticlib.database.table.TableInfo;
 
 import java.sql.SQLException;
@@ -106,6 +107,10 @@ public class QueryBuilder<T> {
     public List<Object> getParameters() {
         List<Object> parameters = new ArrayList<>();
         where.collectParameters(parameters);
+        DatabaseDialect dialect = connectionSource.getDialect();
+        for (int i = 0; i < parameters.size(); i++) {
+            parameters.set(i, dialect.convertParameter(parameters.get(i)));
+        }
         return parameters;
     }
 

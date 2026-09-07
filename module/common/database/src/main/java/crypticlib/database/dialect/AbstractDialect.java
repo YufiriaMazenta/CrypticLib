@@ -101,6 +101,25 @@ public abstract class AbstractDialect implements DatabaseDialect {
     }
 
     @Override
+    public Object convertParameter(Object value) {
+        if (value == null) return null;
+
+        // UUID -> String
+        if (value instanceof UUID) return value.toString();
+
+        // Enum -> String
+        if (value instanceof Enum) return ((Enum<?>) value).name();
+
+        // Number 类型互转
+        if (value instanceof Number) {
+            // Number 类型直接返回，JDBC 驱动会处理
+            return value;
+        }
+
+        return value;
+    }
+
+    @Override
     public String getBooleanType() {
         return "BOOLEAN";
     }

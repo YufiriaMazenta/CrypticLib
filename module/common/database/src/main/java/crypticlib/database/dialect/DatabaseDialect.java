@@ -75,4 +75,13 @@ public interface DatabaseDialect {
      */
     String generateColumnDefinition(ColumnInfo columnInfo);
 
+    /**
+     * 转换查询参数类型
+     * 将 Java 对象转换为 JDBC 兼容的类型
+     *
+     * @param value 原始参数值
+     * @return 转换后的参数值
+     */
+    Object convertParameter(Object value);
+
 }

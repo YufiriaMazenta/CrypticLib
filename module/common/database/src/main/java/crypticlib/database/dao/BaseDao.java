@@ -88,6 +88,38 @@ public class BaseDao<T> implements Dao<T> {
     }
 
     @Override
+    public int update(UpdateBuilder<T> updateBuilder) throws SQLException {
+        String sql = updateBuilder.buildSql();
+        Connection connection = connectionSource.getConnection();
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            List<Object> parameters = updateBuilder.getParameters();
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+            return statement.executeUpdate();
+        } finally {
+            connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public int delete(DeleteBuilder<T> deleteBuilder) throws SQLException {
+        String sql = deleteBuilder.buildSql();
+        Connection connection = connectionSource.getConnection();
+        try {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            List<Object> parameters = deleteBuilder.getParameters();
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+            return statement.executeUpdate();
+        } finally {
+            connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
     public int create(T entity) throws SQLException {
         String sql = dialect.generateInsertSql(tableInfo);
         Connection connection = connectionSource.getConnection();
@@ -189,12 +221,12 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public UpdateBuilder<T> updateBuilder() {
-        return new UpdateBuilder<>(connectionSource, tableInfo);
+        return new UpdateBuilder<>(this, connectionSource, tableInfo);
     }
 
     @Override
     public DeleteBuilder<T> deleteBuilder() {
-        return new DeleteBuilder<>(connectionSource, tableInfo);
+        return new DeleteBuilder<>(this, connectionSource, tableInfo);
     }
 
     @Override

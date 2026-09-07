@@ -368,7 +368,7 @@ public class DatabaseTest {
         int updated = dao.updateBuilder()
             .set("balance", 0.0)
             .where(where -> where.greaterThan("balance", 150.0))
-            .execute();
+            .update();
 
         assertEquals(2, updated);
 
@@ -391,7 +391,7 @@ public class DatabaseTest {
             .set("age", 99)
             .set("balance", 9999.0)
             .where(where -> where.equals("username", "Steve"))
-            .execute();
+            .update();
 
         assertEquals(1, updated);
 
@@ -408,7 +408,7 @@ public class DatabaseTest {
         int updated = dao.updateBuilder()
             .set("balance", 0.0)
             .where(where -> where.equals("username", "NotExist"))
-            .execute();
+            .update();
 
         assertEquals(0, updated);
 
@@ -427,7 +427,7 @@ public class DatabaseTest {
 
         int deleted = dao.deleteBuilder()
             .where(where -> where.lessThan("balance", 200.0))
-            .execute();
+            .delete();
 
         assertEquals(1, deleted);
 
@@ -442,7 +442,7 @@ public class DatabaseTest {
 
         int deleted = dao.deleteBuilder()
             .where(where -> where.equals("username", "NotExist"))
-            .execute();
+            .delete();
 
         assertEquals(0, deleted);
         assertEquals(1, dao.queryForAll().size());
@@ -456,7 +456,7 @@ public class DatabaseTest {
 
         int deleted = dao.deleteBuilder()
             .where(where -> where.greaterThan("id", 0L))
-            .execute();
+            .delete();
 
         assertEquals(2, deleted);
         assertTrue(dao.queryForAll().isEmpty());

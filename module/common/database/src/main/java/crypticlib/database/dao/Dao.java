@@ -33,6 +33,20 @@ public interface Dao<T> {
     List<T> query(QueryBuilder<T> queryBuilder) throws SQLException;
 
     /**
+     * 使用 UpdateBuilder 条件更新
+     *
+     * @return 影响的行数
+     */
+    int update(UpdateBuilder<T> updateBuilder) throws SQLException;
+
+    /**
+     * 使用 DeleteBuilder 条件删除
+     *
+     * @return 影响的行数
+     */
+    int delete(DeleteBuilder<T> deleteBuilder) throws SQLException;
+
+    /**
      * 插入一条记录
      *
      * @return 影响的行数
