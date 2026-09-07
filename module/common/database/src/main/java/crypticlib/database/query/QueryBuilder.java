@@ -7,6 +7,7 @@ import crypticlib.database.table.TableInfo;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * 查询构建器
@@ -31,10 +32,11 @@ public class QueryBuilder<T> {
     }
 
     /**
-     * 获取 WHERE 条件构建器
+     * 设置 WHERE 条件
      */
-    public Where<QueryBuilder<T>> where() {
-        return where;
+    public QueryBuilder<T> where(Consumer<Where<QueryBuilder<T>>> configurator) {
+        configurator.accept(where);
+        return this;
     }
 
     /**

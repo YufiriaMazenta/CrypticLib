@@ -167,7 +167,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Alex", 25, 200.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().equals("username", "Steve").done()
+            .where(where -> where.equals("username", "Steve"))
             .query();
         assertEquals(1, results.size());
         assertEquals("Steve", results.get(0).getUsername());
@@ -181,7 +181,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 300.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().notEquals("username", "Steve").done()
+            .where(where -> where.notEquals("username", "Steve"))
             .query();
         assertEquals(2, results.size());
         assertTrue(results.stream().noneMatch(u -> u.getUsername().equals("Steve")));
@@ -195,7 +195,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().greaterThan("age", 20).done()
+            .where(where -> where.greaterThan("age", 20))
             .query();
         assertEquals(2, results.size());
         assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Alex")));
@@ -210,7 +210,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().lessThanOrEquals("age", 25).done()
+            .where(where -> where.lessThanOrEquals("age", 25))
             .query();
         assertEquals(2, results.size());
         assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Steve")));
@@ -225,7 +225,7 @@ public class DatabaseTest {
         dao.create(new TestUser("stephen", 30, 300.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().like("username", "%ph%").done()
+            .where(where -> where.like("username", "%ph%"))
             .query();
         assertEquals(1, results.size());
         assertEquals("stephen", results.get(0).getUsername());
@@ -239,7 +239,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().in("username", "Steve", "Bob").done()
+            .where(where -> where.in("username", "Steve", "Bob"))
             .query();
         assertEquals(2, results.size());
         assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Steve")));
@@ -252,7 +252,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Steve", 20, 100.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().isNotNull("username").done()
+            .where(where -> where.isNotNull("username"))
             .query();
         assertEquals(1, results.size());
     }
@@ -265,11 +265,10 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where()
-            .equals("username", "Steve")
-            .or()
-            .equals("username", "Bob")
-            .done()
+            .where(where -> where
+                .equals("username", "Steve")
+                .or()
+                .equals("username", "Bob"))
             .query();
         assertEquals(2, results.size());
         assertTrue(results.stream().anyMatch(u -> u.getUsername().equals("Steve")));
@@ -284,7 +283,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().greaterThan("balance", 0.0).done()
+            .where(where -> where.greaterThan("balance", 0.0))
             .orderBy("balance", true)
             .query();
         assertEquals(3, results.size());
@@ -301,7 +300,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().greaterThan("balance", 0.0).done()
+            .where(where -> where.greaterThan("balance", 0.0))
             .orderBy("balance", false)
             .limit(2)
             .query();
@@ -318,7 +317,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().greaterThan("balance", 0.0).done()
+            .where(where -> where.greaterThan("balance", 0.0))
             .orderBy("balance", false)
             .limit(2)
             .offset(1)
@@ -336,11 +335,10 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 50.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where()
-            .greaterThanOrEquals("age", 25)
-            .and()
-            .lessThan("balance", 200.0)
-            .done()
+            .where(where -> where
+                .greaterThanOrEquals("age", 25)
+                .and()
+                .lessThan("balance", 200.0))
             .query();
         assertEquals(1, results.size());
         assertEquals("Bob", results.get(0).getUsername());
@@ -352,7 +350,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Steve", 20, 100.0));
 
         List<TestUser> results = dao.queryBuilder()
-            .where().equals("username", "NotExist").done()
+            .where(where -> where.equals("username", "NotExist"))
             .query();
         assertNotNull(results);
         assertTrue(results.isEmpty());
@@ -369,7 +367,7 @@ public class DatabaseTest {
 
         int updated = dao.updateBuilder()
             .set("balance", 0.0)
-            .where().greaterThan("balance", 150.0).done()
+            .where(where -> where.greaterThan("balance", 150.0))
             .execute();
 
         assertEquals(2, updated);
@@ -392,7 +390,7 @@ public class DatabaseTest {
         int updated = dao.updateBuilder()
             .set("age", 99)
             .set("balance", 9999.0)
-            .where().equals("username", "Steve").done()
+            .where(where -> where.equals("username", "Steve"))
             .execute();
 
         assertEquals(1, updated);
@@ -409,7 +407,7 @@ public class DatabaseTest {
 
         int updated = dao.updateBuilder()
             .set("balance", 0.0)
-            .where().equals("username", "NotExist").done()
+            .where(where -> where.equals("username", "NotExist"))
             .execute();
 
         assertEquals(0, updated);
@@ -428,7 +426,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Bob", 30, 300.0));
 
         int deleted = dao.deleteBuilder()
-            .where().lessThan("balance", 200.0).done()
+            .where(where -> where.lessThan("balance", 200.0))
             .execute();
 
         assertEquals(1, deleted);
@@ -443,7 +441,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Steve", 20, 100.0));
 
         int deleted = dao.deleteBuilder()
-            .where().equals("username", "NotExist").done()
+            .where(where -> where.equals("username", "NotExist"))
             .execute();
 
         assertEquals(0, deleted);
@@ -457,7 +455,7 @@ public class DatabaseTest {
         dao.create(new TestUser("Alex", 25, 200.0));
 
         int deleted = dao.deleteBuilder()
-            .where().greaterThan("id", 0L).done()
+            .where(where -> where.greaterThan("id", 0L))
             .execute();
 
         assertEquals(2, deleted);

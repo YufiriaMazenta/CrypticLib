@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 
 /**
  * UPDATE 语句构建器
@@ -42,10 +43,11 @@ public class UpdateBuilder<T> {
     }
 
     /**
-     * 获取 WHERE 条件构建器
+     * 设置 WHERE 条件
      */
-    public Where<UpdateBuilder<T>> where() {
-        return where;
+    public UpdateBuilder<T> where(Consumer<Where<UpdateBuilder<T>>> configurator) {
+        configurator.accept(where);
+        return this;
     }
 
     /**

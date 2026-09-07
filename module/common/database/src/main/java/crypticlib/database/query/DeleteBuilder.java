@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * DELETE 语句构建器
@@ -30,10 +31,11 @@ public class DeleteBuilder<T> {
     }
 
     /**
-     * 获取 WHERE 条件构建器
+     * 设置 WHERE 条件
      */
-    public Where<DeleteBuilder<T>> where() {
-        return where;
+    public DeleteBuilder<T> where(Consumer<Where<DeleteBuilder<T>>> configurator) {
+        configurator.accept(where);
+        return this;
     }
 
     /**
