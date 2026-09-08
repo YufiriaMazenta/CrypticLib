@@ -65,7 +65,7 @@ public class DeleteBuilder<T> {
         List<Object> parameters = new ArrayList<>();
         where.collectParameters(parameters);
         for (int i = 0; i < parameters.size(); i++) {
-            parameters.set(i, dialect.convertParameter(parameters.get(i)));
+            parameters.set(i, dialect.preprocessParameter(parameters.get(i)));
         }
         return parameters;
     }

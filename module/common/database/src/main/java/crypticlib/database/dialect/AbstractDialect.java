@@ -101,7 +101,7 @@ public abstract class AbstractDialect implements DatabaseDialect {
     }
 
     @Override
-    public Object convertParameter(Object value) {
+    public Object preprocessParameter(Object value) {
         if (value == null) return null;
 
         // UUID -> String

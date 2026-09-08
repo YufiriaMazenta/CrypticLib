@@ -82,6 +82,6 @@ public interface DatabaseDialect {
      * @param value 原始参数值
      * @return 转换后的参数值
      */
-    Object convertParameter(Object value);
+    Object preprocessParameter(Object value);
 
 }

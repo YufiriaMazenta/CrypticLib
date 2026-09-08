@@ -109,7 +109,7 @@ public class QueryBuilder<T> {
         where.collectParameters(parameters);
         DatabaseDialect dialect = connectionSource.getDialect();
         for (int i = 0; i < parameters.size(); i++) {
-            parameters.set(i, dialect.convertParameter(parameters.get(i)));
+            parameters.set(i, dialect.preprocessParameter(parameters.get(i)));
         }
         return parameters;
     }
