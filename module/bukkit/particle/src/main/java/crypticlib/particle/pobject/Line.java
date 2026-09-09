@@ -78,21 +78,10 @@ public class Line extends ParticleObject implements Playable {
         Vector vectorAB = locB.clone().subtract(locA).toVector();
         double vectorLength = vectorAB.length();
         vectorAB.normalize();
-        boolean after113 = MinecraftVersion.current().afterOrEquals(MinecraftVersion.V1_13);
         for (double i = 0; i < vectorLength; i += step) {
             Location loc = locA.clone().add(vectorAB.clone().multiply(i));
-            if (after113) {
-                // 1.13+ 中 REDSTONE/DUST 的 data 必须是 DustOptions, 直接传 Color 会抛异常
-                Particle.DustOptions dust = new Particle.DustOptions(color, 1);
-                loc.getWorld().spawnParticle(REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, dust);
-            } else {
-                // 低版本走 count=0 + offset 编码颜色的兼容路径
-                if (color.getRed() == 0 && color.getBlue() == 0 && color.getGreen() == 0) {
-                    loc.getWorld().spawnParticle(REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, Float.MIN_VALUE / 255.0f, Float.MIN_VALUE / 255.0f, Float.MIN_VALUE / 255.0f, 1);
-                } else {
-                    loc.getWorld().spawnParticle(REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, 1);
-                }
-            }
+            Particle.DustOptions dust = new Particle.DustOptions(color, 1);
+            loc.getWorld().spawnParticle(REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, dust);
         }
     }
 
