@@ -6,9 +6,11 @@ include(
     "module:bukkit:conversation",
     "module:bukkit:i18n",
     "module:bukkit:particle",
+    "module:bukkit:util",
 )
 include(
     "module:common:compat",
     "module:common:script",
-    "module:common:database"
+    "module:common:database",
+    "module:common:util"
 )
