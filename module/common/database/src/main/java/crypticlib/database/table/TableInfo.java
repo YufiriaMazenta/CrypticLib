@@ -76,7 +76,8 @@ public class TableInfo {
 
                 if (columnInfo.isId()) {
                     if (idColumn != null) {
-                        throw new IllegalArgumentException("实体类 " + entityClass.getName() + " 有多个主键，只支持单主键");
+                        throw new IllegalArgumentException("Entity class " + entityClass.getName()
+                            + " declares multiple primary keys, only a single primary key is supported");
                     }
                     idColumn = columnInfo;
                 }
@@ -85,12 +86,12 @@ public class TableInfo {
         }
 
         if (columns.isEmpty()) {
-            throw new IllegalArgumentException("实体类 " + entityClass.getName() + " 没有定义任何列");
+            throw new IllegalArgumentException("Entity class " + entityClass.getName() + " does not declare any column");
         }
 
         if (idColumn == null) {
-            throw new IllegalArgumentException("实体类 " + entityClass.getName()
-                + " 没有主键，请使用 @Field(id = true) 标注主键字段");
+            throw new IllegalArgumentException("Entity class " + entityClass.getName()
+                + " has no primary key, mark one field with @Field(id = true)");
         }
 
         return new TableInfo(entityClass, tableName, columns, idColumn);
@@ -135,7 +136,7 @@ public class TableInfo {
         try {
             return entityClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
-            throw new RuntimeException("无法创建实体类实例: " + entityClass.getName(), e);
+            throw new RuntimeException("Cannot instantiate entity class: " + entityClass.getName(), e);
         }
     }
 

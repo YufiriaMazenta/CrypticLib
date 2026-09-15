@@ -32,7 +32,7 @@ public class MathUtils {
      */
     public static List<Double> arange(double start, double stop, double step) {
         if (step == 0) {
-            throw new IllegalArgumentException("步进长度不能为 0");
+            throw new IllegalArgumentException("Step length must not be 0");
         }
         List<Double> data = new ArrayList<>();
         double range = stop - start;

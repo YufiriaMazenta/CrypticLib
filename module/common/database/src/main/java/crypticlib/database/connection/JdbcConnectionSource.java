@@ -86,7 +86,7 @@ public class JdbcConnectionSource implements ConnectionSource {
 
     private void checkClosed() {
         if (closed) {
-            throw new IllegalStateException("ConnectionSource 已关闭");
+            throw new IllegalStateException("ConnectionSource has been closed");
         }
     }
 

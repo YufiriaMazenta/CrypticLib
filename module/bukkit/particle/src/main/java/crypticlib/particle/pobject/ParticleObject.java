@@ -150,7 +150,7 @@ public abstract class ParticleObject {
     public void alwaysPlay() {
         if (!(this instanceof Playable)) {
             try {
-                throw new NoSuchMethodException("该粒子特效不支持播放!");
+                throw new NoSuchMethodException("This particle object does not support playback");
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
                 return;
@@ -176,7 +176,7 @@ public abstract class ParticleObject {
     public void alwaysPlayAsync() {
         if (!(this instanceof Playable)) {
             try {
-                throw new NoSuchMethodException("该粒子特效不支持播放!");
+                throw new NoSuchMethodException("This particle object does not support playback");
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
                 return;

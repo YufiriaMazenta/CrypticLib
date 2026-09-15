@@ -168,11 +168,11 @@ public class PooledConnectionSource implements ConnectionSource {
     private void acquirePermit() throws SQLException {
         try {
             if (!permits.tryAcquire(ACQUIRE_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                throw new SQLException("获取连接超时，连接池已满且无空闲连接");
+                throw new SQLException("Timed out while acquiring a connection: the pool is full and no idle connection is available");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new SQLException("获取连接被中断", e);
+            throw new SQLException("Interrupted while acquiring a connection", e);
         }
     }
 
@@ -215,7 +215,7 @@ public class PooledConnectionSource implements ConnectionSource {
 
     private void checkClosed() {
         if (closed) {
-            throw new IllegalStateException("PooledConnectionSource 已关闭");
+            throw new IllegalStateException("PooledConnectionSource has been closed");
         }
     }
 
@@ -260,7 +260,7 @@ public class PooledConnectionSource implements ConnectionSource {
      */
     public PooledConnectionSource setMaxConnections(int maxConnections) {
         if (totalConnections.get() > 0) {
-            throw new IllegalStateException("连接池已开始使用，无法修改最大连接数");
+            throw new IllegalStateException("Cannot change max connections after the pool has been used");
         }
         this.maxConnections = maxConnections;
         this.permits = new Semaphore(maxConnections);
@@ -282,7 +282,7 @@ public class PooledConnectionSource implements ConnectionSource {
      */
     public PooledConnectionSource setCheckConnectionsEveryMs(long checkConnectionsEveryMs) {
         if (heartbeatStarted.get()) {
-            throw new IllegalStateException("心跳线程已启动，无法修改心跳检查间隔");
+            throw new IllegalStateException("Cannot change the heartbeat interval after the heartbeat thread has started");
         }
         this.checkConnectionsEveryMs = checkConnectionsEveryMs;
         return this;

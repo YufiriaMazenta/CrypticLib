@@ -19,9 +19,11 @@ import org.junit.jupiter.api.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -64,7 +66,7 @@ public class DatabaseTest {
         int result = dao.create(user);
 
         assertEquals(1, result);
-        assertTrue(user.getId() > 0, "自增 ID 应该被回填");
+        assertTrue(user.getId() > 0, "the generated id should be written back");
 
         TestUser found = dao.queryForId(user.getId());
         assertNotNull(found);
@@ -174,7 +176,7 @@ public class DatabaseTest {
         TestUser found = dao.queryForId(originalId);
         assertNotNull(found);
         assertEquals(999.0, found.getBalance(), 0.001);
-        assertEquals(originalId, found.getId(), "replace 应该保持原 ID");
+        assertEquals(originalId, found.getId(), "replace should keep the original id");
     }
 
     // ========== QueryBuilder ==========
@@ -501,13 +503,13 @@ public class DatabaseTest {
         try {
             TransactionManager.withTransaction(source, connection -> {
                 dao.create(connection, new TestUser("Steve", 20, 100.0));
-                throw new RuntimeException("模拟异常");
+                throw new RuntimeException("simulated failure");
             });
         } catch (SQLException ignored) {
         }
 
         List<TestUser> all = dao.queryForAll();
-        assertEquals(0, all.size(), "事务回滚后应该没有数据");
+        assertEquals(0, all.size(), "no row should remain after rollback");
     }
 
     @Test
@@ -529,7 +531,7 @@ public class DatabaseTest {
     void testDaoManagerCache() throws SQLException {
         Dao<TestUser> dao1 = DaoManager.createDao(source, TestUser.class);
         Dao<TestUser> dao2 = DaoManager.createDao(source, TestUser.class);
-        assertSame(dao1, dao2, "相同实体类应该返回同一个 DAO 实例");
+        assertSame(dao1, dao2, "the same entity class should return the same DAO instance");
     }
 
     @Test
@@ -537,7 +539,7 @@ public class DatabaseTest {
     void testDaoManagerNoCache() throws SQLException {
         Dao<TestUser> dao1 = DaoManager.createDaoNoCache(source, TestUser.class);
         Dao<TestUser> dao2 = DaoManager.createDaoNoCache(source, TestUser.class);
-        assertNotSame(dao1, dao2, "createDaoNoCache 应该返回不同实例");
+        assertNotSame(dao1, dao2, "createDaoNoCache should return a different instance");
     }
 
     // ========== TableUtils ==========
@@ -574,9 +576,9 @@ public class DatabaseTest {
             String sql = dialect.generateReplaceSql(tableInfo);
             String name = dialect.getClass().getSimpleName();
             assertEquals(boundColumns, countPlaceholders(sql),
-                name + " 的 replace 占位符数量应等于绑定列数量: " + sql);
+                name + " replace placeholder count should equal the bound column count: " + sql);
             assertTrue(sql.contains(dialect.quoteIdentifier("id")),
-                name + " 的 replace 语句必须包含主键列，否则无法匹配已有记录: " + sql);
+                name + " replace statement must contain the primary key column, otherwise existing rows can never be matched: " + sql);
         }
 
         assertTrue(new H2Dialect().generateReplaceSql(tableInfo).contains("MERGE INTO"));
@@ -601,8 +603,8 @@ public class DatabaseTest {
             mysqlDao.replace(user);
 
             TestUser found = h2Dao.queryForId(user.getId());
-            assertEquals(999.0, found.getBalance(), 0.001, "replace 应更新已有记录");
-            assertEquals(1, h2Dao.queryForAll().size(), "replace 不应产生重复行");
+            assertEquals(999.0, found.getBalance(), 0.001, "replace should update the existing row");
+            assertEquals(1, h2Dao.queryForAll().size(), "replace must not produce a duplicate row");
         } finally {
             h2Source.close();
             mysqlLikeSource.close();
@@ -666,8 +668,8 @@ public class DatabaseTest {
             typedDao.create(user);
 
             TypedUser found = typedDao.queryForId(user.id);
-            assertEquals(bio, found.bio, "VARCHAR(1000) 列应能保存 1000 字符");
-            assertEquals(content, found.content, "TEXT 列应能保存 5000 字符");
+            assertEquals(bio, found.bio, "VARCHAR(1000) column should store 1000 characters");
+            assertEquals(content, found.content, "TEXT column should store 5000 characters");
             assertEquals(3, found.level);
             assertTrue(found.flag);
         } finally {
@@ -675,15 +677,66 @@ public class DatabaseTest {
         }
     }
 
+    @Test
+    @DisplayName("枚举按常量名最大长度映射，BigDecimal 映射为定点数")
+    void testEnumAndDecimalTypeMapping() {
+        TableInfo tableInfo = TableInfo.of(MappedUser.class);
+
+        String mysql = new MysqlDialect().generateCreateTableSql(tableInfo);
+        assertTrue(mysql.contains("`role` VARCHAR(9)"), mysql);
+        assertTrue(mysql.contains("`amount` DECIMAL(65, 30)"), mysql);
+
+        String h2 = new H2Dialect().generateCreateTableSql(tableInfo);
+        assertTrue(h2.contains("\"role\" VARCHAR(9)"), h2);
+        assertTrue(h2.contains("\"amount\" DECIMAL(65, 30)"), h2);
+
+        String sqlite = new SqliteDialect().generateCreateTableSql(tableInfo);
+        assertTrue(sqlite.contains("\"role\" VARCHAR(9)"), sqlite);
+        assertTrue(sqlite.contains("\"amount\" DECIMAL(65, 30)"), sqlite);
+    }
+
+    @Test
+    @DisplayName("未支持的 Java 类型在生成建表语句时直接报错")
+    void testUnsupportedJavaTypeRejected() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> new H2Dialect().generateCreateTableSql(TableInfo.of(UnsupportedTypeEntity.class)));
+        assertTrue(exception.getMessage().contains("createdAt"),
+            "exception message should contain the field name: " + exception.getMessage());
+        assertTrue(exception.getMessage().contains("LocalDateTime"),
+            "exception message should contain the Java type: " + exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("BigDecimal 与枚举可以正常写入读取")
+    void testBigDecimalAndEnumRoundTrip() throws SQLException {
+        ConnectionSource mappedSource = new JdbcConnectionSource("jdbc:h2:mem:test_mapped;DB_CLOSE_DELAY=-1");
+        try {
+            TableUtils.createTableIfNotExists(mappedSource, MappedUser.class);
+            Dao<MappedUser> mappedDao = DaoManager.createDaoNoCache(mappedSource, MappedUser.class);
+
+            MappedUser user = new MappedUser();
+            user.role = MappedRole.MODERATOR;
+            user.amount = new BigDecimal("12345.678901234567890123456789");
+            mappedDao.create(user);
+
+            MappedUser found = mappedDao.queryForId(user.id);
+            assertEquals(MappedRole.MODERATOR, found.role);
+            assertEquals(0, user.amount.compareTo(found.amount), "decimal value must not lose precision: " + found.amount);
+        } finally {
+            mappedSource.close();
+        }
+    }
+
     // ========== 元数据校验 ==========
+
     @Test
     @DisplayName("缺少主键的实体在解析时直接报错")
     void testEntityWithoutPrimaryKeyRejected() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
             () -> TableInfo.of(NoIdEntity.class));
         assertTrue(exception.getMessage().contains("NoIdEntity"),
-            "异常信息应包含实体类名: " + exception.getMessage());
-        assertTrue(exception.getMessage().contains("主键"));
+            "exception message should contain the entity class name: " + exception.getMessage());
+        assertTrue(exception.getMessage().contains("primary key"), exception.getMessage());
     }
 
     // ========== DaoManager ==========
@@ -698,8 +751,8 @@ public class DatabaseTest {
             Dao<CacheUser> firstDaoAgain = DaoManager.createDao(first, CacheUser.class);
             Dao<CacheUser> secondDao = DaoManager.createDao(second, CacheUser.class);
 
-            assertSame(firstDao, firstDaoAgain, "同一连接源应复用同一个 DAO");
-            assertNotSame(firstDao, secondDao, "不同连接源不能复用同一个 DAO");
+            assertSame(firstDao, firstDaoAgain, "the same connection source should reuse the same DAO");
+            assertNotSame(firstDao, secondDao, "different connection sources must not reuse the same DAO");
         } finally {
             first.close();
             second.close();
@@ -720,16 +773,16 @@ public class DatabaseTest {
                 TransactionManager.withTransaction(pooledSource, connection -> {
                     pooledDao.create(connection, new TestUser("Steve", 20, 100.0));
                     pooledDao.create(connection, new TestUser("Alex", 25, 200.0));
-                    throw new RuntimeException("模拟业务失败");
+                    throw new RuntimeException("simulated business failure");
                 });
             } catch (SQLException ignored) {
             }
-            assertEquals(0, pooledDao.queryForAll().size(), "连接池下回滚也必须生效");
+            assertEquals(0, pooledDao.queryForAll().size(), "rollback must also work with a pooled connection source");
 
             TransactionManager.withTransaction(pooledSource, connection -> {
                 pooledDao.create(connection, new TestUser("Bob", 30, 300.0));
             });
-            assertEquals(1, pooledDao.queryForAll().size(), "事务提交后应可见");
+            assertEquals(1, pooledDao.queryForAll().size(), "committed data should be visible");
         } finally {
             pooledSource.close();
         }
@@ -745,11 +798,11 @@ public class DatabaseTest {
 
             TransactionManager.withTransaction(pooledSource, connection -> {
                 pooledDao.create(connection, new TestUser("Steve", 20, 100.0));
-                assertEquals(1, pooledDao.queryForAll(connection).size(), "事务内应能看到自己的写入");
-                assertEquals(0, pooledDao.queryForAll().size(), "未提交时其它连接不应看到写入");
+                assertEquals(1, pooledDao.queryForAll(connection).size(), "the transaction should see its own writes");
+                assertEquals(0, pooledDao.queryForAll().size(), "uncommitted writes must not be visible to other connections");
             });
 
-            assertEquals(1, pooledDao.queryForAll().size(), "提交后应可见");
+            assertEquals(1, pooledDao.queryForAll().size(), "data should be visible after commit");
         } finally {
             pooledSource.close();
         }
@@ -762,12 +815,13 @@ public class DatabaseTest {
             TransactionManager.withTransaction(source, connection ->
                 TransactionManager.withTransaction(source, innerConnection -> {
                 })));
-        assertNotNull(exception.getCause(), "嵌套事务的原始异常应保留在 cause 中");
+        assertNotNull(exception.getCause(), "the original exception of the nested transaction should be kept as the cause");
         assertTrue(exception.getCause() instanceof IllegalStateException, "cause=" + exception.getCause());
-        assertTrue(exception.getCause().getMessage().contains("嵌套"), exception.getCause().getMessage());
+        assertTrue(exception.getCause().getMessage().contains("Nested transactions"),
+            exception.getCause().getMessage());
 
         assertDoesNotThrow(() -> TransactionManager.withTransaction(source, connection -> {
-        }), "失败后不应残留事务进行中标记");
+        }), "the in-transaction flag must not remain set after a failure");
     }
 
     @Test
@@ -799,8 +853,8 @@ public class DatabaseTest {
                 future.get();
             }
 
-            assertTrue(maxSeen.get() <= 2, "并发下连接总数峰值不应超过 maxConnections，实际峰值=" + maxSeen.get());
-            assertEquals(0, pooledSource.getActiveConnections(), "全部归还后不应残留活跃连接");
+            assertTrue(maxSeen.get() <= 2, "the connection count must not exceed maxConnections under concurrency, actual peak=" + maxSeen.get());
+            assertEquals(0, pooledSource.getActiveConnections(), "no active connection should remain after all connections are returned");
         } finally {
             executor.shutdownNow();
             pooledSource.close();
@@ -822,7 +876,7 @@ public class DatabaseTest {
                 Thread.sleep(50);
             }
 
-            assertEquals(0, pooledSource.getFreeConnections(), "空闲超时的连接应被心跳清理");
+            assertEquals(0, pooledSource.getFreeConnections(), "idle connections should be evicted by the heartbeat");
             assertEquals(0, pooledSource.getTotalConnections());
         } finally {
             pooledSource.close();
@@ -850,8 +904,8 @@ public class DatabaseTest {
             countingDao.delete(user);
 
             assertTrue(countingSource.getOpenedStatements() >= 8,
-                "探针应确实统计到语句创建，实际=" + countingSource.getOpenedStatements());
-            assertEquals(0, countingSource.getOpenStatements(), "不应残留未关闭的 PreparedStatement");
+                "the probe should have observed statement creation, actual=" + countingSource.getOpenedStatements());
+            assertEquals(0, countingSource.getOpenStatements(), "no unclosed PreparedStatement should remain");
         } finally {
             realSource.close();
         }
@@ -882,6 +936,36 @@ public class DatabaseTest {
 
         public TypedUser() {
         }
+    }
+
+    public enum MappedRole {
+        ADMIN, MODERATOR, USER
+    }
+
+    @Table(name = "test_mapped_users")
+    public static class MappedUser {
+
+        @Field(name = "id", id = true, generated = true)
+        private long id;
+
+        @Field(name = "role")
+        private MappedRole role;
+
+        @Field(name = "amount")
+        private BigDecimal amount;
+
+        public MappedUser() {
+        }
+    }
+
+    @Table(name = "test_unsupported_type")
+    private static class UnsupportedTypeEntity {
+
+        @Field(name = "id", id = true, generated = true)
+        private long id;
+
+        @Field(name = "created_at")
+        private LocalDateTime createdAt;
     }
 
     @Table(name = "test_bad_negative_length")

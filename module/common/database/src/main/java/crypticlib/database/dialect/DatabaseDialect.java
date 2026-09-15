@@ -31,9 +31,13 @@ public interface DatabaseDialect {
     String getBooleanType();
 
     /**
-     * 映射 Java 类型到 SQL 类型
+     * 映射列对应的 SQL 类型
+     * <p>
+     * 入参携带完整列上下文（Java 类型、显式声明的列类型与长度、字段名等），
+     * 不需要长度的类型可以用默认映射，String/枚举可以结合声明的长度决定长度。
+     * 无法识别的 Java 类型必须抛出异常，不能静默降级为字符串列。
      */
-    String mapJavaType(Class<?> javaType);
+    String mapJavaType(ColumnInfo columnInfo);
 
     /**
      * 生成建表 SQL

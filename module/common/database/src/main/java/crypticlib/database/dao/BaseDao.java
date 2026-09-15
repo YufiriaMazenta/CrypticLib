@@ -8,6 +8,7 @@ import crypticlib.database.statement.UpdateBuilder;
 import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -260,8 +261,8 @@ public class BaseDao<T> implements Dao<T> {
         List<ColumnInfo> columns = tableInfo.getColumns();
         int placeholderCount = countPlaceholders(sql);
         if (placeholderCount != columns.size()) {
-            throw new IllegalStateException("replace 语句占位符数量(" + placeholderCount
-                + ")与绑定列数量(" + columns.size() + ")不一致: " + sql);
+            throw new IllegalStateException("Placeholder count (" + placeholderCount
+                + ") of the replace statement does not match the bound column count (" + columns.size() + "): " + sql);
         }
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -346,6 +347,8 @@ public class BaseDao<T> implements Dao<T> {
         } else if (javaType == short.class || javaType == Short.class) {
             short value = resultSet.getShort(columnName);
             return resultSet.wasNull() ? null : value;
+        } else if (javaType == BigDecimal.class) {
+            return resultSet.getBigDecimal(columnName);
         } else if (javaType == UUID.class) {
             String value = resultSet.getString(columnName);
             return value != null ? UUID.fromString(value) : null;
@@ -407,6 +410,8 @@ public class BaseDao<T> implements Dao<T> {
             statement.setByte(index, ((Number) converted).byteValue());
         } else if (javaType == short.class || javaType == Short.class) {
             statement.setShort(index, ((Number) converted).shortValue());
+        } else if (javaType == BigDecimal.class) {
+            statement.setBigDecimal(index, (BigDecimal) converted);
         } else if (javaType == UUID.class) {
             statement.setString(index, converted.toString());
         } else if (javaType.isEnum()) {
@@ -432,6 +437,8 @@ public class BaseDao<T> implements Dao<T> {
             if (targetType == float.class || targetType == Float.class) return num.floatValue();
             if (targetType == byte.class || targetType == Byte.class) return num.byteValue();
             if (targetType == short.class || targetType == Short.class) return num.shortValue();
+            // 用字符串构造，避免 double 的二进制误差被带进来
+            if (targetType == BigDecimal.class) return new BigDecimal(num.toString());
         }
 
         // String -> Enum
@@ -472,6 +479,7 @@ public class BaseDao<T> implements Dao<T> {
         if (javaType == boolean.class || javaType == Boolean.class) return Types.BOOLEAN;
         if (javaType == byte.class || javaType == Byte.class) return Types.TINYINT;
         if (javaType == short.class || javaType == Short.class) return Types.SMALLINT;
+        if (javaType == BigDecimal.class) return Types.DECIMAL;
         return Types.VARCHAR;
     }
 

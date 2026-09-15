@@ -41,7 +41,7 @@ public class Pyramid extends ParticleObject {
      */
     public Pyramid(Location origin, int side, double radius, double height, double step) {
         if (side <= 2) {
-            throw new IllegalArgumentException("边数不可为小于或等于2的数!");
+            throw new IllegalArgumentException("Side count must be greater than 2");
         }
         this.side = side;
         this.height = height;

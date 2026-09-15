@@ -43,7 +43,7 @@ public class Cube extends ParticleObject {
         this.maxLoc = maxLoc;
         this.step = step;
         if (minLoc.getWorld() != maxLoc.getWorld()) {
-            throw new IllegalArgumentException("这两个坐标的所对应的世界不相同");
+            throw new IllegalArgumentException("Both corners must be in the same world");
         }
 
         setOriginLocation(minLoc.clone().add(VectorUtils.createVector(minLoc, maxLoc).multiply(0.5)));

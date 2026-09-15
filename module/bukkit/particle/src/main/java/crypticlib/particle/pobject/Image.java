@@ -23,7 +23,7 @@ public class Image extends ParticleObject {
 
     public Image(Location origin, File imageFile, int step, double scale) {
         if (step <= 0) {
-            throw new IllegalArgumentException("step 必须为大于 0 的数, 否则展示时会死循环!");
+            throw new IllegalArgumentException("step must be greater than 0, otherwise playback will loop forever");
         }
         setOriginLocation(origin);
         this.imageFile = imageFile;
@@ -31,10 +31,10 @@ public class Image extends ParticleObject {
         try {
             this.bufferedImage = ImageIO.read(imageFile);
         } catch (IOException e) {
-            throw new IllegalArgumentException("无法读取图片文件: " + this.imageUrl, e);
+            throw new IllegalArgumentException("Cannot read image file: " + this.imageUrl, e);
         }
         if (this.bufferedImage == null) {
-            throw new IllegalArgumentException("无法解析图片文件(不受支持的格式或文件不存在): " + this.imageUrl);
+            throw new IllegalArgumentException("Cannot parse image file (unsupported format or file not found): " + this.imageUrl);
         }
         this.step = step;
         this.scale = scale;

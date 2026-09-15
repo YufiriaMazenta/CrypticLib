@@ -4,6 +4,7 @@ import crypticlib.database.annotation.Field;
 import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -158,7 +159,7 @@ public abstract class AbstractDialect implements DatabaseDialect {
         if (columnInfo.isId() && columnInfo.isGenerated()) {
             return autoIncrementColumnType();
         }
-        return resolveDataType(columnInfo);
+        return mapJavaType(columnInfo);
     }
 
     /**
@@ -169,22 +170,7 @@ public abstract class AbstractDialect implements DatabaseDialect {
     }
 
     /**
-     * 非自增列的列类型：显式声明的列类型优先，其次是显式声明的长度，最后按 Java 类型自动识别
-     */
-    protected String resolveDataType(ColumnInfo columnInfo) {
-        if (columnInfo.getColumnType() != Field.ColumnType.AUTO) {
-            return mapColumnType(columnInfo);
-        }
-        Class<?> javaType = columnInfo.getJavaType();
-        int length = columnInfo.getLength();
-        if (length > 0 && (javaType == String.class || javaType.isEnum())) {
-            return "VARCHAR(" + length + ")";
-        }
-        return mapJavaType(javaType);
-    }
-
-    /**
-     * 把显式声明的 {@link Field.ColumnType} 映射为 SQL 类型，方言覆盖此方法以适配差异（如 BYTEA、CLOB）
+     * 把显式声明的 {@link Field.ColumnType} 映射为 SQL 类型，方言覆盖此方法以适配差异（如 CLOB）
      */
     protected String mapColumnType(ColumnInfo columnInfo) {
         int length = columnInfo.getLength() > 0 ? columnInfo.getLength() : 255;
@@ -206,12 +192,19 @@ public abstract class AbstractDialect implements DatabaseDialect {
             case DOUBLE:
                 return "DOUBLE PRECISION";
             case DECIMAL:
-                return "DECIMAL";
+                return getDecimalType();
             case BOOLEAN:
                 return getBooleanType();
             default:
-                return mapJavaType(columnInfo.getJavaType());
+                throw new IllegalStateException("Unhandled column type: " + columnInfo.getColumnType());
         }
+    }
+
+    /**
+     * 定点数类型，精度与小数位是通用约定；需要自定义精度时后续再提供声明入口
+     */
+    protected String getDecimalType() {
+        return "DECIMAL(65, 30)";
     }
 
     /**
@@ -221,8 +214,22 @@ public abstract class AbstractDialect implements DatabaseDialect {
         return "TEXT";
     }
 
+    /**
+     * 列的 SQL 类型映射：显式声明的列类型优先，其次是声明的长度，最后按 Java 类型默认映射。
+     * 无法识别的 Java 类型直接抛异常，避免静默建出一列字符串
+     */
     @Override
-    public String mapJavaType(Class<?> javaType) {
+    public String mapJavaType(ColumnInfo columnInfo) {
+        if (columnInfo.getColumnType() != Field.ColumnType.AUTO) {
+            return mapColumnType(columnInfo);
+        }
+
+        Class<?> javaType = columnInfo.getJavaType();
+        int length = columnInfo.getLength();
+        if (length > 0 && (javaType == String.class || javaType.isEnum())) {
+            return "VARCHAR(" + length + ")";
+        }
+
         if (javaType == String.class) return "VARCHAR(255)";
         if (javaType == int.class || javaType == Integer.class) return "INTEGER";
         if (javaType == long.class || javaType == Long.class) return "BIGINT";
@@ -231,9 +238,30 @@ public abstract class AbstractDialect implements DatabaseDialect {
         if (javaType == boolean.class || javaType == Boolean.class) return getBooleanType();
         if (javaType == byte.class || javaType == Byte.class) return "TINYINT";
         if (javaType == short.class || javaType == Short.class) return "SMALLINT";
+        if (javaType == BigDecimal.class) return getDecimalType();
         if (javaType == UUID.class) return "VARCHAR(36)";
-        if (javaType.isEnum()) return "VARCHAR(255)";
-        return "VARCHAR(255)";
+        if (javaType.isEnum()) return "VARCHAR(" + maxEnumNameLength(javaType) + ")";
+
+        throw new IllegalArgumentException("Java type " + javaType.getName() + " of field "
+            + columnInfo.getField().getName() + " has no default column type mapping, declare it with @Field(type = ...)");
+    }
+
+    /**
+     * 枚举列的默认长度：取所有常量名长度的最大值，至少 1
+     */
+    protected int maxEnumNameLength(Class<?> enumType) {
+        Object[] constants = enumType.getEnumConstants();
+        if (constants == null || constants.length == 0) {
+            return 1;
+        }
+        int maxLength = 1;
+        for (Object constant : constants) {
+            int length = ((Enum<?>) constant).name().length();
+            if (length > maxLength) {
+                maxLength = length;
+            }
+        }
+        return maxLength;
     }
 
 }

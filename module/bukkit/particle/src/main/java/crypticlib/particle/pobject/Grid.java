@@ -26,7 +26,7 @@ public class Grid extends ParticleObject {
         if (minimumLocation.getBlockX() != maximumLocation.getBlockX()) {
             if (minimumLocation.getBlockZ() != maximumLocation.getBlockZ()) {
                 if (minimumLocation.getBlockY() != maximumLocation.getBlockY()) {
-                    throw new IllegalArgumentException("请将两点设定在X平面, Y平面或Z平面上(即一个方块的面上)");
+                    throw new IllegalArgumentException("Both points must be placed on the same X, Y or Z plane (i.e. on a face of a block)");
                 }
             }
         }

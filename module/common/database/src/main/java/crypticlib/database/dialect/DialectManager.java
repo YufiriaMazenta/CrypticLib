@@ -38,7 +38,7 @@ public class DialectManager {
         String subprotocol = extractSubprotocol(url);
         Supplier<DatabaseDialect> factory = REGISTRY.get(subprotocol);
         if (factory == null) {
-            throw new UnsupportedOperationException("不支持的数据库类型: " + subprotocol);
+            throw new UnsupportedOperationException("Unsupported database type: " + subprotocol);
         }
         return factory.get();
     }
@@ -51,12 +51,12 @@ public class DialectManager {
      */
     public static String extractSubprotocol(String url) {
         if (url == null || !url.startsWith("jdbc:")) {
-            throw new IllegalArgumentException("非法 JDBC URL: " + url);
+            throw new IllegalArgumentException("Invalid JDBC URL: " + url);
         }
         int firstColon = 4; // "jdbc:".length() - 1
         int secondColon = url.indexOf(':', firstColon + 1);
         if (secondColon < 0) {
-            throw new IllegalArgumentException("非法 JDBC URL: " + url);
+            throw new IllegalArgumentException("Invalid JDBC URL: " + url);
         }
         return url.substring(firstColon + 1, secondColon);
     }

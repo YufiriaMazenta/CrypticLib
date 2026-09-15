@@ -53,7 +53,7 @@ public class TransactionManager {
 
     private static <T> T executeTransaction(ConnectionSource connectionSource, TransactionCallable<T> action) throws SQLException {
         if (IN_TRANSACTION.get()) {
-            throw new IllegalStateException("不支持嵌套事务，请在同一个事务回调中完成所有操作");
+            throw new IllegalStateException("Nested transactions are not supported, complete all operations in the same transaction callback");
         }
         IN_TRANSACTION.set(Boolean.TRUE);
         try {
@@ -73,7 +73,7 @@ public class TransactionManager {
                 if (e instanceof SQLException) {
                     throw (SQLException) e;
                 }
-                throw new SQLException("事务执行失败", e);
+                throw new SQLException("Transaction execution failed", e);
             } finally {
                 try {
                     connection.setAutoCommit(true);

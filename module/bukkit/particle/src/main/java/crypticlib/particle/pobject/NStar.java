@@ -22,7 +22,7 @@ public class NStar extends ParticleObject {
 
     public NStar(Location origin, int corner, double radius, double step) {
         if (corner % 2 == 0) {
-            throw new IllegalArgumentException("N角星的 corner 参数必须为一个奇数整数!");
+            throw new IllegalArgumentException("The corner of an N-star must be an odd integer");
         }
         setOriginLocation(origin);
         this.corner = corner;

@@ -149,7 +149,7 @@ public class Matrix {
      */
     public Matrix plus(Matrix matrix) {
         if (!isSameRowAndColumn(matrix)) {
-            throw new IllegalArgumentException("两矩阵大小不相同!");
+            throw new IllegalArgumentException("Matrices must have the same size");
         }
 
         double[][] n = matrix.asArray();
@@ -189,7 +189,7 @@ public class Matrix {
      */
     public Matrix multiply(Matrix matrix) {
         if (column() != matrix.row()) {
-            throw new IllegalArgumentException("原矩阵的列数不等于新矩阵的行数");
+            throw new IllegalArgumentException("Column count of this matrix must match the row count of the target matrix");
         }
 
         double[][] n = matrix.asArray();
@@ -242,7 +242,7 @@ public class Matrix {
             return applyIn3DVector(vector);
         }
 
-        throw new IllegalArgumentException("当前矩阵非 2*2 或 3*3 的方阵");
+        throw new IllegalArgumentException("Only 2x2 and 3x3 matrices are supported");
     }
 
     private Vector applyIn2DVector(Vector vector) {

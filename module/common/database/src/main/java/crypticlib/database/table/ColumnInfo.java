@@ -60,11 +60,11 @@ public class ColumnInfo {
         int length = fieldAnnotation.length();
 
         if (length < 0) {
-            throw new IllegalArgumentException("字段 " + field.getName() + " 的 @Field.length 不能为负数");
+            throw new IllegalArgumentException("@Field.length of field " + field.getName() + " must not be negative");
         }
         if (length > 0 && columnType != Field.ColumnType.AUTO && columnType != Field.ColumnType.VARCHAR) {
-            throw new IllegalArgumentException("字段 " + field.getName() + " 只对 VARCHAR 列支持 length，当前声明的 type 为 "
-                + columnType);
+            throw new IllegalArgumentException("@Field.length of field " + field.getName()
+                + " is only supported for VARCHAR columns, but the declared type is " + columnType);
         }
 
         // 确定 Java 类型
@@ -131,7 +131,7 @@ public class ColumnInfo {
         try {
             return field.get(entity);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("无法读取字段值: " + field.getName(), e);
+            throw new RuntimeException("Cannot read field value: " + field.getName(), e);
         }
     }
 
@@ -142,7 +142,7 @@ public class ColumnInfo {
         try {
             field.set(entity, value);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("无法设置字段值: " + field.getName(), e);
+            throw new RuntimeException("Cannot set field value: " + field.getName(), e);
         }
     }
 

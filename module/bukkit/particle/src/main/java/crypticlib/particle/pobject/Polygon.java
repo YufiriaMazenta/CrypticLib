@@ -38,7 +38,7 @@ public class Polygon extends ParticleObject implements Playable {
 
     public Polygon(int side, Location origin, double step) {
         if (side <= 2) {
-            throw new IllegalArgumentException("边数不可为小于或等于2的数!");
+            throw new IllegalArgumentException("Side count must be greater than 2");
         }
         this.side = side;
         setOriginLocation(origin);
