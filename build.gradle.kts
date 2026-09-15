@@ -6,11 +6,11 @@ rootProject.version = rootProject.findProperty("version").toString()
 //主版本号为发布年份，次版本号为发布月份，修订号为当前月第几个发布版本
 //例如26.8.1就是2026年8月第一个发布版本
 
-var repositoryUrl = "https://repo.crypticlib.com/repository/"
+var repositoryUrl = "https://repo2.crypticlib.com/"
 repositoryUrl = if (rootProject.version.toString().endsWith("SNAPSHOT")) {
-    repositoryUrl.plus("maven-snapshots/")
+    repositoryUrl.plus("snapshots/")
 } else {
-    repositoryUrl.plus("maven-releases/")
+    repositoryUrl.plus("releases/")
 }
 
 plugins {
@@ -68,7 +68,7 @@ subprojects {
         maven("https://repo.codemc.io/repository/nms/")
         maven("https://libraries.minecraft.net")
         //CrypticLib(自有仓库, 同时托管 folia-api 与 velocity 构件)
-        maven("https://repo.crypticlib.com/repository/maven-public/") {
+        maven("https://repo2.crypticlib.com/releases/") {
             content {
                 includeGroup("com.crypticlib")
                 includeGroup("dev.folia")

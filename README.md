@@ -50,7 +50,7 @@ A Minecraft plugin development library that simplifies cross-platform plugin dev
 
 ```kotlin
 repositories {
-    maven("https://repo.crypticlib.com/repository/maven-public/")
+    maven("https://repo2.crypticlib.com/releases/")
 }
 
 dependencies {
@@ -67,7 +67,7 @@ dependencies {
 ```groovy
 repositories {
     maven {
-        url = "https://repo.crypticlib.com/repository/maven-public/"
+        url = "https://repo2.crypticlib.com/releases/"
     }
 }
 
@@ -82,7 +82,7 @@ dependencies {
 <repositories>
     <repository>
         <id>crypticlib</id>
-        <url>https://repo.crypticlib.com/repository/maven-public/</url>
+        <url>https://repo2.crypticlib.com/releases</url>
     </repository>
 </repositories>
 
