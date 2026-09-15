@@ -7,10 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * DAO 管理器，负责创建和缓存 DAO 实例
+ * <p>
+ * 缓存以「连接源 + 实体类」为键：同一个实体类在不同连接源上会得到各自的 DAO，
+ * 避免更换或重建连接源后仍拿到绑定旧连接源的 DAO。
  */
 public class DaoManager {
 
-    private static final Map<Class<?>, Dao<?>> CACHE = new ConcurrentHashMap<>();
+    private static final Map<ConnectionSource, Map<Class<?>, Dao<?>>> CACHE = new ConcurrentHashMap<>();
 
     private DaoManager() {
     }
@@ -25,7 +28,8 @@ public class DaoManager {
      */
     @SuppressWarnings("unchecked")
     public static <T> Dao<T> createDao(ConnectionSource connectionSource, Class<T> entityClass) {
-        return (Dao<T>) CACHE.computeIfAbsent(entityClass, clazz -> new BaseDao<>(connectionSource, entityClass));
+        return (Dao<T>) CACHE.computeIfAbsent(connectionSource, source -> new ConcurrentHashMap<>())
+            .computeIfAbsent(entityClass, clazz -> new BaseDao<>(connectionSource, entityClass));
     }
 
     /**
@@ -51,7 +55,11 @@ public class DaoManager {
      * 获取缓存的 DAO 数量
      */
     public static int getCacheSize() {
-        return CACHE.size();
+        int size = 0;
+        for (Map<Class<?>, Dao<?>> daoMap : CACHE.values()) {
+            size += daoMap.size();
+        }
+        return size;
     }
 
 }

@@ -88,6 +88,11 @@ public class TableInfo {
             throw new IllegalArgumentException("实体类 " + entityClass.getName() + " 没有定义任何列");
         }
 
+        if (idColumn == null) {
+            throw new IllegalArgumentException("实体类 " + entityClass.getName()
+                + " 没有主键，请使用 @Field(id = true) 标注主键字段");
+        }
+
         return new TableInfo(entityClass, tableName, columns, idColumn);
     }
 

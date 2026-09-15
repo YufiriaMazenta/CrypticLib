@@ -4,11 +4,18 @@ import crypticlib.database.statement.DeleteBuilder;
 import crypticlib.database.statement.QueryBuilder;
 import crypticlib.database.statement.UpdateBuilder;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
  * 数据访问对象接口
+ * <p>
+ * 每个方法都有两个版本：
+ * <ul>
+ *     <li>不接收 Connection 的版本会自行向 ConnectionSource 借用连接并归还，适合事务外使用。</li>
+ *     <li>接收 Connection 的版本使用调用方传入的连接，事务中必须使用该版本，才能让操作落在同一条事务连接上。</li>
+ * </ul>
  *
  * @param <T> 实体类型
  */
@@ -23,14 +30,29 @@ public interface Dao<T> {
     T queryForId(Object id) throws SQLException;
 
     /**
+     * 根据 ID 查询（使用指定连接）
+     */
+    T queryForId(Connection connection, Object id) throws SQLException;
+
+    /**
      * 查询所有记录
      */
     List<T> queryForAll() throws SQLException;
 
     /**
+     * 查询所有记录（使用指定连接）
+     */
+    List<T> queryForAll(Connection connection) throws SQLException;
+
+    /**
      * 使用 QueryBuilder 查询
      */
     List<T> query(QueryBuilder<T> queryBuilder) throws SQLException;
+
+    /**
+     * 使用 QueryBuilder 查询（使用指定连接）
+     */
+    List<T> query(Connection connection, QueryBuilder<T> queryBuilder) throws SQLException;
 
     /**
      * 使用 UpdateBuilder 条件更新
@@ -40,11 +62,25 @@ public interface Dao<T> {
     int update(UpdateBuilder<T> updateBuilder) throws SQLException;
 
     /**
+     * 使用 UpdateBuilder 条件更新（使用指定连接）
+     *
+     * @return 影响的行数
+     */
+    int update(Connection connection, UpdateBuilder<T> updateBuilder) throws SQLException;
+
+    /**
      * 使用 DeleteBuilder 条件删除
      *
      * @return 影响的行数
      */
     int delete(DeleteBuilder<T> deleteBuilder) throws SQLException;
+
+    /**
+     * 使用 DeleteBuilder 条件删除（使用指定连接）
+     *
+     * @return 影响的行数
+     */
+    int delete(Connection connection, DeleteBuilder<T> deleteBuilder) throws SQLException;
 
     /**
      * 插入一条记录
@@ -54,6 +90,13 @@ public interface Dao<T> {
     int create(T entity) throws SQLException;
 
     /**
+     * 插入一条记录（使用指定连接）
+     *
+     * @return 影响的行数
+     */
+    int create(Connection connection, T entity) throws SQLException;
+
+    /**
      * 根据主键更新一条记录
      *
      * @return 影响的行数
@@ -61,11 +104,25 @@ public interface Dao<T> {
     int update(T entity) throws SQLException;
 
     /**
+     * 根据主键更新一条记录（使用指定连接）
+     *
+     * @return 影响的行数
+     */
+    int update(Connection connection, T entity) throws SQLException;
+
+    /**
      * 根据主键删除一条记录
      *
      * @return 影响的行数
      */
     int delete(T entity) throws SQLException;
+
+    /**
+     * 根据主键删除一条记录（使用指定连接）
+     *
+     * @return 影响的行数
+     */
+    int delete(Connection connection, T entity) throws SQLException;
 
     /**
      * 插入或替换一条记录（INSERT OR REPLACE）
@@ -78,6 +135,13 @@ public interface Dao<T> {
      * @return 影响的行数
      */
     int replace(T entity) throws SQLException;
+
+    /**
+     * 插入或替换一条记录（使用指定连接）
+     *
+     * @return 影响的行数
+     */
+    int replace(Connection connection, T entity) throws SQLException;
 
     /**
      * 创建 QueryBuilder

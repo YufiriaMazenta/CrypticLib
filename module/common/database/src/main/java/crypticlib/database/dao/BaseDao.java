@@ -15,6 +15,9 @@ import java.util.UUID;
 
 /**
  * DAO 基类实现
+ * <p>
+ * 所有方法都提供两个版本：不带连接时自行向 ConnectionSource 借用连接并归还；
+ * 带 Connection 参数时使用调用方传入的连接（用于事务中复用同一条连接）。
  *
  * @param <T>  实体类型
  */
@@ -34,97 +37,129 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public T queryForId(Object id) throws SQLException {
-        String sql = dialect.generateQueryByIdSql(tableInfo);
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            setParameter(statement, 1, id, tableInfo.getIdColumn().getJavaType());
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return mapResultSetToEntity(resultSet);
-            }
-            return null;
+            return queryForId(connection, id);
         } finally {
             connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public T queryForId(Connection connection, Object id) throws SQLException {
+        String sql = dialect.generateQueryByIdSql(tableInfo);
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            setParameter(statement, 1, id, tableInfo.getIdColumn().getJavaType());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return mapResultSetToEntity(resultSet);
+                }
+                return null;
+            }
         }
     }
 
     @Override
     public List<T> queryForAll() throws SQLException {
-        String sql = dialect.generateQueryAllSql(tableInfo);
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            List<T> results = new ArrayList<>();
-            while (resultSet.next()) {
-                results.add(mapResultSetToEntity(resultSet));
-            }
-            return results;
+            return queryForAll(connection);
         } finally {
             connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public List<T> queryForAll(Connection connection) throws SQLException {
+        String sql = dialect.generateQueryAllSql(tableInfo);
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<T> results = new ArrayList<>();
+                while (resultSet.next()) {
+                    results.add(mapResultSetToEntity(resultSet));
+                }
+                return results;
+            }
         }
     }
 
     @Override
     public List<T> query(QueryBuilder<T> queryBuilder) throws SQLException {
-        String sql = queryBuilder.buildSql();
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            List<Object> parameters = queryBuilder.getParameters();
-            for (int i = 0; i < parameters.size(); i++) {
-                statement.setObject(i + 1, parameters.get(i));
-            }
-            ResultSet resultSet = statement.executeQuery();
-            List<T> results = new ArrayList<>();
-            while (resultSet.next()) {
-                results.add(mapResultSetToEntity(resultSet));
-            }
-            return results;
+            return query(connection, queryBuilder);
         } finally {
             connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public List<T> query(Connection connection, QueryBuilder<T> queryBuilder) throws SQLException {
+        String sql = queryBuilder.buildSql();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindParameters(statement, queryBuilder.getParameters());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<T> results = new ArrayList<>();
+                while (resultSet.next()) {
+                    results.add(mapResultSetToEntity(resultSet));
+                }
+                return results;
+            }
         }
     }
 
     @Override
     public int update(UpdateBuilder<T> updateBuilder) throws SQLException {
-        String sql = updateBuilder.buildSql();
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            List<Object> parameters = updateBuilder.getParameters();
-            for (int i = 0; i < parameters.size(); i++) {
-                statement.setObject(i + 1, parameters.get(i));
-            }
-            return statement.executeUpdate();
+            return update(connection, updateBuilder);
         } finally {
             connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public int update(Connection connection, UpdateBuilder<T> updateBuilder) throws SQLException {
+        String sql = updateBuilder.buildSql();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindParameters(statement, updateBuilder.getParameters());
+            return statement.executeUpdate();
         }
     }
 
     @Override
     public int delete(DeleteBuilder<T> deleteBuilder) throws SQLException {
-        String sql = deleteBuilder.buildSql();
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            List<Object> parameters = deleteBuilder.getParameters();
-            for (int i = 0; i < parameters.size(); i++) {
-                statement.setObject(i + 1, parameters.get(i));
-            }
-            return statement.executeUpdate();
+            return delete(connection, deleteBuilder);
         } finally {
             connectionSource.releaseConnection(connection);
         }
     }
 
     @Override
+    public int delete(Connection connection, DeleteBuilder<T> deleteBuilder) throws SQLException {
+        String sql = deleteBuilder.buildSql();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindParameters(statement, deleteBuilder.getParameters());
+            return statement.executeUpdate();
+        }
+    }
+
+    @Override
     public int create(T entity) throws SQLException {
-        String sql = dialect.generateInsertSql(tableInfo);
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            return create(connection, entity);
+        } finally {
+            connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public int create(Connection connection, T entity) throws SQLException {
+        String sql = dialect.generateInsertSql(tableInfo);
+        try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             List<ColumnInfo> nonIdColumns = tableInfo.getNonIdColumns();
             for (int i = 0; i < nonIdColumns.size(); i++) {
                 Object value = nonIdColumns.get(i).getValue(entity);
@@ -134,26 +169,33 @@ public class BaseDao<T> implements Dao<T> {
 
             // 设置自动生成的 ID
             ColumnInfo idColumn = tableInfo.getIdColumn();
-            if (idColumn != null && idColumn.isGenerated()) {
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    Object generatedId = getGeneratedId(generatedKeys, idColumn.getJavaType());
-                    idColumn.setValue(entity, generatedId);
+            if (idColumn.isGenerated()) {
+                try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        Object generatedId = getGeneratedId(generatedKeys, idColumn.getJavaType());
+                        idColumn.setValue(entity, generatedId);
+                    }
                 }
             }
 
             return result;
+        }
+    }
+
+    @Override
+    public int update(T entity) throws SQLException {
+        Connection connection = connectionSource.getConnection();
+        try {
+            return update(connection, entity);
         } finally {
             connectionSource.releaseConnection(connection);
         }
     }
 
     @Override
-    public int update(T entity) throws SQLException {
+    public int update(Connection connection, T entity) throws SQLException {
         String sql = dialect.generateUpdateSql(tableInfo);
-        Connection connection = connectionSource.getConnection();
-        try {
-            PreparedStatement statement = connection.prepareStatement(sql);
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             List<ColumnInfo> nonIdColumns = tableInfo.getNonIdColumns();
             ColumnInfo idColumn = tableInfo.getIdColumn();
             int parameterIndex = 1;
@@ -169,48 +211,65 @@ public class BaseDao<T> implements Dao<T> {
             setParameter(statement, parameterIndex, idValue, idColumn.getJavaType());
 
             return statement.executeUpdate();
-        } finally {
-            connectionSource.releaseConnection(connection);
         }
     }
 
     @Override
     public int delete(T entity) throws SQLException {
-        String sql = dialect.generateDeleteSql(tableInfo);
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            ColumnInfo idColumn = tableInfo.getIdColumn();
-            Object idValue = idColumn.getValue(entity);
-            setParameter(statement, 1, idValue, idColumn.getJavaType());
-            return statement.executeUpdate();
+            return delete(connection, entity);
         } finally {
             connectionSource.releaseConnection(connection);
         }
     }
 
     @Override
-    public int replace(T entity) throws SQLException {
-        ColumnInfo idColumn = tableInfo.getIdColumn();
-        // 自增主键且未赋值时，走普通 INSERT
-        if (idColumn != null && idColumn.isGenerated()) {
+    public int delete(Connection connection, T entity) throws SQLException {
+        String sql = dialect.generateDeleteSql(tableInfo);
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            ColumnInfo idColumn = tableInfo.getIdColumn();
             Object idValue = idColumn.getValue(entity);
-            if (idValue instanceof Number && ((Number) idValue).longValue() == 0) {
-                return create(entity);
-            }
+            setParameter(statement, 1, idValue, idColumn.getJavaType());
+            return statement.executeUpdate();
         }
-        String sql = dialect.generateReplaceSql(tableInfo);
+    }
+
+    @Override
+    public int replace(T entity) throws SQLException {
         Connection connection = connectionSource.getConnection();
         try {
-            PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            List<ColumnInfo> columns = tableInfo.getColumns();
+            return replace(connection, entity);
+        } finally {
+            connectionSource.releaseConnection(connection);
+        }
+    }
+
+    @Override
+    public int replace(Connection connection, T entity) throws SQLException {
+        ColumnInfo idColumn = tableInfo.getIdColumn();
+        // 自增主键且未赋值时，走普通 INSERT
+        if (idColumn.isGenerated()) {
+            Object idValue = idColumn.getValue(entity);
+            if (idValue instanceof Number && ((Number) idValue).longValue() == 0) {
+                return create(connection, entity);
+            }
+        }
+
+        String sql = dialect.generateReplaceSql(tableInfo);
+        List<ColumnInfo> columns = tableInfo.getColumns();
+        int placeholderCount = countPlaceholders(sql);
+        if (placeholderCount != columns.size()) {
+            throw new IllegalStateException("replace 语句占位符数量(" + placeholderCount
+                + ")与绑定列数量(" + columns.size() + ")不一致: " + sql);
+        }
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             for (int i = 0; i < columns.size(); i++) {
                 Object value = columns.get(i).getValue(entity);
                 setParameter(statement, i + 1, value, columns.get(i).getJavaType());
             }
             return statement.executeUpdate();
-        } finally {
-            connectionSource.releaseConnection(connection);
         }
     }
 
@@ -296,6 +355,28 @@ public class BaseDao<T> implements Dao<T> {
         } else {
             return resultSet.getObject(columnName);
         }
+    }
+
+    /**
+     * 绑定 PreparedStatement 参数（用于构建器生成的语句）
+     */
+    private void bindParameters(PreparedStatement statement, List<Object> parameters) throws SQLException {
+        for (int i = 0; i < parameters.size(); i++) {
+            statement.setObject(i + 1, parameters.get(i));
+        }
+    }
+
+    /**
+     * 统计 SQL 中的参数占位符数量
+     */
+    private int countPlaceholders(String sql) {
+        int count = 0;
+        for (int i = 0; i < sql.length(); i++) {
+            if (sql.charAt(i) == '?') {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**

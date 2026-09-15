@@ -35,7 +35,9 @@ public class MysqlDialect extends AbstractDialect {
 
     @Override
     public String generateReplaceSql(TableInfo tableInfo) {
-        List<ColumnInfo> columns = tableInfo.getNonIdColumns();
+        // 插入列与参数绑定顺序保持一致（含主键），更新列排除主键
+        List<ColumnInfo> columns = tableInfo.getColumns();
+        List<ColumnInfo> updateColumns = tableInfo.getNonIdColumns();
         StringJoiner columnJoiner = new StringJoiner(", ");
         StringJoiner placeholderJoiner = new StringJoiner(", ");
         StringJoiner updateJoiner = new StringJoiner(", ");
@@ -43,7 +45,17 @@ public class MysqlDialect extends AbstractDialect {
         for (ColumnInfo column : columns) {
             columnJoiner.add(quoteIdentifier(column.getColumnName()));
             placeholderJoiner.add("?");
-            updateJoiner.add(quoteIdentifier(column.getColumnName()) + " = VALUES(" + quoteIdentifier(column.getColumnName()) + ")");
+        }
+
+        for (ColumnInfo column : updateColumns) {
+            String quotedColumn = quoteIdentifier(column.getColumnName());
+            updateJoiner.add(quotedColumn + " = VALUES(" + quotedColumn + ")");
+        }
+
+        // 只有主键列时退化为无实际更新的 ON DUPLICATE KEY UPDATE
+        if (updateColumns.isEmpty()) {
+            String quotedId = quoteIdentifier(tableInfo.getIdColumn().getColumnName());
+            updateJoiner.add(quotedId + " = " + quotedId);
         }
 
         return "INSERT INTO " + quoteIdentifier(tableInfo.getTableName())

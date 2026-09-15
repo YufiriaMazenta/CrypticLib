@@ -87,7 +87,8 @@ public abstract class AbstractDialect implements DatabaseDialect {
 
     @Override
     public String generateReplaceSql(TableInfo tableInfo) {
-        List<ColumnInfo> columns = tableInfo.getNonIdColumns();
+        // replace 需要写入主键，否则无法匹配到已有记录；参数绑定顺序与 getColumns 一致
+        List<ColumnInfo> columns = tableInfo.getColumns();
         StringJoiner columnJoiner = new StringJoiner(", ");
         StringJoiner placeholderJoiner = new StringJoiner(", ");
 

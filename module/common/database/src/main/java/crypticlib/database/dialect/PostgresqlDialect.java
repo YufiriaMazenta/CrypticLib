@@ -35,7 +35,9 @@ public class PostgresqlDialect extends AbstractDialect {
     @Override
     public String generateReplaceSql(TableInfo tableInfo) {
         ColumnInfo idColumn = tableInfo.getIdColumn();
-        List<ColumnInfo> columns = tableInfo.getNonIdColumns();
+        // 插入列与参数绑定顺序保持一致（含主键），更新列排除主键
+        List<ColumnInfo> columns = tableInfo.getColumns();
+        List<ColumnInfo> updateColumns = tableInfo.getNonIdColumns();
         StringJoiner columnJoiner = new StringJoiner(", ");
         StringJoiner placeholderJoiner = new StringJoiner(", ");
         StringJoiner updateJoiner = new StringJoiner(", ");
@@ -43,12 +45,20 @@ public class PostgresqlDialect extends AbstractDialect {
         for (ColumnInfo column : columns) {
             columnJoiner.add(quoteIdentifier(column.getColumnName()));
             placeholderJoiner.add("?");
-            updateJoiner.add(quoteIdentifier(column.getColumnName()) + " = EXCLUDED." + quoteIdentifier(column.getColumnName()));
         }
+
+        for (ColumnInfo column : updateColumns) {
+            String quotedColumn = quoteIdentifier(column.getColumnName());
+            updateJoiner.add(quotedColumn + " = EXCLUDED." + quotedColumn);
+        }
+
+        String conflictClause = updateColumns.isEmpty()
+            ? " DO NOTHING"
+            : " DO UPDATE SET " + updateJoiner;
 
         return "INSERT INTO " + quoteIdentifier(tableInfo.getTableName())
             + " (" + columnJoiner + ") VALUES (" + placeholderJoiner + ")"
-            + " ON CONFLICT (" + quoteIdentifier(idColumn.getColumnName()) + ") DO UPDATE SET " + updateJoiner;
+            + " ON CONFLICT (" + quoteIdentifier(idColumn.getColumnName()) + ")" + conflictClause;
     }
 
     @Override
