@@ -129,15 +129,18 @@ public interface Dao<T> {
      * <p>
      * - SQLite: INSERT OR REPLACE
      * - MySQL: INSERT ... ON DUPLICATE KEY UPDATE
-     * - PostgreSQL: INSERT ... ON CONFLICT DO UPDATE
      * - H2: MERGE INTO
+     * <p>
+     * 注意：各方言对「影响的行数」定义不一致，不要用 == 1 判断是否成功。
+     * MySQL 的 INSERT ... ON DUPLICATE KEY UPDATE 在更新已有行时返回 2（插入返回 1，已有行且值未变化返回 0）；
+     * SQLite 的 INSERT OR REPLACE 命中已有行时返回 1。
      *
      * @return 影响的行数
      */
     int replace(T entity) throws SQLException;
 
     /**
-     * 插入或替换一条记录（使用指定连接）
+     * 插入或替换一条记录（使用指定连接），返回行数语义同 {@code replace(T entity)}
      *
      * @return 影响的行数
      */

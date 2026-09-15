@@ -14,7 +14,6 @@ public class DialectManager {
     static {
         register("mysql", MysqlDialect::new);
         register("mariadb", MysqlDialect::new);
-        register("postgresql", PostgresqlDialect::new);
         register("sqlite", SqliteDialect::new);
         register("h2", H2Dialect::new);
     }

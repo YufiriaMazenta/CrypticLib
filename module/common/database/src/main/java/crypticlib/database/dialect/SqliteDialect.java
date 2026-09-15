@@ -73,26 +73,4 @@ public class SqliteDialect extends AbstractDialect {
         return sqlBuilder.toString();
     }
 
-    @Override
-    public String generateColumnDefinition(ColumnInfo columnInfo) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(quoteIdentifier(columnInfo.getColumnName()));
-        sb.append(" ");
-        sb.append(mapJavaType(columnInfo.getJavaType()));
-
-        if (!columnInfo.isNullable()) {
-            sb.append(" NOT NULL");
-        }
-
-        if (columnInfo.isUnique()) {
-            sb.append(" UNIQUE");
-        }
-
-        if (!columnInfo.getDefaultValue().isEmpty()) {
-            sb.append(" DEFAULT ").append(columnInfo.getDefaultValue());
-        }
-
-        return sb.toString();
-    }
-
 }

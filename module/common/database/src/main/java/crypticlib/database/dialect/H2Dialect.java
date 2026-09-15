@@ -50,34 +50,9 @@ public class H2Dialect extends AbstractDialect {
     }
 
     @Override
-    public String generateColumnDefinition(ColumnInfo columnInfo) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(quoteIdentifier(columnInfo.getColumnName()));
-        sb.append(" ");
-
-        if (columnInfo.isId() && columnInfo.isGenerated()) {
-            sb.append("BIGINT");
-        } else {
-            sb.append(mapJavaType(columnInfo.getJavaType()));
-        }
-
-        if (!columnInfo.isNullable()) {
-            sb.append(" NOT NULL");
-        }
-
-        if (columnInfo.isUnique()) {
-            sb.append(" UNIQUE");
-        }
-
-        if (columnInfo.isId() && columnInfo.isGenerated()) {
-            sb.append(" ").append(getAutoIncrementSql());
-        }
-
-        if (!columnInfo.getDefaultValue().isEmpty()) {
-            sb.append(" DEFAULT ").append(columnInfo.getDefaultValue());
-        }
-
-        return sb.toString();
+    protected String getTextType() {
+        // H2 常规模式没有 TEXT 类型
+        return "CLOB";
     }
 
 }

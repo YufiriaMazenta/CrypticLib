@@ -21,6 +21,15 @@ public class MysqlDialect extends AbstractDialect {
         return "AUTO_INCREMENT";
     }
 
+    /**
+     * 显式指定存储引擎与字符集：
+     * 服务器 default_storage_engine 为 MyISAM 时事务会静默失效，utf8mb4 才能完整保存 4 字节字符
+     */
+    @Override
+    public String generateCreateTableSql(TableInfo tableInfo) {
+        return super.generateCreateTableSql(tableInfo) + " ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+    }
+
     @Override
     public String appendLimitOffset(String sql, long limit, long offset) {
         if (limit <= 0) return sql;
@@ -66,37 +75,6 @@ public class MysqlDialect extends AbstractDialect {
     @Override
     public String getBooleanType() {
         return "TINYINT(1)";
-    }
-
-    @Override
-    public String generateColumnDefinition(ColumnInfo columnInfo) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(quoteIdentifier(columnInfo.getColumnName()));
-        sb.append(" ");
-
-        if (columnInfo.isId() && columnInfo.isGenerated()) {
-            sb.append("BIGINT");
-        } else {
-            sb.append(mapJavaType(columnInfo.getJavaType()));
-        }
-
-        if (!columnInfo.isNullable()) {
-            sb.append(" NOT NULL");
-        }
-
-        if (columnInfo.isUnique()) {
-            sb.append(" UNIQUE");
-        }
-
-        if (columnInfo.isId() && columnInfo.isGenerated()) {
-            sb.append(" ").append(getAutoIncrementSql());
-        }
-
-        if (!columnInfo.getDefaultValue().isEmpty()) {
-            sb.append(" DEFAULT ").append(columnInfo.getDefaultValue());
-        }
-
-        return sb.toString();
     }
 
 }

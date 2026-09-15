@@ -18,10 +18,13 @@ public class ColumnInfo {
     private final boolean unique;
     private final String defaultValue;
     private final boolean foreign;
+    private final Field.ColumnType columnType;
+    private final int length;
 
     public ColumnInfo(java.lang.reflect.Field field, String columnName, Class<?> javaType,
                       boolean isId, boolean generated, boolean nullable, boolean unique,
-                      String defaultValue, boolean foreign) {
+                      String defaultValue, boolean foreign,
+                      Field.ColumnType columnType, int length) {
         this.field = field;
         this.columnName = columnName;
         this.javaType = javaType;
@@ -31,6 +34,8 @@ public class ColumnInfo {
         this.unique = unique;
         this.defaultValue = defaultValue;
         this.foreign = foreign;
+        this.columnType = columnType;
+        this.length = length;
     }
 
     /**
@@ -51,11 +56,22 @@ public class ColumnInfo {
         boolean unique = fieldAnnotation.unique();
         String defaultValue = fieldAnnotation.defaultValue();
         boolean foreign = fieldAnnotation.foreign();
+        Field.ColumnType columnType = fieldAnnotation.type();
+        int length = fieldAnnotation.length();
+
+        if (length < 0) {
+            throw new IllegalArgumentException("字段 " + field.getName() + " 的 @Field.length 不能为负数");
+        }
+        if (length > 0 && columnType != Field.ColumnType.AUTO && columnType != Field.ColumnType.VARCHAR) {
+            throw new IllegalArgumentException("字段 " + field.getName() + " 只对 VARCHAR 列支持 length，当前声明的 type 为 "
+                + columnType);
+        }
 
         // 确定 Java 类型
         Class<?> javaType = field.getType();
 
-        return new ColumnInfo(field, columnName, javaType, isId, generated, nullable, unique, defaultValue, foreign);
+        return new ColumnInfo(field, columnName, javaType, isId, generated, nullable, unique, defaultValue, foreign,
+            columnType, length);
     }
 
     public String getColumnName() {
@@ -92,6 +108,20 @@ public class ColumnInfo {
 
     public boolean isForeign() {
         return foreign;
+    }
+
+    /**
+     * 列类型，AUTO 表示按 Java 类型自动识别
+     */
+    public Field.ColumnType getColumnType() {
+        return columnType;
+    }
+
+    /**
+     * 列长度，0 表示使用默认长度
+     */
+    public int getLength() {
+        return length;
     }
 
     /**

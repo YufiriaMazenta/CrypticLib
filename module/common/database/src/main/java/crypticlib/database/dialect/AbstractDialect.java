@@ -1,5 +1,6 @@
 package crypticlib.database.dialect;
 
+import crypticlib.database.annotation.Field;
 import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
@@ -123,6 +124,101 @@ public abstract class AbstractDialect implements DatabaseDialect {
     @Override
     public String getBooleanType() {
         return "BOOLEAN";
+    }
+
+    /**
+     * 列定义：列名 + 类型片段 + NOT NULL / UNIQUE / DEFAULT
+     */
+    @Override
+    public String generateColumnDefinition(ColumnInfo columnInfo) {
+        StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append(quoteIdentifier(columnInfo.getColumnName()));
+        sqlBuilder.append(" ");
+        sqlBuilder.append(resolveColumnType(columnInfo));
+
+        if (!columnInfo.isNullable()) {
+            sqlBuilder.append(" NOT NULL");
+        }
+
+        if (columnInfo.isUnique()) {
+            sqlBuilder.append(" UNIQUE");
+        }
+
+        if (!columnInfo.getDefaultValue().isEmpty()) {
+            sqlBuilder.append(" DEFAULT ").append(columnInfo.getDefaultValue());
+        }
+
+        return sqlBuilder.toString();
+    }
+
+    /**
+     * 解析列的完整类型片段（自增主键走方言的自增类型）
+     */
+    protected String resolveColumnType(ColumnInfo columnInfo) {
+        if (columnInfo.isId() && columnInfo.isGenerated()) {
+            return autoIncrementColumnType();
+        }
+        return resolveDataType(columnInfo);
+    }
+
+    /**
+     * 自增主键的类型片段，不使用 AUTO_INCREMENT 关键字的方言需要覆盖
+     */
+    protected String autoIncrementColumnType() {
+        return "BIGINT " + getAutoIncrementSql();
+    }
+
+    /**
+     * 非自增列的列类型：显式声明的列类型优先，其次是显式声明的长度，最后按 Java 类型自动识别
+     */
+    protected String resolveDataType(ColumnInfo columnInfo) {
+        if (columnInfo.getColumnType() != Field.ColumnType.AUTO) {
+            return mapColumnType(columnInfo);
+        }
+        Class<?> javaType = columnInfo.getJavaType();
+        int length = columnInfo.getLength();
+        if (length > 0 && (javaType == String.class || javaType.isEnum())) {
+            return "VARCHAR(" + length + ")";
+        }
+        return mapJavaType(javaType);
+    }
+
+    /**
+     * 把显式声明的 {@link Field.ColumnType} 映射为 SQL 类型，方言覆盖此方法以适配差异（如 BYTEA、CLOB）
+     */
+    protected String mapColumnType(ColumnInfo columnInfo) {
+        int length = columnInfo.getLength() > 0 ? columnInfo.getLength() : 255;
+        switch (columnInfo.getColumnType()) {
+            case VARCHAR:
+                return "VARCHAR(" + length + ")";
+            case TEXT:
+                return getTextType();
+            case TINYINT:
+                return "TINYINT";
+            case SMALLINT:
+                return "SMALLINT";
+            case INT:
+                return "INTEGER";
+            case BIGINT:
+                return "BIGINT";
+            case FLOAT:
+                return "FLOAT";
+            case DOUBLE:
+                return "DOUBLE PRECISION";
+            case DECIMAL:
+                return "DECIMAL";
+            case BOOLEAN:
+                return getBooleanType();
+            default:
+                return mapJavaType(columnInfo.getJavaType());
+        }
+    }
+
+    /**
+     * 大文本类型的 SQL 名称，H2 等需要使用 CLOB 的方言需要覆盖
+     */
+    protected String getTextType() {
+        return "TEXT";
     }
 
     @Override

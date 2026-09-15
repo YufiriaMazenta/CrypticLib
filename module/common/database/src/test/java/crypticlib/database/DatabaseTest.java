@@ -10,7 +10,6 @@ import crypticlib.database.dao.DaoManager;
 import crypticlib.database.dialect.DatabaseDialect;
 import crypticlib.database.dialect.H2Dialect;
 import crypticlib.database.dialect.MysqlDialect;
-import crypticlib.database.dialect.PostgresqlDialect;
 import crypticlib.database.dialect.SqliteDialect;
 import crypticlib.database.table.TableInfo;
 import crypticlib.database.table.TableUtils;
@@ -571,8 +570,7 @@ public class DatabaseTest {
         TableInfo tableInfo = TableInfo.of(TestUser.class);
         int boundColumns = tableInfo.getColumns().size();
 
-        for (DatabaseDialect dialect : List.of(new H2Dialect(), new MysqlDialect(),
-            new PostgresqlDialect(), new SqliteDialect())) {
+        for (DatabaseDialect dialect : List.of(new H2Dialect(), new MysqlDialect(), new SqliteDialect())) {
             String sql = dialect.generateReplaceSql(tableInfo);
             String name = dialect.getClass().getSimpleName();
             assertEquals(boundColumns, countPlaceholders(sql),
@@ -583,7 +581,6 @@ public class DatabaseTest {
 
         assertTrue(new H2Dialect().generateReplaceSql(tableInfo).contains("MERGE INTO"));
         assertTrue(new MysqlDialect().generateReplaceSql(tableInfo).contains("ON DUPLICATE KEY UPDATE"));
-        assertTrue(new PostgresqlDialect().generateReplaceSql(tableInfo).contains("ON CONFLICT"));
         assertTrue(new SqliteDialect().generateReplaceSql(tableInfo).contains("INSERT OR REPLACE"));
     }
 
@@ -609,6 +606,72 @@ public class DatabaseTest {
         } finally {
             h2Source.close();
             mysqlLikeSource.close();
+        }
+    }
+
+    // ========== 列类型与长度 ==========
+
+    @Test
+    @DisplayName("ColumnType 与 length 生成对应的方言列定义")
+    void testColumnTypeDdl() {
+        TableInfo tableInfo = TableInfo.of(TypedUser.class);
+
+        String mysql = new MysqlDialect().generateCreateTableSql(tableInfo);
+        assertTrue(mysql.contains("`username` VARCHAR(255)"), mysql);
+        assertTrue(mysql.contains("`bio` VARCHAR(1000)"), mysql);
+        assertTrue(mysql.contains("`content` TEXT"), mysql);
+        assertTrue(mysql.contains("`level` TINYINT"), mysql);
+        assertTrue(mysql.contains("`flag` TINYINT(1)"), mysql);
+        assertTrue(mysql.endsWith("ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"), mysql);
+
+        String sqlite = new SqliteDialect().generateCreateTableSql(tableInfo);
+        assertTrue(sqlite.contains("\"bio\" VARCHAR(1000)"), sqlite);
+        assertTrue(sqlite.contains("\"content\" TEXT"), sqlite);
+        assertTrue(sqlite.contains("\"id\" INTEGER PRIMARY KEY AUTOINCREMENT"), sqlite);
+
+        String h2 = new H2Dialect().generateCreateTableSql(tableInfo);
+        assertTrue(h2.contains("\"bio\" VARCHAR(1000)"), h2);
+        assertTrue(h2.contains("\"content\" CLOB"), h2);
+        assertTrue(h2.contains("\"id\" BIGINT AUTO_INCREMENT"), h2);
+    }
+
+    @Test
+    @DisplayName("非法列配置在解析阶段直接报错")
+    void testInvalidColumnConfigRejected() {
+        IllegalArgumentException negativeLength = assertThrows(IllegalArgumentException.class,
+            () -> TableInfo.of(NegativeLengthEntity.class));
+        assertTrue(negativeLength.getMessage().contains("length"), negativeLength.getMessage());
+
+        IllegalArgumentException textWithLength = assertThrows(IllegalArgumentException.class,
+            () -> TableInfo.of(TextWithLengthEntity.class));
+        assertTrue(textWithLength.getMessage().contains("VARCHAR"), textWithLength.getMessage());
+    }
+
+    @Test
+    @DisplayName("自定义长度与大文本可以正常写入读取")
+    void testCustomLengthRoundTrip() throws SQLException {
+        ConnectionSource textSource = new JdbcConnectionSource("jdbc:h2:mem:test_typed;DB_CLOSE_DELAY=-1");
+        try {
+            TableUtils.createTableIfNotExists(textSource, TypedUser.class);
+            Dao<TypedUser> typedDao = DaoManager.createDaoNoCache(textSource, TypedUser.class);
+
+            String bio = repeat('a', 1000);
+            String content = repeat('b', 5000);
+            TypedUser user = new TypedUser();
+            user.username = "Steve";
+            user.bio = bio;
+            user.content = content;
+            user.level = 3;
+            user.flag = true;
+            typedDao.create(user);
+
+            TypedUser found = typedDao.queryForId(user.id);
+            assertEquals(bio, found.bio, "VARCHAR(1000) 列应能保存 1000 字符");
+            assertEquals(content, found.content, "TEXT 列应能保存 5000 字符");
+            assertEquals(3, found.level);
+            assertTrue(found.flag);
+        } finally {
+            textSource.close();
         }
     }
 
@@ -795,6 +858,59 @@ public class DatabaseTest {
     }
 
     // ========== 测试用实体与辅助类 ==========
+
+    @Table(name = "test_typed_users")
+    public static class TypedUser {
+
+        @Field(name = "id", id = true, generated = true)
+        private long id;
+
+        @Field(name = "username")
+        private String username;
+
+        @Field(name = "bio", length = 1000)
+        private String bio;
+
+        @Field(name = "content", type = Field.ColumnType.TEXT)
+        private String content;
+
+        @Field(name = "level", type = Field.ColumnType.TINYINT)
+        private int level;
+
+        @Field(name = "flag", type = Field.ColumnType.BOOLEAN)
+        private boolean flag;
+
+        public TypedUser() {
+        }
+    }
+
+    @Table(name = "test_bad_negative_length")
+    private static class NegativeLengthEntity {
+
+        @Field(name = "id", id = true, generated = true)
+        private long id;
+
+        @Field(name = "bio", length = -1)
+        private String bio;
+    }
+
+    @Table(name = "test_bad_text_length")
+    private static class TextWithLengthEntity {
+
+        @Field(name = "id", id = true, generated = true)
+        private long id;
+
+        @Field(name = "content", type = Field.ColumnType.TEXT, length = 100)
+        private String content;
+    }
+
+    private static String repeat(char ch, int count) {
+        StringBuilder builder = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            builder.append(ch);
+        }
+        return builder.toString();
+    }
 
     @Table(name = "test_no_id")
     private static class NoIdEntity {
