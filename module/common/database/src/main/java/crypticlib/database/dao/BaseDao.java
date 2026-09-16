@@ -1,12 +1,14 @@
 package crypticlib.database.dao;
 
 import crypticlib.database.connection.ConnectionSource;
+import crypticlib.database.dialect.AbstractDialect;
 import crypticlib.database.dialect.DatabaseDialect;
 import crypticlib.database.statement.DeleteBuilder;
 import crypticlib.database.statement.QueryBuilder;
 import crypticlib.database.statement.UpdateBuilder;
 import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
+import crypticlib.database.transaction.TransactionManager;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -19,6 +21,9 @@ import java.util.UUID;
  * <p>
  * 所有方法都提供两个版本：不带连接时自行向 ConnectionSource 借用连接并归还；
  * 带 Connection 参数时使用调用方传入的连接（用于事务中复用同一条连接）。
+ * <p>
+ * 不带连接的版本在检测到当前线程正处于该连接源的事务中时会直接抛 IllegalStateException（快速失败）：
+ * 它们借到的是另一条连接、写入会自动提交，静默放行只会让调用方误以为操作在事务里。
  *
  * @param <T>  实体类型
  */
@@ -36,9 +41,21 @@ public class BaseDao<T> implements Dao<T> {
         this.dialect = connectionSource.getDialect();
     }
 
+    /**
+     * 借用连接，处于事务中时快速失败
+     */
+    private Connection borrowConnection() throws SQLException {
+        if (TransactionManager.isInTransaction(connectionSource)) {
+            throw new IllegalStateException("Cannot use the Connection-less method inside a transaction, "
+                + "use the overload that takes the transaction Connection instead, otherwise the operation "
+                + "would run on another connection and escape the transaction");
+        }
+        return connectionSource.getConnection();
+    }
+
     @Override
     public T queryForId(Object id) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return queryForId(connection, id);
         } finally {
@@ -62,7 +79,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public List<T> queryForAll() throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return queryForAll(connection);
         } finally {
@@ -86,7 +103,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public List<T> query(QueryBuilder<T> queryBuilder) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return query(connection, queryBuilder);
         } finally {
@@ -111,7 +128,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int update(UpdateBuilder<T> updateBuilder) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return update(connection, updateBuilder);
         } finally {
@@ -130,7 +147,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int delete(DeleteBuilder<T> deleteBuilder) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return delete(connection, deleteBuilder);
         } finally {
@@ -149,7 +166,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int create(T entity) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return create(connection, entity);
         } finally {
@@ -161,10 +178,11 @@ public class BaseDao<T> implements Dao<T> {
     public int create(Connection connection, T entity) throws SQLException {
         String sql = dialect.generateInsertSql(tableInfo);
         try (PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            List<ColumnInfo> nonIdColumns = tableInfo.getNonIdColumns();
-            for (int i = 0; i < nonIdColumns.size(); i++) {
-                Object value = nonIdColumns.get(i).getValue(entity);
-                setParameter(statement, i + 1, value, nonIdColumns.get(i).getJavaType());
+            // 与 generateInsertSql 使用同一份列集合：自增主键不写入，非自增主键必须写入
+            List<ColumnInfo> insertColumns = tableInfo.getInsertColumns();
+            for (int i = 0; i < insertColumns.size(); i++) {
+                Object value = insertColumns.get(i).getValue(entity);
+                setParameter(statement, i + 1, value, insertColumns.get(i).getJavaType());
             }
             int result = statement.executeUpdate();
 
@@ -185,7 +203,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int update(T entity) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return update(connection, entity);
         } finally {
@@ -217,7 +235,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int delete(T entity) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return delete(connection, entity);
         } finally {
@@ -238,7 +256,7 @@ public class BaseDao<T> implements Dao<T> {
 
     @Override
     public int replace(T entity) throws SQLException {
-        Connection connection = connectionSource.getConnection();
+        Connection connection = borrowConnection();
         try {
             return replace(connection, entity);
         } finally {
@@ -249,10 +267,10 @@ public class BaseDao<T> implements Dao<T> {
     @Override
     public int replace(Connection connection, T entity) throws SQLException {
         ColumnInfo idColumn = tableInfo.getIdColumn();
-        // 自增主键且未赋值时，走普通 INSERT
+        // 自增主键没有值（null 或 0）时，走普通 INSERT 让数据库生成主键
         if (idColumn.isGenerated()) {
             Object idValue = idColumn.getValue(entity);
-            if (idValue instanceof Number && ((Number) idValue).longValue() == 0) {
+            if (idValue == null || (idValue instanceof Number && ((Number) idValue).longValue() == 0)) {
                 return create(connection, entity);
             }
         }
@@ -391,8 +409,8 @@ public class BaseDao<T> implements Dao<T> {
             return;
         }
 
-        // 类型转换
-        Object converted = convertValue(value, javaType);
+        // 转换逻辑与方言的 preprocessParameter 共用唯一入口
+        Object converted = AbstractDialect.coerceValue(value, javaType);
 
         if (javaType == String.class) {
             statement.setString(index, (String) converted);
@@ -419,39 +437,6 @@ public class BaseDao<T> implements Dao<T> {
         } else {
             statement.setObject(index, converted);
         }
-    }
-
-    /**
-     * 值类型转换
-     */
-    @SuppressWarnings("unchecked")
-    private Object convertValue(Object value, Class<?> targetType) {
-        if (targetType.isInstance(value)) return value;
-
-        // Number 类型互转
-        if (value instanceof Number) {
-            Number num = (Number) value;
-            if (targetType == long.class || targetType == Long.class) return num.longValue();
-            if (targetType == int.class || targetType == Integer.class) return num.intValue();
-            if (targetType == double.class || targetType == Double.class) return num.doubleValue();
-            if (targetType == float.class || targetType == Float.class) return num.floatValue();
-            if (targetType == byte.class || targetType == Byte.class) return num.byteValue();
-            if (targetType == short.class || targetType == Short.class) return num.shortValue();
-            // 用字符串构造，避免 double 的二进制误差被带进来
-            if (targetType == BigDecimal.class) return new BigDecimal(num.toString());
-        }
-
-        // String -> Enum
-        if (targetType.isEnum() && value instanceof String) {
-            return Enum.valueOf((Class<Enum>) targetType, (String) value);
-        }
-
-        // Enum -> String
-        if (targetType == String.class && value instanceof Enum) {
-            return ((Enum<?>) value).name();
-        }
-
-        return value;
     }
 
     /**

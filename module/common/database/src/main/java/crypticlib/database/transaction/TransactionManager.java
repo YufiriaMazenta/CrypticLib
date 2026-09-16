@@ -10,15 +10,30 @@ import java.sql.SQLException;
  * <p>
  * 事务中的操作必须使用回调传入的 Connection（DAO 的同名带 Connection 重载）执行，
  * 否则操作会另借一条连接、脱离事务，回滚将不会生效。
+ * 为避免这种失误被静默放过，DAO 的不带 Connection 重载在检测到当前线程正处于该连接源的事务中时，
+ * 会直接抛出 IllegalStateException 而不是照常执行。
  * <p>
  * 不支持嵌套事务：在事务回调内再次调用 withTransaction 会直接抛出 IllegalStateException，
  * 避免内层提交导致外层事务被提前提交。
  */
 public class TransactionManager {
 
-    private static final ThreadLocal<Boolean> IN_TRANSACTION = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static final ThreadLocal<ConnectionSource> IN_TRANSACTION = new ThreadLocal<>();
 
     private TransactionManager() {
+    }
+
+    /**
+     * 当前线程是否正在该连接源上执行事务
+     * <p>
+     * DAO 的不带 Connection 重载据此快速失败：那些方法会另借一条连接并自动提交，
+     * 在事务里调用会让写入脱离事务、回滚不生效，必须提前报错而不是静默放行。
+     *
+     * @param connectionSource 连接源
+     * @return 是否处于该连接源的事务中
+     */
+    public static boolean isInTransaction(ConnectionSource connectionSource) {
+        return IN_TRANSACTION.get() == connectionSource;
     }
 
     /**
@@ -52,10 +67,10 @@ public class TransactionManager {
     }
 
     private static <T> T executeTransaction(ConnectionSource connectionSource, TransactionCallable<T> action) throws SQLException {
-        if (IN_TRANSACTION.get()) {
+        if (IN_TRANSACTION.get() != null) {
             throw new IllegalStateException("Nested transactions are not supported, complete all operations in the same transaction callback");
         }
-        IN_TRANSACTION.set(Boolean.TRUE);
+        IN_TRANSACTION.set(connectionSource);
         try {
             Connection connection = connectionSource.getConnection();
             try {

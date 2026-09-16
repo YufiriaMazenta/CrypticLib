@@ -44,22 +44,33 @@ public class QueryBuilder<T> {
      * 添加排序
      */
     public QueryBuilder<T> orderBy(String column, boolean ascending) {
+        tableInfo.requireColumn(column);
         orderByList.add(new OrderBy(column, ascending));
         return this;
     }
 
     /**
      * 设置查询数量限制
+     *
+     * @param limit 取多少行，0 表示取 0 行；不调用该方法表示不限制
      */
     public QueryBuilder<T> limit(long limit) {
+        if (limit < 0) {
+            throw new IllegalArgumentException("limit must not be negative: " + limit);
+        }
         this.limit = limit;
         return this;
     }
 
     /**
-     * 设置查询偏移量
+     * 设置查询偏移量，需要先调用 limit（各方言的分页语法都要求 limit 与 offset 同时存在）
+     *
+     * @param offset 跳过多少行
      */
     public QueryBuilder<T> offset(long offset) {
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset must not be negative: " + offset);
+        }
         this.offset = offset;
         return this;
     }
@@ -94,7 +105,10 @@ public class QueryBuilder<T> {
         }
 
         // LIMIT / OFFSET
-        if (limit > 0) {
+        if (offset > 0 && limit < 0) {
+            throw new IllegalStateException("offset requires a limit, call limit(...) before offset(...)");
+        }
+        if (limit >= 0) {
             sqlBuilder = new StringBuilder(connectionSource.getDialect().appendLimitOffset(sqlBuilder.toString(), limit, offset));
         }
 

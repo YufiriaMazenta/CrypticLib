@@ -16,6 +16,7 @@ import java.util.List;
  *     <li>不接收 Connection 的版本会自行向 ConnectionSource 借用连接并归还，适合事务外使用。</li>
  *     <li>接收 Connection 的版本使用调用方传入的连接，事务中必须使用该版本，才能让操作落在同一条事务连接上。</li>
  * </ul>
+ * 在事务中调用不接收 Connection 的版本会直接抛 IllegalStateException，而不是静默地在另一条连接上执行。
  *
  * @param <T> 实体类型
  */
@@ -84,6 +85,8 @@ public interface Dao<T> {
 
     /**
      * 插入一条记录
+     * <p>
+     * 自增主键由数据库生成并回写实体的主键字段；非自增主键（业务主键、UUID 等）会把实体里的主键值一并写入。
      *
      * @return 影响的行数
      */

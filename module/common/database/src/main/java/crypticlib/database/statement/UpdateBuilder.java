@@ -2,7 +2,9 @@ package crypticlib.database.statement;
 
 import crypticlib.database.connection.ConnectionSource;
 import crypticlib.database.dao.Dao;
+import crypticlib.database.dialect.AbstractDialect;
 import crypticlib.database.dialect.DatabaseDialect;
+import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
 
 import java.sql.SQLException;
@@ -37,9 +39,12 @@ public class UpdateBuilder<T> {
 
     /**
      * 设置要更新的列和值
+     * <p>
+     * 值为 null 表示把列更新为 NULL；列名会与实体的列元数据校验
      */
     public UpdateBuilder<T> set(String column, Object value) {
-        setValues.put(column, value);
+        ColumnInfo columnInfo = tableInfo.requireColumn(column);
+        setValues.put(column, AbstractDialect.coerceValue(value, columnInfo.getJavaType()));
         return this;
     }
 
@@ -62,8 +67,19 @@ public class UpdateBuilder<T> {
 
     /**
      * 构建 UPDATE SQL
+     * <p>
+     * 没有 SET 列或没有 WHERE 条件都会抛异常：前者生成的 SQL 无法执行，
+     * 后者会更新整张表，属于误用而不是调用方的本意
      */
     public String buildSql() {
+        if (setValues.isEmpty()) {
+            throw new IllegalStateException("No column to update, call set(column, value) at least once");
+        }
+        if (where.isEmpty()) {
+            throw new IllegalStateException("Refusing to update every row of table \""
+                + tableInfo.getTableName() + "\", add a where condition");
+        }
+
         StringBuilder sqlBuilder = new StringBuilder("UPDATE ");
         sqlBuilder.append(dialect.quoteIdentifier(tableInfo.getTableName()));
         sqlBuilder.append(" SET ");

@@ -22,6 +22,10 @@ public interface DatabaseDialect {
 
     /**
      * 追加分页语句
+     *
+     * @param sql    原始 SQL
+     * @param limit  取多少行，负数表示未设置限制（此时原样返回 sql），0 表示取 0 行
+     * @param offset 跳过多少行，0 表示不跳过
      */
     String appendLimitOffset(String sql, long limit, long offset);
 

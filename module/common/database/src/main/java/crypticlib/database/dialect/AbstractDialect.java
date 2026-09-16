@@ -40,7 +40,8 @@ public abstract class AbstractDialect implements DatabaseDialect {
 
     @Override
     public String generateInsertSql(TableInfo tableInfo) {
-        List<ColumnInfo> columns = tableInfo.getNonIdColumns();
+        // 列集合与 DAO 绑定参数的列集合必须同为 getInsertColumns：自增主键排除、非自增主键参与插入
+        List<ColumnInfo> columns = tableInfo.getInsertColumns();
         StringJoiner columnJoiner = new StringJoiner(", ");
         StringJoiner placeholderJoiner = new StringJoiner(", ");
 
@@ -105,18 +106,66 @@ public abstract class AbstractDialect implements DatabaseDialect {
 
     @Override
     public Object preprocessParameter(Object value) {
+        return coerceValue(value, null);
+    }
+
+    /**
+     * 值类型转换的唯一入口，实体路径（已知列的 Java 类型）与构建器路径（未知目标类型）共用
+     *
+     * @param value      原始值
+     * @param targetType 目标 Java 类型；为 null 时只做「转成 JDBC 可直接绑定的类型」的转换
+     * @return 转换后的值
+     */
+    @SuppressWarnings("unchecked")
+    public static Object coerceValue(Object value, Class<?> targetType) {
         if (value == null) return null;
 
-        // UUID -> String
-        if (value instanceof UUID) return value.toString();
+        // 构建器路径：没有目标类型，只把 UUID/枚举转成字符串，Number 交给驱动处理
+        if (targetType == null) {
+            if (value instanceof UUID) return value.toString();
+            if (value instanceof Enum) return ((Enum<?>) value).name();
+            return value;
+        }
 
-        // Enum -> String
-        if (value instanceof Enum) return ((Enum<?>) value).name();
+        if (targetType.isInstance(value)) return value;
+
+        // UUID 与 String 互转
+        if (targetType == String.class && value instanceof UUID) return value.toString();
+        if (targetType == UUID.class && value instanceof String) return UUID.fromString((String) value);
 
         // Number 类型互转
         if (value instanceof Number) {
-            // Number 类型直接返回，JDBC 驱动会处理
-            return value;
+            Number num = (Number) value;
+            if (targetType == long.class || targetType == Long.class) return num.longValue();
+            if (targetType == int.class || targetType == Integer.class) return num.intValue();
+            if (targetType == double.class || targetType == Double.class) return num.doubleValue();
+            if (targetType == float.class || targetType == Float.class) return num.floatValue();
+            if (targetType == byte.class || targetType == Byte.class) return num.byteValue();
+            if (targetType == short.class || targetType == Short.class) return num.shortValue();
+            // 用字符串构造，避免 double 的二进制误差被带进来
+            if (targetType == BigDecimal.class) return new BigDecimal(num.toString());
+            if (targetType == boolean.class || targetType == Boolean.class) return num.longValue() != 0;
+        }
+
+        // Boolean 与 Number 互转
+        if (value instanceof Boolean) {
+            Boolean bool = (Boolean) value;
+            if (targetType == long.class || targetType == Long.class) return bool ? 1L : 0L;
+            if (targetType == int.class || targetType == Integer.class) return bool ? 1 : 0;
+            if (targetType == double.class || targetType == Double.class) return bool ? 1D : 0D;
+            if (targetType == float.class || targetType == Float.class) return bool ? 1F : 0F;
+            if (targetType == byte.class || targetType == Byte.class) return (byte) (bool ? 1 : 0);
+            if (targetType == short.class || targetType == Short.class) return (short) (bool ? 1 : 0);
+        }
+
+        // String -> Enum
+        if (targetType.isEnum() && value instanceof String) {
+            return Enum.valueOf((Class<Enum>) targetType, (String) value);
+        }
+
+        // Enum -> String
+        if (targetType == String.class && value instanceof Enum) {
+            return ((Enum<?>) value).name();
         }
 
         return value;
@@ -125,6 +174,29 @@ public abstract class AbstractDialect implements DatabaseDialect {
     @Override
     public String getBooleanType() {
         return "BOOLEAN";
+    }
+
+    /**
+     * 引用标识符，并把标识符内部的引号字符双写转义
+     * <p>
+     * 不做转义时，名字里带引号的表名/列名会提前结束引用，拼接出的 SQL 语义被改变
+     *
+     * @param identifier 原始标识符
+     * @param quoteChar  该方言的引用字符（`、" 等）
+     * @return 可安全拼接进 SQL 的引用标识符
+     */
+    protected static String quoteWith(String identifier, char quoteChar) {
+        StringBuilder builder = new StringBuilder(identifier.length() + 2);
+        builder.append(quoteChar);
+        for (int i = 0; i < identifier.length(); i++) {
+            char ch = identifier.charAt(i);
+            if (ch == quoteChar) {
+                builder.append(quoteChar);
+            }
+            builder.append(ch);
+        }
+        builder.append(quoteChar);
+        return builder.toString();
     }
 
     /**

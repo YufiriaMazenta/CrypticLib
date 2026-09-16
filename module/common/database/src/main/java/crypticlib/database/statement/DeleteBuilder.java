@@ -50,8 +50,16 @@ public class DeleteBuilder<T> {
 
     /**
      * 构建 DELETE SQL
+     * <p>
+     * 没有 WHERE 条件会抛异常：它会删除整张表的数据，属于误用而不是调用方的本意。
+     * 需要清空整表时请使用 ConnectionSource 上的显式入口（TableUtils.clearTable）。
      */
     public String buildSql() {
+        if (where.isEmpty()) {
+            throw new IllegalStateException("Refusing to delete every row of table \""
+                + tableInfo.getTableName() + "\", add a where condition or use TableUtils.clearTable instead");
+        }
+
         StringBuilder sqlBuilder = new StringBuilder("DELETE FROM ");
         sqlBuilder.append(dialect.quoteIdentifier(tableInfo.getTableName()));
         sqlBuilder.append(where.buildSql());

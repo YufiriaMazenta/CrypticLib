@@ -22,10 +22,16 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,14 +48,18 @@ public class DatabaseTest {
 
     @BeforeAll
     static void setup() throws SQLException {
-        source = new JdbcConnectionSource("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
-        TableUtils.createTableIfNotExists(source, TestUser.class);
+        TestDatabases.assumeAvailable();
+        source = TestDatabases.source("test");
+        TestDatabases.resetTable(source, TestUser.class);
         dao = DaoManager.createDao(source, TestUser.class);
     }
 
     @AfterAll
     static void teardown() {
-        source.close();
+        // 后端不可用时 @BeforeAll 会被跳过，这里必须容忍连接源未创建的情况
+        if (source != null) {
+            source.close();
+        }
     }
 
     @BeforeEach
@@ -652,9 +662,9 @@ public class DatabaseTest {
     @Test
     @DisplayName("自定义长度与大文本可以正常写入读取")
     void testCustomLengthRoundTrip() throws SQLException {
-        ConnectionSource textSource = new JdbcConnectionSource("jdbc:h2:mem:test_typed;DB_CLOSE_DELAY=-1");
+        ConnectionSource textSource = TestDatabases.source("test_typed");
         try {
-            TableUtils.createTableIfNotExists(textSource, TypedUser.class);
+            TestDatabases.resetTable(textSource, TypedUser.class);
             Dao<TypedUser> typedDao = DaoManager.createDaoNoCache(textSource, TypedUser.class);
 
             String bio = repeat('a', 1000);
@@ -709,14 +719,18 @@ public class DatabaseTest {
     @Test
     @DisplayName("BigDecimal 与枚举可以正常写入读取")
     void testBigDecimalAndEnumRoundTrip() throws SQLException {
-        ConnectionSource mappedSource = new JdbcConnectionSource("jdbc:h2:mem:test_mapped;DB_CLOSE_DELAY=-1");
+        ConnectionSource mappedSource = TestDatabases.source("test_mapped");
         try {
-            TableUtils.createTableIfNotExists(mappedSource, MappedUser.class);
+            TestDatabases.resetTable(mappedSource, MappedUser.class);
             Dao<MappedUser> mappedDao = DaoManager.createDaoNoCache(mappedSource, MappedUser.class);
 
             MappedUser user = new MappedUser();
             user.role = MappedRole.MODERATOR;
-            user.amount = new BigDecimal("12345.678901234567890123456789");
+            // SQLite 的 DECIMAL(65, 30) 只有 NUMERIC 亲和性，超出 double 精度的值会按 REAL 存储而丢精度，
+            // 因此该后端只用可被 double 精确表示的值验证往返
+            user.amount = TestDatabases.isSqlite()
+                ? new BigDecimal("12345.5")
+                : new BigDecimal("12345.678901234567890123456789");
             mappedDao.create(user);
 
             MappedUser found = mappedDao.queryForId(user.id);
@@ -744,8 +758,8 @@ public class DatabaseTest {
     @Test
     @DisplayName("DaoManager 缓存以连接源为键")
     void testDaoManagerCacheKeyedByConnectionSource() throws SQLException {
-        ConnectionSource first = new JdbcConnectionSource("jdbc:h2:mem:test_cache_1;DB_CLOSE_DELAY=-1");
-        ConnectionSource second = new JdbcConnectionSource("jdbc:h2:mem:test_cache_2;DB_CLOSE_DELAY=-1");
+        ConnectionSource first = TestDatabases.source("test_cache_1");
+        ConnectionSource second = TestDatabases.source("test_cache_2");
         try {
             Dao<CacheUser> firstDao = DaoManager.createDao(first, CacheUser.class);
             Dao<CacheUser> firstDaoAgain = DaoManager.createDao(first, CacheUser.class);
@@ -764,9 +778,9 @@ public class DatabaseTest {
     @Test
     @DisplayName("连接池下事务内使用回调连接可以回滚")
     void testTransactionRollbackWithPooledSource() throws SQLException {
-        PooledConnectionSource pooledSource = new PooledConnectionSource("jdbc:h2:mem:test_pool_tx;DB_CLOSE_DELAY=-1");
+        PooledConnectionSource pooledSource = TestDatabases.pooledSource("test_pool_tx");
         try {
-            TableUtils.createTableIfNotExists(pooledSource, TestUser.class);
+            TestDatabases.resetTable(pooledSource, TestUser.class);
             Dao<TestUser> pooledDao = DaoManager.createDaoNoCache(pooledSource, TestUser.class);
 
             try {
@@ -791,15 +805,23 @@ public class DatabaseTest {
     @Test
     @DisplayName("事务内写入只对事务连接可见")
     void testTransactionVisibilityWithPooledSource() throws SQLException {
-        PooledConnectionSource pooledSource = new PooledConnectionSource("jdbc:h2:mem:test_pool_visible;DB_CLOSE_DELAY=-1");
+        PooledConnectionSource pooledSource = TestDatabases.pooledSource("test_pool_visible");
         try {
-            TableUtils.createTableIfNotExists(pooledSource, TestUser.class);
+            TestDatabases.resetTable(pooledSource, TestUser.class);
             Dao<TestUser> pooledDao = DaoManager.createDaoNoCache(pooledSource, TestUser.class);
 
             TransactionManager.withTransaction(pooledSource, connection -> {
                 pooledDao.create(connection, new TestUser("Steve", 20, 100.0));
                 assertEquals(1, pooledDao.queryForAll(connection).size(), "the transaction should see its own writes");
-                assertEquals(0, pooledDao.queryForAll().size(), "uncommitted writes must not be visible to other connections");
+
+                // 不带 Connection 的方法在事务内会快速失败，这里显式再借一条连接来验证跨连接的可见性
+                Connection otherConnection = pooledSource.getConnection();
+                try {
+                    assertEquals(0, pooledDao.queryForAll(otherConnection).size(),
+                        "uncommitted writes must not be visible to other connections");
+                } finally {
+                    pooledSource.releaseConnection(otherConnection);
+                }
             });
 
             assertEquals(1, pooledDao.queryForAll().size(), "data should be visible after commit");
@@ -827,7 +849,7 @@ public class DatabaseTest {
     @Test
     @DisplayName("并发借出连接不会超过 maxConnections")
     void testMaxConnectionsUnderConcurrency() throws Exception {
-        PooledConnectionSource pooledSource = new PooledConnectionSource("jdbc:h2:mem:test_pool_limit;DB_CLOSE_DELAY=-1");
+        PooledConnectionSource pooledSource = TestDatabases.pooledSource("test_pool_limit");
         pooledSource.setMaxConnections(2);
         ExecutorService executor = Executors.newFixedThreadPool(16);
         try {
@@ -864,7 +886,7 @@ public class DatabaseTest {
     @Test
     @DisplayName("空闲超时的连接会被心跳清理")
     void testIdleConnectionsEvicted() throws Exception {
-        PooledConnectionSource pooledSource = new PooledConnectionSource("jdbc:h2:mem:test_pool_idle;DB_CLOSE_DELAY=-1");
+        PooledConnectionSource pooledSource = TestDatabases.pooledSource("test_pool_idle");
         pooledSource.setCheckConnectionsEveryMs(50).setMaxIdleTimeMs(1);
         try {
             Connection connection = pooledSource.getConnection();
@@ -887,10 +909,10 @@ public class DatabaseTest {
     @Test
     @DisplayName("DAO 操作结束后不残留未关闭的 Statement")
     void testStatementsClosed() throws SQLException {
-        ConnectionSource realSource = new JdbcConnectionSource("jdbc:h2:mem:test_statement;DB_CLOSE_DELAY=-1");
+        ConnectionSource realSource = TestDatabases.source("test_statement");
         CountingConnectionSource countingSource = new CountingConnectionSource(realSource);
         try {
-            TableUtils.createTableIfNotExists(countingSource, TestUser.class);
+            TestDatabases.resetTable(countingSource, TestUser.class);
             Dao<TestUser> countingDao = DaoManager.createDaoNoCache(countingSource, TestUser.class);
 
             TestUser user = new TestUser("Steve", 20, 100.0);
@@ -908,6 +930,323 @@ public class DatabaseTest {
             assertEquals(0, countingSource.getOpenStatements(), "no unclosed PreparedStatement should remain");
         } finally {
             realSource.close();
+        }
+    }
+
+    // ========== 非自增主键的插入 ==========
+
+    @Test
+    @DisplayName("业务主键（非自增）可以插入并查询")
+    void testCreateWithNaturalPrimaryKey() throws SQLException {
+        ConnectionSource naturalSource = TestDatabases.source("test_natural_key");
+        try {
+            TestDatabases.resetTable(naturalSource, NaturalKeyUser.class);
+            Dao<NaturalKeyUser> naturalDao = DaoManager.createDaoNoCache(naturalSource, NaturalKeyUser.class);
+
+            NaturalKeyUser user = new NaturalKeyUser();
+            user.name = "alice";
+            user.age = 20;
+            assertEquals(1, naturalDao.create(user), "the primary key value must be written by the insert");
+
+            NaturalKeyUser found = naturalDao.queryForId("alice");
+            assertNotNull(found, "the row must be found by its business primary key");
+            assertEquals(20, found.age);
+        } finally {
+            naturalSource.close();
+        }
+    }
+
+    @Test
+    @DisplayName("UUID 主键可以插入并查询")
+    void testCreateWithUuidPrimaryKey() throws SQLException {
+        ConnectionSource uuidSource = TestDatabases.source("test_uuid_key");
+        try {
+            TestDatabases.resetTable(uuidSource, UuidKeyUser.class);
+            Dao<UuidKeyUser> uuidDao = DaoManager.createDaoNoCache(uuidSource, UuidKeyUser.class);
+
+            UuidKeyUser user = new UuidKeyUser();
+            user.id = UUID.randomUUID();
+            user.name = "bob";
+            assertEquals(1, uuidDao.create(user));
+
+            UuidKeyUser found = uuidDao.queryForId(user.id);
+            assertNotNull(found, "the row must be found by its UUID primary key");
+            assertEquals(user.id, found.id);
+            assertEquals("bob", found.name);
+        } finally {
+            uuidSource.close();
+        }
+    }
+
+    @Test
+    @DisplayName("INSERT 语句的列集合：非自增主键参与插入，自增主键被排除")
+    void testInsertSqlColumnSet() {
+        TableInfo naturalTable = TableInfo.of(NaturalKeyUser.class);
+        String naturalSql = new H2Dialect().generateInsertSql(naturalTable);
+        assertEquals(naturalTable.getColumns().size(), countPlaceholders(naturalSql),
+            "a non-generated primary key must be part of the insert: " + naturalSql);
+        assertTrue(naturalSql.contains("\"name\""), naturalSql);
+
+        TableInfo generatedTable = TableInfo.of(TestUser.class);
+        String generatedSql = new H2Dialect().generateInsertSql(generatedTable);
+        assertEquals(generatedTable.getNonIdColumns().size(), countPlaceholders(generatedSql),
+            "a generated primary key must not be part of the insert: " + generatedSql);
+        assertFalse(generatedSql.contains("\"id\""), generatedSql);
+    }
+
+    @Test
+    @DisplayName("自增主键为包装类型且未赋值时 replace 走插入")
+    void testReplaceWithNullGeneratedId() throws SQLException {
+        ConnectionSource wrapperSource = TestDatabases.source("test_wrapper_id");
+        try {
+            TestDatabases.resetTable(wrapperSource, WrapperIdUser.class);
+            Dao<WrapperIdUser> wrapperDao = DaoManager.createDaoNoCache(wrapperSource, WrapperIdUser.class);
+
+            WrapperIdUser user = new WrapperIdUser();
+            user.name = "Steve";
+            wrapperDao.replace(user);
+
+            assertNotNull(user.id, "the generated id must be written back instead of binding a null key");
+            assertNotNull(wrapperDao.queryForId(user.id));
+        } finally {
+            wrapperSource.close();
+        }
+    }
+
+    // ========== 事务快速失败 ==========
+
+    @Test
+    @DisplayName("事务内使用不带 Connection 的方法会快速失败")
+    void testConnectionLessCallInsideTransactionRejected() throws SQLException {
+        SQLException exception = assertThrows(SQLException.class, () ->
+            TransactionManager.withTransaction(source, connection -> dao.queryForAll()));
+        assertTrue(exception.getCause() instanceof IllegalStateException, "cause=" + exception.getCause());
+        assertTrue(exception.getCause().getMessage().contains("escape the transaction"),
+            exception.getCause().getMessage());
+
+        assertTrue(dao.queryForAll().isEmpty(), "the failed transaction must be rolled back");
+        assertDoesNotThrow(() -> TransactionManager.withTransaction(source, connection -> {
+        }), "the in-transaction flag must not remain set after a failure");
+    }
+
+    // ========== 无条件更新 / 删除 / 空 SET ==========
+
+    @Test
+    @DisplayName("缺少 WHERE 的更新与删除直接失败")
+    void testUnconditionalUpdateAndDeleteRejected() {
+        assertThrows(IllegalStateException.class, () -> dao.updateBuilder().set("age", 1).buildSql());
+        assertThrows(IllegalStateException.class, () -> dao.deleteBuilder().buildSql());
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> dao.deleteBuilder().delete());
+        assertTrue(exception.getMessage().contains("delete every row"), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("缺少 SET 列的更新直接失败")
+    void testUpdateWithoutSetRejected() {
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> dao.updateBuilder().where(where -> where.equals("username", "Steve")).buildSql());
+        assertTrue(exception.getMessage().contains("No column to update"), exception.getMessage());
+    }
+
+    // ========== 构建器边界 ==========
+
+    @Test
+    @DisplayName("未知列名在构建期直接失败")
+    void testUnknownColumnRejected() {
+        assertThrows(IllegalArgumentException.class,
+            () -> dao.queryBuilder().where(where -> where.equals("nickname", "Steve")));
+        assertThrows(IllegalArgumentException.class, () -> dao.queryBuilder().orderBy("nickname", true));
+        assertThrows(IllegalArgumentException.class, () -> dao.updateBuilder().set("nickname", "Steve"));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> dao.queryBuilder().where(where -> where.isNull("nickname")));
+        assertTrue(exception.getMessage().contains("username"), "the message should list available columns: " + exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("悬空或重复的 AND/OR 直接失败")
+    void testDanglingLogicalOperatorRejected() {
+        IllegalStateException dangling = assertThrows(IllegalStateException.class,
+            () -> dao.queryBuilder().where(where -> where.and()));
+        assertTrue(dangling.getMessage().contains("must follow a condition"), dangling.getMessage());
+
+        IllegalStateException duplicated = assertThrows(IllegalStateException.class,
+            () -> dao.queryBuilder().where(where -> where.equals("username", "Steve").and().or()));
+        assertTrue(duplicated.getMessage().contains("Duplicate"), duplicated.getMessage());
+    }
+
+    @Test
+    @DisplayName("空 IN 与 null 条件值直接失败")
+    void testEmptyInAndNullConditionRejected() {
+        assertThrows(IllegalArgumentException.class,
+            () -> dao.queryBuilder().where(where -> where.in("username")));
+        assertThrows(IllegalArgumentException.class,
+            () -> dao.queryBuilder().where(where -> where.in("username", "Steve", null)));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> dao.queryBuilder().where(where -> where.equals("username", null)));
+        assertTrue(exception.getMessage().contains("isNull"), exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("limit(0) 生成 LIMIT 0，单独使用 offset 直接失败")
+    void testLimitAndOffsetBoundaries() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+        assertTrue(dao.queryBuilder().limit(0).buildSql().contains("LIMIT 0"),
+            dao.queryBuilder().limit(0).buildSql());
+        assertTrue(dao.queryBuilder().limit(0).query().isEmpty(), "limit(0) must really return no row");
+
+        assertThrows(IllegalStateException.class, () -> dao.queryBuilder().offset(1).buildSql());
+        assertThrows(IllegalArgumentException.class, () -> dao.queryBuilder().limit(-1));
+        assertThrows(IllegalArgumentException.class, () -> dao.queryBuilder().offset(-1));
+    }
+
+    // ========== 类型转换与元数据 ==========
+
+    @Test
+    @DisplayName("条件值与 SET 值按列的 Java 类型转换")
+    void testValueCoercedToColumnType() throws SQLException {
+        dao.create(new TestUser("Steve", 20, 100.0));
+
+        assertEquals(1, dao.queryBuilder().where(where -> where.equals("balance", 100)).query().size(),
+            "an Integer condition value must be accepted by a double column");
+        assertEquals(1, dao.queryBuilder().where(where -> where.in("age", 20L)).query().size(),
+            "a Long condition value must be accepted by an int column");
+        assertEquals(1, dao.updateBuilder().set("age", 21L)
+            .where(where -> where.equals("username", "Steve")).update(),
+            "a Long set value must be accepted by an int column");
+        assertEquals(21, dao.queryForAll().get(0).getAge());
+    }
+
+    @Test
+    @DisplayName("非 public 实体类可以实例化，并且可以把列更新为 NULL")
+    void testNonPublicEntityAndNullValue() throws SQLException {
+        ConnectionSource privateSource = TestDatabases.source("test_private");
+        try {
+            TestDatabases.resetTable(privateSource, PrivateUser.class);
+            Dao<PrivateUser> privateDao = DaoManager.createDaoNoCache(privateSource, PrivateUser.class);
+
+            PrivateUser user = new PrivateUser();
+            user.nickname = "Steve";
+            user.note = "hello";
+            assertEquals(1, privateDao.create(user));
+
+            PrivateUser found = privateDao.queryForId(user.id);
+            assertEquals("Steve", found.nickname, "a non-public entity class must be instantiable");
+            assertEquals("hello", found.note);
+
+            assertEquals(1, privateDao.updateBuilder().set("note", null)
+                .where(where -> where.equals("id", user.id)).update());
+            assertNull(privateDao.queryForId(user.id).note, "the column should be updated to NULL");
+        } finally {
+            privateSource.close();
+        }
+    }
+
+    @Test
+    @DisplayName("标识符中的引号会被转义")
+    void testIdentifierEscaping() {
+        assertEquals("\"a\"\"b\"", new H2Dialect().quoteIdentifier("a\"b"));
+        assertEquals("\"a\"\"b\"", new SqliteDialect().quoteIdentifier("a\"b"));
+        assertEquals("`a``b`", new MysqlDialect().quoteIdentifier("a`b"));
+    }
+
+    // ========== 后端元数据 ==========
+
+    @Test
+    @DisplayName("建表结果与当前后端的元数据一致")
+    void testBackendTableMetadata() throws SQLException {
+        TestDatabases.resetTable(source, TypedUser.class);
+        try (Connection connection = source.getConnection();
+             Statement statement = connection.createStatement()) {
+            System.out.println("[database-backend] " + TestDatabases.backend()
+                + " version=" + queryOne(statement, TestDatabases.versionSql()));
+            if (TestDatabases.isMysql()) {
+                Map<String, String> columnTypes = new LinkedHashMap<>();
+                try (ResultSet resultSet = statement.executeQuery(
+                    "SELECT COLUMN_NAME, COLUMN_TYPE FROM information_schema.COLUMNS"
+                        + " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'test_typed_users'")) {
+                    while (resultSet.next()) {
+                        columnTypes.put(resultSet.getString(1).toLowerCase(Locale.ROOT),
+                            resultSet.getString(2).toLowerCase(Locale.ROOT));
+                    }
+                }
+                assertEquals("varchar(255)", columnTypes.get("username"), columnTypes.toString());
+                assertEquals("varchar(1000)", columnTypes.get("bio"), columnTypes.toString());
+                assertEquals("text", columnTypes.get("content"), columnTypes.toString());
+                assertEquals("tinyint(1)", columnTypes.get("flag"), columnTypes.toString());
+                // MySQL 5.7 的 COLUMN_TYPE 会带上显示宽度（tinyint(4)），8.0.19 起不再输出，这里只校验类型本身
+                assertTrue(columnTypes.get("level").startsWith("tinyint"), columnTypes.toString());
+                assertTrue(queryOne(statement, mysqlColumnQuery("id", "EXTRA")).contains("auto_increment"),
+                    "the primary key column must be auto increment on MySQL");
+
+                String tableQuery = "SELECT %s FROM information_schema.TABLES"
+                    + " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'test_typed_users'";
+                assertEquals("InnoDB", queryOne(statement, String.format(tableQuery, "ENGINE")),
+                    "transactions silently stop working on MyISAM tables");
+                String collation = queryOne(statement, String.format(tableQuery, "TABLE_COLLATION"));
+                assertTrue(collation.startsWith("utf8mb4"), "expected an utf8mb4 collation, actual=" + collation);
+            } else if (TestDatabases.isSqlite()) {
+                Map<String, String> declaredTypes = new LinkedHashMap<>();
+                try (ResultSet resultSet = statement.executeQuery("PRAGMA table_info('test_typed_users')")) {
+                    while (resultSet.next()) {
+                        declaredTypes.put(resultSet.getString("name"), resultSet.getString("type"));
+                    }
+                }
+                assertEquals("VARCHAR(255)", declaredTypes.get("username"), declaredTypes.toString());
+                assertEquals("VARCHAR(1000)", declaredTypes.get("bio"), declaredTypes.toString());
+                assertEquals("TEXT", declaredTypes.get("content"), declaredTypes.toString());
+                assertEquals("TINYINT", declaredTypes.get("level"), declaredTypes.toString());
+                assertEquals("INTEGER", declaredTypes.get("flag"), declaredTypes.toString());
+                String masterSql = queryOne(statement,
+                    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'test_typed_users'");
+                assertTrue(masterSql.contains("\"id\" INTEGER PRIMARY KEY AUTOINCREMENT"),
+                    "SQLite requires the auto increment primary key to be declared inline: " + masterSql);
+            } else {
+                assertEquals("CHARACTER VARYING",
+                    queryOne(statement, h2ColumnQuery("username", "DATA_TYPE")));
+                assertEquals("255", queryOne(statement, h2ColumnQuery("username", "CHARACTER_MAXIMUM_LENGTH")));
+                assertEquals("1000", queryOne(statement, h2ColumnQuery("bio", "CHARACTER_MAXIMUM_LENGTH")));
+                assertEquals("TINYINT", queryOne(statement, h2ColumnQuery("level", "DATA_TYPE")));
+                assertEquals("BOOLEAN", queryOne(statement, h2ColumnQuery("flag", "DATA_TYPE")));
+                String contentType = queryOne(statement, h2ColumnQuery("content", "DATA_TYPE"));
+                assertTrue(contentType.contains("LARGE OBJECT"), "H2 has no TEXT type, actual=" + contentType);
+            }
+        }
+    }
+
+    private static String mysqlColumnQuery(String column, String field) {
+        return "SELECT " + field + " FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE()"
+            + " AND TABLE_NAME = 'test_typed_users' AND COLUMN_NAME = '" + column + "'";
+    }
+
+    private static String h2ColumnQuery(String column, String field) {
+        return "SELECT " + field + " FROM INFORMATION_SCHEMA.COLUMNS"
+            + " WHERE TABLE_NAME = 'test_typed_users' AND COLUMN_NAME = '" + column + "'";
+    }
+
+    private static String queryOne(Statement statement, String sql) throws SQLException {
+        try (ResultSet resultSet = statement.executeQuery(sql)) {
+            assertTrue(resultSet.next(), "no row returned by: " + sql);
+            return resultSet.getString(1);
+        }
+    }
+
+    @Test
+    @DisplayName("可以清除指定连接源的 DAO 缓存")
+    void testClearCacheByConnectionSource() throws SQLException {
+        ConnectionSource cacheSource = TestDatabases.source("test_clear_cache");
+        try {
+            Dao<CacheUser> cached = DaoManager.createDao(cacheSource, CacheUser.class);
+            assertSame(cached, DaoManager.createDao(cacheSource, CacheUser.class));
+
+            DaoManager.clearCache(cacheSource);
+            assertNotSame(cached, DaoManager.createDao(cacheSource, CacheUser.class),
+                "a cleared cache must build a new DAO");
+        } finally {
+            cacheSource.close();
         }
     }
 
@@ -1008,6 +1347,61 @@ public class DatabaseTest {
         private long id;
         @Field(name = "name")
         private String name;
+    }
+
+    @Table(name = "test_natural_key_users")
+    public static class NaturalKeyUser {
+
+        @Field(name = "name", id = true)
+        private String name;
+
+        @Field(name = "age", defaultValue = "0")
+        private int age;
+
+        public NaturalKeyUser() {
+        }
+    }
+
+    @Table(name = "test_uuid_key_users")
+    public static class UuidKeyUser {
+
+        @Field(name = "id", id = true)
+        private UUID id;
+
+        @Field(name = "name")
+        private String name;
+
+        public UuidKeyUser() {
+        }
+    }
+
+    @Table(name = "test_wrapper_id_users")
+    public static class WrapperIdUser {
+
+        @Field(name = "id", id = true, generated = true)
+        private Long id;
+
+        @Field(name = "name")
+        private String name;
+
+        public WrapperIdUser() {
+        }
+    }
+
+    @Table(name = "test_private_users")
+    private static class PrivateUser {
+
+        @Field(name = "id", id = true, generated = true)
+        private long id;
+
+        @Field(name = "nickname")
+        private String nickname;
+
+        @Field(name = "note")
+        private String note;
+
+        private PrivateUser() {
+        }
     }
 
     /**

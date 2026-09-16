@@ -13,7 +13,7 @@ public class MysqlDialect extends AbstractDialect {
 
     @Override
     public String quoteIdentifier(String identifier) {
-        return "`" + identifier + "`";
+        return quoteWith(identifier, '`');
     }
 
     @Override
@@ -32,7 +32,7 @@ public class MysqlDialect extends AbstractDialect {
 
     @Override
     public String appendLimitOffset(String sql, long limit, long offset) {
-        if (limit <= 0) return sql;
+        if (limit < 0) return sql;
         StringBuilder sb = new StringBuilder(sql);
         if (offset > 0) {
             sb.append(" LIMIT ").append(offset).append(", ").append(limit);

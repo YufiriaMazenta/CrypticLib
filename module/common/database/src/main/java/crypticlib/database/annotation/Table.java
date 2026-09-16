@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 public @interface Table {
 
     /**
-     * 表名，默认使用类名
+     * 表名，默认使用小写的类名
      */
     String name() default "";
 

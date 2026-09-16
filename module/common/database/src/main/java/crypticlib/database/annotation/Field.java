@@ -40,11 +40,6 @@ public @interface Field {
     String defaultValue() default "";
 
     /**
-     * 是否为外键引用
-     */
-    boolean foreign() default false;
-
-    /**
      * 列类型，默认 AUTO（按 Java 类型自动识别）；显式声明时按声明的类型生成列定义
      */
     ColumnType type() default ColumnType.AUTO;

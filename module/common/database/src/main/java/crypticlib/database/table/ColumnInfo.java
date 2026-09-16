@@ -2,8 +2,6 @@ package crypticlib.database.table;
 
 import crypticlib.database.annotation.Field;
 
-import java.lang.reflect.ParameterizedType;
-
 /**
  * 列元数据，描述数据库表中一列的信息
  */
@@ -17,13 +15,12 @@ public class ColumnInfo {
     private final boolean nullable;
     private final boolean unique;
     private final String defaultValue;
-    private final boolean foreign;
     private final Field.ColumnType columnType;
     private final int length;
 
     public ColumnInfo(java.lang.reflect.Field field, String columnName, Class<?> javaType,
                       boolean isId, boolean generated, boolean nullable, boolean unique,
-                      String defaultValue, boolean foreign,
+                      String defaultValue,
                       Field.ColumnType columnType, int length) {
         this.field = field;
         this.columnName = columnName;
@@ -33,7 +30,6 @@ public class ColumnInfo {
         this.nullable = nullable;
         this.unique = unique;
         this.defaultValue = defaultValue;
-        this.foreign = foreign;
         this.columnType = columnType;
         this.length = length;
     }
@@ -55,7 +51,6 @@ public class ColumnInfo {
         boolean nullable = fieldAnnotation.nullable();
         boolean unique = fieldAnnotation.unique();
         String defaultValue = fieldAnnotation.defaultValue();
-        boolean foreign = fieldAnnotation.foreign();
         Field.ColumnType columnType = fieldAnnotation.type();
         int length = fieldAnnotation.length();
 
@@ -70,7 +65,7 @@ public class ColumnInfo {
         // 确定 Java 类型
         Class<?> javaType = field.getType();
 
-        return new ColumnInfo(field, columnName, javaType, isId, generated, nullable, unique, defaultValue, foreign,
+        return new ColumnInfo(field, columnName, javaType, isId, generated, nullable, unique, defaultValue,
             columnType, length);
     }
 
@@ -104,10 +99,6 @@ public class ColumnInfo {
 
     public String getDefaultValue() {
         return defaultValue;
-    }
-
-    public boolean isForeign() {
-        return foreign;
     }
 
     /**
