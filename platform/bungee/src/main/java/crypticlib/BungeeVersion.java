@@ -15,7 +15,9 @@ public enum BungeeVersion {
     V1_19(11900),
     V1_20(12000),
     V1_21(12100),
-    V26_1(260100);
+    V26_1(260100),
+    V26_2(260200),
+    V26_3(260300);
 
     private final int version;
 
