@@ -141,6 +141,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
         runLifecycleTasks(LifecyclePhase.DISABLE);
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
+        proxyServer.getEventManager().unregisterListeners(this);
         scheduler().cancelTasks();
         ReflectionHelper.clearAllCaches();
         whenDisable();

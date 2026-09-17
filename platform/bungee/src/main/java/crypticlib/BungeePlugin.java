@@ -117,6 +117,7 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
         configContainerMap.clear();
         BungeeCommandManager.INSTANCE.unregisterAll();
         //cancelTasks 同时取消官方调度器任务与 BungeeScheduler 私有线程池中的任务,避免禁用后周期任务继续运行
+        getProxy().getPluginManager().unregisterListeners(this);
         scheduler().cancelTasks();
         ReflectionHelper.clearAllCaches();
         whenDisable();
