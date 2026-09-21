@@ -18,10 +18,13 @@ import java.util.Locale;
  *     <li>{@code h2}（默认）：内存库，随 JVM 消失，最快；</li>
  *     <li>{@code sqlite}：build/sqlite-test 下的文件库，连接池的多条连接指向同一个库文件，
  *         跨连接可见性用例才有意义（内存库每条连接都是独立的库）；</li>
- *     <li>{@code mysql}：本机服务，所有用例复用同一个测试库，用 {@link #resetTable} 保证可重复执行。</li>
+ *     <li>{@code mysql}：本机服务，所有用例复用同一个测试库，用 {@link #resetTable} 保证可重复执行；</li>
+ *     <li>{@code postgresql}：本机服务，与 mysql 同样复用同一个库（PostgreSQL 不支持建库语句，
+ *         默认连到 postgres 库，可用系统属性指向专用库）。</li>
  * </ul>
  * 连接串与账号可以通过系统属性改写，便于在别的机器上跑：{@code crypticlib.test.mysql.url}、
- * {@code crypticlib.test.mysql.user}、{@code crypticlib.test.mysql.password}。
+ * {@code crypticlib.test.mysql.user}、{@code crypticlib.test.mysql.password}，
+ * PostgreSQL 对应 {@code crypticlib.test.postgresql.url/user/password}。
  */
 final class TestDatabases {
 
@@ -31,9 +34,18 @@ final class TestDatabases {
     private static final String MYSQL_USER_PROPERTY = "crypticlib.test.mysql.user";
     private static final String MYSQL_PASSWORD_PROPERTY = "crypticlib.test.mysql.password";
 
+    private static final String POSTGRESQL_URL_PROPERTY = "crypticlib.test.postgresql.url";
+    private static final String POSTGRESQL_USER_PROPERTY = "crypticlib.test.postgresql.user";
+    private static final String POSTGRESQL_PASSWORD_PROPERTY = "crypticlib.test.postgresql.password";
+
     private static final String DEFAULT_MYSQL_URL = "jdbc:mysql://127.0.0.1:3306/crypticlib_test"
         + "?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true"
         + "&serverTimezone=Asia/Shanghai&characterEncoding=UTF-8";
+
+    /**
+     * PostgreSQL 不能像 MySQL 那样在连接串里建库，默认连到一定存在的 postgres 库
+     */
+    private static final String DEFAULT_POSTGRESQL_URL = "jdbc:postgresql://127.0.0.1:5432/postgres";
 
     /**
      * SQLite 库文件目录，放在模块的 build 下，build 清理时一并消失
@@ -55,10 +67,14 @@ final class TestDatabases {
         return "mysql".equals(backend());
     }
 
+    static boolean isPostgres() {
+        return "postgresql".equals(backend());
+    }
+
     /**
      * 当前后端的 JDBC URL
      *
-     * @param name 数据库名，H2/SQLite 用它区分不同的库，MySQL 复用同一个测试库
+     * @param name 数据库名，H2/SQLite 用它区分不同的库，MySQL/PostgreSQL 复用同一个测试库
      */
     static String url(String name) {
         switch (backend()) {
@@ -69,6 +85,8 @@ final class TestDatabases {
                 return "jdbc:sqlite:" + new File(SQLITE_DIR, name + ".db").getAbsolutePath();
             case "mysql":
                 return System.getProperty(MYSQL_URL_PROPERTY, DEFAULT_MYSQL_URL);
+            case "postgresql":
+                return System.getProperty(POSTGRESQL_URL_PROPERTY, DEFAULT_POSTGRESQL_URL);
             default:
                 return "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1";
         }
@@ -81,17 +99,23 @@ final class TestDatabases {
         if (isMysql()) {
             return new JdbcConnectionSource(url(name), mysqlUser(), mysqlPassword());
         }
+        if (isPostgres()) {
+            return new JdbcConnectionSource(url(name), postgresUser(), postgresPassword());
+        }
         return new JdbcConnectionSource(url(name));
     }
 
     /**
      * 按当前后端创建连接池连接源
      * <p>
-     * 连接池只接收 URL，MySQL 的账号密码必须在这里一并传入，否则驱动会退回当前系统账号
+     * 连接池只接收 URL，MySQL/PostgreSQL 的账号密码必须在这里一并传入，否则驱动会退回当前系统账号
      */
     static PooledConnectionSource pooledSource(String name) {
         if (isMysql()) {
             return new PooledConnectionSource(url(name), mysqlUser(), mysqlPassword());
+        }
+        if (isPostgres()) {
+            return new PooledConnectionSource(url(name), postgresUser(), postgresPassword());
         }
         return new PooledConnectionSource(url(name));
     }
@@ -102,6 +126,14 @@ final class TestDatabases {
 
     private static String mysqlPassword() {
         return System.getProperty(MYSQL_PASSWORD_PROPERTY, "123456");
+    }
+
+    private static String postgresUser() {
+        return System.getProperty(POSTGRESQL_USER_PROPERTY, "postgres");
+    }
+
+    private static String postgresPassword() {
+        return System.getProperty(POSTGRESQL_PASSWORD_PROPERTY, "postgres");
     }
 
     /**
@@ -124,6 +156,8 @@ final class TestDatabases {
                 return "SELECT sqlite_version()";
             case "mysql":
                 return "SELECT VERSION()";
+            case "postgresql":
+                return "SELECT version()";
             default:
                 return "SELECT H2VERSION()";
         }
@@ -133,7 +167,7 @@ final class TestDatabases {
      * 后端不可用时跳过用例而不是失败：没有本地数据库的机器也能跑通构建
      */
     static void assumeAvailable() {
-        if (!isMysql()) {
+        if (!isMysql() && !isPostgres()) {
             return;
         }
         ConnectionSource probe = null;
@@ -141,7 +175,7 @@ final class TestDatabases {
             probe = source("probe");
             probe.getConnection();
         } catch (Exception e) {
-            Assumptions.assumeTrue(false, "MySQL is not reachable at " + url("probe") + ": " + e.getMessage());
+            Assumptions.assumeTrue(false, backend() + " is not reachable at " + url("probe") + ": " + e.getMessage());
         } finally {
             if (probe != null) {
                 probe.close();

@@ -191,7 +191,7 @@ public class BaseDao<T> implements Dao<T> {
             if (idColumn.isGenerated()) {
                 try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        Object generatedId = getGeneratedId(generatedKeys, idColumn.getJavaType());
+                        Object generatedId = getGeneratedId(generatedKeys, idColumn);
                         idColumn.setValue(entity, generatedId);
                     }
                 }
@@ -441,15 +441,34 @@ public class BaseDao<T> implements Dao<T> {
 
     /**
      * 获取生成的 ID
+     * <p>
+     * 结果集里只有一列时直接取第一列（H2/MySQL/SQLite 的驱动都只返回生成的键）；
+     * PostgreSQL 的驱动在 RETURN_GENERATED_KEYS 下返回的是 {@code RETURNING *}（整行），
+     * 主键不一定是第一列，因此能按主键列名匹配时一律按列名取值
      */
-    private Object getGeneratedId(ResultSet resultSet, Class<?> javaType) throws SQLException {
+    private Object getGeneratedId(ResultSet generatedKeys, ColumnInfo idColumn) throws SQLException {
+        String columnLabel = findColumnLabel(generatedKeys, idColumn.getColumnName());
+        Class<?> javaType = idColumn.getJavaType();
         if (javaType == long.class || javaType == Long.class) {
-            return resultSet.getLong(1);
+            return columnLabel != null ? generatedKeys.getLong(columnLabel) : generatedKeys.getLong(1);
         } else if (javaType == int.class || javaType == Integer.class) {
-            return resultSet.getInt(1);
-        } else {
-            return resultSet.getObject(1);
+            return columnLabel != null ? generatedKeys.getInt(columnLabel) : generatedKeys.getInt(1);
         }
+        return columnLabel != null ? generatedKeys.getObject(columnLabel) : generatedKeys.getObject(1);
+    }
+
+    /**
+     * 按列名（忽略大小写）在结果集中查找实际的列标签，找不到返回 null
+     */
+    private String findColumnLabel(ResultSet resultSet, String columnName) throws SQLException {
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            String label = metaData.getColumnLabel(i);
+            if (label != null && label.equalsIgnoreCase(columnName)) {
+                return label;
+            }
+        }
+        return null;
     }
 
     /**

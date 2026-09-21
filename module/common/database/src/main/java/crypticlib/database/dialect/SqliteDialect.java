@@ -21,17 +21,6 @@ public class SqliteDialect extends AbstractDialect {
     }
 
     @Override
-    public String appendLimitOffset(String sql, long limit, long offset) {
-        if (limit < 0) return sql;
-        StringBuilder sb = new StringBuilder(sql);
-        sb.append(" LIMIT ").append(limit);
-        if (offset > 0) {
-            sb.append(" OFFSET ").append(offset);
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String getBooleanType() {
         return "INTEGER";
     }

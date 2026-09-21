@@ -133,10 +133,18 @@ public interface Dao<T> {
      * - SQLite: INSERT OR REPLACE
      * - MySQL: INSERT ... ON DUPLICATE KEY UPDATE
      * - H2: MERGE INTO
+     * - PostgreSQL: INSERT ... ON CONFLICT (主键) DO UPDATE
      * <p>
      * 注意：各方言对「影响的行数」定义不一致，不要用 == 1 判断是否成功。
      * MySQL 的 INSERT ... ON DUPLICATE KEY UPDATE 在更新已有行时返回 2（插入返回 1，已有行且值未变化返回 0）；
-     * SQLite 的 INSERT OR REPLACE 命中已有行时返回 1。
+     * SQLite 的 INSERT OR REPLACE 命中已有行时返回 1；
+     * PostgreSQL 的 ON CONFLICT DO UPDATE 插入与更新都返回 1，只有主键列时退化为 DO NOTHING，命中冲突返回 0。
+     * <p>
+     * 自增主键没有值（null 或 0）时无从匹配已有行，会退化为普通 INSERT 由数据库生成主键，各方言行为一致。
+     * 自增主键有值时会把该值一并写入；但 PostgreSQL 下显式写入主键不会推进 identity 序列，
+     * 若写入的主键不小于序列的当前值，之后依赖数据库生成主键的 {@code create(...)} 会在序列发到该值时
+     * 抛出主键冲突，越过该值后又恢复正常。需要向 PostgreSQL 写入靠后的显式主键时，
+     * 请在写入后用 {@code setval} 把序列对齐到表中的最大主键值。
      *
      * @return 影响的行数
      */

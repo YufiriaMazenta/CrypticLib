@@ -252,7 +252,7 @@ public abstract class AbstractDialect implements DatabaseDialect {
             case TEXT:
                 return getTextType();
             case TINYINT:
-                return "TINYINT";
+                return getTinyIntType();
             case SMALLINT:
                 return "SMALLINT";
             case INT:
@@ -287,6 +287,28 @@ public abstract class AbstractDialect implements DatabaseDialect {
     }
 
     /**
+     * 微整型类型的 SQL 名称，PostgreSQL 没有 TINYINT，需要覆盖为 SMALLINT
+     */
+    protected String getTinyIntType() {
+        return "TINYINT";
+    }
+
+    /**
+     * 标准分页语法（{@code LIMIT n OFFSET m}），H2 / SQLite / PostgreSQL 通用；
+     * MySQL 使用 {@code LIMIT offset, limit}，由自身覆盖
+     */
+    @Override
+    public String appendLimitOffset(String sql, long limit, long offset) {
+        if (limit < 0) return sql;
+        StringBuilder builder = new StringBuilder(sql);
+        builder.append(" LIMIT ").append(limit);
+        if (offset > 0) {
+            builder.append(" OFFSET ").append(offset);
+        }
+        return builder.toString();
+    }
+
+    /**
      * 列的 SQL 类型映射：显式声明的列类型优先，其次是声明的长度，最后按 Java 类型默认映射。
      * 无法识别的 Java 类型直接抛异常，避免静默建出一列字符串
      */
@@ -308,7 +330,7 @@ public abstract class AbstractDialect implements DatabaseDialect {
         if (javaType == float.class || javaType == Float.class) return "FLOAT";
         if (javaType == double.class || javaType == Double.class) return "DOUBLE PRECISION";
         if (javaType == boolean.class || javaType == Boolean.class) return getBooleanType();
-        if (javaType == byte.class || javaType == Byte.class) return "TINYINT";
+        if (javaType == byte.class || javaType == Byte.class) return getTinyIntType();
         if (javaType == short.class || javaType == Short.class) return "SMALLINT";
         if (javaType == BigDecimal.class) return getDecimalType();
         if (javaType == UUID.class) return "VARCHAR(36)";

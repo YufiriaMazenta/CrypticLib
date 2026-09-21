@@ -22,17 +22,6 @@ public class H2Dialect extends AbstractDialect {
     }
 
     @Override
-    public String appendLimitOffset(String sql, long limit, long offset) {
-        if (limit < 0) return sql;
-        StringBuilder sb = new StringBuilder(sql);
-        sb.append(" LIMIT ").append(limit);
-        if (offset > 0) {
-            sb.append(" OFFSET ").append(offset);
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String generateReplaceSql(TableInfo tableInfo) {
         // H2 使用 MERGE INTO，需要包含所有列（包括主键）
         ColumnInfo idColumn = tableInfo.getIdColumn();
