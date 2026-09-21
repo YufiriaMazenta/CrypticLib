@@ -10,6 +10,7 @@ public abstract class ConfigContainer<C extends ConfigWrapper<?>> {
     public ConfigContainer(@NotNull Class<?> containerClass, @NotNull C configWrapper) {
         this.containerClass = containerClass;
         this.configWrapper = configWrapper;
+        scanConfigNodes();
     }
 
     @NotNull
@@ -23,5 +24,7 @@ public abstract class ConfigContainer<C extends ConfigWrapper<?>> {
     }
 
     public abstract void reload();
+
+    public abstract void scanConfigNodes();
 
 }

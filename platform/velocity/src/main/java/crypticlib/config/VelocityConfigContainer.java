@@ -7,9 +7,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @ApiStatus.Internal
 public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapper> {
+
+    protected final Map<String, VelocityConfigNode<?>> configNodeMap = new ConcurrentHashMap<>();
 
     @ApiStatus.Internal
     public VelocityConfigContainer(@NotNull Class<?> containerClass, @NotNull VelocityConfigWrapper configWrapper) {
@@ -20,6 +24,22 @@ public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapp
     public void reload() {
 //        configWrapper.reloadConfig(); 不再由ConfigContainer进行重载
         boolean changed = false;
+        for (VelocityConfigNode<?> configNode : configNodeMap.values()) {
+            if (configNode.configContainer() == null)
+                configNode.setConfigContainer(this);
+            if (!configWrapper.config().contains(configNode.key()))
+                changed = true;
+            configNode.saveDef(configWrapper.config());
+            configNode.load(configWrapper.config());
+        }
+        if (changed) {
+            configWrapper.saveConfig();
+        }
+    }
+
+    @Override
+    public void scanConfigNodes() {
+        configNodeMap.clear();
         for (Field field : containerClass.getDeclaredFields()) {
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
@@ -31,16 +51,8 @@ public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapp
             }
             if (obj instanceof VelocityConfigNode<?>) {
                 VelocityConfigNode<?> config = (VelocityConfigNode<?>) obj;
-                if (config.configContainer() == null)
-                    config.setConfigContainer(this);
-                if (!configWrapper.config().contains(config.key()))
-                    changed = true;
-                config.saveDef(configWrapper.config());
-                config.load(configWrapper.config());
+                configNodeMap.put(config.key(), config);
             }
-        }
-        if (changed) {
-            configWrapper.saveConfig();
         }
     }
 
