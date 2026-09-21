@@ -23,12 +23,12 @@ public class BukkitConfigHelper {
 
     /**
      * 获取打包在插件jar内的文件内容
-     * @param filePath 要获取的语言
+     * @param configFilePath 要获取的语言
      * @throws RuntimeException 如果出现IO异常，将会抛出错误
      * @return 解析完毕的config
      */
-    public static YamlConfiguration getBuiltinConfig(String filePath) {
-        try(InputStream fileIS = ((BukkitPlugin) CrypticLib.plugin()).getResource(filePath)) {
+    public static YamlConfiguration getBuiltinConfig(String configFilePath) {
+        try(InputStream fileIS = IOHelper.getBuiltinResource(configFilePath)) {
             if (fileIS == null)
                 return null;
             return YamlConfiguration.loadConfiguration(new InputStreamReader(fileIS, Charsets.UTF_8));
