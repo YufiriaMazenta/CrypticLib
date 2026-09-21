@@ -247,6 +247,11 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     }
 
     @Override
+    public ClassLoader classLoader() {
+        return getClassLoader();
+    }
+
+    @Override
     public Optional<CommonPlayer> getCrypticLibPlayer(UUID uuid) {
         Player bukkitPlayer = Bukkit.getPlayer(uuid);
         if (bukkitPlayer == null) {

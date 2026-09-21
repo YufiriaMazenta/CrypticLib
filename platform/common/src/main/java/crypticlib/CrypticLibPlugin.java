@@ -39,6 +39,10 @@ public interface CrypticLibPlugin {
     @NotNull
     Invoker getConsoleInvoker();
 
+    default ClassLoader classLoader() {
+        return getClass().getClassLoader();
+    }
+
     Optional<CommonPlayer> getCrypticLibPlayer(UUID uuid);
 
     Optional<CommonPlayer> getCrypticLibPlayer(String playerName);
