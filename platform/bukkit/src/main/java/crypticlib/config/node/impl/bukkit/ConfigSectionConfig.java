@@ -54,10 +54,4 @@ public class ConfigSectionConfig extends BukkitConfigNode<ConfigurationSection> 
         setComments(getCommentsFromConfig());
     }
 
-    @Override
-    public void saveDef(@NotNull ConfigurationSection config) {
-        if (!config.contains(key)) {
-            config.set(key, def);
-        }
-    }
 }
