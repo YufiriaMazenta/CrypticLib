@@ -1,5 +1,6 @@
 package crypticlib.util;
 
+import crypticlib.CrypticLib;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -8,7 +9,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
@@ -294,6 +294,17 @@ public class IOHelper {
             sb.append(String.format("%02x", b));
         }
         return sb.toString();
+    }
+
+    public static InputStream getBuiltinResource(@NotNull String filename) throws IOException {
+        URL url = CrypticLib.plugin().classLoader().getResource(filename);
+        if (url == null) {
+            return null;
+        } else {
+            URLConnection connection = url.openConnection();
+            connection.setUseCaches(false);
+            return connection.getInputStream();
+        }
     }
 
 }
