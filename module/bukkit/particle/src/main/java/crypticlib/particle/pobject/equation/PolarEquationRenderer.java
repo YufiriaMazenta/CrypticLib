@@ -92,23 +92,25 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
     @Override
     public void play() {
         currentTheta = minTheta;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                double rho = function.apply(currentTheta);
-                double rad = Math.toRadians(currentTheta);
-                double x = rho * Math.cos(rad);
-                double y = rho * Math.sin(rad);
-                spawnParticle(getOriginLocation().clone().add(x, y, 0));
-                currentTheta += dTheta;
-                // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
-                if (currentTheta > maxTheta) {
-                    currentTheta = minTheta;
-                    cancel();
-                    return;
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    double rho = function.apply(currentTheta);
+                    double rad = Math.toRadians(currentTheta);
+                    double x = rho * Math.cos(rad);
+                    double y = rho * Math.sin(rad);
+                    spawnParticle(getOriginLocation().clone().add(x, y, 0));
+                    currentTheta += dTheta;
+                    // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
+                    if (currentTheta > maxTheta) {
+                        currentTheta = minTheta;
+                        cancel();
+                        return;
+                    }
                 }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

@@ -105,20 +105,22 @@ public class Heart extends ParticleObject implements Playable {
     @Override
     public void play() {
         currentT = -1.0D;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                if (currentT > 1.0D) {
-                    cancel();
-                    return;
-                }
-                currentT += step;
-                double x = xScaleRate * Math.sin(currentT) * Math.cos(currentT) * Math.log(Math.abs(currentT));
-                double y = yScaleRate * Math.sqrt(Math.abs(currentT)) * Math.cos(currentT);
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    if (currentT > 1.0D) {
+                        cancel();
+                        return;
+                    }
+                    currentT += step;
+                    double x = xScaleRate * Math.sin(currentT) * Math.cos(currentT) * Math.log(Math.abs(currentT));
+                    double y = yScaleRate * Math.sqrt(Math.abs(currentT)) * Math.cos(currentT);
 
-                spawnParticle(getOriginLocation().clone().add(x, 0, y));
+                    spawnParticle(getOriginLocation().clone().add(x, 0, y));
+                }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

@@ -118,44 +118,46 @@ public class Star extends ParticleObject implements Playable {
         // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
         currentSide = 1;
         currentStep = 0;
-        showTask = new CrypticLibRunnable() {
-            // 转弧度制
-            final double radians = Math.toRadians(72);
-            final double x = radius * Math.cos(radians);
-            final double z = radius * Math.sin(radians);
-            Location end = getOriginLocation().clone().add(x, 0, z);
-            // 与 show() 保持一致: 方向向量为 (cos216-cos72, 0, sin216-sin72)*radius 后归一化,
-            // 归一化后步距才与 currentStep(以格为单位)一致
-            final Vector START = new Vector(
-                radius * Math.cos(Math.toRadians(72 * 3)) - x,
-                0,
-                radius * Math.sin(Math.toRadians(72 * 3)) - z
-            ).normalize();
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                // 转弧度制
+                final double radians = Math.toRadians(72);
+                final double x = radius * Math.cos(radians);
+                final double z = radius * Math.sin(radians);
+                Location end = getOriginLocation().clone().add(x, 0, z);
+                // 与 show() 保持一致: 方向向量为 (cos216-cos72, 0, sin216-sin72)*radius 后归一化,
+                // 归一化后步距才与 currentStep(以格为单位)一致
+                final Vector START = new Vector(
+                    radius * Math.cos(Math.toRadians(72 * 3)) - x,
+                    0,
+                    radius * Math.sin(Math.toRadians(72 * 3)) - z
+                ).normalize();
 
-            @Override
-            public void run() {
-                // 进行关闭
-                if (currentSide >= 6) {
-                    cancel();
-                    return;
+                @Override
+                public void run() {
+                    // 进行关闭
+                    if (currentSide >= 6) {
+                        cancel();
+                        return;
+                    }
+                    if (currentStep > length) {
+                        // 切换到下一条边开始
+                        currentSide += 1;
+                        currentStep = 0;
+
+                        Vector vectorTemp = START.clone().multiply(length);
+                        end = end.clone().add(vectorTemp);
+
+                        VectorUtils.rotateAroundAxisY(START, 144);
+                    }
+                    Vector vectorTemp = START.clone().multiply(currentStep);
+                    Location spawnLocation = end.clone().add(vectorTemp);
+
+                    spawnParticle(spawnLocation);
+                    currentStep += step;
                 }
-                if (currentStep > length) {
-                    // 切换到下一条边开始
-                    currentSide += 1;
-                    currentStep = 0;
-
-                    Vector vectorTemp = START.clone().multiply(length);
-                    end = end.clone().add(vectorTemp);
-
-                    VectorUtils.rotateAroundAxisY(START, 144);
-                }
-                Vector vectorTemp = START.clone().multiply(currentStep);
-                Location spawnLocation = end.clone().add(vectorTemp);
-
-                spawnParticle(spawnLocation);
-                currentStep += step;
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

@@ -3,8 +3,8 @@ package crypticlib.particle.pobject;
 import crypticlib.CrypticLibBukkit;
 import crypticlib.MinecraftVersion;
 import crypticlib.particle.utils.matrix.Matrix;
+import crypticlib.scheduler.CrypticLibRunnable;
 import crypticlib.scheduler.TaskWrapper;
-import crypticlib.scheduler.task.BukkitTaskWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -95,17 +95,31 @@ public abstract class ParticleObject {
      * @param runnable 展示任务
      * @return {@link TaskWrapper}
      */
-    private TaskWrapper startShowTimer(Runnable runnable) {
-        if (entityId != null) {
-            Entity entity = getEntity();
-            if (entity != null) {
+    protected TaskWrapper startShowTimer(Runnable runnable) {
+        if (runnable instanceof CrypticLibRunnable) {
+            CrypticLibRunnable crypticLibRunnable = (CrypticLibRunnable) runnable;
+            if (entityId != null) {
+                Entity entity = getEntity();
+                return crypticLibRunnable.runOnEntityTimer(entity, () -> {}, 0L, period);
+            }
+
+            if (originLocation != null) {
+                return crypticLibRunnable.runOnLocationTimer(originLocation, 0L, period);
+            }
+
+            return crypticLibRunnable.syncTimer(0L, period);
+        } else {
+            if (entityId != null) {
+                Entity entity = getEntity();
                 return CrypticLibBukkit.scheduler().runOnEntityTimer(entity, runnable, () -> {}, 0L, period);
             }
+
+            if (originLocation != null) {
+                return CrypticLibBukkit.scheduler().runOnLocationTimer(originLocation, runnable, 0L, period);
+            }
+
+            return CrypticLibBukkit.scheduler().syncTimer(runnable, 0L, period);
         }
-        if (originLocation != null) {
-            return CrypticLibBukkit.scheduler().runOnLocationTimer(originLocation, runnable, 0L, period);
-        }
-        return CrypticLibBukkit.scheduler().syncTimer(runnable, 0L, period);
     }
 
     /**

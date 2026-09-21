@@ -107,19 +107,21 @@ public class Line extends ParticleObject implements Playable {
     public void play() {
         // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
         currentStep = 0D;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                // 进行关闭
-                if (currentStep > length) {
-                    cancel();
-                    return;
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    // 进行关闭
+                    if (currentStep > length) {
+                        cancel();
+                        return;
+                    }
+                    Vector vectorTemp = vector.clone().multiply(currentStep);
+                    spawnParticle(start.clone().add(vectorTemp));
+                    currentStep += step;
                 }
-                Vector vectorTemp = vector.clone().multiply(currentStep);
-                spawnParticle(start.clone().add(vectorTemp));
-                currentStep += step;
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

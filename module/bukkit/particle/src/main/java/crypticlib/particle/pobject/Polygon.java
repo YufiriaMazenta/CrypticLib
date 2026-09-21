@@ -138,26 +138,28 @@ public class Polygon extends ParticleObject implements Playable {
     public void play() {
         currentLoc = 0;
         currentStep = 0D;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                Vector vectorTemp = currentVector.clone().normalize().multiply(currentStep);
-                spawnParticle(locations.get(currentLoc).clone().add(vectorTemp));
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    Vector vectorTemp = currentVector.clone().normalize().multiply(currentStep);
+                    spawnParticle(locations.get(currentLoc).clone().add(vectorTemp));
 
-                // 重置
-                if (currentStep > length) {
-                    currentStep = 0D;
-                    currentVector = VectorUtils.rotateAroundAxisY(currentVector, 360D / side);
-                    currentLoc++;
+                    // 重置
+                    if (currentStep > length) {
+                        currentStep = 0D;
+                        currentVector = VectorUtils.rotateAroundAxisY(currentVector, 360D / side);
+                        currentLoc++;
+                    }
+                    // 在此处进行退出
+                    if (currentLoc == side) {
+                        cancel();
+                        return;
+                    }
+                    currentStep += step;
                 }
-                // 在此处进行退出
-                if (currentLoc == side) {
-                    cancel();
-                    return;
-                }
-                currentStep += step;
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

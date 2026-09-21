@@ -85,23 +85,25 @@ public class Astroid extends ParticleObject implements Playable {
     public void play() {
         // 每次播放前重置游标, 并将任务登记到 showTask 以便 turnOffTask 取消
         currentT = 0D;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                // 越界则关闭
-                if (currentT > 360D) {
-                    cancel();
-                    return;
-                }
-                double radians = Math.toRadians(currentT);
-                // 计算公式
-                double x = Math.pow(radius() * Math.cos(radians), 3.0D);
-                double z = Math.pow(radius() * Math.sin(radians), 3.0D);
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    // 越界则关闭
+                    if (currentT > 360D) {
+                        cancel();
+                        return;
+                    }
+                    double radians = Math.toRadians(currentT);
+                    // 计算公式
+                    double x = Math.pow(radius() * Math.cos(radians), 3.0D);
+                    double z = Math.pow(radius() * Math.sin(radians), 3.0D);
 
-                spawnParticle(getOriginLocation().clone().add(x, 0, z));
-                currentT += step;
+                    spawnParticle(getOriginLocation().clone().add(x, 0, z));
+                    currentT += step;
+                }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

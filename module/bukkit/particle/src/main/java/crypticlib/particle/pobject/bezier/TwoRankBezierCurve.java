@@ -89,19 +89,21 @@ public class TwoRankBezierCurve extends ParticleObject implements Playable {
 
     @Override
     public void play() {
-        new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                // 进行关闭
-                if (currentSample + 1 == locations.size()) {
-                    cancel();
-                    return;
-                }
-                currentSample++;
+        startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    // 进行关闭
+                    if (currentSample + 1 == locations.size()) {
+                        cancel();
+                        return;
+                    }
+                    currentSample++;
 
-                spawnParticle(locations.get(currentSample));
+                    spawnParticle(locations.get(currentSample));
+                }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

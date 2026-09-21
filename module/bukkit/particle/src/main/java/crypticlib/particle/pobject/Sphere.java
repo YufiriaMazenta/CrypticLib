@@ -106,19 +106,21 @@ public class Sphere extends ParticleObject implements Playable {
     public void play() {
         // 每次播放前重置游标至 0, 从首个点开始, 并登记任务到 showTask 以便 turnOffTask 取消
         currentSample = 0;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                // 进行关闭
-                if (currentSample >= locations.size()) {
-                    cancel();
-                    return;
-                }
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    // 进行关闭
+                    if (currentSample >= locations.size()) {
+                        cancel();
+                        return;
+                    }
 
-                spawnParticle(locations.get(currentSample));
-                currentSample++;
+                    spawnParticle(locations.get(currentSample));
+                    currentSample++;
+                }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

@@ -108,18 +108,20 @@ public class NRankBezierCurve extends ParticleObject implements Playable {
     @Override
     public void play() {
         currentSample = 0;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                spawnParticle(points.get(currentSample));
-                currentSample++;
-                // 进行关闭
-                if (currentSample >= points.size()) {
-                    cancel();
-                    return;
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    spawnParticle(points.get(currentSample));
+                    currentSample++;
+                    // 进行关闭
+                    if (currentSample >= points.size()) {
+                        cancel();
+                        return;
+                    }
                 }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

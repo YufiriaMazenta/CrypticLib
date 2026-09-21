@@ -105,22 +105,24 @@ public class Arc extends ParticleObject implements Playable {
     public void play() {
         // 每次播放前重置游标至起始角度, 并登记任务到 showTask 以便 turnOffTask 取消
         currentAngle = startAngle;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                // 进行关闭
-                if (currentAngle > startAngle + angle) {
-                    cancel();
-                    return;
-                }
-                double radians = Math.toRadians(currentAngle);
-                double x = radius * Math.cos(radians);
-                double z = radius * Math.sin(radians);
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    // 进行关闭
+                    if (currentAngle > startAngle + angle) {
+                        cancel();
+                        return;
+                    }
+                    double radians = Math.toRadians(currentAngle);
+                    double x = radius * Math.cos(radians);
+                    double z = radius * Math.sin(radians);
 
-                spawnParticle(getOriginLocation().clone().add(x, 0, z));
-                currentAngle += step;
+                    spawnParticle(getOriginLocation().clone().add(x, 0, z));
+                    currentAngle += step;
+                }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

@@ -101,23 +101,25 @@ public class FilledCircle extends ParticleObject implements Playable {
     public void play() {
         // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
         currentCount = 0;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                if (currentCount > sample) {
-                    cancel();
-                    return;
-                }
-                double indices = currentCount + 0.5;
-                double r = Math.sqrt(indices / sample);
-                double theta = Math.PI * (1 + Math.sqrt(5)) * indices;
-                double x = radius * r * Math.cos(theta);
-                double z = radius * r * Math.sin(theta);
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    if (currentCount > sample) {
+                        cancel();
+                        return;
+                    }
+                    double indices = currentCount + 0.5;
+                    double r = Math.sqrt(indices / sample);
+                    double theta = Math.PI * (1 + Math.sqrt(5)) * indices;
+                    double x = radius * r * Math.cos(theta);
+                    double z = radius * r * Math.sin(theta);
 
-                spawnParticle(getOriginLocation().clone().add(x, 0, z));
-                currentCount++;
+                    spawnParticle(getOriginLocation().clone().add(x, 0, z));
+                    currentCount++;
+                }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

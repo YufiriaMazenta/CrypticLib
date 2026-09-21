@@ -123,22 +123,24 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
     @Override
     public void play() {
         currentT = minT;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                double x = xFunction.apply(currentT);
-                double y = yFunction.apply(currentT);
-                double z = zFunction.apply(currentT);
-                spawnParticle(getOriginLocation().clone().add(x, y, z));
-                currentT += dt;
-                // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
-                if (currentT > maxT) {
-                    currentT = minT;
-                    cancel();
-                    return;
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    double x = xFunction.apply(currentT);
+                    double y = yFunction.apply(currentT);
+                    double z = zFunction.apply(currentT);
+                    spawnParticle(getOriginLocation().clone().add(x, y, z));
+                    currentT += dt;
+                    // 进行关闭, 并将游标重置回区间起点, 便于下一次 play 重新覆盖区间
+                    if (currentT > maxT) {
+                        currentT = minT;
+                        cancel();
+                        return;
+                    }
                 }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override

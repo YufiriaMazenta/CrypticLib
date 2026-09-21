@@ -145,44 +145,46 @@ public class Ray extends ParticleObject implements Playable {
     public void play() {
         // 每次播放前重置游标, 并登记任务到 showTask 以便 turnOffTask 取消
         currentStep = 0D;
-        showTask = new CrypticLibRunnable() {
-            @Override
-            public void run() {
-                // 进行关闭
-                if (currentStep > maxLength) {
-                    cancel();
-                    return;
-                }
-                Vector vectorTemp = direction.clone().multiply(currentStep);
-                Location spawnLocation = getOriginLocation().clone().add(vectorTemp);
-
-                spawnParticle(spawnLocation);
-                currentStep += step;
-
-                if (stopType.equals(RayStopType.HIT_ENTITY)) {
-                    Collection<Entity> nearbyEntities = spawnLocation.getWorld().getNearbyEntities(spawnLocation, range, range, range);
-                    List<Entity> entities = Lists.newArrayList();
-                    // 检测有无过滤器
-                    if (entityFilter != null) {
-                        for (Entity entity : nearbyEntities) {
-                            if (!entityFilter.test(entity)) {
-                                entities.add(entity);
-                            }
-                        }
-                    } else {
-                        entities = new ArrayList<>(nearbyEntities);
-                    }
-
-                    // 获取首个实体
-                    if (!entities.isEmpty()) {
-                        if (hitEntityConsumer != null) {
-                            hitEntityConsumer.accept(entities.get(0));
-                        }
+        showTask = startShowTimer(
+            new CrypticLibRunnable() {
+                @Override
+                public void run() {
+                    // 进行关闭
+                    if (currentStep > maxLength) {
                         cancel();
+                        return;
+                    }
+                    Vector vectorTemp = direction.clone().multiply(currentStep);
+                    Location spawnLocation = getOriginLocation().clone().add(vectorTemp);
+
+                    spawnParticle(spawnLocation);
+                    currentStep += step;
+
+                    if (stopType.equals(RayStopType.HIT_ENTITY)) {
+                        Collection<Entity> nearbyEntities = spawnLocation.getWorld().getNearbyEntities(spawnLocation, range, range, range);
+                        List<Entity> entities = Lists.newArrayList();
+                        // 检测有无过滤器
+                        if (entityFilter != null) {
+                            for (Entity entity : nearbyEntities) {
+                                if (!entityFilter.test(entity)) {
+                                    entities.add(entity);
+                                }
+                            }
+                        } else {
+                            entities = new ArrayList<>(nearbyEntities);
+                        }
+
+                        // 获取首个实体
+                        if (!entities.isEmpty()) {
+                            if (hitEntityConsumer != null) {
+                                hitEntityConsumer.accept(entities.get(0));
+                            }
+                            cancel();
+                        }
                     }
                 }
             }
-        }.syncTimer(0, period());
+        );
     }
 
     @Override
