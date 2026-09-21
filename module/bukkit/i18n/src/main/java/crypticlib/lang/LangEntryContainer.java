@@ -1,9 +1,9 @@
 package crypticlib.lang;
 
-import com.google.common.base.Charsets;
 import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.lang.entry.LangEntry;
 import crypticlib.lang.entry.StringLangEntry;
+import crypticlib.util.BukkitConfigHelper;
 import crypticlib.util.IOHelper;
 import crypticlib.util.LocaleHelper;
 import crypticlib.util.ReflectionHelper;
@@ -13,9 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -134,7 +131,7 @@ public class LangEntryContainer {
     private void updateLangFiles() {
         langConfigWrapperMap.forEach(
             (lang, configWrapper) -> {
-                YamlConfiguration defLangConfig = getDefLangConfig(lang);
+                YamlConfiguration defLangConfig = BukkitConfigHelper.getBuiltinConfig(langFileFolder + "/" + lang + ".yml");
                 if (defLangConfig == null)
                     return;
                 for (String key : defLangConfig.getKeys(true)) {
@@ -168,35 +165,8 @@ public class LangEntryContainer {
         return langConfigWrapperMap.get(lang);
     }
 
-    /**
-     * 创建一个新的语言文件
-     * 其实没什么用,因为语言文件内容需要自己补充
-     */
-    public @NotNull BukkitConfigWrapper createNewLang(String lang) {
-        String fileName = lang + ".yml";
-        BukkitConfigWrapper langConfigWrapper = new BukkitConfigWrapper(plugin, langFileFolder + "/" + fileName);
-        langConfigWrapperMap.put(lang, langConfigWrapper);
-        return langConfigWrapper;
-    }
-
     public Plugin plugin() {
         return plugin;
-    }
-
-    /**
-     * 获取打包在插件jar内的对应语言的默认语言文件
-     * @param lang 要获取的语言
-     * @return
-     */
-    public YamlConfiguration getDefLangConfig(String lang) {
-        String langFileName = langFileFolder + "/" + lang + ".yml";
-        try(InputStream langFileInputStream = plugin.getResource(langFileName)) {
-            if (langFileInputStream == null)
-                return null;
-            return YamlConfiguration.loadConfiguration(new InputStreamReader(langFileInputStream, Charsets.UTF_8));
-        } catch (IOException e) {
-            return null;
-        }
     }
 
     /**

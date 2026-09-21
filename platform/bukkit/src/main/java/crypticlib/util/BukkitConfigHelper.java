@@ -1,10 +1,16 @@
 package crypticlib.util;
 
+import com.google.common.base.Charsets;
+import crypticlib.BukkitPlugin;
+import crypticlib.CrypticLib;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +20,22 @@ import java.util.Map;
  * Yaml配置文件相关工具类
  */
 public class BukkitConfigHelper {
+
+    /**
+     * 获取打包在插件jar内的文件内容
+     * @param filePath 要获取的语言
+     * @throws RuntimeException 如果出现IO异常，将会抛出错误
+     * @return 解析完毕的config
+     */
+    public static YamlConfiguration getBuiltinConfig(String filePath) {
+        try(InputStream fileIS = ((BukkitPlugin) CrypticLib.plugin()).getResource(filePath)) {
+            if (fileIS == null)
+                return null;
+            return YamlConfiguration.loadConfiguration(new InputStreamReader(fileIS, Charsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * 将yaml config转化为map
