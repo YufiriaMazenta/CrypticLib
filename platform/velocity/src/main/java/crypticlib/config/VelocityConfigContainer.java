@@ -11,9 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApiStatus.Internal
-public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapper> {
-
-    protected final Map<String, VelocityConfigNode<?>> configNodeMap = new ConcurrentHashMap<>();
+public class VelocityConfigContainer extends ConfigContainer<VelocityConfigWrapper, VelocityConfigNode<?>> {
 
     @ApiStatus.Internal
     public VelocityConfigContainer(@NotNull Class<?> containerClass, @NotNull VelocityConfigWrapper configWrapper) {

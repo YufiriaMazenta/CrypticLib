@@ -20,7 +20,7 @@ public abstract class ConfigNode<T, C> {
     protected final List<String> defComments;
     protected volatile T value;
     protected volatile List<String> comments;
-    protected ConfigContainer<?> configContainer;
+    protected ConfigContainer<?, ?> configContainer;
 
     public ConfigNode(String key, T def) {
         this(key, def, new ArrayList<>());
@@ -61,11 +61,11 @@ public abstract class ConfigNode<T, C> {
         return key;
     }
 
-    public ConfigContainer<?> configContainer() {
+    public ConfigContainer<?, ?> configContainer() {
         return configContainer;
     }
 
-    public ConfigNode<T, C> setConfigContainer(ConfigContainer<?> configContainer) {
+    public ConfigNode<T, C> setConfigContainer(ConfigContainer<?, ?> configContainer) {
         this.configContainer = configContainer;
         return this;
     }

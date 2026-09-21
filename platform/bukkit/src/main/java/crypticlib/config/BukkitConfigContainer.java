@@ -12,9 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApiStatus.Internal
-public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper> {
-
-    protected final Map<String, BukkitConfigNode<?>> configNodeMap = new ConcurrentHashMap<>();
+public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper, BukkitConfigNode<?>> {
 
     @ApiStatus.Internal
     public BukkitConfigContainer(@NotNull Class<?> containerClass, @NotNull BukkitConfigWrapper configWrapper) {

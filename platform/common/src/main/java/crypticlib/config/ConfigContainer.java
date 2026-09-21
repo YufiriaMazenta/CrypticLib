@@ -1,15 +1,21 @@
 package crypticlib.config;
 
+import crypticlib.config.node.ConfigNode;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class ConfigContainer<C extends ConfigWrapper<?>> {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public abstract class ConfigContainer<C extends ConfigWrapper<?>, Node extends ConfigNode<?, ?>> {
 
     protected final Class<?> containerClass;
     protected final C configWrapper;
+    protected final Map<String, Node> configNodeMap;
 
     public ConfigContainer(@NotNull Class<?> containerClass, @NotNull C configWrapper) {
         this.containerClass = containerClass;
         this.configWrapper = configWrapper;
+        this.configNodeMap = new ConcurrentHashMap<>();
         scanConfigNodes();
     }
 

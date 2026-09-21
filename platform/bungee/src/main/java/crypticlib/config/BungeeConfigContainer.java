@@ -11,9 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApiStatus.Internal
-public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper> {
-
-    protected final Map<String, BungeeConfigNode<?>> configNodeMap = new ConcurrentHashMap<>();
+public class BungeeConfigContainer extends ConfigContainer<BungeeConfigWrapper, BungeeConfigNode<?>> {
 
     @ApiStatus.Internal
     public BungeeConfigContainer(@NotNull Class<?> containerClass, @NotNull BungeeConfigWrapper configWrapper) {
