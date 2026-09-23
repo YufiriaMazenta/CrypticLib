@@ -5,6 +5,7 @@ import crypticlib.config.node.VelocityConfigNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class BooleanConfig extends VelocityConfigNode<Boolean> {
 
@@ -18,6 +19,18 @@ public class BooleanConfig extends VelocityConfigNode<Boolean> {
 
     public BooleanConfig(@NotNull String key, @NotNull Boolean def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public BooleanConfig(@NotNull String key, @NotNull Supplier<Boolean> defFactory) {
+        super(key, defFactory);
+    }
+
+    public BooleanConfig(@NotNull String key, @NotNull Supplier<Boolean> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public BooleanConfig(@NotNull String key, @NotNull Supplier<Boolean> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

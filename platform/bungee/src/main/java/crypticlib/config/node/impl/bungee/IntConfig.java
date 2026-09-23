@@ -4,10 +4,16 @@ import crypticlib.config.node.BungeeConfigNode;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Supplier;
+
 public class IntConfig extends BungeeConfigNode<Integer> {
 
     public IntConfig(@NotNull String key, @NotNull Integer def) {
         super(key, def);
+    }
+
+    public IntConfig(@NotNull String key, @NotNull Supplier<Integer> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

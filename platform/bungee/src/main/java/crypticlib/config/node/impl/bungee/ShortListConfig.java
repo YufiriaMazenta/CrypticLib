@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ShortListConfig extends BungeeConfigNode<List<Short>> {
 
     public ShortListConfig(@NotNull String key, @NotNull List<Short> def) {
         super(key, def);
+    }
+
+    public ShortListConfig(@NotNull String key, @NotNull Supplier<List<Short>> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

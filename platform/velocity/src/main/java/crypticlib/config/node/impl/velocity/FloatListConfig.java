@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class FloatListConfig extends VelocityConfigNode<List<Float>> {
 
@@ -19,6 +20,18 @@ public class FloatListConfig extends VelocityConfigNode<List<Float>> {
 
     public FloatListConfig(@NotNull String key, @NotNull List<Float> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public FloatListConfig(@NotNull String key, @NotNull Supplier<List<Float>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public FloatListConfig(@NotNull String key, @NotNull Supplier<List<Float>> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public FloatListConfig(@NotNull String key, @NotNull Supplier<List<Float>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

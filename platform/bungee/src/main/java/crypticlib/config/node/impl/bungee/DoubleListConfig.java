@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class DoubleListConfig extends BungeeConfigNode<List<Double>> {
 
     public DoubleListConfig(@NotNull String key, @NotNull List<Double> def) {
         super(key, def);
+    }
+
+    public DoubleListConfig(@NotNull String key, @NotNull Supplier<List<Double>> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

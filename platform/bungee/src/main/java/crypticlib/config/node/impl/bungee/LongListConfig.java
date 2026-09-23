@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class LongListConfig extends BungeeConfigNode<List<Long>> {
 
     public LongListConfig(@NotNull String key, @NotNull List<Long> def) {
         super(key, def);
+    }
+
+    public LongListConfig(@NotNull String key, @NotNull Supplier<List<Long>> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

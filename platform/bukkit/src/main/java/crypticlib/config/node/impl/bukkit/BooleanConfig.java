@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class BooleanConfig extends BukkitConfigNode<Boolean> {
 
@@ -18,6 +19,18 @@ public class BooleanConfig extends BukkitConfigNode<Boolean> {
 
     public BooleanConfig(@NotNull String key, @NotNull Boolean def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public BooleanConfig(@NotNull String key, @NotNull Supplier<Boolean> defFactory) {
+        super(key, defFactory);
+    }
+
+    public BooleanConfig(@NotNull String key, @NotNull Supplier<Boolean> defFactory, @NotNull String defComment) {
+        super(key, defFactory, defComment);
+    }
+
+    public BooleanConfig(@NotNull String key, @NotNull Supplier<Boolean> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

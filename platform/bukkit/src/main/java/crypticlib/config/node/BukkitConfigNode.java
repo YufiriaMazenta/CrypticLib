@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSection> {
 
@@ -13,12 +14,24 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
         super(key, def);
     }
 
+    public BukkitConfigNode(String key, T def, @NotNull String defComment) {
+        super(key, def, defComment);
+    }
+
     public BukkitConfigNode(@NotNull String key, @NotNull T def, @NotNull List<String> defComments) {
         super(key, def, defComments);
     }
 
-    public BukkitConfigNode(String key, T def, @NotNull String defComment) {
-        super(key, def, defComment);
+    public BukkitConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory) {
+        super(key, defFactory);
+    }
+
+    public BukkitConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory, @NotNull String defComment) {
+        super(key, defFactory, defComment);
+    }
+
+    public BukkitConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

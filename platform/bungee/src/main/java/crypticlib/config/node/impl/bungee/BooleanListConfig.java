@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class BooleanListConfig extends BungeeConfigNode<List<Boolean>> {
 
     public BooleanListConfig(@NotNull String key, @NotNull List<Boolean> def) {
         super(key, def);
+    }
+
+    public BooleanListConfig(@NotNull String key, @NotNull Supplier<List<Boolean>> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

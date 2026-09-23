@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * 配置节点，用于存储一个配置项的内容
@@ -35,6 +36,18 @@ public abstract class ConfigNode<T, C> {
         this.key = key;
         this.def = def;
         this.defComments = defComments;
+    }
+
+    public ConfigNode(@NotNull String key, @NotNull Supplier<@NotNull T> defFactory) {
+        this(key, defFactory.get(), new ArrayList<>());
+    }
+
+    public ConfigNode(@NotNull String key, @NotNull Supplier<@NotNull T> defFactory, @NotNull String defComment) {
+        this(key, defFactory.get(), Collections.singletonList(defComment));
+    }
+
+    public ConfigNode(@NotNull String key, @NotNull Supplier<@NotNull T> defFactory, @NotNull List<String> defComments) {
+        this(key, defFactory.get(), defComments);
     }
 
     @NotNull

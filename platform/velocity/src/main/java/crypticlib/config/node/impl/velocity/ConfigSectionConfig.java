@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ConfigSectionConfig extends VelocityConfigNode<CommentedConfig> {
 
@@ -36,6 +37,18 @@ public class ConfigSectionConfig extends VelocityConfigNode<CommentedConfig> {
         for (Map.Entry<String, Object> entry : def.entrySet()) {
             this.def.set(entry.getKey(), entry.getValue());
         }
+    }
+
+    public ConfigSectionConfig(@NotNull String key, @NotNull Supplier<CommentedConfig> defFactory) {
+        super(key, defFactory);
+    }
+
+    public ConfigSectionConfig(@NotNull String key, @NotNull Supplier<CommentedConfig> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public ConfigSectionConfig(@NotNull String key, @NotNull Supplier<CommentedConfig> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

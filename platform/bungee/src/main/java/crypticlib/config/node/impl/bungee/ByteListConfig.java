@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ByteListConfig extends BungeeConfigNode<List<Byte>> {
 
     public ByteListConfig(@NotNull String key, @NotNull List<Byte> def) {
         super(key, def);
+    }
+
+    public ByteListConfig(@NotNull String key, @NotNull Supplier<List<Byte>> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

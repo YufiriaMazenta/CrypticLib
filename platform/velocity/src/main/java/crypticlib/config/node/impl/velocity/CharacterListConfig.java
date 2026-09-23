@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class CharacterListConfig extends VelocityConfigNode<List<Character>> {
 
@@ -19,6 +20,18 @@ public class CharacterListConfig extends VelocityConfigNode<List<Character>> {
 
     public CharacterListConfig(@NotNull String key, @NotNull List<Character> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public CharacterListConfig(@NotNull String key, @NotNull Supplier<List<Character>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public CharacterListConfig(@NotNull String key, @NotNull Supplier<List<Character>> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public CharacterListConfig(@NotNull String key, @NotNull Supplier<List<Character>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

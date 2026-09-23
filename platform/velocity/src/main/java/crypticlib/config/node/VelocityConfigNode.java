@@ -4,6 +4,7 @@ import com.electronwill.nightconfig.core.CommentedConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 public abstract class VelocityConfigNode<T> extends ConfigNode<T, CommentedConfig> {
@@ -20,6 +21,18 @@ public abstract class VelocityConfigNode<T> extends ConfigNode<T, CommentedConfi
 
     public VelocityConfigNode(@NotNull String key, @NotNull T def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public VelocityConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory) {
+        super(key, defFactory);
+    }
+
+    public VelocityConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public VelocityConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

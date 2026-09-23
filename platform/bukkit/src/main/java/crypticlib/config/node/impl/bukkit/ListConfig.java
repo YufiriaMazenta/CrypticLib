@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class ListConfig<T> extends BukkitConfigNode<List<T>> {
 
@@ -18,6 +19,18 @@ public class ListConfig<T> extends BukkitConfigNode<List<T>> {
 
     public ListConfig(@NotNull String key, @NotNull List<T> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public ListConfig(@NotNull String key, @NotNull Supplier<List<T>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public ListConfig(@NotNull String key, @NotNull Supplier<List<T>> defFactory, @NotNull String defComment) {
+        super(key, defFactory, defComment);
+    }
+
+    public ListConfig(@NotNull String key, @NotNull Supplier<List<T>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @SuppressWarnings("unchecked")

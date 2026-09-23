@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class BooleanListConfig extends VelocityConfigNode<List<Boolean>> {
 
@@ -19,6 +20,18 @@ public class BooleanListConfig extends VelocityConfigNode<List<Boolean>> {
 
     public BooleanListConfig(@NotNull String key, @NotNull List<Boolean> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public BooleanListConfig(@NotNull String key, @NotNull Supplier<List<Boolean>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public BooleanListConfig(@NotNull String key, @NotNull Supplier<List<Boolean>> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public BooleanListConfig(@NotNull String key, @NotNull Supplier<List<Boolean>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

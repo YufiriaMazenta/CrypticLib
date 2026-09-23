@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class ConfigSectionListConfig extends ListConfig<ConfigurationSection> {
 
@@ -21,6 +22,18 @@ public class ConfigSectionListConfig extends ListConfig<ConfigurationSection> {
 
     public ConfigSectionListConfig(@NotNull String key, @NotNull List<ConfigurationSection> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public ConfigSectionListConfig(@NotNull String key, @NotNull Supplier<List<ConfigurationSection>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public ConfigSectionListConfig(@NotNull String key, @NotNull Supplier<List<ConfigurationSection>> defFactory, @NotNull String defComment) {
+        super(key, defFactory, defComment);
+    }
+
+    public ConfigSectionListConfig(@NotNull String key, @NotNull Supplier<List<ConfigurationSection>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @SuppressWarnings("unchecked")

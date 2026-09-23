@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class LongListConfig extends VelocityConfigNode<List<Long>> {
 
@@ -19,6 +20,18 @@ public class LongListConfig extends VelocityConfigNode<List<Long>> {
 
     public LongListConfig(@NotNull String key, @NotNull List<Long> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public LongListConfig(@NotNull String key, @NotNull Supplier<List<Long>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public LongListConfig(@NotNull String key, @NotNull Supplier<List<Long>> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public LongListConfig(@NotNull String key, @NotNull Supplier<List<Long>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

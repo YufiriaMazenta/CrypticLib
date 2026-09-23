@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class DoubleListConfig extends VelocityConfigNode<List<Double>> {
 
@@ -19,6 +20,18 @@ public class DoubleListConfig extends VelocityConfigNode<List<Double>> {
 
     public DoubleListConfig(@NotNull String key, @NotNull List<Double> def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public DoubleListConfig(@NotNull String key, @NotNull Supplier<List<Double>> defFactory) {
+        super(key, defFactory);
+    }
+
+    public DoubleListConfig(@NotNull String key, @NotNull Supplier<List<Double>> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public DoubleListConfig(@NotNull String key, @NotNull Supplier<List<Double>> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override

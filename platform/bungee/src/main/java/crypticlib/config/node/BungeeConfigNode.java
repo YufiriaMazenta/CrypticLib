@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 public abstract class BungeeConfigNode<T> extends ConfigNode<T, Configuration> {
 
     public BungeeConfigNode(@NotNull String key, @NotNull T def) {
         super(key, def);
+    }
+
+    public BungeeConfigNode(@NotNull String key, @NotNull Supplier<T> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

@@ -6,11 +6,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class CharacterListConfig extends BungeeConfigNode<List<Character>> {
 
     public CharacterListConfig(@NotNull String key, @NotNull List<Character> def) {
         super(key, def);
+    }
+
+    public CharacterListConfig(@NotNull String key, @NotNull Supplier<List<Character>> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ConfigSectionConfig extends BungeeConfigNode<Configuration> {
 
@@ -18,6 +19,10 @@ public class ConfigSectionConfig extends BungeeConfigNode<Configuration> {
         for (Map.Entry<String, Object> entry : def.entrySet()) {
             this.def.set(entry.getKey(), entry.getValue());
         }
+    }
+
+    public ConfigSectionConfig(@NotNull String key, @NotNull Supplier<Configuration> defFactory) {
+        super(key, defFactory);
     }
 
     @Override

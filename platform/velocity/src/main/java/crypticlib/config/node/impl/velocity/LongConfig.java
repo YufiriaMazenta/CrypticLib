@@ -5,6 +5,7 @@ import crypticlib.config.node.VelocityConfigNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class LongConfig extends VelocityConfigNode<Long> {
 
@@ -18,6 +19,18 @@ public class LongConfig extends VelocityConfigNode<Long> {
 
     public LongConfig(@NotNull String key, @NotNull Long def, @NotNull List<String> defComments) {
         super(key, def, defComments);
+    }
+
+    public LongConfig(@NotNull String key, @NotNull Supplier<Long> defFactory) {
+        super(key, defFactory);
+    }
+
+    public LongConfig(@NotNull String key, @NotNull Supplier<Long> defFactory, @NotNull String comment) {
+        super(key, defFactory, comment);
+    }
+
+    public LongConfig(@NotNull String key, @NotNull Supplier<Long> defFactory, @NotNull List<String> defComments) {
+        super(key, defFactory, defComments);
     }
 
     @Override
