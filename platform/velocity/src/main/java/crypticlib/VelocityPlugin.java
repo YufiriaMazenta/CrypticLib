@@ -139,6 +139,7 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     @Subscribe
     public final void onProxyShutdown(ProxyShutdownEvent event) {
         runLifecycleTasks(LifecyclePhase.DISABLE);
+        configWrapperMap.clear();
         configContainerMap.clear();
         VelocityCommandManager.INSTANCE.unregisterAll();
         proxyServer.getEventManager().unregisterListeners(this);

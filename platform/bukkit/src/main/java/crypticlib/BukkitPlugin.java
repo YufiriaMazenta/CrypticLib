@@ -117,6 +117,7 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     @Override
     public final void onDisable() {
         runLifecycleTasks(LifecyclePhase.DISABLE);
+        configWrapperMap.clear();
         configContainerMap.clear();
         HandlerList.unregisterAll(this);
         BukkitCommandManager.INSTANCE.unregisterAll();
