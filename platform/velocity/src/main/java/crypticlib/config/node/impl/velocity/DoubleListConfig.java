@@ -22,20 +22,18 @@ public class DoubleListConfig extends VelocityConfigNode<List<Double>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Double> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Double> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Number) {
-                    value.add(((Number) element).doubleValue());
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Double> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Number) {
+                result.add(((Number) element).doubleValue());
+            }
+        }
+        return result;
     }
 
 }

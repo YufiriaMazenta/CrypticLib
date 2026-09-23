@@ -21,14 +21,9 @@ public class IntConfig extends VelocityConfigNode<Integer> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected Integer readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof Number) {
-            setValue(((Number) raw).intValue());
-        } else {
-            setValue(def);
-        }
-        setComments(configContainer.configWrapper().getComments(key));
+        return raw instanceof Number ? ((Number) raw).intValue() : null;
     }
 
 }

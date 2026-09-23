@@ -22,20 +22,18 @@ public class IntListConfig extends VelocityConfigNode<List<Integer>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Integer> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Integer> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Number) {
-                    value.add(((Number) element).intValue());
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Integer> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Number) {
+                result.add(((Number) element).intValue());
+            }
+        }
+        return result;
     }
 
 }

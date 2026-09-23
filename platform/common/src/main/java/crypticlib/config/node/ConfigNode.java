@@ -87,7 +87,46 @@ public abstract class ConfigNode<T, C> {
         return comments;
     }
 
-    public abstract void load(@NotNull C config);
+    /**
+     * 通用加载逻辑，子类只需实现 readValue 和 hasKey
+     * 子类可重写此方法以自定义加载流程
+     */
+    public void load(@NotNull C config) {
+        T loaded = readValue(config);
+        if (loaded != null) {
+            this.value = loaded;
+        } else {
+            if (hasKey(config)) {
+                warnTypeMismatch(key);
+            }
+            this.value = def;
+        }
+        this.comments = readComments();
+    }
+
+    /**
+     * 读取配置值，类型不匹配返回 null
+     */
+    protected abstract T readValue(@NotNull C config);
+
+    /**
+     * 判断 key 是否存在于配置中
+     */
+    protected abstract boolean hasKey(@NotNull C config);
+
+    /**
+     * 类型不匹配警告，子类可重写以使用自己的 Logger
+     */
+    protected void warnTypeMismatch(String key) {
+        // 默认空实现，由平台子类重写
+    }
+
+    /**
+     * 读取注释，Bungee 子类返回空列表
+     */
+    protected List<String> readComments() {
+        return configContainer.configWrapper().getComments(key);
+    }
 
     public abstract void saveDef(@NotNull C config);
 

@@ -22,22 +22,20 @@ public class CharacterListConfig extends VelocityConfigNode<List<Character>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Character> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Character> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Character) {
-                    value.add((Character) element);
-                } else if (element instanceof String && !((String) element).isEmpty()) {
-                    value.add(((String) element).charAt(0));
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Character> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Character) {
+                result.add((Character) element);
+            } else if (element instanceof String && !((String) element).isEmpty()) {
+                result.add(((String) element).charAt(0));
+            }
+        }
+        return result;
     }
 
 }

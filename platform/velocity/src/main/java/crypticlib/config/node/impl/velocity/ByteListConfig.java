@@ -22,20 +22,18 @@ public class ByteListConfig extends VelocityConfigNode<List<Byte>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Byte> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Byte> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Number) {
-                    value.add(((Number) element).byteValue());
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Byte> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Number) {
+                result.add(((Number) element).byteValue());
+            }
+        }
+        return result;
     }
 
 }

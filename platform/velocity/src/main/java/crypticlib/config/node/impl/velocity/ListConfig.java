@@ -20,10 +20,11 @@ public class ListConfig<T> extends VelocityConfigNode<List<T>> {
         super(key, def, defComments);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public void load(@NotNull CommentedConfig config) {
-        setValue(config.getOrElse(key, def));
-        setComments(configContainer.configWrapper().getComments(key));
+    protected List<T> readValue(@NotNull CommentedConfig config) {
+        Object raw = config.get(key);
+        return raw instanceof List ? (List<T>) raw : null;
     }
 
 }

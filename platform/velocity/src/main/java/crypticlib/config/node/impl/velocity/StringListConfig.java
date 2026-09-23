@@ -22,20 +22,18 @@ public class StringListConfig extends VelocityConfigNode<List<String>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<String> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<String> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof String) {
-                    value.add((String) element);
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<String> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof String) {
+                result.add((String) element);
+            }
+        }
+        return result;
     }
 
 }

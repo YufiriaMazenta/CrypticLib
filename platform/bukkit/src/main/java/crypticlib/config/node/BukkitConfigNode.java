@@ -1,6 +1,7 @@
 package crypticlib.config.node;
 
 import crypticlib.MinecraftVersion;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +40,21 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
         }
     }
 
-    protected List<String> getCommentsFromConfig() {
+    @Override
+    protected boolean hasKey(@NotNull ConfigurationSection config) {
+        return config.contains(key);
+    }
+
+    @Override
+    protected void warnTypeMismatch(String key) {
+        Bukkit.getLogger().warning("Config value at '" + key + "' in "
+            + configContainer.configWrapper().configFile().getName()
+            + " has wrong type, falling back to default " + def
+            + " (the original file value is kept).");
+    }
+
+    @Override
+    protected List<String> readComments() {
         return configContainer.configWrapper().getComments(key);
     }
 

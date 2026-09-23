@@ -22,20 +22,18 @@ public class LongListConfig extends VelocityConfigNode<List<Long>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Long> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Long> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Number) {
-                    value.add(((Number) element).longValue());
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Long> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Number) {
+                result.add(((Number) element).longValue());
+            }
+        }
+        return result;
     }
 
 }

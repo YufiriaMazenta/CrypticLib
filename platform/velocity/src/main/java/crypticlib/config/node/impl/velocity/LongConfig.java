@@ -21,14 +21,9 @@ public class LongConfig extends VelocityConfigNode<Long> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected Long readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof Number) {
-            setValue(((Number) raw).longValue());
-        } else {
-            setValue(def);
-        }
-        setComments(configContainer.configWrapper().getComments(key));
+        return raw instanceof Number ? ((Number) raw).longValue() : null;
     }
 
 }

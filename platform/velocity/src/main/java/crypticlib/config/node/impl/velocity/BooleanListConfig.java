@@ -22,20 +22,18 @@ public class BooleanListConfig extends VelocityConfigNode<List<Boolean>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Boolean> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Boolean> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Boolean) {
-                    value.add((Boolean) element);
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Boolean> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Boolean) {
+                result.add((Boolean) element);
+            }
+        }
+        return result;
     }
 
 }

@@ -39,9 +39,9 @@ public class ConfigSectionConfig extends VelocityConfigNode<CommentedConfig> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
-        setValue(config.getOrElse(key, def));
-        setComments(configContainer.configWrapper().getComments(key));
+    protected CommentedConfig readValue(@NotNull CommentedConfig config) {
+        Object raw = config.get(key);
+        return raw instanceof CommentedConfig ? (CommentedConfig) raw : null;
     }
 
 }

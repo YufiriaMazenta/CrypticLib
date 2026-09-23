@@ -22,20 +22,18 @@ public class ShortListConfig extends VelocityConfigNode<List<Short>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Short> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Short> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Number) {
-                    value.add(((Number) element).shortValue());
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Short> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Number) {
+                result.add(((Number) element).shortValue());
+            }
+        }
+        return result;
     }
 
 }

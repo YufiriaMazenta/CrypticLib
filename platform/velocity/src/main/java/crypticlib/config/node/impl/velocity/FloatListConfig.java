@@ -22,20 +22,18 @@ public class FloatListConfig extends VelocityConfigNode<List<Float>> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected List<Float> readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof List) {
-            List<Float> value = new ArrayList<>();
-            for (Object element : (List<?>) raw) {
-                if (element instanceof Number) {
-                    value.add(((Number) element).floatValue());
-                }
-            }
-            setValue(value);
-        } else {
-            setValue(def);
+        if (!(raw instanceof List)) {
+            return null;
         }
-        setComments(configContainer.configWrapper().getComments(key));
+        List<Float> result = new ArrayList<>();
+        for (Object element : (List<?>) raw) {
+            if (element instanceof Number) {
+                result.add(((Number) element).floatValue());
+            }
+        }
+        return result;
     }
 
 }

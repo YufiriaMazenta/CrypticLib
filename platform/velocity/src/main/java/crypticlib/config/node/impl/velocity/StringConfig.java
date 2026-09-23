@@ -21,14 +21,9 @@ public class StringConfig extends VelocityConfigNode<String> {
     }
 
     @Override
-    public void load(@NotNull CommentedConfig config) {
+    protected String readValue(@NotNull CommentedConfig config) {
         Object raw = config.get(key);
-        if (raw instanceof String) {
-            setValue((String) raw);
-        } else {
-            setValue(def);
-        }
-        setComments(configContainer.configWrapper().getComments(key));
+        return raw instanceof String ? (String) raw : null;
     }
 
 }
