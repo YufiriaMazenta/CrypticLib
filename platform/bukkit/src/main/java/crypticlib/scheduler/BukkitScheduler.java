@@ -4,6 +4,7 @@ import crypticlib.scheduler.task.BukkitTaskWrapper;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Bukkit平台调度器接口，扩展了通用调度器接口，增加了实体/坐标调度方法
@@ -14,16 +15,28 @@ public interface BukkitScheduler extends Scheduler {
         task.cancel();
     }
 
-    BukkitTaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask);
+    default BukkitTaskWrapper runOnEntity(@NotNull Entity entity, @NotNull Runnable task) {
+        return runOnEntity(entity, task, null);
+    }
 
-    BukkitTaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks);
+    BukkitTaskWrapper runOnEntity(@NotNull Entity entity, @NotNull Runnable task, @Nullable Runnable retriedTask);
 
-    BukkitTaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks);
+    default BukkitTaskWrapper runOnEntityLater(@NotNull Entity entity, @NotNull Runnable task, long delayTicks) {
+        return runOnEntityLater(entity, task, null, delayTicks);
+    }
 
-    BukkitTaskWrapper runOnLocation(Location location, Runnable task);
+    BukkitTaskWrapper runOnEntityLater(@NotNull Entity entity, @NotNull Runnable task, @Nullable Runnable retriedTask, long delayTicks);
 
-    BukkitTaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks);
+    default BukkitTaskWrapper runOnEntityTimer(@NotNull Entity entity, @NotNull Runnable task, long delayTicks, long periodTicks) {
+        return runOnEntityTimer(entity, task, null, delayTicks, periodTicks);
+    }
 
-    BukkitTaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks);
+    BukkitTaskWrapper runOnEntityTimer(@NotNull Entity entity, @NotNull Runnable task, @Nullable Runnable retriedTask, long delayTicks, long periodTicks);
+
+    BukkitTaskWrapper runOnLocation(@NotNull Location location, @NotNull Runnable task);
+
+    BukkitTaskWrapper runOnLocationLater(@NotNull Location location, @NotNull Runnable task, long delayTicks);
+
+    BukkitTaskWrapper runOnLocationTimer(@NotNull Location location, @NotNull Runnable task, long delayTicks, long periodTicks);
 
 }

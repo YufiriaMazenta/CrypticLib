@@ -13,6 +13,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.UUID;
 
@@ -60,9 +62,9 @@ public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
     }
 
     @Override
-    public BukkitTaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
+    public BukkitTaskWrapper runOnEntity(@NonNull Entity entity, @NonNull Runnable task, @Nullable Runnable retriedTask) {
         return sync(() -> {
-            if (entity == null || !entity.isValid()) {
+            if (!entity.isValid()) {
                 if (retriedTask != null) {
                     retriedTask.run();
                 }
@@ -73,7 +75,7 @@ public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
     }
 
     @Override
-    public BukkitTaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
+    public BukkitTaskWrapper runOnEntityLater(@NonNull Entity entity, @NonNull Runnable task, Runnable retriedTask, long delayTicks) {
         UUID entityId = entity.getUniqueId();
         return syncLater(() -> {
             Entity currentEntity = Bukkit.getServer().getEntity(entityId);
@@ -88,7 +90,7 @@ public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
     }
 
     @Override
-    public BukkitTaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper runOnEntityTimer(@NotNull Entity entity, @NotNull Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
         // Spigot 没有 Folia 的 EntityScheduler, 这里在每个周期检查实体有效性以逼近其语义:
         // 实体失效时取消定时任务并执行 retriedTask (Folia 的 retired 回调)。
         UUID entityId = entity.getUniqueId();
@@ -111,17 +113,17 @@ public enum SpigotScheduler implements BukkitScheduler, LifecycleTask {
     }
 
     @Override
-    public BukkitTaskWrapper runOnLocation(Location location, Runnable task) {
+    public BukkitTaskWrapper runOnLocation(@NonNull Location location, @NotNull Runnable task) {
         return sync(task);
     }
 
     @Override
-    public BukkitTaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
+    public BukkitTaskWrapper runOnLocationLater(@NonNull Location location, @NonNull Runnable task, long delayTicks) {
         return syncLater(task, delayTicks);
     }
 
     @Override
-    public BukkitTaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper runOnLocationTimer(@NonNull Location location, @NotNull Runnable task, long delayTicks, long periodTicks) {
         return syncTimer(task, delayTicks, periodTicks);
     }
 

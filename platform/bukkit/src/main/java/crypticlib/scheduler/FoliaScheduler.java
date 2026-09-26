@@ -14,6 +14,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,33 +71,33 @@ public enum FoliaScheduler implements BukkitScheduler, LifecycleTask {
     }
 
     @Override
-    public BukkitTaskWrapper runOnEntity(Entity entity, Runnable task, Runnable retriedTask) {
+    public BukkitTaskWrapper runOnEntity(@NonNull Entity entity, @NonNull Runnable task, @Nullable Runnable retriedTask) {
         return wrapEntityTask(entity.getScheduler().run(plugin, runnableToConsumer(task), retriedTask));
     }
 
 
     @Override
-    public BukkitTaskWrapper runOnEntityLater(Entity entity, Runnable task, Runnable retriedTask, long delayTicks) {
+    public BukkitTaskWrapper runOnEntityLater(@NonNull Entity entity, @NonNull Runnable task, Runnable retriedTask, long delayTicks) {
         return wrapEntityTask(entity.getScheduler().runDelayed(plugin, runnableToConsumer(task), retriedTask, toSafeTick(delayTicks)));
     }
 
     @Override
-    public BukkitTaskWrapper runOnEntityTimer(Entity entity, Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper runOnEntityTimer(@NotNull Entity entity, @NotNull Runnable task, Runnable retriedTask, long delayTicks, long periodTicks) {
         return trackRepeatingTask(wrapEntityTask(entity.getScheduler().runAtFixedRate(plugin, runnableToConsumer(task), retriedTask, toSafeTick(delayTicks), toSafeTick(periodTicks))));
     }
 
     @Override
-    public BukkitTaskWrapper runOnLocation(Location location, Runnable task) {
+    public BukkitTaskWrapper runOnLocation(@NonNull Location location, @NotNull Runnable task) {
         return new FoliaTaskWrapper(Bukkit.getRegionScheduler().run(plugin, location, runnableToConsumer(task)));
     }
 
     @Override
-    public BukkitTaskWrapper runOnLocationLater(Location location, Runnable task, long delayTicks) {
+    public BukkitTaskWrapper runOnLocationLater(@NonNull Location location, @NonNull Runnable task, long delayTicks) {
         return new FoliaTaskWrapper(Bukkit.getRegionScheduler().runDelayed(plugin, location, runnableToConsumer(task), toSafeTick(delayTicks)));
     }
 
     @Override
-    public BukkitTaskWrapper runOnLocationTimer(Location location, Runnable task, long delayTicks, long periodTicks) {
+    public BukkitTaskWrapper runOnLocationTimer(@NonNull Location location, @NotNull Runnable task, long delayTicks, long periodTicks) {
         return trackRepeatingTask(new FoliaTaskWrapper(Bukkit.getRegionScheduler().runAtFixedRate(plugin, location, runnableToConsumer(task), toSafeTick(delayTicks), toSafeTick(periodTicks))));
     }
 
