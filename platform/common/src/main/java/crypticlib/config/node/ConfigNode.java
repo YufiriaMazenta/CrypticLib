@@ -57,7 +57,7 @@ public abstract class ConfigNode<T, C> {
 
     public void setValue(@NotNull T value) {
         this.value = value;
-        configContainer.configWrapper().set(key, value);
+        writeValue(value);
     }
 
     @NotNull
@@ -118,9 +118,24 @@ public abstract class ConfigNode<T, C> {
     }
 
     /**
+     * 读取注释，Bungee 子类返回空列表
+     */
+    protected List<String> readComments() {
+        return configContainer.configWrapper().getComments(key);
+    }
+
+    /**
      * 读取配置值，类型不匹配返回 null
      */
     protected abstract T readValue(@NotNull C config);
+
+    /**
+     * 将值写入config类中，对于一些组合类型的数据，需要重写这个方法以正确存入配置文件
+     * @param value 要写入的值
+     */
+    protected void writeValue(T value) {
+        configContainer.configWrapper().set(key, value);
+    }
 
     /**
      * 判断 key 是否存在于配置中
@@ -132,13 +147,6 @@ public abstract class ConfigNode<T, C> {
      */
     protected void warnTypeMismatch(String key) {
         // 默认空实现，由平台子类重写
-    }
-
-    /**
-     * 读取注释，Bungee 子类返回空列表
-     */
-    protected List<String> readComments() {
-        return configContainer.configWrapper().getComments(key);
     }
 
     public abstract void saveDef(@NotNull C config);
