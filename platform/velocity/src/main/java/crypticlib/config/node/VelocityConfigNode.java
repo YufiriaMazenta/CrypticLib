@@ -49,7 +49,7 @@ public abstract class VelocityConfigNode<T> extends ConfigNode<T, CommentedConfi
     }
 
     @Override
-    protected boolean hasKey(@NotNull CommentedConfig config) {
+    protected final boolean hasKey(@NotNull CommentedConfig config) {
         return config.contains(key);
     }
 

@@ -54,7 +54,7 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
     }
 
     @Override
-    protected boolean hasKey(@NotNull ConfigurationSection config) {
+    protected final boolean hasKey(@NotNull ConfigurationSection config) {
         return config.contains(key);
     }
 

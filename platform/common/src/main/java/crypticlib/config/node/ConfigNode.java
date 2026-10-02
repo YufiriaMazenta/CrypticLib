@@ -51,53 +51,53 @@ public abstract class ConfigNode<T, C> {
     }
 
     @NotNull
-    public T value() {
+    public final T value() {
         return value;
     }
 
-    public void setValue(@NotNull T value) {
+    public final void setValue(@NotNull T value) {
         this.value = value;
         writeValue(value);
     }
 
     @NotNull
-    public T def() {
+    public final T def() {
         return def;
     }
 
-    public List<String> defComments() {
+    public final List<String> defComments() {
         return defComments;
     }
 
     @NotNull
-    public String key() {
+    public final String key() {
         return key;
     }
 
-    public ConfigContainer<?, ?> configContainer() {
+    public final ConfigContainer<?, ?> configContainer() {
         return configContainer;
     }
 
-    public ConfigNode<T, C> setConfigContainer(ConfigContainer<?, ?> configContainer) {
+    public final ConfigNode<T, C> setConfigContainer(ConfigContainer<?, ?> configContainer) {
         this.configContainer = configContainer;
         return this;
     }
 
-    public void saveConfig() {
+    public final @Nullable List<String> comments() {
+        return comments;
+    }
+
+    public final void saveConfig() {
         configContainer.configWrapper().saveConfig();
     }
 
-    public void setComments(@Nullable List<String> comments) {
+    public final void setComments(@Nullable List<String> comments) {
         this.comments = comments;
         configContainer.configWrapper().setComments(key, comments);
     }
 
-    public void setComment(@Nullable String comment) {
+    public final void setComment(@Nullable String comment) {
         setComments(Collections.singletonList(comment));
-    }
-
-    public @Nullable List<String> comments() {
-        return comments;
     }
 
     /**

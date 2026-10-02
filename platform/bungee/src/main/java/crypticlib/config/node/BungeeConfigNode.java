@@ -27,7 +27,7 @@ public abstract class BungeeConfigNode<T> extends ConfigNode<T, Configuration> {
     }
 
     @Override
-    protected boolean hasKey(@NotNull Configuration config) {
+    protected final boolean hasKey(@NotNull Configuration config) {
         return config.contains(key);
     }
 
