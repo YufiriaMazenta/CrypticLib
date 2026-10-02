@@ -25,12 +25,12 @@ public final class BungeeCommand extends Command implements TabExecutor {
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        commandTree.onCommand(commandSender2Invoker(sender), Arrays.asList(args));
+        commandTree.onCommand(new CommandContext(commandSender2Invoker(sender), Arrays.asList(args)));
     }
 
     @Override
     public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
-        return commandTree.onTabComplete(commandSender2Invoker(sender), Arrays.asList(args));
+        return commandTree.onTabComplete(new CommandContext(commandSender2Invoker(sender), Arrays.asList(args)));
     }
 
     private Invoker commandSender2Invoker(CommandSender sender) {

@@ -24,12 +24,12 @@ public final class BukkitCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        return commandTree.onTabComplete(commandSender2Invoker(sender), Arrays.asList(args));
+        return commandTree.onTabComplete(new CommandContext(commandSender2Invoker(sender), Arrays.asList(args)));
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        commandTree.onCommand(commandSender2Invoker(sender), Arrays.asList(args));
+        commandTree.onCommand(new CommandContext(commandSender2Invoker(sender), Arrays.asList(args)));
         return true;
     }
 

@@ -25,13 +25,13 @@ public final class VelocityCommand implements SimpleCommand {
     @Override
     public void execute(Invocation invocation) {
         List<String> arguments = Arrays.asList(invocation.arguments());
-        commandTree.onCommand(commandSource2Invoker(invocation.source()), arguments);
+        commandTree.onCommand(new CommandContext(commandSource2Invoker(invocation.source()), arguments));
     }
 
     @Override
     public List<String> suggest(Invocation invocation) {
         List<String> arguments = Arrays.asList(invocation.arguments());
-        return commandTree.onTabComplete(commandSource2Invoker(invocation.source()), arguments);
+        return commandTree.onTabComplete(new CommandContext(commandSource2Invoker(invocation.source()), arguments));
     }
 
     @Override

@@ -41,11 +41,10 @@ public class CommandNode {
     /**
      * 命令默认执行的方法，当未输入参数或者没有子命令时执行
      *
-     * @param invoker 执行者
-     * @param args   参数
+     * @param context 命令执行上下文
      */
-    public void execute(@NotNull Invoker invoker, @NotNull List<String> args) {
-        sendDescriptions(invoker);
+    public void execute(@NotNull CommandContext context) {
+        sendDescriptions(context.invoker());
     }
 
     /**
@@ -57,16 +56,17 @@ public class CommandNode {
      * 无权限反馈也不一致(Bukkit 红字提示 / Bungee 代理提示 / Velocity 视为未知命令)。
      * 若需自定义无权限反馈，请在子命令层覆写此方法。
      *
-     * @param invoker 命令执行者
-     * @param args 参数
+     * @param context 命令执行上下文
      */
-    public void onNoPerm(@NotNull Invoker invoker, @NotNull List<String> args) {}
+    public void onNoPerm(@NotNull CommandContext context) {}
 
     /**
      * 当命令补全时执行的方法，最终的补全内容会与命令的子命令叠加
+     *
+     * @param context 命令执行上下文
      * @return 此命令的补全参数内容
      */
-    public @Nullable List<String> tabComplete(@NotNull Invoker invoker, @NotNull List<String> args) {
+    public @Nullable List<String> tabComplete(@NotNull CommandContext context) {
         return null;
     }
 
@@ -171,36 +171,36 @@ public class CommandNode {
     /**
      * 执行此命令
      *
-     * @param invoker 发送此命令的人
-     * @param args   发送时的参数
+     * @param context 命令执行上下文
      */
-    public final void onCommand(Invoker invoker, List<String> args) {
+    public final void onCommand(@NotNull CommandContext context) {
+        List<String> args = context.args();
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || nodes.isEmpty() || !nodes.containsKey(args.get(0))) {
-            if (hasPermission(invoker)) {
-                execute(invoker, args);
+            if (hasPermission(context.invoker())) {
+                execute(context);
             } else {
-                onNoPerm(invoker, args);
+                onNoPerm(context);
             }
             return;
         }
-        //执行对应的子命令
+        //执行对应的子命令，派生下级上下文(消耗一个子命令名并将当前节点记入执行路径)
         CommandNode commandHandler = nodes.get(args.get(0));
         if (commandHandler != null) {
-            commandHandler.onCommand(invoker, args.subList(1, args.size()));
+            commandHandler.onCommand(context.next(this));
         }
     }
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
      *
-     * @param invoker 按下TAB的玩家或者控制台
-     * @param args   参数列表
+     * @param context 命令执行上下文
      * @return 返回的tab列表内容
      */
-    public final List<String> onTabComplete(Invoker invoker, List<String> args) {
+    public final List<String> onTabComplete(@NotNull CommandContext context) {
+        List<String> args = context.args();
         List<String> arguments;
-        List<String> tab = tabComplete(invoker, args);
+        List<String> tab = tabComplete(context);
         if (tab == null) {
             arguments = new ArrayList<>();
         } else {
@@ -212,8 +212,8 @@ public class CommandNode {
             if (args.size() > 1) {
                 CommandNode commandHandler = nodes.get(args.get(0));
                 if (commandHandler != null) {
-                    if (commandHandler.hasPermission(invoker)) {
-                        return commandHandler.onTabComplete(invoker, args.subList(1, args.size()));
+                    if (commandHandler.hasPermission(context.invoker())) {
+                        return commandHandler.onTabComplete(context.next(this));
                     } else {
                         return Collections.singletonList("");
                     }
@@ -223,7 +223,7 @@ public class CommandNode {
             } else {
                 for (String arg : nodes.keySet()) {
                     CommandNode commandHandler = nodes.get(arg);
-                    if (commandHandler.hasPermission(invoker)) {
+                    if (commandHandler.hasPermission(context.invoker())) {
                         arguments.add(arg);
                     }
                 }
