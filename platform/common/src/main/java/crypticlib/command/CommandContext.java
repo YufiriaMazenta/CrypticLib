@@ -4,10 +4,8 @@ import crypticlib.Invoker;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 命令执行上下文
@@ -15,12 +13,13 @@ import java.util.Objects;
  */
 public class CommandContext {
 
-    private final @NotNull Invoker invoker;
-    private final @NotNull List<String> args;
+    protected final @NotNull Invoker invoker;
+    protected final @NotNull List<String> args;
     /**
      * 执行路径上从根节点到当前节点之前的全部节点，首位为根节点，不含当前节点
      */
-    private final @NotNull List<CommandNode> previousNodes;
+    protected final @NotNull List<CommandNode> previousNodes;
+    protected final Map<String, CommandContextVariable<?>> contextVariables;
 
     /**
      * 创建一个根命令上下文，执行路径为空
@@ -29,7 +28,7 @@ public class CommandContext {
      * @param args    参数
      */
     public CommandContext(@NotNull Invoker invoker, @NotNull List<String> args) {
-        this(invoker, args, new ArrayList<>());
+        this(invoker, args, new ArrayList<>(), new HashMap<>());
     }
 
     /**
@@ -39,12 +38,15 @@ public class CommandContext {
      * @param args          当前节点的剩余参数
      * @param previousNodes 执行路径上从根节点到当前节点之前的全部节点
      */
-    public CommandContext(@NotNull Invoker invoker, @NotNull List<String> args, @NotNull List<CommandNode> previousNodes) {
+    public CommandContext(@NotNull Invoker invoker, @NotNull List<String> args, @NotNull List<CommandNode> previousNodes, Map<String, CommandContextVariable<?>> contextVariables) {
         this.invoker = Objects.requireNonNull(invoker);
         //构造时一次性包装为不可变视图并缓存，访问器直接返回字段，避免每次调用重复包装产生开销
         this.args = Collections.unmodifiableList(new ArrayList<>(args));
         this.previousNodes = Collections.unmodifiableList(new ArrayList<>(previousNodes));
+        this.contextVariables = new ConcurrentHashMap<>(contextVariables);
     }
+
+
 
     /**
      * 获取此上下文的执行者
@@ -94,7 +96,24 @@ public class CommandContext {
     public @NotNull CommandContext next(@NotNull CommandNode currentNode) {
         List<CommandNode> path = new ArrayList<>(previousNodes);
         path.add(currentNode);
-        return new CommandContext(invoker, args.subList(1, args.size()), path);
+        return new CommandContext(invoker, args.subList(1, args.size()), path, contextVariables);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> void putVariable(String key, T newValue) {
+        contextVariables.put(key, new CommandContextVariable<>((Class<T>) newValue.getClass(), newValue));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> Optional<CommandContextVariable<T>> getVariable(String key, Class<T> typeClass) {
+        if (!contextVariables.containsKey(key)) {
+            return Optional.empty();
+        }
+        CommandContextVariable<?> variable = contextVariables.get(key);
+        if (!variable.type().equals(typeClass)) {
+            return Optional.empty();
+        }
+        return Optional.of((CommandContextVariable<T>) variable);
     }
 
 }
