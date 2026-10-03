@@ -4,6 +4,7 @@ import crypticlib.Invoker;
 import crypticlib.command.annotation.Subcommand;
 import crypticlib.perm.PermInfo;
 import crypticlib.util.ReflectionHelper;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -170,10 +171,12 @@ public class CommandNode {
 
     /**
      * 执行此命令
+     * 一般情况下不需要重写该方法，重写{@link this#execute(CommandContext)}方法即可，除非你确定需要重写该方法来实现你的需求
      *
      * @param context 命令执行上下文
      */
-    public final void onCommand(@NotNull CommandContext context) {
+    @ApiStatus.Internal
+    public void onCommand(@NotNull CommandContext context) {
         List<String> args = context.args();
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || nodes.isEmpty() || !nodes.containsKey(args.get(0))) {
@@ -193,11 +196,13 @@ public class CommandNode {
 
     /**
      * 提供当玩家或控制台按下TAB时返回的内容
+     * 一般情况下不需要重写该方法，重写{@link this#tabComplete(CommandContext)}方法即可，除非你确定需要重写该方法来实现你的需求
      *
      * @param context 命令执行上下文
      * @return 返回的tab列表内容
      */
-    public final List<String> onTabComplete(@NotNull CommandContext context) {
+    @ApiStatus.Internal
+    public List<String> onTabComplete(@NotNull CommandContext context) {
         List<String> args = context.args();
         List<String> arguments;
         List<String> tab = tabComplete(context);
