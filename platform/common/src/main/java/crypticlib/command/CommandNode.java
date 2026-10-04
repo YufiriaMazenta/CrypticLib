@@ -177,14 +177,15 @@ public class CommandNode {
      */
     @ApiStatus.Internal
     public void onCommand(@NotNull CommandContext context) {
+        if (!hasPermission(context.invoker())) {
+            //将权限判断前置，避免绕过节点直接进入子节点
+            onNoPerm(context);
+            return;
+        }
         List<String> args = context.args();
         //当不存在参数或者参数无法找到对应子命令时，执行自身的执行器
         if (args.isEmpty() || nodes.isEmpty() || !nodes.containsKey(args.get(0))) {
-            if (hasPermission(context.invoker())) {
-                execute(context);
-            } else {
-                onNoPerm(context);
-            }
+            execute(context);
             return;
         }
         //执行对应的子命令，派生下级上下文(消耗一个子命令名并将当前节点记入执行路径)
@@ -203,42 +204,38 @@ public class CommandNode {
      */
     @ApiStatus.Internal
     public List<String> onTabComplete(@NotNull CommandContext context) {
-        List<String> args = context.args();
-        List<String> arguments;
-        List<String> tab = tabComplete(context);
-        if (tab == null) {
-            arguments = new ArrayList<>();
+        if (!hasPermission(context.invoker())) {
+            return Collections.singletonList("");
+        }
+        List<String> commandArgs = context.args();
+        List<String> suggestions;
+        List<String> selfTab = tabComplete(context);
+        if (selfTab == null || selfTab.isEmpty()) {
+            suggestions = new ArrayList<>();
         } else {
-            arguments = new ArrayList<>(tab);
+            suggestions = new ArrayList<>(selfTab);
         }
 
         //尝试获取子命令的补全内容
         if (!nodes.isEmpty()) {
-            if (args.size() > 1) {
-                CommandNode commandHandler = nodes.get(args.get(0));
+            if (commandArgs.size() > 1) {
+                CommandNode commandHandler = nodes.get(commandArgs.get(0));
                 if (commandHandler != null) {
-                    if (commandHandler.hasPermission(context.invoker())) {
-                        return commandHandler.onTabComplete(context.next(this));
-                    } else {
-                        return Collections.singletonList("");
-                    }
+                    return commandHandler.onTabComplete(context.next(this));
                 }
-                //首参不匹配任何子命令时,回退到自定义tabComplete的结果,
-                //与onCommand对自由参数的处理保持一致
             } else {
-                for (String arg : nodes.keySet()) {
-                    CommandNode commandHandler = nodes.get(arg);
-                    if (commandHandler.hasPermission(context.invoker())) {
-                        arguments.add(arg);
+                for (Map.Entry<String, CommandNode> nodeEntry : nodes.entrySet()) {
+                    if (nodeEntry.getValue().hasPermission(context.invoker())) {
+                        suggestions.add(nodeEntry.getKey());
                     }
                 }
             }
         }
-        if (!args.isEmpty())
-            arguments.removeIf(str -> !str.contains(args.get(args.size() - 1)));
-        if (arguments.isEmpty())
+        if (!commandArgs.isEmpty())
+            suggestions.removeIf(str -> !str.contains(commandArgs.get(commandArgs.size() - 1)));
+        if (suggestions.isEmpty())
             return Collections.singletonList("");
-        return arguments;
+        return suggestions;
     }
 
     public final void registerPerms() {

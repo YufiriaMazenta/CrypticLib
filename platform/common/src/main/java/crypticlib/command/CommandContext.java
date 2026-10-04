@@ -110,7 +110,8 @@ public class CommandContext {
             return Optional.empty();
         }
         CommandContextVariable<?> variable = contextVariables.get(key);
-        if (!variable.type().equals(typeClass)) {
+        //按可赋值匹配，允许以接口或父类型读取（如以List.class读取ArrayList值）
+        if (!typeClass.isInstance(variable.value())) {
             return Optional.empty();
         }
         return Optional.of((CommandContextVariable<T>) variable);
