@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * 基于 {@link MsgSender} 的 {@link Logger} 默认实现。
  * <p>
- * 复用现有的着色输出通道：由本类拼接级别彩色标签，{@link MsgSender#info} 再拼接 [pluginName] 前缀，
+ * 复用现有的着色输出通道：由本类拼接级别彩色标签，{@link MsgSender#log} 再拼接 [pluginName] 前缀，
  * 最终经各平台的 Invoker 写入控制台，输出形如 {@code [pluginName] [WARN] 消息}。
  */
 public class MsgSenderLogger implements Logger {
@@ -41,7 +41,7 @@ public class MsgSenderLogger implements Logger {
         if (!isEnabled(level)) {
             return;
         }
-        msgSender.info(level.tag() + msg, replacements);
+        msgSender.log(level, msg, replacements);
     }
 
 }

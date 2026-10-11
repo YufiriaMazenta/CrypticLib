@@ -5,6 +5,7 @@ import crypticlib.BukkitInvoker;
 import crypticlib.BukkitPlayer;
 import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
+import crypticlib.log.LogLevel;
 import crypticlib.util.StringHelper;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -52,7 +53,7 @@ public enum BukkitMsgSender implements MsgSender, ComponentSender<BaseComponent>
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendMsg(BukkitPlayer.byPlayer(player), msg);
         }
-        info(msg);
+        log(LogLevel.INFO, msg);
     }
 
     @Override
@@ -82,8 +83,8 @@ public enum BukkitMsgSender implements MsgSender, ComponentSender<BaseComponent>
     }
 
     @Override
-    public void info(String msg, Map<String, String> replaceMap) {
-        msg = "&7[" + CrypticLib.plugin().pluginName() + "] " + msg;
+    public void log(LogLevel logLevel, String msg, Map<String, String> replaceMap) {
+        msg = logLevel.prefix() + "[" + CrypticLib.plugin().pluginName() + " | " + logLevel.name() + "] " + msg;
         sendMsg(BukkitInvoker.byCommandSender(Bukkit.getConsoleSender()), msg, replaceMap);
     }
 

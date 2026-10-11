@@ -7,6 +7,7 @@ import crypticlib.lifecycle.LifecycleTaskConfig;
 import crypticlib.lifecycle.LifecyclePhase;
 import crypticlib.lifecycle.LifecycleTask;
 import crypticlib.lifecycle.LifecycleSchedule;
+import crypticlib.log.LogLevel;
 import crypticlib.util.StringHelper;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
@@ -81,7 +82,7 @@ public enum VelocityMsgSender implements MsgSender, ComponentSender<Component>, 
         for (Player player : plugin().proxyServer().getAllPlayers()) {
             sendMsg(VelocityPlayer.byPlayer(player), msg);
         }
-        info(msg);
+        log(LogLevel.INFO, msg);
     }
 
     @Override
@@ -111,7 +112,7 @@ public enum VelocityMsgSender implements MsgSender, ComponentSender<Component>, 
     }
 
     @Override
-    public void info(String msg, Map<String, String> replaceMap) {
+    public void log(LogLevel logLevel, String msg, Map<String, String> replaceMap) {
         msg = "&7[" + CrypticLib.plugin().pluginName() + "] " + msg;
         sendMsg(VelocityInvoker.byCommandSource(plugin().proxyServer().getConsoleCommandSource()), msg, replaceMap);
     }

@@ -2,6 +2,7 @@ package crypticlib.chat;
 
 import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
+import crypticlib.log.LogLevel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -139,18 +140,20 @@ public interface MsgSender {
     /**
      * 给控制台发送一条文本，此文本会处理颜色代码
      *
+     * @param logLevel 日志的级别
      * @param msg 发送的文本
      */
-    default void info(String msg) {
-        info(msg, new HashMap<>());
+    default void log(LogLevel logLevel, String msg) {
+        log(logLevel, msg, new HashMap<>());
     }
 
     /**
      * 给控制台发送一条文本，此文本会处理颜色代码，并根据replaceMap的内容替换源文本
      *
+     * @param logLevel   日志的级别
      * @param msg        发送的文本
      * @param replaceMap 需要替换的文本
      */
-    void info(String msg, Map<String, String> replaceMap);
+    void log(LogLevel logLevel, String msg, Map<String, String> replaceMap);
 
 }

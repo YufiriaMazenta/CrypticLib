@@ -12,34 +12,34 @@ public enum LogLevel {
     /**
      * 调试日志，默认不输出
      */
-    DEBUG(0, "&7[DEBUG] "),
+    DEBUG(0, "&7"),
     /**
      * 详细日志(简单日志的详细版本)，默认不输出
      */
-    VERBOSE(1, "&r[VERBOSE] "),
+    VERBOSE(1, "&7"),
     /**
      * 简单日志，等价于旧的 {@code CrypticLib.info}，不额外添加级别标签
      */
-    INFO(2, "&r[INFO] "),
+    INFO(2, "&7"),
     /**
      * 警告日志
      */
-    WARN(3, "&e[WARN] "),
+    WARN(3, "&e"),
     /**
      * 错误日志
      */
-    ERROR(4, "&c[ERROR] "),
+    ERROR(4, "&c"),
     /**
      * 关闭全部日志输出，仅作为阈值使用
      */
     OFF(5, "");
 
     private final int severity;
-    private final String tag;
+    private final String prefix;
 
-    LogLevel(int severity, String tag) {
+    LogLevel(int severity, String prefix) {
         this.severity = severity;
-        this.tag = tag;
+        this.prefix = prefix;
     }
 
     /**
@@ -49,11 +49,8 @@ public enum LogLevel {
         return severity;
     }
 
-    /**
-     * @return 该级别在控制台输出时使用的彩色标签(含颜色代码)；INFO 与 OFF 为空串
-     */
-    public String tag() {
-        return tag;
+    public String prefix() {
+        return prefix;
     }
 
     /**
