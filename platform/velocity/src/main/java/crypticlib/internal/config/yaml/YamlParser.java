@@ -1,5 +1,6 @@
 package crypticlib.internal.config.yaml;
 
+import crypticlib.CrypticLib;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.ConfigFormat;
@@ -87,7 +88,7 @@ public final class YamlParser implements ConfigParser<CommentedConfig> {
                 contentBuilder.append(line).append("\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            CrypticLib.error("Failed to read YAML content", e);
         }
 
         return contentBuilder.toString();

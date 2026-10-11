@@ -1,8 +1,8 @@
 package crypticlib.config;
 
+import crypticlib.CrypticLib;
 import crypticlib.config.node.BukkitConfigNode;
 import crypticlib.util.ReflectionHelper;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,8 +34,8 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper, 
             try {
                 configNode.load(configWrapper.config());
             } catch (Throwable t) {
-                Bukkit.getLogger().warning("Failed to load config value at '" + configNode.key() + "' in "
-                    + configWrapper.configFile().getName() + ": " + t.getMessage());
+                CrypticLib.warn("Failed to load config value at '" + configNode.key() + "' in "
+                    + configWrapper.configFile().getName() + ": " + t.getMessage(), t);
             }
         }
         if (changed) {

@@ -1,5 +1,6 @@
 package crypticlib.lifecycle;
 
+import crypticlib.CrypticLib;
 import crypticlib.CrypticLibPlugin;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class LifecycleTaskExecutor {
                 return;
             }
             if (CrypticLibPlugin.isExceptionMatched(printExceptions, throwable)) {
-                throwable.printStackTrace();
+                CrypticLib.error("Lifecycle task failed at phase " + phase + ": " + lifecycleTask.getClass().getName(), throwable);
                 return;
             }
             throw new RuntimeException(throwable);

@@ -203,7 +203,7 @@ public class DependencyDownloader extends AbstractXmlParser {
                 downloaded.addAll(loadDependency(repos, dep));
             } catch (IOException e) {
                 // 传递依赖下载失败时跳过，不影响主依赖加载
-                CrypticLib.info("Warning: Failed to download transitive dependency " + dep);
+                CrypticLib.warn("Failed to download transitive dependency " + dep, e);
             }
         }
         return downloaded;

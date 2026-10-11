@@ -120,7 +120,7 @@ public class IOHelper {
             Files.createFile(file.toPath());
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            CrypticLib.error("Failed to create file: " + file, e);
             return false;
         }
     }
@@ -199,7 +199,7 @@ public class IOHelper {
         try {
             return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            CrypticLib.error("Failed to read file: " + file, e);
         }
         return "";
     }

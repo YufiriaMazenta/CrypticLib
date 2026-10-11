@@ -1,5 +1,6 @@
 package crypticlib.config.node;
 
+import crypticlib.CrypticLib;
 import crypticlib.config.ConfigContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -143,10 +144,13 @@ public abstract class ConfigNode<T, C> {
     protected abstract boolean hasKey(@NotNull C config);
 
     /**
-     * 类型不匹配警告，子类可重写以使用自己的 Logger
+     * 类型不匹配警告，默认通过 CrypticLib 的统一日志入口输出
      */
     protected void warnTypeMismatch(String key) {
-        // 默认空实现，由平台子类重写
+        CrypticLib.warn("Config value at '" + key + "' in "
+            + configContainer.configWrapper().configFile().getName()
+            + " has wrong type, falling back to default " + def
+            + " (the original file value is kept).");
     }
 
     public abstract void saveDef(@NotNull C config);

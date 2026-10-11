@@ -1,5 +1,6 @@
 package crypticlib.config;
 
+import crypticlib.CrypticLib;
 import crypticlib.util.IOHelper;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
@@ -67,7 +68,7 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
                 //文件不存在时保持空配置
                 newConfig = new Configuration();
             } catch (IOException e) {
-                e.printStackTrace();
+                CrypticLib.error("Failed to read config file: " + configFile, e);
                 return;
             } catch (RuntimeException e) {
                 //解析失败: 把原文件移走另存为.broken, 中止本次重载,
@@ -92,7 +93,7 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
                     ConfigurationProvider.getProvider(JsonConfiguration.class).save(config(), configFile);
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                CrypticLib.error("Failed to save config file: " + configFile, ex);
             }
         }
     }

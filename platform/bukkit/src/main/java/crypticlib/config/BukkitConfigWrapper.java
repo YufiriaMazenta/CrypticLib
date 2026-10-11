@@ -1,5 +1,6 @@
 package crypticlib.config;
 
+import crypticlib.CrypticLib;
 import crypticlib.MinecraftVersion;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -73,7 +74,7 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
             } catch (FileNotFoundException e) {
                 //文件不存在时保持空配置
             } catch (IOException e) {
-                e.printStackTrace();
+                CrypticLib.error("Failed to read config file: " + configFile, e);
             }
             config = newConfig;
         }
@@ -85,7 +86,7 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
             try {
                 config().save(configFile);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                CrypticLib.error("Failed to save config file: " + configFile, ex);
             }
         }
     }

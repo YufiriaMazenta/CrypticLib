@@ -1,6 +1,5 @@
 package crypticlib.config.node;
 
-import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,14 +28,6 @@ public abstract class BungeeConfigNode<T> extends ConfigNode<T, Configuration> {
     @Override
     protected final boolean hasKey(@NotNull Configuration config) {
         return config.contains(key);
-    }
-
-    @Override
-    protected void warnTypeMismatch(String key) {
-        ProxyServer.getInstance().getLogger().warning("Config value at '" + key + "' in "
-            + configContainer.configWrapper().configFile().getName()
-            + " has wrong type, falling back to default " + def
-            + " (the original file value is kept).");
     }
 
     @Override

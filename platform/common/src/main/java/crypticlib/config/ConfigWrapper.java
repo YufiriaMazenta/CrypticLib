@@ -109,9 +109,7 @@ public abstract class ConfigWrapper<C> {
                     }
                     Files.write(configFile.toPath(), IOHelper.readBytes(input));
                 } catch (IOException e) {
-                    if (CrypticLib.debug) {
-                        e.printStackTrace();
-                    }
+                    CrypticLib.debug("Failed to write default config file: " + configFile, e);
                 }
             }
         }
@@ -139,7 +137,7 @@ public abstract class ConfigWrapper<C> {
             try {
                 Files.move(configFile.toPath(), brokenConfigFile().toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                CrypticLib.error("Failed to back up broken config file: " + configFile, ex);
             }
         }
     }
@@ -183,7 +181,7 @@ public abstract class ConfigWrapper<C> {
                 Files.delete(this.configFile.toPath());
                 return true;
             } catch (IOException e) {
-                e.printStackTrace();
+                CrypticLib.error("Failed to delete config file: " + configFile, e);
                 return false;
             }
         }

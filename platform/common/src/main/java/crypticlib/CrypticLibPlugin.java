@@ -89,7 +89,7 @@ public interface CrypticLibPlugin {
                     }
                     List<Class<? extends Throwable>> printExceptions = Arrays.asList(annotation.printExceptions());
                     if (isExceptionMatched(printExceptions, throwable)) {
-                        throwable.printStackTrace();
+                        CrypticLib.error("Failed to resolve lifecycle task: " + taskClass.getName(), throwable);
                         return;
                     }
                     throw new RuntimeException(throwable);

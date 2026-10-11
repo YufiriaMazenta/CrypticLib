@@ -75,10 +75,10 @@ public enum PluginScanner {
                 }
             } catch (LinkageError | ClassNotFoundException e) {
                 //单个类无法加载(缺依赖、class 版本过高等)不应中断整个扫描，仅跳过该类
-                CrypticLib.debug("Failed to load class: " + className + ", " + e);
+                CrypticLib.debug("Failed to load class: " + className, e);
             } catch (Throwable throwable) {
                 //其余非 IO 级异常同样只跳过该类，保证扫描继续
-                CrypticLib.debug("Failed to process class: " + className + ", " + throwable);
+                CrypticLib.debug("Failed to process class: " + className, throwable);
             }
         }
     }

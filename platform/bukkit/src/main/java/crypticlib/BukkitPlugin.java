@@ -78,10 +78,10 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     EventListener annotation = listenerClass.getAnnotation(EventListener.class);
                     if (!annotation.ignoreClassNotFound()) {
-                        e.printStackTrace();
+                        CrypticLib.error("Failed to register listener: " + listenerClass.getName(), e);
                     }
                 } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                    CrypticLib.error("Failed to register listener: " + listenerClass.getName(), throwable);
                 }
             }
         );
@@ -100,10 +100,10 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
                     CrypticLib.debug("Registered command `" + commandTree.commandInfo().name() + "`, handler class: " + commandTree.getClass().getName());
                 } catch (ClassNotFoundException | NoClassDefFoundError e) {
                     if (!annotation.ignoreClassNotFound()) {
-                        e.printStackTrace();
+                        CrypticLib.error("Failed to register command: " + commandClass.getName(), e);
                     }
                 } catch (Throwable throwable) {
-                    throwable.printStackTrace();
+                    CrypticLib.error("Failed to register command: " + commandClass.getName(), throwable);
                 }
             }
         );

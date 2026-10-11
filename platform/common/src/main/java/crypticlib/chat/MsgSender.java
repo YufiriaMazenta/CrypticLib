@@ -1,6 +1,5 @@
 package crypticlib.chat;
 
-import crypticlib.CrypticLib;
 import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -136,27 +135,6 @@ public interface MsgSender {
     }
 
     void broadcastTitle(String title, String subtitle, Map<String, String> replaceMap);
-
-    /**
-     * 向后台发送一条DEBUG文本
-     *
-     * @param msg 发送的文本
-     */
-    default void debug(String msg) {
-        debug(msg, new HashMap<>());
-    }
-
-    /**
-     * 向后台发送一条DEBUG文本
-     *
-     * @param msg        发送的文本
-     * @param replaceMap 需要替换的文本
-     */
-    default void debug(String msg, Map<String, String> replaceMap) {
-        if (CrypticLib.debug) {
-            info("[DEBUG] | " + msg, replaceMap);
-        }
-    }
 
     /**
      * 给控制台发送一条文本，此文本会处理颜色代码
