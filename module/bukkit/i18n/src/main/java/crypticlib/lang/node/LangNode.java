@@ -1,6 +1,6 @@
-package crypticlib.lang.entry;
+package crypticlib.lang.node;
 
-import crypticlib.lang.LangEntryContainer;
+import crypticlib.lang.LangContainer;
 import crypticlib.util.LocaleHelper;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,24 +11,24 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class LangEntry<T> {
+public abstract class LangNode<T> {
 
     protected final Map<String, T> langMap;
     protected final String key;
     protected T defValue;
     protected String defLang = "en_us";
 
-    public LangEntry(@NotNull String key, T defValue) {
+    public LangNode(@NotNull String key, T defValue) {
         this.key = key;
         this.defValue = defValue;
         this.langMap = new ConcurrentHashMap<>();
     }
 
-    public LangEntry<T> setValue(@NotNull Locale locale, @NotNull T value) {
+    public LangNode<T> setValue(@NotNull Locale locale, @NotNull T value) {
         return setValue(LocaleHelper.local2LanguageTag(locale), value);
     }
 
-    public LangEntry<T> setValue(@NotNull String lang, @NotNull T value) {
+    public LangNode<T> setValue(@NotNull String lang, @NotNull T value) {
         langMap.put(lang.toLowerCase(), value);
         return this;
     }
@@ -62,13 +62,13 @@ public abstract class LangEntry<T> {
         return defValue;
     }
 
-    public abstract LangEntry<T> load(LangEntryContainer configContainer);
+    public abstract LangNode<T> load(LangContainer configContainer);
 
     public String defLang() {
         return defLang;
     }
 
-    public LangEntry<T> setDefLang(String defLang) {
+    public LangNode<T> setDefLang(String defLang) {
         this.defLang = defLang;
         return this;
     }

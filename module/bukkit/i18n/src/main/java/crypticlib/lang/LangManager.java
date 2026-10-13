@@ -3,8 +3,8 @@ package crypticlib.lang;
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.internal.PluginScanner;
-import crypticlib.lang.entry.LangEntry;
-import crypticlib.lang.entry.StringLangEntry;
+import crypticlib.lang.node.LangNode;
+import crypticlib.lang.node.StringLang;
 import crypticlib.lifecycle.LifecycleTaskConfig;
 import crypticlib.lifecycle.LifecycleTask;
 import crypticlib.lifecycle.LifecyclePhase;
@@ -32,15 +32,15 @@ import java.util.regex.Pattern;
 public enum LangManager implements LifecycleTask {
 
     INSTANCE;
-    private final Map<String, Map<String, LangEntry<?>>> folderLangEntryMap = new ConcurrentHashMap<>();
-    private final Map<String, LangEntryContainer> langEntryContainerMap = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, LangNode<?>>> folderLangNodeMap = new ConcurrentHashMap<>();
+    private final Map<String, LangContainer> langContainerMap = new ConcurrentHashMap<>();
     private final Pattern langReplacePattern = Pattern.compile("<translate:([^>]+)>");
 
-    public void removeLangEntryContainer(@NotNull String langFileFolder) {
-        LangEntryContainer container = langEntryContainerMap.remove(langFileFolder);
+    public void removeLangContainer(@NotNull String langFileFolder) {
+        LangContainer container = langContainerMap.remove(langFileFolder);
         if (container == null)
             return;
-        folderLangEntryMap.remove(container.langFileFolder());
+        folderLangNodeMap.remove(container.langFileFolder());
     }
 
     /**
@@ -49,15 +49,15 @@ public enum LangManager implements LifecycleTask {
      * @param key 该语言对象的key
      */
     @Nullable
-    public StringLangEntry getStringLangEntry(@NotNull String langFileFolder, @NotNull String key) {
-        Map<String, LangEntry<?>> langEntryMap = folderLangEntryMap.get(langFileFolder);
-        if (langEntryMap == null)
+    public StringLang getStringLang(@NotNull String langFileFolder, @NotNull String key) {
+        Map<String, LangNode<?>> langNodeMap = folderLangNodeMap.get(langFileFolder);
+        if (langNodeMap == null)
             return null;
-        LangEntry<?> langEntry = langEntryMap.get(key);
-        if (!(langEntry instanceof StringLangEntry)) {
+        LangNode<?> langNode = langNodeMap.get(key);
+        if (!(langNode instanceof StringLang)) {
             return null;
         }
-        return (StringLangEntry) langEntry;
+        return (StringLang) langNode;
     }
 
     /**
@@ -66,36 +66,36 @@ public enum LangManager implements LifecycleTask {
      * @param key 该语言对象的key
      */
     @Nullable
-    public StringLangEntry getStringLangEntryOrAdd(@NotNull String langFileFolder, @NotNull String key) {
-        StringLangEntry stringLangEntry = getStringLangEntry(langFileFolder, key);
-        if (stringLangEntry != null) {
-            return stringLangEntry;
+    public StringLang getStringLangOrAdd(@NotNull String langFileFolder, @NotNull String key) {
+        StringLang stringLang = getStringLang(langFileFolder, key);
+        if (stringLang != null) {
+            return stringLang;
         }
-        if (!langEntryContainerMap.containsKey(langFileFolder)) {
+        if (!langContainerMap.containsKey(langFileFolder)) {
             return null;
         }
-        LangEntryContainer langEntryContainer = langEntryContainerMap.get(langFileFolder);
-        stringLangEntry = new StringLangEntry(key);
-        langEntryContainer.addExtraStringLang(stringLangEntry);
-        return stringLangEntry;
+        LangContainer langContainer = langContainerMap.get(langFileFolder);
+        stringLang = new StringLang(key);
+        langContainer.addExtraStringLang(stringLang);
+        return stringLang;
     }
 
-    public void putLangEntry(@NotNull String langFileFolder, @NotNull LangEntry<?> entry) {
-        Map<String, LangEntry<?>> langEntryMap;
-        if (folderLangEntryMap.containsKey(langFileFolder)) {
-            langEntryMap = folderLangEntryMap.get(langFileFolder);
+    public void putLangNode(@NotNull String langFileFolder, @NotNull LangNode<?> entry) {
+        Map<String, LangNode<?>> langNodeMap;
+        if (folderLangNodeMap.containsKey(langFileFolder)) {
+            langNodeMap = folderLangNodeMap.get(langFileFolder);
         } else {
-            langEntryMap = new ConcurrentHashMap<>();
-            folderLangEntryMap.put(langFileFolder, langEntryMap);
+            langNodeMap = new ConcurrentHashMap<>();
+            folderLangNodeMap.put(langFileFolder, langNodeMap);
         }
-        langEntryMap.put(entry.key(), entry);
+        langNodeMap.put(entry.key(), entry);
     }
 
-    public void removeLangEntry(@NotNull String langFileFolder, @NotNull String key) {
-        Map<String, LangEntry<?>> langEntryMap;
-        if (folderLangEntryMap.containsKey(langFileFolder)) {
-            langEntryMap = folderLangEntryMap.get(langFileFolder);
-            langEntryMap.remove(key);
+    public void removeLangNode(@NotNull String langFileFolder, @NotNull String key) {
+        Map<String, LangNode<?>> langNodeMap;
+        if (folderLangNodeMap.containsKey(langFileFolder)) {
+            langNodeMap = folderLangNodeMap.get(langFileFolder);
+            langNodeMap.remove(key);
         }
     }
 
@@ -130,18 +130,18 @@ public enum LangManager implements LifecycleTask {
                 String key = String.join(":", Arrays.copyOfRange(split, 1, split.length));
                 //先只读查找已注册条目; 未命中时, 仅当该key确实存在于语言文件中才注册加载,
                 //既支持用户在语言文件中自定义新key, 又避免为任意未知key(可能来自玩家输入)永久注册条目导致内存无界增长
-                StringLangEntry stringLangEntry = getStringLangEntry(folder, key);
-                if (stringLangEntry == null) {
-                    LangEntryContainer container = langEntryContainerMap.get(folder);
+                StringLang stringLang = getStringLang(folder, key);
+                if (stringLang == null) {
+                    LangContainer container = langContainerMap.get(folder);
                     if (container != null && container.hasLangKey(key)) {
-                        stringLangEntry = getStringLangEntryOrAdd(folder, key);
+                        stringLang = getStringLangOrAdd(folder, key);
                     }
                 }
-                //只有是StringLangEntry时,才能进行替换,如果找到的不是对应类型,直接不进行替换
-                if (stringLangEntry == null) {
+                //只有是StringLang时,才能进行替换,如果找到的不是对应类型,直接不进行替换
+                if (stringLang == null) {
                     result.append(langKey);
                 } else {
-                    String replacement = sender instanceof Player ? stringLangEntry.value((Player) sender) : stringLangEntry.value();
+                    String replacement = sender instanceof Player ? stringLang.value((Player) sender) : stringLang.value();
                     result.append(replacement);
                 }
             }
@@ -165,21 +165,21 @@ public enum LangManager implements LifecycleTask {
                         LangHandler langHandler = langClass.getAnnotation(LangHandler.class);
                         String langFileFolder = langHandler.langFileFolder();
                         String defLang = langHandler.defLang();
-                        LangEntryContainer container = new LangEntryContainer(bukkitPlugin, langClass, langFileFolder, defLang);
-                        langEntryContainerMap.put(langFileFolder, container);
+                        LangContainer container = new LangContainer(bukkitPlugin, langClass, langFileFolder, defLang);
+                        langContainerMap.put(langFileFolder, container);
                         container.reload();
                     }
                 );
                 break;
             case RELOAD:
-                folderLangEntryMap.clear();
-                langEntryContainerMap.forEach(
+                folderLangNodeMap.clear();
+                langContainerMap.forEach(
                     (langFolder, container) -> container.reload()
                 );
                 break;
             case DISABLE:
-                langEntryContainerMap.clear();
-                folderLangEntryMap.clear();
+                langContainerMap.clear();
+                folderLangNodeMap.clear();
                 break;
         }
     }

@@ -1,7 +1,7 @@
-package crypticlib.lang.entry;
+package crypticlib.lang.node;
 
 import crypticlib.BukkitInvoker;
-import crypticlib.lang.LangEntryContainer;
+import crypticlib.lang.LangContainer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -10,18 +10,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class StringListLangEntry extends LangEntry<List<String>> {
+public class StringListLang extends LangNode<List<String>> {
 
-    public StringListLangEntry(@NotNull String key) {
+    public StringListLang(@NotNull String key) {
         this(key, Collections.singletonList(key));
     }
 
-    public StringListLangEntry(@NotNull String key, List<String> def) {
+    public StringListLang(@NotNull String key, List<String> def) {
         super(key, def);
     }
 
     @Override
-    public StringListLangEntry load(LangEntryContainer configContainer) {
+    public StringListLang load(LangContainer configContainer) {
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
             if (configWrapper.contains(key)) {

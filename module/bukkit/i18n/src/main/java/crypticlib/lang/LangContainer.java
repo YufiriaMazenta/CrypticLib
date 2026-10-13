@@ -1,8 +1,8 @@
 package crypticlib.lang;
 
 import crypticlib.config.BukkitConfigWrapper;
-import crypticlib.lang.entry.LangEntry;
-import crypticlib.lang.entry.StringLangEntry;
+import crypticlib.lang.node.LangNode;
+import crypticlib.lang.node.StringLang;
 import crypticlib.util.BukkitConfigHelper;
 import crypticlib.util.IOHelper;
 import crypticlib.util.LocaleHelper;
@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class LangEntryContainer {
+public class LangContainer {
 
     private final Class<?> containerClass;
     private final Map<String, BukkitConfigWrapper> langConfigWrapperMap;
@@ -30,9 +30,9 @@ public class LangEntryContainer {
     /**
      * 额外的字符串类型语言对象
      */
-    private final Map<String, StringLangEntry> extraStringLangEntries = new ConcurrentHashMap<>();
+    private final Map<String, StringLang> extraStringLangs = new ConcurrentHashMap<>();
 
-    public LangEntryContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
+    public LangContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
         this.plugin = plugin;
         this.langConfigWrapperMap = new ConcurrentHashMap<>();
         this.langFileFolder = langFileFolder;
@@ -83,21 +83,21 @@ public class LangEntryContainer {
             } catch (IllegalAccessException e) {
                 continue;
             }
-            if (!(object instanceof LangEntry))
+            if (!(object instanceof LangNode))
                 continue;
-            LangEntry<?> langEntry = (LangEntry<?>) object;
-            if (!langEntry.defLang().equals(defLang)) {
-                langEntry.setDefLang(defLang);
+            LangNode<?> langNode = (LangNode<?>) object;
+            if (!langNode.defLang().equals(defLang)) {
+                langNode.setDefLang(defLang);
             }
-            langEntry.load(this);
-            LangManager.INSTANCE.putLangEntry(langFileFolder, langEntry);
+            langNode.load(this);
+            LangManager.INSTANCE.putLangNode(langFileFolder, langNode);
         }
-        extraStringLangEntries.forEach((lang, entry) -> {
+        extraStringLangs.forEach((lang, entry) -> {
             if (!entry.defLang().equals(defLang)) {
                 entry.setDefLang(defLang);
             }
             entry.load(this);
-            LangManager.INSTANCE.putLangEntry(langFileFolder, entry);
+            LangManager.INSTANCE.putLangNode(langFileFolder, entry);
         });
     }
 
@@ -174,13 +174,13 @@ public class LangEntryContainer {
      * @param entry 要添加的对象
      * @return 原本存在的对象
      */
-    public StringLangEntry addExtraStringLang(StringLangEntry entry) {
+    public StringLang addExtraStringLang(StringLang entry) {
         if (!entry.defLang().equals(defLang)) {
             entry.setDefLang(defLang);
         }
         entry.load(this);
-        LangManager.INSTANCE.putLangEntry(langFileFolder, entry);
-        return extraStringLangEntries.put(entry.key(), entry);
+        LangManager.INSTANCE.putLangNode(langFileFolder, entry);
+        return extraStringLangs.put(entry.key(), entry);
     }
 
     /**
@@ -188,25 +188,25 @@ public class LangEntryContainer {
      * @param key 要移除的额外字符串语言对象的key
      * @return 原本存在的对象
      */
-    public StringLangEntry removeExtraStringLang(String key) {
-        LangManager.INSTANCE.removeLangEntry(langFileFolder, key);
-        return extraStringLangEntries.remove(key);
+    public StringLang removeExtraStringLang(String key) {
+        LangManager.INSTANCE.removeLangNode(langFileFolder, key);
+        return extraStringLangs.remove(key);
     }
 
     /**
      * 获取一个额外的字符串语言对象
      * @param key 额外字符串语言对象的key
      */
-    public StringLangEntry getExtraStringLang(String key) {
-        return extraStringLangEntries.get(key);
+    public StringLang getExtraStringLang(String key) {
+        return extraStringLangs.get(key);
     }
 
     /**
      * 重置额外字符串语言对象
      */
-    public void clearExtraStringLangEntries() {
-        extraStringLangEntries.forEach((key, entry) -> LangManager.INSTANCE.removeLangEntry(langFileFolder, key));
-        extraStringLangEntries.clear();
+    public void clearExtraStringLangs() {
+        extraStringLangs.forEach((key, entry) -> LangManager.INSTANCE.removeLangNode(langFileFolder, key));
+        extraStringLangs.clear();
     }
 
 }
