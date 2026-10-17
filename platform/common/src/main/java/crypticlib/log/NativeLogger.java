@@ -37,7 +37,8 @@ public abstract class NativeLogger implements Logger {
             return;
         }
         msg = StringHelper.replaceStrings(msg, replacements);
-        String text = level.prefix() + "[" + CrypticLib.plugin().pluginName() + "] " + msg;
+        String levelTag = level == LogLevel.DEBUG ? "[" + level.name() + "] " : "";
+        String text = level.prefix() + "[" + CrypticLib.plugin().pluginName() + "] " + levelTag + msg;
         output(level, AnsiColorHelper.translate(text), throwable);
     }
 

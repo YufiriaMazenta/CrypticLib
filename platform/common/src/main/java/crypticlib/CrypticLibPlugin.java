@@ -40,7 +40,7 @@ public interface CrypticLibPlugin {
      *
      * @return 该插件使用的日志器
      */
-    @NotNull
+    @ApiStatus.Internal
     Logger createLogger();
 
     @NotNull
