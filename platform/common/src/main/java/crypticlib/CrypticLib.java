@@ -2,7 +2,7 @@ package crypticlib;
 
 import crypticlib.log.LogLevel;
 import crypticlib.log.Logger;
-import crypticlib.log.MsgSenderLogger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Objects;
@@ -40,11 +40,20 @@ public class CrypticLib {
         }
         Objects.requireNonNull(plugin);
         crypticLibPlugin = plugin;
-        LOGGER = new MsgSenderLogger(plugin.msgSender(), LogLevel.INFO);
+        LOGGER = plugin.createLogger();
     }
 
     public static CrypticLibPlugin plugin() {
         return crypticLibPlugin;
+    }
+
+    /**
+     * 设置全局日志器
+     *
+     * @param logger 新的日志器
+     */
+    public static void setLogger(@NotNull Logger logger) {
+        LOGGER = Objects.requireNonNull(logger);
     }
 
     /**
@@ -74,6 +83,18 @@ public class CrypticLib {
      */
     public static void log(LogLevel level, String msg, Map<String, String> replacements) {
         LOGGER.log(level, msg, replacements);
+    }
+
+    /**
+     * 输出一条指定级别的日志，并根据 replacements 的内容替换源文本，同时附带异常堆栈
+     *
+     * @param level        日志级别
+     * @param msg          发送的文本
+     * @param replacements 需要替换的文本
+     * @param throwable    需要打印堆栈的异常
+     */
+    public static void log(LogLevel level, String msg, Map<String, String> replacements, Throwable throwable) {
+        LOGGER.log(level, msg, replacements, throwable);
     }
 
     /**
@@ -144,6 +165,17 @@ public class CrypticLib {
     }
 
     /**
+     * 向后台发送一条 DEBUG 文本并附带异常堆栈，并根据 replacements 的内容替换源文本
+     *
+     * @param msg          发送的文本
+     * @param replacements 需要替换的文本
+     * @param throwable    需要打印堆栈的异常
+     */
+    public static void debug(String msg, Map<String, String> replacements, Throwable throwable) {
+        LOGGER.debug(msg, replacements, throwable);
+    }
+
+    /**
      * 向后台发送一条 WARN 文本，仅当阈值不高于 {@link LogLevel#WARN} 时输出
      *
      * @param msg 发送的文本
@@ -173,6 +205,17 @@ public class CrypticLib {
     }
 
     /**
+     * 向后台发送一条 WARN 文本并附带异常堆栈，并根据 replacements 的内容替换源文本
+     *
+     * @param msg          发送的文本
+     * @param replacements 需要替换的文本
+     * @param throwable    需要打印堆栈的异常
+     */
+    public static void warn(String msg, Map<String, String> replacements, Throwable throwable) {
+        LOGGER.warn(msg, replacements, throwable);
+    }
+
+    /**
      * 向后台发送一条 ERROR 文本，仅当阈值不高于 {@link LogLevel#ERROR} 时输出
      *
      * @param msg 发送的文本
@@ -199,6 +242,17 @@ public class CrypticLib {
      */
     public static void error(String msg, Throwable throwable) {
         LOGGER.error(msg, throwable);
+    }
+
+    /**
+     * 向后台发送一条 ERROR 文本并附带异常堆栈，并根据 replacements 的内容替换源文本
+     *
+     * @param msg          发送的文本
+     * @param replacements 需要替换的文本
+     * @param throwable    需要打印堆栈的异常
+     */
+    public static void error(String msg, Map<String, String> replacements, Throwable throwable) {
+        LOGGER.error(msg, replacements, throwable);
     }
 
 }

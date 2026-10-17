@@ -12,6 +12,9 @@ import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
+import crypticlib.log.JULLogger;
+import crypticlib.log.LogLevel;
+import crypticlib.log.Logger;
 import crypticlib.perm.BungeePermManager;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.BungeeScheduler;
@@ -229,6 +232,11 @@ public abstract class BungeePlugin extends Plugin implements CrypticLibPlugin {
     @Override
     public @NotNull MsgSender msgSender() {
         return BungeeMsgSender.INSTANCE;
+    }
+
+    @Override
+    public @NotNull Logger createLogger() {
+        return new JULLogger(ProxyServer.getInstance().getLogger(), LogLevel.INFO);
     }
 
     @Override

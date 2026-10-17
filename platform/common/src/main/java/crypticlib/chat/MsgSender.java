@@ -1,5 +1,6 @@
 package crypticlib.chat;
 
+import crypticlib.CrypticLib;
 import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
 import crypticlib.log.LogLevel;
@@ -154,6 +155,8 @@ public interface MsgSender {
      * @param msg        发送的文本
      * @param replaceMap 需要替换的文本
      */
-    void log(LogLevel logLevel, String msg, Map<String, String> replaceMap);
+    default void log(LogLevel logLevel, String msg, Map<String, String> replaceMap) {
+        CrypticLib.logger().log(logLevel, msg, replaceMap);
+    }
 
 }

@@ -8,9 +8,11 @@ import crypticlib.lifecycle.LifecycleTask;
 import crypticlib.lifecycle.LifecycleTaskConfig;
 import crypticlib.lifecycle.LifecycleTaskExecutor;
 import crypticlib.lifecycle.LifecycleSchedule;
+import crypticlib.log.Logger;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
 import crypticlib.util.ReflectionHelper;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -32,6 +34,14 @@ public interface CrypticLibPlugin {
 
     @NotNull
     MsgSender msgSender();
+
+    /**
+     * 创建本插件的日志器
+     *
+     * @return 该插件使用的日志器
+     */
+    @NotNull
+    Logger createLogger();
 
     @NotNull
     PermManager permManager();

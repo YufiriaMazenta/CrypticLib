@@ -1,7 +1,5 @@
 package crypticlib.chat;
 
-import crypticlib.CrypticLib;
-import crypticlib.BukkitInvoker;
 import crypticlib.BukkitPlayer;
 import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
@@ -80,12 +78,6 @@ public enum BukkitMsgSender implements MsgSender, ComponentSender<BaseComponent>
         for (Player player : Bukkit.getOnlinePlayers()) {
             sendTitle(BukkitPlayer.byPlayer(player), title, subtitle);
         }
-    }
-
-    @Override
-    public void log(LogLevel logLevel, String msg, Map<String, String> replaceMap) {
-        msg = logLevel.prefix() + "[" + CrypticLib.plugin().pluginName() + " | " + logLevel.name() + "] " + msg;
-        sendMsg(BukkitInvoker.byCommandSender(Bukkit.getConsoleSender()), msg, replaceMap);
     }
 
 }

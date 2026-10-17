@@ -12,6 +12,9 @@ import crypticlib.config.ConfigHandler;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
+import crypticlib.log.JULLogger;
+import crypticlib.log.LogLevel;
+import crypticlib.log.Logger;
 import crypticlib.perm.BukkitPermManager;
 import crypticlib.perm.PermManager;
 import crypticlib.scheduler.Scheduler;
@@ -235,6 +238,11 @@ public abstract class BukkitPlugin extends JavaPlugin implements CrypticLibPlugi
     @Override
     public @NonNull MsgSender msgSender() {
         return BukkitMsgSender.INSTANCE;
+    }
+
+    @Override
+    public @NotNull Logger createLogger() {
+        return new JULLogger(Bukkit.getLogger(), LogLevel.INFO);
     }
 
     @Override

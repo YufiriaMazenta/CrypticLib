@@ -24,6 +24,8 @@ import crypticlib.config.VelocityConfigWrapper;
 import crypticlib.internal.PluginScanner;
 import crypticlib.lifecycle.*;
 import crypticlib.listener.EventListener;
+import crypticlib.log.LogLevel;
+import crypticlib.log.VelocityNativeLogger;
 import crypticlib.perm.PermDef;
 import crypticlib.perm.PermInfo;
 import crypticlib.perm.PermManager;
@@ -283,6 +285,11 @@ public abstract class VelocityPlugin implements CrypticLibPlugin {
     @Override
     public @NotNull MsgSender msgSender() {
         return VelocityMsgSender.INSTANCE;
+    }
+
+    @Override
+    public crypticlib.log.Logger createLogger() {
+        return new VelocityNativeLogger(logger, LogLevel.INFO);
     }
 
     @Override

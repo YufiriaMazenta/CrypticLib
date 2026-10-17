@@ -112,12 +112,6 @@ public enum VelocityMsgSender implements MsgSender, ComponentSender<Component>, 
     }
 
     @Override
-    public void log(LogLevel logLevel, String msg, Map<String, String> replaceMap) {
-        msg = "&7[" + CrypticLib.plugin().pluginName() + "] " + msg;
-        sendMsg(VelocityInvoker.byCommandSource(plugin().proxyServer().getConsoleCommandSource()), msg, replaceMap);
-    }
-
-    @Override
     public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
         this.plugin = (VelocityPlugin) plugin;
     }

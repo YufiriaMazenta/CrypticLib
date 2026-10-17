@@ -1,7 +1,5 @@
 package crypticlib.chat;
 
-import crypticlib.CrypticLib;
-import crypticlib.BungeeInvoker;
 import crypticlib.BungeePlayer;
 import crypticlib.Invoker;
 import crypticlib.CommonPlayer;
@@ -80,12 +78,6 @@ public enum BungeeMsgSender implements MsgSender, ComponentSender<BaseComponent>
         for (ProxiedPlayer player : ProxyServer.getInstance().getPlayers()) {
             sendTitle(BungeePlayer.byProxiedPlayer(player), title, subtitle);
         }
-    }
-
-    @Override
-    public void log(LogLevel logLevel, String msg, Map<String, String> replaceMap) {
-        msg = "&7[" + CrypticLib.plugin().pluginName() + "] " + msg;
-        sendMsg(BungeeInvoker.byCommandSender(ProxyServer.getInstance().getConsole()), msg, replaceMap);
     }
 
 }
