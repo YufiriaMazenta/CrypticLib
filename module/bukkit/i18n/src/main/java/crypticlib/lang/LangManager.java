@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
 
 @LifecycleTaskConfig(
     schedules = {
-        @LifecycleSchedule(phase = LifecyclePhase.ENABLE, priority = Integer.MIN_VALUE),
-        @LifecycleSchedule(phase = LifecyclePhase.RELOAD, priority = Integer.MIN_VALUE, isAsync = true),
+        @LifecycleSchedule(phase = LifecyclePhase.LOAD, priority = Integer.MIN_VALUE),
+        @LifecycleSchedule(phase = LifecyclePhase.RELOAD, priority = Integer.MIN_VALUE),
         @LifecycleSchedule(phase = LifecyclePhase.DISABLE, priority = Integer.MAX_VALUE)
     },
     platforms = PlatformSide.BUKKIT
@@ -158,7 +158,7 @@ public enum LangManager implements LifecycleTask {
     @Override
     public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
         switch (lifecyclePhase) {
-            case ENABLE:
+            case LOAD:
                 Plugin bukkitPlugin = (Plugin) plugin;
                 PluginScanner.INSTANCE.getAnnotatedClasses(LangHandler.class).forEach(
                     langClass -> {
