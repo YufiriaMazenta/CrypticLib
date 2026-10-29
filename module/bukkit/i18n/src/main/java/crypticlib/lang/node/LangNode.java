@@ -29,7 +29,7 @@ public abstract class LangNode<T> {
     }
 
     public LangNode<T> setValue(@NotNull String lang, @NotNull T value) {
-        langMap.put(lang.toLowerCase(), value);
+        langMap.put(normalizeLang(lang), value);
         return this;
     }
 
@@ -42,16 +42,36 @@ public abstract class LangNode<T> {
     }
 
     public T value(@NotNull String lang) {
-        lang = lang.toLowerCase();
-        if (langMap.containsKey(lang))
-            return langMap.get(lang);
-        if (langMap.containsKey(defLang))
-            return langMap.get(defLang);
+        //绝大多数调用方传入的已是小写语言标签, 因此先按原样查一次, 命中时无需任何额外对象
+        T value = langMap.get(lang);
+        if (value != null)
+            return value;
+        String normalizedLang = normalizeLang(lang);
+        if (!normalizedLang.equals(lang)) {
+            value = langMap.get(normalizedLang);
+            if (value != null)
+                return value;
+        }
+        if (defLang != null) {
+            value = langMap.get(defLang);
+            if (value != null)
+                return value;
+        }
         return defValue;
     }
 
     public T value() {
         return value(Locale.getDefault());
+    }
+
+    /**
+     * 统一语言标签的大小写, 与语言文件名的处理方式保持一致
+     * @param lang 原始语言标签
+     * @return 小写形式的语言标签, 本身就是小写时直接返回原对象
+     */
+    @NotNull
+    protected static String normalizeLang(@NotNull String lang) {
+        return lang.toLowerCase(Locale.ROOT);
     }
 
     public String key() {
@@ -69,7 +89,7 @@ public abstract class LangNode<T> {
     }
 
     public LangNode<T> setDefLang(String defLang) {
-        this.defLang = defLang;
+        this.defLang = defLang == null ? null : normalizeLang(defLang);
         return this;
     }
 

@@ -1,5 +1,6 @@
 package crypticlib.lang;
 
+import crypticlib.CrypticLib;
 import crypticlib.config.BukkitConfigWrapper;
 import crypticlib.lang.node.LangNode;
 import crypticlib.lang.node.StringLang;
@@ -15,15 +16,25 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LangContainer {
 
     private final Class<?> containerClass;
     private final Map<String, BukkitConfigWrapper> langConfigWrapperMap;
+    /**
+     * 容器类中声明的所有语言节点, 只在构造时扫描一次
+     */
+    private final List<LangNode<?>> langNodes;
+    /**
+     * 所有语言文件中出现过的键, 用于快速判断某个键是否可翻译
+     */
+    private final Set<String> langKeys;
     private final String langFileFolder;
     private final Plugin plugin;
     private final String defLang;
@@ -35,9 +46,12 @@ public class LangContainer {
     public LangContainer(@NotNull Plugin plugin, @NotNull Class<?> containerClass, String langFileFolder, String defLang) {
         this.plugin = plugin;
         this.langConfigWrapperMap = new ConcurrentHashMap<>();
+        this.langNodes = new ArrayList<>();
+        this.langKeys = ConcurrentHashMap.newKeySet();
         this.langFileFolder = langFileFolder;
         this.containerClass = containerClass;
-        this.defLang = defLang == null ? null : defLang.toLowerCase();
+        this.defLang = defLang == null ? "en_us" : defLang.toLowerCase();
+        scanLangNodes();
         saveDefLangFiles();
     }
 
@@ -45,14 +59,37 @@ public class LangContainer {
      * 释放打包在jar包中的默认语言文件夹,通常只在插件首次加载时进行
      */
     private void saveDefLangFiles() {
+        File dataFolder = plugin.getDataFolder();
         for (Locale locale : Locale.getAvailableLocales()) {
             String lang = LocaleHelper.local2LanguageTag(locale);
             String langFileName = langFileFolder + "/" + lang + ".yml";
+            //已释放的语言文件无需再探测jar内的资源, 探测jar是这段循环里最贵的一步
+            File file = new File(dataFolder, langFileName);
+            if (file.exists())
+                continue;
             if (plugin.getResource(langFileName) == null)
                 continue;
-            File file = new File(plugin.getDataFolder(), langFileName);
-            if (!file.exists())
-                plugin.saveResource(langFileName, false);
+            plugin.saveResource(langFileName, false);
+        }
+    }
+
+    /**
+     * 扫描容器类中声明的静态语言节点
+     * 与 ConfigContainer#scanConfigNodes 一致, 只在构造时执行一次, 重载时不再重复反射
+     */
+    private void scanLangNodes() {
+        for (Field field : containerClass.getDeclaredFields()) {
+            if (!Modifier.isStatic(field.getModifiers()))
+                continue;
+            Object object;
+            try {
+                object = ReflectionHelper.getDeclaredFieldObj(field, null);
+            } catch (IllegalAccessException e) {
+                continue;
+            }
+            if (!(object instanceof LangNode))
+                continue;
+            langNodes.add((LangNode<?>) object);
         }
     }
 
@@ -73,27 +110,21 @@ public class LangContainer {
      */
     public void reload() {
         loadLangFiles();
-        langConfigWrapperMap.forEach((lang, configWrapper) -> configWrapper.reloadConfig());
-        for (Field field : containerClass.getDeclaredFields()) {
-            if (!Modifier.isStatic(field.getModifiers()))
-                continue;
-            Object object;
-            try {
-                object = ReflectionHelper.getDeclaredFieldObj(field, null);
-            } catch (IllegalAccessException e) {
-                continue;
-            }
-            if (!(object instanceof LangNode))
-                continue;
-            LangNode<?> langNode = (LangNode<?>) object;
-            if (!langNode.defLang().equals(defLang)) {
+        for (LangNode<?> langNode : langNodes) {
+            if (!defLang.equals(langNode.defLang())) {
                 langNode.setDefLang(defLang);
             }
-            langNode.load(this);
+            //单个节点加载异常时记录告警并跳过, 不让一个坏键中断整个语言文件夹的加载
+            try {
+                langNode.load(this);
+            } catch (Throwable t) {
+                CrypticLib.warn("Failed to load lang value at '" + langNode.key() + "' in "
+                    + langFileFolder + ": " + t.getMessage(), t);
+            }
             LangManager.INSTANCE.putLangNode(langFileFolder, langNode);
         }
         extraStringLangs.forEach((lang, entry) -> {
-            if (!entry.defLang().equals(defLang)) {
+            if (!defLang.equals(entry.defLang())) {
                 entry.setDefLang(defLang);
             }
             entry.load(this);
@@ -118,11 +149,11 @@ public class LangContainer {
         for (File langFile : yamlFiles) {
             String fileName = langFile.getName();
             String lang = fileName.substring(0, fileName.lastIndexOf(".")).toLowerCase();
-            BukkitConfigWrapper configWrapper = new BukkitConfigWrapper(langFile);
-            configWrapper.reloadConfig();
-            langConfigWrapperMap.put(lang, configWrapper);
+            //包装类构造时已读取过一次文件内容, 不再重复reload
+            langConfigWrapperMap.put(lang, new BukkitConfigWrapper(langFile));
         }
         updateLangFiles();
+        loadLangKeys();
     }
 
     /**
@@ -134,14 +165,30 @@ public class LangContainer {
                 YamlConfiguration defLangConfig = BukkitConfigHelper.getBuiltinConfig(langFileFolder + "/" + lang + ".yml");
                 if (defLangConfig == null)
                     return;
+                //仅在确实补写了缺失的键时才保存, 避免每次重载都无条件重写语言文件
+                boolean changed = false;
                 for (String key : defLangConfig.getKeys(true)) {
                     if (configWrapper.contains(key))
                         continue;
                     configWrapper.set(key, defLangConfig.get(key));
+                    changed = true;
                 }
-                configWrapper.saveConfig();
+                if (changed) {
+                    configWrapper.saveConfig();
+                }
             }
         );
+    }
+
+    /**
+     * 重建语言键索引
+     * 每个语言文件的键只遍历一次, 之后判断键是否存在不必再遍历整棵配置树
+     */
+    private void loadLangKeys() {
+        langKeys.clear();
+        for (BukkitConfigWrapper configWrapper : langConfigWrapperMap.values()) {
+            langKeys.addAll(configWrapper.config().getKeys(true));
+        }
     }
 
     public boolean containsLang(String lang) {
@@ -153,12 +200,7 @@ public class LangContainer {
      * @param key 要检查的语言键
      */
     public boolean hasLangKey(@NotNull String key) {
-        for (BukkitConfigWrapper configWrapper : langConfigWrapperMap.values()) {
-            if (configWrapper.contains(key)) {
-                return true;
-            }
-        }
-        return false;
+        return langKeys.contains(key);
     }
 
     public @Nullable BukkitConfigWrapper getLangConfigWrapper(String lang) {
@@ -175,7 +217,7 @@ public class LangContainer {
      * @return 原本存在的对象
      */
     public StringLang addExtraStringLang(StringLang entry) {
-        if (!entry.defLang().equals(defLang)) {
+        if (!defLang.equals(entry.defLang())) {
             entry.setDefLang(defLang);
         }
         entry.load(this);

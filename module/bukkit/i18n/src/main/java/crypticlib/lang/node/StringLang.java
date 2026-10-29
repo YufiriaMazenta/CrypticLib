@@ -23,8 +23,10 @@ public class StringLang extends LangNode<String> {
     public StringLang load(LangContainer configContainer) {
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
-            if (configWrapper.contains(key)) {
-                langMap.put(lang, configWrapper.config().getString(key));
+            //一次取值即可同时判断键是否存在与类型是否匹配, 避免 contains + getString 两次遍历配置路径
+            String value = configWrapper.config().getString(key);
+            if (value != null) {
+                langMap.put(lang, value);
             }
         });
         return this;

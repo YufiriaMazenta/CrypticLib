@@ -15,7 +15,6 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -32,9 +31,13 @@ import java.util.regex.Pattern;
 public enum LangManager implements LifecycleTask {
 
     INSTANCE;
+    /**
+     * 翻译标签的前缀, 用于在正则匹配前快速排除不含翻译的文本
+     */
+    private static final String LANG_REPLACE_PREFIX = "<translate:";
+    private static final Pattern LANG_REPLACE_PATTERN = Pattern.compile(LANG_REPLACE_PREFIX + "([^>]+)>");
     private final Map<String, Map<String, LangNode<?>>> folderLangNodeMap = new ConcurrentHashMap<>();
     private final Map<String, LangContainer> langContainerMap = new ConcurrentHashMap<>();
-    private final Pattern langReplacePattern = Pattern.compile("<translate:([^>]+)>");
 
     public void removeLangContainer(@NotNull String langFileFolder) {
         LangContainer container = langContainerMap.remove(langFileFolder);
@@ -54,10 +57,7 @@ public enum LangManager implements LifecycleTask {
         if (langNodeMap == null)
             return null;
         LangNode<?> langNode = langNodeMap.get(key);
-        if (!(langNode instanceof StringLang)) {
-            return null;
-        }
-        return (StringLang) langNode;
+        return langNode instanceof StringLang ? (StringLang) langNode : null;
     }
 
     /**
@@ -71,30 +71,22 @@ public enum LangManager implements LifecycleTask {
         if (stringLang != null) {
             return stringLang;
         }
-        if (!langContainerMap.containsKey(langFileFolder)) {
+        LangContainer langContainer = langContainerMap.get(langFileFolder);
+        if (langContainer == null) {
             return null;
         }
-        LangContainer langContainer = langContainerMap.get(langFileFolder);
         stringLang = new StringLang(key);
         langContainer.addExtraStringLang(stringLang);
         return stringLang;
     }
 
     public void putLangNode(@NotNull String langFileFolder, @NotNull LangNode<?> entry) {
-        Map<String, LangNode<?>> langNodeMap;
-        if (folderLangNodeMap.containsKey(langFileFolder)) {
-            langNodeMap = folderLangNodeMap.get(langFileFolder);
-        } else {
-            langNodeMap = new ConcurrentHashMap<>();
-            folderLangNodeMap.put(langFileFolder, langNodeMap);
-        }
-        langNodeMap.put(entry.key(), entry);
+        folderLangNodeMap.computeIfAbsent(langFileFolder, k -> new ConcurrentHashMap<>()).put(entry.key(), entry);
     }
 
     public void removeLangNode(@NotNull String langFileFolder, @NotNull String key) {
-        Map<String, LangNode<?>> langNodeMap;
-        if (folderLangNodeMap.containsKey(langFileFolder)) {
-            langNodeMap = folderLangNodeMap.get(langFileFolder);
+        Map<String, LangNode<?>> langNodeMap = folderLangNodeMap.get(langFileFolder);
+        if (langNodeMap != null) {
             langNodeMap.remove(key);
         }
     }
@@ -109,50 +101,59 @@ public enum LangManager implements LifecycleTask {
         if (originStr == null) {
             return null;
         }
-        Matcher matcher = langReplacePattern.matcher(originStr);
+        //绝大多数文本不含翻译标签, 先做一次子串查找, 未命中时直接返回原文本, 省去正则匹配与字符串构建
+        if (originStr.indexOf(LANG_REPLACE_PREFIX) < 0) {
+            return originStr;
+        }
+        Matcher matcher = LANG_REPLACE_PATTERN.matcher(originStr);
         //使用 StringBuilder 来构建替换后的字符串
-        StringBuilder result = new StringBuilder();
+        StringBuilder result = new StringBuilder(originStr.length());
         //用于记录当前查找到的位置
         int lastEnd = 0;
+        //玩家语言只在本次替换中取一次, 避免每个标签都判断一次发送者类型
+        Player player = sender instanceof Player ? (Player) sender : null;
 
         while (matcher.find()) {
             //添加匹配项之前的文本
             result.append(originStr, lastEnd, matcher.start());
-
-            //获取当前匹配到的翻译键key
-            String langKey = matcher.group(1);
-
-            String[] split = langKey.split(":");
-            if (split.length < 2) {
-                result.append(langKey);
-            } else {
-                String folder = split[0];
-                String key = String.join(":", Arrays.copyOfRange(split, 1, split.length));
-                //先只读查找已注册条目; 未命中时, 仅当该key确实存在于语言文件中才注册加载,
-                //既支持用户在语言文件中自定义新key, 又避免为任意未知key(可能来自玩家输入)永久注册条目导致内存无界增长
-                StringLang stringLang = getStringLang(folder, key);
-                if (stringLang == null) {
-                    LangContainer container = langContainerMap.get(folder);
-                    if (container != null && container.hasLangKey(key)) {
-                        stringLang = getStringLangOrAdd(folder, key);
-                    }
-                }
-                //只有是StringLang时,才能进行替换,如果找到的不是对应类型,直接不进行替换
-                if (stringLang == null) {
-                    result.append(langKey);
-                } else {
-                    String replacement = sender instanceof Player ? stringLang.value((Player) sender) : stringLang.value();
-                    result.append(replacement);
-                }
-            }
-
+            //添加翻译后的文本, 无法翻译时原样保留key
+            result.append(translate(matcher.group(1), player));
             //更新lastEnd以跳过已处理的匹配项
             lastEnd = matcher.end();
         }
 
         //添加剩余的文本（如果有）
-        result.append(originStr.substring(lastEnd));
+        result.append(originStr, lastEnd, originStr.length());
         return result.toString();
+    }
+
+    /**
+     * 翻译单个翻译键
+     * @param langKey 形如 folder:key 的翻译键
+     * @param player 用于获取语言的玩家, 为null时使用默认语言
+     * @return 翻译后的文本, 无法翻译时返回原始翻译键
+     */
+    @NotNull
+    private String translate(@NotNull String langKey, @Nullable Player player) {
+        //只按第一个冒号切分, 避免 split + 数组拷贝 + 重新拼接的三次额外分配
+        int splitIndex = langKey.indexOf(':');
+        if (splitIndex < 0) {
+            return langKey;
+        }
+        String folder = langKey.substring(0, splitIndex);
+        String key = langKey.substring(splitIndex + 1);
+        StringLang stringLang = getStringLang(folder, key);
+        if (stringLang == null) {
+            //先只读查找已注册条目; 未命中时, 仅当该key确实存在于语言文件中才注册加载,
+            //既支持用户在语言文件中自定义新key, 又避免为任意未知key(可能来自玩家输入)永久注册条目导致内存无界增长
+            LangContainer container = langContainerMap.get(folder);
+            if (container == null || !container.hasLangKey(key)) {
+                return langKey;
+            }
+            stringLang = new StringLang(key);
+            container.addExtraStringLang(stringLang);
+        }
+        return player == null ? stringLang.value() : stringLang.value(player);
     }
 
     @Override

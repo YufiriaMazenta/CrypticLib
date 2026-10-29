@@ -3,6 +3,7 @@ package crypticlib.lang.node;
 import crypticlib.BukkitInvoker;
 import crypticlib.lang.LangContainer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +25,11 @@ public class StringListLang extends LangNode<List<String>> {
     public StringListLang load(LangContainer configContainer) {
         langMap.clear();
         configContainer.langConfigWrapperMap().forEach((lang, configWrapper) -> {
-            if (configWrapper.contains(key)) {
-                langMap.put(lang, configWrapper.config().getStringList(key));
+            //配置对象只取一次, 避免每个键都从包装类中重新取出
+            YamlConfiguration config = configWrapper.config();
+            //键缺失时不能存入空列表, 否则该语言会顶掉默认语言的翻译
+            if (config.contains(key)) {
+                langMap.put(lang, config.getStringList(key));
             }
         });
         return this;
