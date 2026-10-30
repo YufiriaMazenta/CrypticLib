@@ -51,16 +51,13 @@ public enum BungeeScheduler implements Scheduler, LifecycleTask {
 
     @Override
     public TaskWrapper asyncLater(@NotNull Runnable task, long delayTicks) {
-        //一次性任务执行完毕后从集合中移除自身,避免 asyncFutures 只增不减造成内存泄漏
-        ScheduledFuture<?>[] futureHolder = new ScheduledFuture<?>[1];
-        ScheduledFuture<?> future = asyncExecutor.schedule(() -> {
-            try {
-                task.run();
-            } finally {
-                asyncFutures.remove(futureHolder[0]);
-            }
-        }, delayTicks * 50, TimeUnit.MILLISECONDS);
-        futureHolder[0] = future;
+        if (delayTicks <= 0) {
+            //零延迟没有可延迟的任务, 直接异步执行, 不进入待取消集合
+            return async(task);
+        }
+        //一次性任务执行完毕后在下次调度时被裁掉, 避免 asyncFutures 只增不减造成内存泄漏
+        pruneFinishedFutures();
+        ScheduledFuture<?> future = asyncExecutor.schedule(task, delayTicks * 50, TimeUnit.MILLISECONDS);
         asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
     }
@@ -74,9 +71,18 @@ public enum BungeeScheduler implements Scheduler, LifecycleTask {
 
     @Override
     public TaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
+        pruneFinishedFutures();
         ScheduledFuture<?> future = asyncExecutor.scheduleAtFixedRate(task, delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS);
         asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
+    }
+
+    /**
+     * 清掉已经结束(完成或被取消)的一次性任务。
+     * 相比"任务内部自我移除"，这里没有 zero-delay 下 future 尚未赋值就被执行、导致移除失效的竞态。
+     */
+    private void pruneFinishedFutures() {
+        asyncFutures.removeIf(ScheduledFuture::isDone);
     }
 
     @Override
