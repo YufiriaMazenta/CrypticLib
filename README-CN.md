@@ -21,7 +21,7 @@
 
 | 模块 | Artifact ID | 平台 | 说明 |
 |------|------------|------|------|
-| **database** | `common-database` | 通用 | 基于 HikariCP 的数据库连接管理 |
+| **database** | `common-database` | 通用 | 自带连接池与原生 JDBC 两种连接源，内置 H2 / MySQL / PostgreSQL / SQLite 方言 |
 | **script** | `common-script` | 通用 | 内置脚本引擎（词法分析、语法分析、编译器、虚拟机） |
 | **compat** | `common-compat` | 通用 | 版本兼容性工具 |
 | **ui** | `bukkit-ui` | Bukkit | GUI 菜单系统，支持布局引擎、图标、多页 |

@@ -21,7 +21,7 @@ A Minecraft plugin development library that simplifies cross-platform plugin dev
 
 | Module | Artifact ID | Platform | Description |
 |--------|------------|----------|-------------|
-| **database** | `common-database` | Common | Database connectivity via HikariCP |
+| **database** | `common-database` | Common | Built-in connection pool and plain JDBC connection sources, with H2 / MySQL / PostgreSQL / SQLite dialects |
 | **script** | `common-script` | Common | Built-in scripting engine with lexer, parser, compiler, and VM |
 | **compat** | `common-compat` | Common | Compatibility utilities |
 | **ui** | `bukkit-ui` | Bukkit | GUI menu system with layout engine, icons, multi-page support |
