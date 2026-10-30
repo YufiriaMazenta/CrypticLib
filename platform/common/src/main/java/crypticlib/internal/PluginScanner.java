@@ -52,8 +52,10 @@ public enum PluginScanner {
                 //TODO 考虑是否要存储文件
                 continue;
             }
-            //先做字节码级预扫描，只有引用了 crypticlib 的类才真正 loadClass，
-            //避免把插件 shade 的大量依赖(kotlin-stdlib、gson 等)全部定义进 JVM
+            //注意: 当前实现会对 jar 内的每个类都执行 loadClass(仅跳过 META-INF 与 module-info)，
+            //包括插件 shade 进来的第三方依赖(kotlin-stdlib、gson 等)，
+            //因此大型 shaded jar 的启动开销与类数量线性相关。
+            //TODO: 计划改为常量池预扫描，只加载引用了 crypticlib 的类；在此之前不要依赖"预扫描"这一说法。
             String className = entryName
                 .replace('/', '.')
                 .substring(0, entryName.length() - 6);
