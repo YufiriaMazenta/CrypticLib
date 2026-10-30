@@ -32,7 +32,10 @@ import java.util.stream.Collectors;
  */
 public class DependencyDownloader extends AbstractXmlParser {
 
+    //值用弱引用集合持有类加载器：插件卸载后其加载器可以被回收，
+    //避免静态表一直钉住插件类加载器(以及它加载的全部类)
     private static final Map<Dependency, Set<ClassLoader>> injectedDependencies = new ConcurrentHashMap<>();
+
     private static final Set<Dependency> downloadedDependencies = new CopyOnWriteArraySet<>();
 
     private final Set<Repository> repositories = new CopyOnWriteArraySet<>();
@@ -42,6 +45,10 @@ public class DependencyDownloader extends AbstractXmlParser {
     private boolean ignoreOptional = true;
     private boolean ignoreException = false;
     private boolean isTransitive = true;
+
+    private static Set<ClassLoader> newClassLoaderSet() {
+        return Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    }
 
     public DependencyDownloader(@Nullable File baseDir, @Nullable List<JarRelocation> relocation) {
         this.baseDir = baseDir;
@@ -78,14 +85,14 @@ public class DependencyDownloader extends AbstractXmlParser {
                     file = relocateJar(dep, file);
                 }
                 ClassLoader loader = ClassAppender.addPath(file.toPath());
-                injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(loader);
+                injectedDependencies.computeIfAbsent(dep, dependency -> newClassLoaderSet()).add(loader);
             } else {
                 // JAR 不存在（可能是纯 POM 依赖），尝试下载一次
                 try {
                     loadDependency(repositories, dep);
                 } catch (IOException e) {
                     // 下载失败，标记为已处理避免无限递归
-                    injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(ClassAppender.getClassLoader());
+                    injectedDependencies.computeIfAbsent(dep, dependency -> newClassLoaderSet()).add(ClassAppender.getClassLoader());
                     continue;
                 }
                 // 下载成功后再次尝试注入（只重试一次）
@@ -95,10 +102,10 @@ public class DependencyDownloader extends AbstractXmlParser {
                         retryFile = relocateJar(dep, retryFile);
                     }
                     ClassLoader loader = ClassAppender.addPath(retryFile.toPath());
-                    injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(loader);
+                    injectedDependencies.computeIfAbsent(dep, dependency -> newClassLoaderSet()).add(loader);
                 } else {
                     // JAR 仍然不存在，标记为已处理
-                    injectedDependencies.computeIfAbsent(dep, dependency -> ConcurrentHashMap.newKeySet()).add(ClassAppender.getClassLoader());
+                    injectedDependencies.computeIfAbsent(dep, dependency -> newClassLoaderSet()).add(ClassAppender.getClassLoader());
                 }
             }
         }
