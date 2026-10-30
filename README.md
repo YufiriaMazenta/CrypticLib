@@ -104,25 +104,31 @@ For a complete working example, see [CrypticLibExample](https://github.com/Yufir
 ### Lifecycle Tasks
 
 ```java
-@LifecycleTaskSettings(rules = {
-    @LifecycleRule(lifeCycle = Lifecycle.ENABLE, priority = 0),
-    @LifecycleRule(lifeCycle = Lifecycle.DISABLE)
+@LifecycleTaskConfig(schedules = {
+    @LifecycleSchedule(phase = LifecyclePhase.ENABLE),
+    @LifecycleSchedule(phase = LifecyclePhase.DISABLE)
 })
 public class MyTask implements LifecycleTask {
 
+    // Execution order within a phase is controlled by @LifecycleSchedule(priority = ...), default 0, lower runs first
+    // Add isAsync = true to run the task asynchronously
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
-        switch (lifeCycle) {
+    public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
+        switch (lifecyclePhase) {
             case ENABLE:
                 // Plugin enable logic
                 break;
             case DISABLE:
                 // Plugin disable logic
                 break;
+            default:
+                break;
         }
     }
 }
 ```
+
+The task instance is created by CrypticLib: the first constant for enums, the static `INSTANCE` field for classes if present, otherwise a no-arg constructor.
 
 ### Script Engine
 

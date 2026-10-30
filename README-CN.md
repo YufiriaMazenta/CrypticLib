@@ -104,25 +104,31 @@ dependencies {
 ### 生命周期任务
 
 ```java
-@LifecycleTaskSettings(rules = {
-    @LifecycleRule(lifeCycle = Lifecycle.ENABLE, priority = 0),
-    @LifecycleRule(lifeCycle = Lifecycle.DISABLE)
+@LifecycleTaskConfig(schedules = {
+    @LifecycleSchedule(phase = LifecyclePhase.ENABLE),
+    @LifecycleSchedule(phase = LifecyclePhase.DISABLE)
 })
 public class MyTask implements LifecycleTask {
 
+    // 同一阶段的执行顺序由 @LifecycleSchedule(priority = ...) 控制，默认 0，越小越先执行
+    // 需要异步执行时加上 isAsync = true
     @Override
-    public void lifecycle(CrypticLibPlugin plugin, Lifecycle lifeCycle) {
-        switch (lifeCycle) {
+    public void onLifecycle(CrypticLibPlugin plugin, LifecyclePhase lifecyclePhase) {
+        switch (lifecyclePhase) {
             case ENABLE:
                 // 插件启用逻辑
                 break;
             case DISABLE:
                 // 插件禁用逻辑
                 break;
+            default:
+                break;
         }
     }
 }
 ```
+
+任务实例由 CrypticLib 自行创建：枚举取第一个常量，普通类优先取静态 `INSTANCE` 字段，其次用无参构造器。
 
 ### 脚本引擎
 
