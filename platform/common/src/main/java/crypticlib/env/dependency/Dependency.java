@@ -126,9 +126,14 @@ public class Dependency extends AbstractXmlParser {
 
     /**
      * 确认解析出来的文件仍在给定目录之内
+     * <p>
+     * baseDir 允许为 null(依赖下载器的 libs 目录是 @Nullable), 此时无法做包含校验, 直接返回。
      */
     @NotNull
-    private static File requireInside(@NotNull File baseDir, @NotNull File file) {
+    private static File requireInside(@Nullable File baseDir, @NotNull File file) {
+        if (baseDir == null) {
+            return file;
+        }
         Path base = baseDir.getAbsoluteFile().toPath().normalize();
         Path target = file.getAbsoluteFile().toPath().normalize();
         if (!target.startsWith(base)) {
