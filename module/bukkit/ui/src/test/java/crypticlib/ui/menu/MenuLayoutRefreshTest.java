@@ -4,6 +4,9 @@ import crypticlib.ui.display.Icon;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
 import crypticlib.util.ItemHelper;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.InvocationHandlerAdapter;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -14,7 +17,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +27,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import static net.bytebuddy.matcher.ElementMatchers.isFinalizer;
+import static net.bytebuddy.matcher.ElementMatchers.isVirtual;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
 /** Uses real menu logic with in-memory inventories; no Minecraft server is required. */
@@ -300,14 +305,29 @@ class MenuLayoutRefreshTest {
     }
 
     private static <T> T proxy(Class<T> type, InvocationHandler handler) {
-        return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[]{type},
-            (object, method, args) -> {
-                switch (method.getName()) {
-                    case "hashCode": return System.identityHashCode(object);
-                    case "equals": return object == args[0];
-                    case "toString": return "Test" + type.getSimpleName();
-                    default: return handler.invoke(object, method, args);
-                }
-            }));
+        // JDK 17's Proxy eagerly initializes API parameter types and requires Bukkit registries.
+        // These inventory tests only need boundary calls, not a server or registry contents.
+        InvocationHandler wrapper = (object, method, args) -> {
+            switch (method.getName()) {
+                case "hashCode": return System.identityHashCode(object);
+                case "equals": return object == args[0];
+                case "toString": return "Test" + type.getSimpleName();
+                default: return handler.invoke(object, method, args);
+            }
+        };
+        try {
+            return type.cast(new ByteBuddy()
+                .subclass(Object.class)
+                .implement(type)
+                .method(isVirtual().and(not(isFinalizer())))
+                .intercept(InvocationHandlerAdapter.of(wrapper))
+                .make()
+                .load(type.getClassLoader(), ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded()
+                .getDeclaredConstructor()
+                .newInstance());
+        } catch (ReflectiveOperationException exception) {
+            throw new AssertionError("Cannot create test " + type.getSimpleName(), exception);
+        }
     }
 }

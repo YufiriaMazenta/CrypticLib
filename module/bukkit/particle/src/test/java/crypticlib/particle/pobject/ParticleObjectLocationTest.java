@@ -3,10 +3,15 @@ package crypticlib.particle.pobject;
 import crypticlib.particle.utils.matrix.Matrix;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Keyed;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
+import org.bukkit.Registry;
 import org.bukkit.Server;
 import org.bukkit.World;
+import org.bukkit.generator.structure.Structure;
+import org.bukkit.generator.structure.StructureType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,11 +28,13 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -41,14 +48,35 @@ class ParticleObjectLocationTest {
     private World world;
 
     @BeforeAll
-    static void installVersionOnlyServer() throws ReflectiveOperationException {
-        // MinecraftVersion reads Bukkit's version once; no server implementation is needed.
+    static void installTestServer() throws ReflectiveOperationException {
+        // Supply the version needed by MinecraftVersion and registries needed by World API initialization.
         serverField = Bukkit.class.getDeclaredField("server");
         serverField.setAccessible(true);
         previousServer = serverField.get(null);
         Server server = proxy(Server.class, (instance, method, arguments) -> {
             if (method.getName().equals("getBukkitVersion")) {
                 return "1.20.4-R0.1-SNAPSHOT";
+            }
+            if (method.getName().equals("getRegistry")) {
+                // JDK 17's World proxy initializes Structure/Registry while resolving API method types.
+                // Create this only after Bukkit.server is installed: Registry has default methods,
+                // so constructing its implementation can itself trigger Registry initialization.
+                return new Registry<Keyed>() {
+                    @Override
+                    public Keyed get(NamespacedKey key) {
+                        return null;
+                    }
+
+                    @Override
+                    public Stream<Keyed> stream() {
+                        return Stream.empty();
+                    }
+
+                    @Override
+                    public Iterator<Keyed> iterator() {
+                        return Collections.<Keyed>emptyList().iterator();
+                    }
+                };
             }
             throw new UnsupportedOperationException(method.toString());
         });
@@ -84,6 +112,16 @@ class ParticleObjectLocationTest {
             }
             throw new UnsupportedOperationException(method.toString());
         });
+    }
+
+    @Test
+    void worldApiTypesCanInitializeWithoutALiveServer() throws ClassNotFoundException {
+        // Exercise the same bootstrap on JDK 21 even when Proxy does not initialize these types eagerly.
+        Class.forName(Structure.class.getName());
+        Class.forName(StructureType.class.getName());
+
+        assertNotNull(Registry.STRUCTURE);
+        assertNotNull(Registry.STRUCTURE_TYPE);
     }
 
     static Stream<Arguments> renderingPathsAndIncrements() {

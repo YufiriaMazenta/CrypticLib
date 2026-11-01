@@ -9,6 +9,7 @@ dependencies {
     testImplementation("org.spigotmc:spigot-api:1.21.4-R0.1-SNAPSHOT")
     testImplementation("org.jetbrains:annotations:24.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("net.bytebuddy:byte-buddy:1.15.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
