@@ -74,7 +74,12 @@ public class BukkitConfigWrapper extends ConfigWrapper<YamlConfiguration> {
             } catch (FileNotFoundException e) {
                 //文件不存在时保持空配置
             } catch (IOException e) {
+                //读取失败时绝不能把新建的空配置赋值给 config: 后续任何 saveConfig 都会把用户文件覆盖成默认值。
+                //这里保持原有 config 不变并快速失败, 让调用方明确知道本次重载没有成功
                 CrypticLib.error("Failed to read config file: " + configFile, e);
+                throw new IllegalStateException(
+                    "Failed to read config file " + configFile
+                        + ", the previous configuration is kept", e);
             }
             config = newConfig;
         }

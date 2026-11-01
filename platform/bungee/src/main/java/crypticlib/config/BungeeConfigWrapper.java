@@ -68,8 +68,12 @@ public class BungeeConfigWrapper extends ConfigWrapper<Configuration> {
                 //文件不存在时保持空配置
                 newConfig = new Configuration();
             } catch (IOException e) {
+                //读取失败时不能直接 return: 那会让 config 保持 null, 而 config() 标注了 @NotNull,
+                //后续每次访问都会 NPE 并重复触发一次失败的重读。这里快速失败并保留原有 config
                 CrypticLib.error("Failed to read config file: " + configFile, e);
-                return;
+                throw new IllegalStateException(
+                    "Failed to read config file " + configFile
+                        + ", the previous configuration is kept", e);
             } catch (RuntimeException e) {
                 //解析失败: 把原文件移走另存为.broken, 中止本次重载,
                 //绝不能吞掉异常后以空配置继续, 否则后续saveConfig会把用户配置覆盖掉

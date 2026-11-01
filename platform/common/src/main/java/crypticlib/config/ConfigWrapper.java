@@ -62,7 +62,13 @@ public abstract class ConfigWrapper<C> {
                 }
             }
         }
-        return config;
+        C loaded = config;
+        if (loaded == null) {
+            //reloadConfig() 没有产出配置(读取失败等)时, 绝不能把 null 交给 @NotNull 的调用方:
+            //否则 NPE 会出现在离失败点很远的地方, 而且每次访问都会重复触发一次失败的读取
+            throw new IllegalStateException("Config could not be loaded: " + configFile);
+        }
+        return loaded;
     }
 
     public abstract boolean contains(String key);

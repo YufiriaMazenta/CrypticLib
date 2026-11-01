@@ -3,6 +3,7 @@ package crypticlib.config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.file.FormatDetector;
 import com.electronwill.nightconfig.core.io.ParsingException;
+import crypticlib.CrypticLib;
 import crypticlib.VelocityPlugin;
 import crypticlib.internal.config.yaml.CommentLoader;
 import crypticlib.internal.config.yaml.YamlFormat;
@@ -66,6 +67,13 @@ public class VelocityConfigWrapper extends ConfigWrapper<CommentedFileConfig> {
                     "Failed to parse config file " + configFile
                         + ", the original file has been moved to "
                         + brokenConfigFile().getName(), e);
+            } catch (RuntimeException e) {
+                //非解析类异常(通常是读取失败): 既不能把空配置当成新配置赋值, 也不应把用户文件搬成 .broken,
+                //因为文件本身可能没有损坏。保持原有 config 不变并快速失败
+                CrypticLib.error("Failed to read config file: " + configFile, e);
+                throw new IllegalStateException(
+                    "Failed to read config file " + configFile
+                        + ", the previous configuration is kept", e);
             }
             config = newConfig;
         }
