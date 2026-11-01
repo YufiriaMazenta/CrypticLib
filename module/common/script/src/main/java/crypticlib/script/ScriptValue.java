@@ -194,7 +194,12 @@ public abstract class ScriptValue {
     }
 
     public int asInt() {
-        return (int) asLong();
+        long longValue = asLong();
+        //禁止静默截断: 脚本整数是 long, 超出 int 范围时按 32 位回绕会得到负数等错误值
+        if (longValue < Integer.MIN_VALUE || longValue > Integer.MAX_VALUE) {
+            throw new ScriptException("Integer value " + longValue + " is out of the range of a 32-bit int");
+        }
+        return (int) longValue;
     }
 
     public boolean asBoolean() {
