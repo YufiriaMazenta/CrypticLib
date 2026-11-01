@@ -3,6 +3,10 @@ package crypticlib.database.connection;
 import crypticlib.database.dialect.DatabaseDialect;
 import crypticlib.database.dialect.DialectManager;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -84,7 +88,9 @@ public class PooledConnectionSource implements ConnectionSource {
             pooled.updateLastUsedTime();
             activeConnections.put(pooled.getConnection(), pooled);
             borrowed = true;
-            return pooled.getConnection();
+            //返回代理: 让按 AutoCloseable 习惯调用 close() 的调用方也能正确归还,
+            //否则每 close 一次就会永久泄漏一个连接许可, 累积到上限后所有借用都会超时
+            return PooledConnectionHandle.wrap(pooled.getConnection(), this);
         } finally {
             // 获取失败时需要把许可还回去
             if (!borrowed) {
@@ -97,25 +103,48 @@ public class PooledConnectionSource implements ConnectionSource {
     public void releaseConnection(Connection connection) {
         if (connection == null) return;
 
-        PooledConnection pooled = activeConnections.remove(connection);
+        Connection rawConnection = PooledConnectionHandle.unwrap(connection);
+        PooledConnection pooled = activeConnections.remove(rawConnection);
         if (pooled == null) {
             // 不是本连接池借出的连接（例如重复归还），直接忽略
             return;
         }
 
         try {
-            if (closed || !isConnectionValid(connection)) {
-                closeQuietly(connection);
+            //归还前必须把事务状态复位: autoCommit=false 或带着未提交事务的连接一旦回到池里,
+            //下一个借用者的写入会静默不提交, 上一个借用者的行锁也会一直持有
+            if (!resetTransactionState(rawConnection)
+                || closed
+                || !isConnectionValid(rawConnection)) {
+                closeQuietly(rawConnection);
                 totalConnections.decrementAndGet();
                 return;
             }
             pooled.updateLastUsedTime();
             if (!freeConnections.offer(pooled)) {
-                closeQuietly(connection);
+                closeQuietly(rawConnection);
                 totalConnections.decrementAndGet();
             }
         } finally {
             permits.release();
+        }
+    }
+
+    /**
+     * 把连接的事务状态复位: 回滚未提交的事务并把 autoCommit 改回 true
+     *
+     * @return 是否复位成功; 失败时调用方应关闭该连接而不是归还到池中
+     */
+    private boolean resetTransactionState(Connection connection) {
+        try {
+            if (connection.getAutoCommit()) {
+                return true;
+            }
+            connection.rollback();
+            connection.setAutoCommit(true);
+            return true;
+        } catch (SQLException e) {
+            return false;
         }
     }
 
@@ -259,6 +288,9 @@ public class PooledConnectionSource implements ConnectionSource {
      * 设置最大连接数，需在首次获取连接前调用
      */
     public PooledConnectionSource setMaxConnections(int maxConnections) {
+        if (maxConnections < 1) {
+            throw new IllegalArgumentException("maxConnections must be at least 1, but got " + maxConnections);
+        }
         if (totalConnections.get() > 0) {
             throw new IllegalStateException("Cannot change max connections after the pool has been used");
         }
@@ -315,6 +347,90 @@ public class PooledConnectionSource implements ConnectionSource {
 
     public int getActiveConnections() {
         return activeConnections.size();
+    }
+
+    /**
+     * 连接代理: 把 close() 转成归还到连接池。
+     * <p>
+     * 池对外只提供 {@link #releaseConnection(Connection)}, 但返回的 Connection 本身是 AutoCloseable:
+     * 调用方按 try-with-resources 使用时, 若 close() 不归还, 就会永久漏掉一个许可。
+     * 这里拦截 close(), 把它转成正常的归还流程。
+     */
+    private static final class PooledConnectionHandle implements InvocationHandler {
+
+        private final Connection delegate;
+        private final PooledConnectionSource source;
+        private final AtomicBoolean released = new AtomicBoolean(false);
+
+        private PooledConnectionHandle(Connection delegate, PooledConnectionSource source) {
+            this.delegate = delegate;
+            this.source = source;
+        }
+
+        static Connection wrap(Connection delegate, PooledConnectionSource source) {
+            return (Connection) Proxy.newProxyInstance(
+                Connection.class.getClassLoader(),
+                new Class<?>[]{Connection.class},
+                new PooledConnectionHandle(delegate, source)
+            );
+        }
+
+        /**
+         * 取出代理背后的真实连接; 非本类代理原样返回
+         */
+        static Connection unwrap(Connection connection) {
+            if (connection == null) {
+                return null;
+            }
+            if (!Proxy.isProxyClass(connection.getClass())) {
+                return connection;
+            }
+            InvocationHandler handler = Proxy.getInvocationHandler(connection);
+            if (handler instanceof PooledConnectionHandle) {
+                return ((PooledConnectionHandle) handler).delegate;
+            }
+            return connection;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            String methodName = method.getName();
+            if ("close".equals(methodName) && (args == null || args.length == 0)) {
+                release();
+                return null;
+            }
+            if ("isClosed".equals(methodName) && (args == null || args.length == 0)) {
+                return released.get() || delegate.isClosed();
+            }
+            if ("equals".equals(methodName) && args != null && args.length == 1) {
+                Object other = args[0];
+                if (proxy == other) {
+                    return true;
+                }
+                if (!(other instanceof Connection)) {
+                    return false;
+                }
+                return delegate.equals(unwrap((Connection) other));
+            }
+            if ("hashCode".equals(methodName) && (args == null || args.length == 0)) {
+                return delegate.hashCode();
+            }
+            if ("toString".equals(methodName) && (args == null || args.length == 0)) {
+                return "PooledConnection[" + delegate + "]";
+            }
+            try {
+                return method.invoke(delegate, args);
+            } catch (InvocationTargetException e) {
+                //把驱动抛出的原始异常透出, 不要包成 InvocationTargetException
+                throw e.getCause();
+            }
+        }
+
+        private void release() {
+            if (released.compareAndSet(false, true)) {
+                source.releaseConnection(delegate);
+            }
+        }
     }
 
     /**

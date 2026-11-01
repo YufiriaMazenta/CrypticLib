@@ -73,33 +73,87 @@ public class TransactionManager {
         IN_TRANSACTION.set(connectionSource);
         try {
             Connection connection = connectionSource.getConnection();
+            T result;
             try {
                 connection.setAutoCommit(false);
-                T result = action.call(connection);
+                result = action.call(connection);
                 connection.commit();
-                return result;
-            } catch (Exception e) {
-                try {
-                    connection.rollback();
-                } catch (SQLException rollbackError) {
-                    // 回滚失败不能覆盖原始异常
-                    e.addSuppressed(rollbackError);
+            } catch (Throwable t) {
+                //回滚必须覆盖 Error: JDBC 规定 autoCommit 由 false 切回 true 时会提交当前事务,
+                //只 catch Exception 时 Error 路径会把半途的写入提交掉
+                boolean rolledBack = rollback(connection, t);
+                if (!rolledBack || !restoreAutoCommit(connection)) {
+                    //无法保证连接回到干净状态: 直接关闭, 绝不把脏连接还给连接池
+                    closeQuietly(connection);
+                } else {
+                    connectionSource.releaseConnection(connection);
                 }
-                if (e instanceof SQLException) {
-                    throw (SQLException) e;
-                }
-                throw new SQLException("Transaction execution failed", e);
-            } finally {
-                try {
-                    connection.setAutoCommit(true);
-                } catch (SQLException ignored) {
-                    // 归还连接前恢复自动提交失败，忽略，避免覆盖真正的失败原因
-                }
-                connectionSource.releaseConnection(connection);
+                throw rethrow(t);
             }
+            //提交成功后的收尾: 先恢复自动提交再归还; 恢复失败则丢弃该连接
+            if (restoreAutoCommit(connection)) {
+                connectionSource.releaseConnection(connection);
+            } else {
+                closeQuietly(connection);
+            }
+            return result;
         } finally {
             IN_TRANSACTION.remove();
         }
+    }
+
+    /**
+     * 回滚事务, 回滚失败时把异常记为 suppressed(不能覆盖真正的失败原因)
+     *
+     * @return 回滚是否成功
+     */
+    private static boolean rollback(Connection connection, Throwable cause) {
+        try {
+            connection.rollback();
+            return true;
+        } catch (SQLException rollbackError) {
+            cause.addSuppressed(rollbackError);
+            return false;
+        }
+    }
+
+    /**
+     * 恢复自动提交
+     *
+     * @return 是否恢复成功
+     */
+    private static boolean restoreAutoCommit(Connection connection) {
+        try {
+            connection.setAutoCommit(true);
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    private static void closeQuietly(Connection connection) {
+        try {
+            connection.close();
+        } catch (SQLException ignored) {
+            //关闭失败无需额外处理, 连接已经不可用
+        }
+    }
+
+    /**
+     * 按原始异常类型重新抛出。
+     * <p>
+     * SQLException 原样抛出; Error(如 OutOfMemoryError/StackOverflowError)保持原类型,
+     * 不能被包装成受检异常; 其余异常统一包成 SQLException, 与
+     * {@link #withTransaction} 声明的 {@code throws SQLException} 契约保持一致。
+     */
+    private static RuntimeException rethrow(Throwable t) throws SQLException {
+        if (t instanceof SQLException) {
+            throw (SQLException) t;
+        }
+        if (t instanceof Error) {
+            throw (Error) t;
+        }
+        throw new SQLException("Transaction execution failed", t);
     }
 
     /**
