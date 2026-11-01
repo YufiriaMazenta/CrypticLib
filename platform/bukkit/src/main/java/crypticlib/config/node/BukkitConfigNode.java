@@ -52,6 +52,25 @@ public abstract class BukkitConfigNode<T> extends ConfigNode<T, ConfigurationSec
         }
     }
 
+    /**
+     * 判断 {@link #saveDef(ConfigurationSection)} 是否会写入内容(缺键或缺少默认注释)。
+     * <p>
+     * 调用方据此决定是否需要落盘: 若只跟踪"缺键", 那么给一个已存在的键新增默认注释时
+     * 只会写进内存而永远不会保存, 文档里的默认注释对老用户永远不出现。
+     *
+     * @param config 配置
+     * @return 是否会产生写入
+     */
+    public boolean wouldWriteDef(@NotNull ConfigurationSection config) {
+        if (!config.contains(key)) {
+            return true;
+        }
+        if (!MinecraftVersion.current().afterOrEquals(MinecraftVersion.V1_18_1)) {
+            return false;
+        }
+        return defComments != null && !defComments.isEmpty() && config.getComments(key).isEmpty();
+    }
+
     @Override
     protected final boolean hasKey(@NotNull ConfigurationSection config) {
         return config.contains(key);

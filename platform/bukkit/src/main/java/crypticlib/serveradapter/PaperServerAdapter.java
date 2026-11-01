@@ -30,12 +30,14 @@ public enum PaperServerAdapter implements ServerAdapter {
 
     @Override
     public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location, PlayerTeleportEvent.@NotNull TeleportCause cause) {
-        return BukkitServerAdapter.INSTANCE.teleportEntity(entity, location, cause);
+        //Paper 提供了真正的异步传送, 不能退回同步实现: 否则异步调用方会触发线程检查异常,
+        //且返回的 Future 语义与 ServerAdapter 声明的不一致
+        return entity.teleportAsync(location, cause);
     }
 
     @Override
     public Future<Boolean> teleportEntity(@NotNull Entity entity, @NotNull Location location) {
-        return BukkitServerAdapter.INSTANCE.teleportEntity(entity, location);
+        return entity.teleportAsync(location);
     }
 
     @Override

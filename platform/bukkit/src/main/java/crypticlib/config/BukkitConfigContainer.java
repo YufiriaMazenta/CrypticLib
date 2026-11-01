@@ -27,7 +27,8 @@ public class BukkitConfigContainer extends ConfigContainer<BukkitConfigWrapper, 
         for (BukkitConfigNode<?> configNode : configNodeMap.values()) {
             if (configNode.configContainer() == null)
                 configNode.setConfigContainer(this);
-            if (!configWrapper.config().contains(configNode.key()))
+            //缺键或缺少默认注释都算一次需要落盘的改动, 否则新增的默认注释永远不会写入已存在的配置文件
+            if (configNode.wouldWriteDef(configWrapper.config()))
                 changed = true;
             configNode.saveDef(configWrapper.config());
             //单个节点加载异常时记录告警并跳过, 不让一个坏键中断整个配置类的加载
