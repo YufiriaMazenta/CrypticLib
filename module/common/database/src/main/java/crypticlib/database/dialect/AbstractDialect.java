@@ -3,24 +3,16 @@ package crypticlib.database.dialect;
 import crypticlib.database.annotation.Field;
 import crypticlib.database.table.ColumnInfo;
 import crypticlib.database.table.TableInfo;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringJoiner;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * 方言基类，提供通用实现
  */
 public abstract class AbstractDialect implements DatabaseDialect {
-
-    /**
-     * 允许作为数值默认值的字面量
-     */
-    private static final Pattern NUMERIC_LITERAL = Pattern.compile("[-+]?\\d+(\\.\\d+)?");
 
     @Override
     public String generateCreateTableSql(TableInfo tableInfo) {
@@ -234,50 +226,11 @@ public abstract class AbstractDialect implements DatabaseDialect {
         }
 
         if (!columnInfo.getDefaultValue().isEmpty()) {
-            sqlBuilder.append(" DEFAULT ").append(formatDefaultValue(columnInfo));
+            //defaultValue 按注解文档的约定是 SQL 表达式, 原样拼接(需要字符串字面量时由使用方自己加引号)
+            sqlBuilder.append(" DEFAULT ").append(columnInfo.getDefaultValue());
         }
 
         return sqlBuilder.toString();
-    }
-
-    /**
-     * 把 {@code @Field(defaultValue)} 格式化成可安全拼进 DDL 的字面量。
-     * <p>
-     * 其余取值路径都走参数绑定, 只有默认值是直接拼接的, 因此这里必须按列类型加引号/做白名单校验:
-     * 文本类按 SQL 字符串字面量处理(内部单引号双写), 数值与布尔做字面量校验,
-     * 另外放行 {@code NULL} 与 {@code CURRENT_TIMESTAMP} 这类表达式。
-     *
-     * @param columnInfo 列元数据
-     * @return 可拼进 DDL 的默认值片段
-     * @throws IllegalArgumentException 默认值与该列类型不匹配时抛出
-     */
-    protected String formatDefaultValue(@NotNull ColumnInfo columnInfo) {
-        String raw = columnInfo.getDefaultValue();
-        String trimmed = raw.trim();
-        String upper = trimmed.toUpperCase(Locale.ROOT);
-        if ("NULL".equals(upper) || "CURRENT_TIMESTAMP".equals(upper) || "CURRENT_TIMESTAMP()".equals(upper)) {
-            return trimmed;
-        }
-        Class<?> javaType = columnInfo.getJavaType();
-        if (javaType == boolean.class || javaType == Boolean.class) {
-            if ("true".equalsIgnoreCase(trimmed) || "1".equals(trimmed)) {
-                return "TRUE";
-            }
-            if ("false".equalsIgnoreCase(trimmed) || "0".equals(trimmed)) {
-                return "FALSE";
-            }
-            throw new IllegalArgumentException("Illegal boolean default value for column \""
-                + columnInfo.getColumnName() + "\": " + raw);
-        }
-        if (javaType.isPrimitive() || Number.class.isAssignableFrom(javaType)) {
-            if (!NUMERIC_LITERAL.matcher(trimmed).matches()) {
-                throw new IllegalArgumentException("Illegal numeric default value for column \""
-                    + columnInfo.getColumnName() + "\": " + raw);
-            }
-            return trimmed;
-        }
-        //文本类(String/枚举/UUID/char)以及未知类型: 按字符串字面量处理
-        return "'" + trimmed.replace("'", "''") + "'";
     }
 
     /**
