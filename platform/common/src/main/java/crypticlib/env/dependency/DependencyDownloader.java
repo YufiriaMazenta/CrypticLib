@@ -38,6 +38,11 @@ public class DependencyDownloader extends AbstractXmlParser {
 
     private static final Set<Dependency> downloadedDependencies = new CopyOnWriteArraySet<>();
 
+    /**
+     * 正在解析中的依赖(用于阻断 POM 依赖环: A 依赖 B、B 又依赖 A)
+     */
+    private static final Set<Dependency> resolvingInProgress = ConcurrentHashMap.newKeySet();
+
     private final Set<Repository> repositories = new CopyOnWriteArraySet<>();
     private final Set<JarRelocation> relocation = new CopyOnWriteArraySet<>();
     private final File baseDir;
@@ -125,6 +130,21 @@ public class DependencyDownloader extends AbstractXmlParser {
             return Collections.singleton(dependency);
         }
 
+        //环检测: A 的 POM 依赖 B、B 的 POM 又依赖 A 时不能无限递归
+        if (!resolvingInProgress.add(dependency)) {
+            return Collections.singleton(dependency);
+        }
+        try {
+            return doLoadDependency(repos, dependency);
+        } finally {
+            resolvingInProgress.remove(dependency);
+        }
+    }
+
+    /**
+     * 实际的下载与传递依赖解析
+     */
+    private Set<Dependency> doLoadDependency(@NotNull Collection<Repository> repos, @NotNull Dependency dependency) throws IOException {
         File pom = dependency.findFile(baseDir, "pom");
         File pom1 = new File(pom.getPath() + ".sha1");
         File jar = dependency.findFile(baseDir, "jar");
@@ -133,14 +153,16 @@ public class DependencyDownloader extends AbstractXmlParser {
         Set<Dependency> downloaded = ConcurrentHashMap.newKeySet();
         downloaded.add(dependency);
 
-        // 检查是否已下载且完整（pom 与 jar 都需通过 sha1 校验; jar 不存在视为纯 POM 依赖）
-        if (validation(pom, pom1) && jarValid(jar, jar1)) {
-            downloadedDependencies.add(dependency);
+        // 检查是否已下载且完整: 有 .sha1 就校验, 没有则视为完整(仓库可能不提供校验文件);
+        // jar 不存在视为纯 POM 依赖。不能要求 .sha1 必须存在, 否则每次启动都会重下整个 jar
+        if (isPresentAndVerified(pom, pom1) && jarValid(jar, jar1)) {
             if (pom.exists()) {
                 try (InputStream in = pom.toURI().toURL().openStream()) {
                     downloaded.addAll(loadDependencyFromInputStream(in));
                 }
             }
+            //传递依赖解析成功后才标记完成: 中途失败时若已标记, 后续调用会直接返回主构件, 传递依赖永久缺失
+            downloadedDependencies.add(dependency);
             return downloaded;
         }
 
@@ -187,8 +209,6 @@ public class DependencyDownloader extends AbstractXmlParser {
                 : new IOException("No repository available to download " + dependency);
         }
 
-        downloadedDependencies.add(dependency);
-
         // 如果 POM 存在，解析传递依赖
         if (pom.exists()) {
             try (InputStream in = pom.toURI().toURL().openStream()) {
@@ -196,6 +216,8 @@ public class DependencyDownloader extends AbstractXmlParser {
             }
         }
 
+        //传递依赖解析成功后才是"已完成", 避免一次失败把传递依赖永久丢失
+        downloadedDependencies.add(dependency);
         return downloaded;
     }
 
@@ -296,9 +318,15 @@ public class DependencyDownloader extends AbstractXmlParser {
     public Set<Dependency> loadDependencyFromInputStream(@NotNull InputStream pom, @NotNull DependencyScope... scopes) throws IOException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setFeature("http://xml.org/sax/features/validation", false);
-            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+            //POM 是完全不可信的远程内容(且其中的 <repositories> 也会参与下载), 必须关闭 DOCTYPE 与外部实体解析,
+            //否则恶意 POM 可以读取本地文件并回显到日志/异常信息中, 或构造 billion-laughs
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setFeature("http://xml.org/sax/features/validation", false);
+            factory.setExpandEntityReferences(false);
+            factory.setXIncludeAware(false);
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document xml = builder.parse(pom);
             return loadDependencyFromPom(xml);
@@ -370,6 +398,22 @@ public class DependencyDownloader extends AbstractXmlParser {
         if (baseDir != null) {
             baseDir.mkdirs();
         }
+    }
+
+    /**
+     * 判断文件已存在且可信: 有 .sha1 就校验, 没有则视为完整。
+     * <p>
+     * 注意: 这里的"没有 .sha1 视为完整"只用于决定"是否还要重新下载",
+     * 不代表已经校验过完整性。
+     */
+    private boolean isPresentAndVerified(@NotNull File file, @NotNull File sha1File) {
+        if (!file.exists()) {
+            return false;
+        }
+        if (!sha1File.exists()) {
+            return true;
+        }
+        return validation(file, sha1File);
     }
 
     /**

@@ -3,9 +3,7 @@ package crypticlib.env;
 import crypticlib.env.dependency.DependencyLoader;
 import sun.misc.Unsafe;
 
-import java.io.File;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandle;import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -46,7 +44,9 @@ public class ClassAppender {
                 "在 JDK 24+ 上如以 --sun-misc-unsafe-memory-access=deny 运行, 请改为 --sun-misc-unsafe-memory-access=allow。",
                 initError);
         }
-        File file = new File(path.toUri().getPath());
+        //不要用 path.toUri().getPath() 再 new File(...): 那会把 %20 之类的转义当成字面量,
+        //再经 File.toURI() 二次编码成 %2520, 注入的 URL 指向不存在的文件, 依赖注入会静默失效
+        URL url = path.toUri().toURL();
         ClassLoader loader = DependencyLoader.class.getClassLoader();
 
         String loaderClassName = loader.getClass().getName();
@@ -54,12 +54,12 @@ public class ClassAppender {
         switch (loaderClassName) {
             // Application ClassLoader (现代 JVM)
             case "jdk.internal.loader.ClassLoaders$AppClassLoader":
-                addURL(loader, ucp(loader.getClass()), file);
+                addURL(loader, ucp(loader.getClass()), url);
                 break;
             // LaunchClassLoader (Hybrid/旧版 Forge)
             case "net.minecraft.launchwrapper.LaunchClassLoader":
                 MethodHandle methodHandle = lookup.findVirtual(URLClassLoader.class, "addURL", MethodType.methodType(void.class, URL.class));
-                methodHandle.invoke(loader, file.toURI().toURL());
+                methodHandle.invoke(loader, url);
                 break;
             // Paper PaperPluginClassLoader — 注入到其 libraryLoader
             // PaperSimplePluginClassLoader.findClass() 不会 fallback 到 super.findClass()，
@@ -67,11 +67,11 @@ public class ClassAppender {
             // 第二步会委托给 libraryLoader.loadClass()，而 libraryLoader 是标准 URLClassLoader，
             // 其 findClass 会查 ucp，所以注入到这里可以生效。
             case "io.papermc.paper.plugin.entrypoint.classloader.PaperPluginClassLoader":
-                addPathToPaperLibraryLoader(loader, file);
+                addPathToPaperLibraryLoader(loader, url);
                 break;
             // Bukkit PluginClassLoader
             default:
-                addURL(loader, ucp(loader), file);
+                addURL(loader, ucp(loader), url);
                 break;
         }
 
@@ -85,17 +85,17 @@ public class ClassAppender {
      *   2. libraryLoader.loadClass → 标准 URLClassLoader.findClass → 查 ucp
      *   3. PluginClassLoaderGroup → 查依赖插件
      */
-    private static void addPathToPaperLibraryLoader(ClassLoader paperLoader, File file) throws Throwable {
+    private static void addPathToPaperLibraryLoader(ClassLoader paperLoader, URL url) throws Throwable {
         Field field = paperLoader.getClass().getDeclaredField("libraryLoader");
         long offset = unsafe.objectFieldOffset(field);
         URLClassLoader libraryLoader = (URLClassLoader) unsafe.getObject(paperLoader, offset);
 
         if (libraryLoader != null) {
-            addURL(libraryLoader, ucp(URLClassLoader.class), file);
+            addURL(libraryLoader, ucp(URLClassLoader.class), url);
         } else {
             // libraryLoader 为 null 的极端情况，降级到 AppClassLoader
             ClassLoader app = ClassLoader.getSystemClassLoader();
-            addURL(app, ucp(app.getClass()), file);
+            addURL(app, ucp(app.getClass()), url);
         }
     }
 
@@ -118,14 +118,14 @@ public class ClassAppender {
         }
     }
 
-    private static void addURL(ClassLoader loader, Field ucpField, File file) throws Throwable {
+    private static void addURL(ClassLoader loader, Field ucpField, URL url) throws Throwable {
         if (ucpField == null) {
             throw new IllegalStateException("ucp field not found");
         }
         Object ucp = unsafe.getObject(loader, unsafe.objectFieldOffset(ucpField));
         try {
             MethodHandle methodHandle = lookup.findVirtual(ucp.getClass(), "addURL", MethodType.methodType(void.class, URL.class));
-            methodHandle.invoke(ucp, file.toURI().toURL());
+            methodHandle.invoke(ucp, url);
         } catch (NoSuchMethodException e) {
             throw new IllegalStateException("Unsupported (classloader: " + loader.getClass().getName() + ", ucp: " + ucp.getClass().getName() + ")", e);
         }

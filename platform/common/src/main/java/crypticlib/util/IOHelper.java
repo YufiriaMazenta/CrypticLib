@@ -11,10 +11,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
@@ -158,20 +160,42 @@ public class IOHelper {
      * @param out 目标文件
      */
     public static void downloadFile(URL url, File out) throws IOException {
-        Files.createDirectories(out.getParentFile().toPath());
+        Path target = out.toPath();
+        Path parent = target.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
         URLConnection conn = url.openConnection();
         // 显式设置连接/读取超时, 避免不可达仓库无限阻塞启动线程
         conn.setConnectTimeout(15000);
         conn.setReadTimeout(30000);
         conn.setRequestProperty("User-Agent", "CrypticLib");
-        try (InputStream ins = conn.getInputStream();
-             OutputStream outs = Files.newOutputStream(out.toPath())
-        ) {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int len;
-            while ((len = ins.read(buffer)) > 0) {
-                outs.write(buffer, 0, len);
+        //先写同目录的临时文件, 成功后再原子改名: 进程被杀/网络中断不会留下"看起来完整"的截断产物,
+        //否则下次启动会把截断的 jar 当成有效依赖注入(H2/驱动等会抛 ClassFormatError 或 NoClassDefFoundError)
+        String prefix = out.getName();
+        if (prefix.length() < 3) {
+            prefix = "tmp" + prefix;
+        }
+        Path tempFile = Files.createTempFile(parent, prefix, ".part");
+        try {
+            try (InputStream ins = conn.getInputStream();
+                 OutputStream outs = Files.newOutputStream(tempFile)
+            ) {
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int len;
+                //read 返回 0 不代表结束, 必须用 -1 判断, 否则非阻塞流上会写出截断文件
+                while ((len = ins.read(buffer)) != -1) {
+                    outs.write(buffer, 0, len);
+                }
             }
+            try {
+                Files.move(tempFile, target,
+                    StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(tempFile, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(tempFile);
         }
     }
 
