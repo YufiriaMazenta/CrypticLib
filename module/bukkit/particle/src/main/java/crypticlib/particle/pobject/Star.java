@@ -30,7 +30,7 @@ public class Star extends ParticleObject implements Playable {
     public Star(Location origin, double radius, double step) {
         setOriginLocation(origin);
         this.radius = radius;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
 
         this.length = Math.sin(Math.toRadians(72)) * radius * 2;
 
@@ -219,7 +219,7 @@ public class Star extends ParticleObject implements Playable {
     }
 
     public void setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
     }
 
 }

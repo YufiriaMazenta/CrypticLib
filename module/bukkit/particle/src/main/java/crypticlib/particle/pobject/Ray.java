@@ -55,7 +55,7 @@ public class Ray extends ParticleObject implements Playable {
         setOriginLocation(origin);
         this.direction = direction;
         this.maxLength = maxLength;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         this.range = range;
         this.stopType = stopType;
         this.hitEntityConsumer = hitEntityConsumer;
@@ -246,7 +246,7 @@ public class Ray extends ParticleObject implements Playable {
     }
 
     public Ray setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         return this;
     }
 

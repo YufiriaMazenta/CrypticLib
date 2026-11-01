@@ -37,7 +37,7 @@ public class GeneralEquationRenderer extends ParticleObject implements Playable 
         this.function = function;
         this.minX = minX;
         this.maxX = maxX;
-        this.dx = dx;
+        this.dx = requirePositiveStep(dx, "dx");
         // 播放游标初始化为区间起点, 使 play/playNextPoint 与 show 覆盖区间一致
         this.currentX = minX;
     }

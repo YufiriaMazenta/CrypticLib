@@ -40,7 +40,7 @@ public class Grid extends ParticleObject {
             isXDimension = true;
         }
 
-        this.gridLength = gridLength;
+        this.gridLength = requirePositiveStep(gridLength, "gridLength");
         // 设定原点, 否则叠加矩阵后 spawnParticle 会因 originLocation 为 null 而 NPE
         setOriginLocation(minimumLocation);
     }

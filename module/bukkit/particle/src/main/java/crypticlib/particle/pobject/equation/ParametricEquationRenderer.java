@@ -81,7 +81,7 @@ public class ParametricEquationRenderer extends ParticleObject implements Playab
         this.zFunction = zFunction;
         this.minT = minT;
         this.maxT = maxT;
-        this.dt = dT;
+        this.dt = requirePositiveStep(dT, "dT");
         // 播放游标初始化为区间起点, 使 play/playNextPoint 与 show 覆盖区间一致
         this.currentT = minT;
     }

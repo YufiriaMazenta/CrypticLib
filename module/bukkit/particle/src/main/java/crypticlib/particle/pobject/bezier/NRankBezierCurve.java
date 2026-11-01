@@ -46,7 +46,7 @@ public class NRankBezierCurve extends ParticleObject implements Playable {
      */
     public NRankBezierCurve(List<Location> locations, double step) {
         this.locations = locations;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         // 曲线点位由控制点绝对坐标烘焙而来, 这里以首控制点作为原点, 避免叠加矩阵时 getOriginLocation() 为 null 导致 NPE
         if (!locations.isEmpty()) {
             setOriginLocation(locations.get(0));

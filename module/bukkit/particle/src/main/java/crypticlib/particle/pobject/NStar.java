@@ -27,7 +27,7 @@ public class NStar extends ParticleObject {
         setOriginLocation(origin);
         this.corner = corner;
         this.radius = radius;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
 
         this.angle = 360D / corner;
     }
@@ -132,7 +132,7 @@ public class NStar extends ParticleObject {
     }
 
     public NStar setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         return this;
     }
 }

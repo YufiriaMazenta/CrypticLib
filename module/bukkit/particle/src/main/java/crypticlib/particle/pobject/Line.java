@@ -56,7 +56,7 @@ public class Line extends ParticleObject implements Playable {
     public Line(Location start, Location end, double step, long period) {
         this.start = start;
         this.end = end;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         setPeriod(period);
         // 设定原点为起点, 否则叠加矩阵后 spawnParticle 会因 originLocation 为 null 而 NPE
         setOriginLocation(start);
@@ -66,6 +66,7 @@ public class Line extends ParticleObject implements Playable {
     }
 
     public static void buildLine(Location locA, Location locB, double step, Particle particle) {
+        requirePositiveStep(step, "step");
         Vector vectorAB = locB.clone().subtract(locA).toVector();
         double vectorLength = vectorAB.length();
         vectorAB.normalize();
@@ -75,6 +76,7 @@ public class Line extends ParticleObject implements Playable {
     }
 
     public static void buildLine(Location locA, Location locB, double step, Color color) {
+        requirePositiveStep(step, "step");
         Vector vectorAB = locB.clone().subtract(locA).toVector();
         double vectorLength = vectorAB.length();
         vectorAB.normalize();
@@ -160,7 +162,7 @@ public class Line extends ParticleObject implements Playable {
     }
 
     public Line setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         resetVector();
         return this;
     }

@@ -48,7 +48,7 @@ public class PolarEquationRenderer extends ParticleObject implements Playable {
         this.function = function;
         this.minTheta = minTheta;
         this.maxTheta = maxTheta;
-        this.dTheta = dTheta;
+        this.dTheta = requirePositiveStep(dTheta, "dTheta");
         // 播放游标初始化为区间起点, 使 play/playNextPoint 与 show 覆盖区间一致
         this.currentTheta = minTheta;
     }

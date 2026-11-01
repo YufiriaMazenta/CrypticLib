@@ -66,7 +66,7 @@ public class Heart extends ParticleObject implements Playable {
     }
 
     public void setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
     }
 
     @Override

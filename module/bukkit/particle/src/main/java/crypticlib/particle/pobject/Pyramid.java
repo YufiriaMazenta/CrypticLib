@@ -45,7 +45,7 @@ public class Pyramid extends ParticleObject {
         }
         this.side = side;
         this.height = height;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         this.radius = radius;
 
         this.locations = new ArrayList<>();
@@ -57,6 +57,10 @@ public class Pyramid extends ParticleObject {
     }
 
     public Pyramid setSide(int side) {
+        // 与构造器保持同一约束: 边数必须大于 2, 否则 360D / side 会退化为 0/负数, 渲染循环无法结束
+        if (side <= 2) {
+            throw new IllegalArgumentException("Side count must be greater than 2, but got " + side);
+        }
         this.side = side;
         resetLocations();
         return this;
@@ -79,7 +83,7 @@ public class Pyramid extends ParticleObject {
     }
 
     public Pyramid setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         resetLocations();
         return this;
     }

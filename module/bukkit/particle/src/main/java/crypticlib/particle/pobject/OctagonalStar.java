@@ -22,7 +22,7 @@ public class OctagonalStar extends ParticleObject {
         setOriginLocation(origin);
 
         this.radius = radius;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
     }
 
     @Override
@@ -107,7 +107,7 @@ public class OctagonalStar extends ParticleObject {
     }
 
     public OctagonalStar setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         return this;
     }
 }

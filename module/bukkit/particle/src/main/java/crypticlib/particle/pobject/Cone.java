@@ -35,7 +35,7 @@ public class Cone extends ParticleObject implements Playable {
      */
     public Cone(Location origin, int sample, double radius, double height) {
         setOriginLocation(origin);
-        this.sample = sample;
+        this.sample = requireMinSample(sample);
         this.radius = radius;
         this.height = height;
 
@@ -132,9 +132,21 @@ public class Cone extends ParticleObject implements Playable {
     }
 
     public Cone setSample(int sample) {
-        this.sample = sample;
+        this.sample = requireMinSample(sample);
         resetLocations();
         return this;
+    }
+
+    /**
+     * 校验样本点个数。
+     * <p>
+     * 样本数为 0/负数会得到空点位列表, 播放时按索引取点会越界。
+     */
+    private static int requireMinSample(int sample) {
+        if (sample < 1) {
+            throw new IllegalArgumentException("sample must be at least 1, but got " + sample);
+        }
+        return sample;
     }
 
     public double radius() {

@@ -74,6 +74,26 @@ public abstract class ParticleObject {
     }
 
     /**
+     * 校验粒子的步长/密度参数。
+     * <p>
+     * 这些值会被直接当作渲染循环的自增量使用（{@code for (...; i += step)}），
+     * 因此 0、负数、NaN、Infinity 都会让循环永远无法结束：循环跑在主线程 / 区域线程上，
+     * 会以无异常的形态冻结整个服务端。这里在入口处快速失败，把问题暴露在参数传入点。
+     *
+     * @param value     待校验的值
+     * @param paramName 参数名，用于异常信息
+     * @return 原值，便于在使用处内联赋值
+     * @throws IllegalArgumentException 值不是有限正数时抛出
+     */
+    protected static double requirePositiveStep(double value, @NotNull String paramName) {
+        if (!(value > 0) || !Double.isFinite(value)) {
+            throw new IllegalArgumentException(paramName
+                + " must be a positive finite number, otherwise the render loop can never terminate, but got " + value);
+        }
+        return value;
+    }
+
+    /**
      * 将计算好的粒子展示位置以列表的方式返回
      *
      * @return 粒子位置列表

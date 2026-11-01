@@ -40,7 +40,7 @@ public class Sphere extends ParticleObject implements Playable {
      */
     public Sphere(Location origin, int sample, double radius) {
         setOriginLocation(origin);
-        this.sample = sample;
+        this.sample = requireMinSample(sample);
         this.radius = radius;
 
         locations = new ArrayList<>();
@@ -138,9 +138,22 @@ public class Sphere extends ParticleObject implements Playable {
     }
 
     public Sphere setSample(int sample) {
-        this.sample = sample;
+        this.sample = requireMinSample(sample);
         resetLocations();
         return this;
+    }
+
+    /**
+     * 校验样本点个数。
+     * <p>
+     * 纬度公式使用 {@code sample - 1} 作为除数, sample 为 1 时会算出 NaN 坐标;
+     * 样本数为 0/负数则会得到空点位列表, 播放时越界。
+     */
+    private static int requireMinSample(int sample) {
+        if (sample < 2) {
+            throw new IllegalArgumentException("sample must be at least 2, but got " + sample);
+        }
+        return sample;
     }
 
     public double radius() {

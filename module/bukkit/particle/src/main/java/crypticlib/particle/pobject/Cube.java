@@ -41,7 +41,7 @@ public class Cube extends ParticleObject {
     public Cube(Location minLoc, Location maxLoc, double step) {
         this.minLoc = minLoc;
         this.maxLoc = maxLoc;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         if (minLoc.getWorld() != maxLoc.getWorld()) {
             throw new IllegalArgumentException("Both corners must be in the same world");
         }
@@ -70,7 +70,7 @@ public class Cube extends ParticleObject {
     }
 
     public void setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
     }
 
     @Override

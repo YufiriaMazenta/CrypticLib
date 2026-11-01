@@ -42,7 +42,7 @@ public class TwoRankBezierCurve extends ParticleObject implements Playable {
         this.p0 = p0;
         this.p1 = p1;
         this.p2 = p2;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         // 曲线点位由控制点绝对坐标烘焙而来, 这里以首控制点作为原点, 避免叠加矩阵时 getOriginLocation() 为 null 导致 NPE
         setOriginLocation(p0);
         locations = new ArrayList<>();
@@ -150,7 +150,7 @@ public class TwoRankBezierCurve extends ParticleObject implements Playable {
     }
 
     public TwoRankBezierCurve setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         resetLocations();
         return this;
     }

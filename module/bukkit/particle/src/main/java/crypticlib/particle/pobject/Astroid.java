@@ -42,7 +42,7 @@ public class Astroid extends ParticleObject implements Playable {
 
     public Astroid(double radius, Location origin, double step) {
         this.radius = radius;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         setOriginLocation(origin);
     }
 
@@ -134,6 +134,6 @@ public class Astroid extends ParticleObject implements Playable {
     }
 
     public void setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
     }
 }

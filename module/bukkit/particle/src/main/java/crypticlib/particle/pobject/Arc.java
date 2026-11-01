@@ -64,7 +64,7 @@ public class Arc extends ParticleObject implements Playable {
         this.startAngle = startAngle;
         this.angle = angle;
         this.radius = radius;
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         this.currentAngle = startAngle;
         setPeriod(period);
     }
@@ -172,7 +172,7 @@ public class Arc extends ParticleObject implements Playable {
     }
 
     public Arc setStep(double step) {
-        this.step = step;
+        this.step = requirePositiveStep(step, "step");
         return this;
     }
 
