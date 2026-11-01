@@ -12,9 +12,6 @@ import java.sql.SQLException;
  */
 public class TableUtils {
 
-    private TableUtils() {
-    }
-
     /**
      * 创建表（如果不存在）
      */

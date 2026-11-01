@@ -20,9 +20,6 @@ public class TransactionManager {
 
     private static final ThreadLocal<ConnectionSource> IN_TRANSACTION = new ThreadLocal<>();
 
-    private TransactionManager() {
-    }
-
     /**
      * 当前线程是否正在该连接源上执行事务
      * <p>
