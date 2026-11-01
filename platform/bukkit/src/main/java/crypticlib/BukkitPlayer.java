@@ -37,6 +37,10 @@ public class BukkitPlayer extends BukkitEntity implements CommonPlayer {
         if (player == null) {
             return;
         }
+        //与 Bungee/Velocity 实现保持一致: 标题与副标题各自允许为 null, 统一转成空串,
+        //否则 null 会在 replaceStrings()/color() 里抛 NPE
+        title = title != null ? title : "";
+        subtitle = subtitle != null ? subtitle : "";
         title = StringHelper.replaceStrings(title, replaceMap);
         subtitle = StringHelper.replaceStrings(subtitle, replaceMap);
         title = BukkitTextProcessor.color(BukkitTextProcessor.placeholder(player, title));
@@ -47,7 +51,9 @@ public class BukkitPlayer extends BukkitEntity implements CommonPlayer {
     @Override
     public void sendActionBar(String text, Map<String, String> replaceMap) {
         Player player = Bukkit.getPlayer(uuid);
-        if (player == null) {
+        //与 Bungee/Velocity 实现保持一致: 玩家离线或文本为空时静默跳过,
+        //否则 null 文本会在 color()/replaceStrings() 里抛 NPE
+        if (player == null || text == null) {
             return;
         }
         text = StringHelper.replaceStrings(text, replaceMap);
