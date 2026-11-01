@@ -1,5 +1,6 @@
 package crypticlib.scheduler;
 
+import crypticlib.CrypticLib;
 import crypticlib.CrypticLibPlugin;
 import crypticlib.PlatformSide;
 import crypticlib.lifecycle.LifecyclePhase;
@@ -57,7 +58,7 @@ public enum BungeeScheduler implements Scheduler, LifecycleTask {
         }
         //一次性任务执行完毕后在下次调度时被裁掉, 避免 asyncFutures 只增不减造成内存泄漏
         pruneFinishedFutures();
-        ScheduledFuture<?> future = asyncExecutor.schedule(task, delayTicks * 50, TimeUnit.MILLISECONDS);
+        ScheduledFuture<?> future = asyncExecutor.schedule(safeTask(task, null), delayTicks * 50, TimeUnit.MILLISECONDS);
         asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
     }
@@ -72,9 +73,47 @@ public enum BungeeScheduler implements Scheduler, LifecycleTask {
     @Override
     public TaskWrapper asyncTimer(@NotNull Runnable task, long delayTicks, long periodTicks) {
         pruneFinishedFutures();
-        ScheduledFuture<?> future = asyncExecutor.scheduleAtFixedRate(task, delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS);
+        //holder 用于在任务体内拿到 future 以便异常时取消自己
+        final ScheduledFuture<?>[] holder = new ScheduledFuture<?>[1];
+        ScheduledFuture<?> future = asyncExecutor.scheduleAtFixedRate(
+            safeTask(task, holder), delayTicks * 50, periodTicks * 50, TimeUnit.MILLISECONDS);
+        holder[0] = future;
         asyncFutures.add(future);
         return new BungeeTaskWrapper(future);
+    }
+
+    /**
+     * 包装异步任务: 捕获并记录异常。
+     * <p>
+     * {@link java.util.concurrent.ScheduledExecutorService} 在任务抛出异常后会静默抑制该任务的后续执行,
+     * 异常只留在没人读取的 Future 里, 表现为"定时任务无声无息地消失"。
+     * 因此这里自行捕获并记录日志, 定时任务还需取消自身, 避免变成每周期刷屏。
+     *
+     * @param task   实际任务
+     * @param holder 定时任务的 future 持有者, 一次性任务传 null
+     */
+    @NotNull
+    private Runnable safeTask(@NotNull Runnable task, ScheduledFuture<?>[] holder) {
+        return () -> {
+            try {
+                task.run();
+            } catch (Throwable throwable) {
+                CrypticLib.error("Async scheduled task failed: " + task.getClass().getName(), throwable);
+                ScheduledFuture<?> future = holder == null ? null : holder[0];
+                if (future != null) {
+                    future.cancel(false);
+                    return;
+                }
+                //零延迟定时任务首次执行时 future 尚未回填, 只能把异常交回执行器
+                if (throwable instanceof RuntimeException) {
+                    throw (RuntimeException) throwable;
+                }
+                if (throwable instanceof Error) {
+                    throw (Error) throwable;
+                }
+                throw new RuntimeException(throwable);
+            }
+        };
     }
 
     /**
