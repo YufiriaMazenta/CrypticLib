@@ -328,7 +328,9 @@ public class BaseDao<T> implements Dao<T> {
         T entity = (T) tableInfo.newInstance();
         for (ColumnInfo column : tableInfo.getColumns()) {
             Object value = getColumnValue(resultSet, column);
-            if (value != null) {
+            //SQL NULL 也要写回实体: 跳过会让字段保留构造器/字段初始值, 于是 NULL 列读出来像是有值,
+            //后续 update 还会把这个伪造值写回数据库。基本类型无法接收 null, 只能保持默认值
+            if (value != null || !column.getJavaType().isPrimitive()) {
                 column.setValue(entity, value);
             }
         }
@@ -372,10 +374,34 @@ public class BaseDao<T> implements Dao<T> {
             return value != null ? UUID.fromString(value) : null;
         } else if (javaType.isEnum()) {
             String value = resultSet.getString(columnName);
-            return value != null ? Enum.valueOf((Class<Enum>) javaType, value) : null;
+            return value != null ? parseEnumValue(javaType, value, columnName) : null;
         } else {
             return resultSet.getObject(columnName);
         }
+    }
+
+    /**
+     * 把数据库里的字符串转成枚举常量。
+     * <p>
+     * {@link Enum#valueOf} 是精确且大小写敏感的: 数据库里的历史值、外部写入的值大小写不一致时
+     * 会抛 IllegalArgumentException, 而该异常不在 DAO 声明的 throws SQLException 契约内。
+     * 这里先精确匹配, 再忽略大小写匹配, 失败时抛带上下文的 SQLException。
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Object parseEnumValue(Class<?> javaType, String value, String columnName) throws SQLException {
+        try {
+            return Enum.valueOf((Class<Enum>) javaType, value);
+        } catch (IllegalArgumentException ignored) {
+            //大小写/首尾空白不一致时继续尝试
+        }
+        String normalized = value.trim();
+        for (Object constant : javaType.getEnumConstants()) {
+            if (((Enum<?>) constant).name().equalsIgnoreCase(normalized)) {
+                return constant;
+            }
+        }
+        throw new SQLException("Unknown enum constant \"" + value + "\" for column \"" + columnName
+            + "\" of type " + javaType.getName());
     }
 
     /**

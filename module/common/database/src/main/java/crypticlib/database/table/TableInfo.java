@@ -6,7 +6,10 @@ import crypticlib.util.ReflectionHelper;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * 表元数据，描述数据库表的信息
@@ -68,6 +71,7 @@ public class TableInfo {
         ColumnInfo idColumn = null;
 
         // 解析所有字段（包括父类）
+        Set<String> columnNames = new HashSet<>();
         Class<?> currentClass = entityClass;
         while (currentClass != null && currentClass != Object.class) {
             for (java.lang.reflect.Field field : currentClass.getDeclaredFields()) {
@@ -83,6 +87,12 @@ public class TableInfo {
                 }
 
                 ColumnInfo columnInfo = ColumnInfo.fromField(field);
+                //列名重复会让 INSERT/UPDATE 里出现同名列(数据库直接报错), 且 getColumn 只能找到第一个,
+                //这里在解析期就拒绝
+                if (!columnNames.add(columnInfo.getColumnName().toLowerCase(Locale.ROOT))) {
+                    throw new IllegalArgumentException("Entity class " + entityClass.getName()
+                        + " declares duplicate column name: " + columnInfo.getColumnName());
+                }
                 columns.add(columnInfo);
 
                 if (columnInfo.isId()) {

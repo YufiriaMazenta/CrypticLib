@@ -150,6 +150,10 @@ public class Where<P> {
         if (conditions.isEmpty()) {
             return "";
         }
+        //悬空连接符会拼出 "WHERE col = ? AND " 这种非法 SQL, 在这里直接失败而不是留给数据库报语法错
+        if (conditions.get(conditions.size() - 1).isLogical) {
+            throw new IllegalStateException("Where clause must not end with a dangling AND/OR separator");
+        }
 
         StringBuilder sqlBuilder = new StringBuilder(" WHERE ");
         for (Condition condition : conditions) {
