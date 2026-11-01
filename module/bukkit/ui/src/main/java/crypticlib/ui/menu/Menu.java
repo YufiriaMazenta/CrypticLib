@@ -166,9 +166,11 @@ public class Menu implements InventoryHolder, DataHolder {
     public void beforeUpdateLayout() {}
 
     /**
-     * 刷新布局信息，会根据MenuDisplay解析布局，但不会更新页面图标，需手动调用updateInventoryIcons方法刷新
+     * 根据MenuDisplay刷新布局信息，并清除不再属于新布局的旧图标。
+     * 新布局的图标仍需调用{@link #updateMenuIcons()}绘制。
      */
     public void updateLayout() {
+        Set<Integer> previousIconSlots = new HashSet<>(slotMap.keySet());
         slotMap.clear();
         layoutSlotMap.clear();
         beforeUpdateLayout();
@@ -191,6 +193,15 @@ public class Menu implements InventoryHolder, DataHolder {
                 Icon icon = layout.layoutMap().get(key).get();
                 preprocessIconWhenUpdateLayout(slot, icon);
                 slotMap.put(slot, icon);
+            }
+        }
+        if (inventoryCache != null) {
+            //及时清除退出布局的旧图标,避免StoredMenu把展示物当作玩家存物返还。
+            //仅清理退出布局的图标槽位,保留其余槽位中玩家实际放入的物品。
+            for (Integer slot : previousIconSlots) {
+                if (!slotMap.containsKey(slot)) {
+                    inventoryCache.setItem(slot, new ItemStack(Material.AIR));
+                }
             }
         }
         onLayoutUpdated();

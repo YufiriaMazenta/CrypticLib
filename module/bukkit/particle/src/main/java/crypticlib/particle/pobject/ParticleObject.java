@@ -659,7 +659,8 @@ public abstract class ParticleObject {
      * @param data     特殊粒子属性
      */
     public void spawnParticle(Location location, Particle particle, int count, double offsetX, double offsetY, double offsetZ, double extra, Object data) {
-        Location showLocation = location;
+        // 在副本上施加增量, 避免修改调用方坐标或图形缓存。
+        Location showLocation = location.clone();
         // originLocation 为 null 时无法计算相对向量, 退化为不施加矩阵, 避免 NPE
         if (hasMatrix() && originLocation != null) {
             Vector vector = location.clone().subtract(originLocation).toVector();
@@ -681,7 +682,8 @@ public abstract class ParticleObject {
     }
 
     public void spawnColorParticle(Location location, int r, int g, int b) {
-        Location showLocation = location;
+        // 在副本上施加增量, 避免修改调用方坐标或图形缓存。
+        Location showLocation = location.clone();
         // originLocation 为 null 时无法计算相对向量, 退化为不施加矩阵, 避免 NPE
         if (hasMatrix() && originLocation != null) {
             Vector vector = location.clone().subtract(originLocation).toVector();
