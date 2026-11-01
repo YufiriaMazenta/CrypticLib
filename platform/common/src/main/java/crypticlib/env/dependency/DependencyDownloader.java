@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -24,6 +25,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -42,6 +44,12 @@ public class DependencyDownloader extends AbstractXmlParser {
      * 正在解析中的依赖(用于阻断 POM 依赖环: A 依赖 B、B 又依赖 A)
      */
     private static final Set<Dependency> resolvingInProgress = ConcurrentHashMap.newKeySet();
+
+    /**
+     * 匹配 POM 中的 {@code <packaging>pom</packaging>} 声明
+     */
+    private static final Pattern POM_PACKAGING_PATTERN =
+        Pattern.compile("<packaging>\\s*pom\\s*</packaging>", Pattern.CASE_INSENSITIVE);
 
     private final Set<Repository> repositories = new CopyOnWriteArraySet<>();
     private final Set<JarRelocation> relocation = new CopyOnWriteArraySet<>();
@@ -153,9 +161,11 @@ public class DependencyDownloader extends AbstractXmlParser {
         Set<Dependency> downloaded = ConcurrentHashMap.newKeySet();
         downloaded.add(dependency);
 
-        // 检查是否已下载且完整: 有 .sha1 就校验, 没有则视为完整(仓库可能不提供校验文件);
-        // jar 不存在视为纯 POM 依赖。不能要求 .sha1 必须存在, 否则每次启动都会重下整个 jar
-        if (isPresentAndVerified(pom, pom1) && jarValid(jar, jar1)) {
+        // 检查是否已下载且完整: 有 .sha1 就校验, 没有则视为完整(仓库可能不提供校验文件)。
+        // jar 缺失只有在 POM 声明 packaging=pom 时才算正常; 其它情况说明上次 jar 下载没有完成,
+        // 必须重新下载, 否则一次失败会被永久当成"纯 POM 依赖", 该依赖再也不会被加载
+        boolean jarReady = jar.exists() ? jarValid(jar, jar1) : declaresPomPackaging(pom);
+        if (isPresentAndVerified(pom, pom1) && jarReady) {
             if (pom.exists()) {
                 try (InputStream in = pom.toURI().toURL().openStream()) {
                     downloaded.addAll(loadDependencyFromInputStream(in));
@@ -397,6 +407,27 @@ public class DependencyDownloader extends AbstractXmlParser {
     private void createBaseDir() {
         if (baseDir != null) {
             baseDir.mkdirs();
+        }
+    }
+
+    /**
+     * 判断 POM 是否声明了 {@code <packaging>pom</packaging>}。
+     * <p>
+     * 这类依赖(BOM/父 POM)本来就没有 jar; 其它依赖若缺少 jar, 说明上次下载没有完成,
+     * 应按未完成处理并重新下载, 而不是当成纯 POM 依赖永久跳过。
+     *
+     * @param pom POM 文件
+     * @return 是否声明为 pom 打包; 文件不可读时返回 false(按需要 jar 处理, 宁可重下)
+     */
+    static boolean declaresPomPackaging(@NotNull File pom) {
+        if (!pom.isFile()) {
+            return false;
+        }
+        try {
+            String content = new String(Files.readAllBytes(pom.toPath()), StandardCharsets.UTF_8);
+            return POM_PACKAGING_PATTERN.matcher(content).find();
+        } catch (IOException | RuntimeException e) {
+            return false;
         }
     }
 
