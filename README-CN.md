@@ -165,7 +165,7 @@ cd CrypticLib
 
 ## 许可证
 
-本项目基于 [GNU 通用公共许可证 v3.0](LICENSE) 授权。
+本项目基于 [MIT 许可证](LICENSE) 授权。
 
 ## 链接
 
