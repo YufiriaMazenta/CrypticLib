@@ -11,7 +11,7 @@ public interface Multipage {
 
     Integer page();
 
-    void page(int page);
+    void setPage(int page);
 
     Integer maxPage();
 
