@@ -51,11 +51,11 @@ public class MenuLayout {
     }
 
     public Optional<IconCreator> getIcon(Character iconKey) {
-        return Optional.of(layoutMap.get(iconKey));
+        return Optional.ofNullable(layoutMap.get(iconKey));
     }
 
     public Optional<IconCreator> removeIcon(Character iconKey) {
-        return Optional.of(layoutMap.remove(iconKey));
+        return Optional.ofNullable(layoutMap.remove(iconKey));
     }
 
 }
