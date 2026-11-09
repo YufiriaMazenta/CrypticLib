@@ -35,6 +35,7 @@ public class Menu implements InventoryHolder, DataHolder {
     protected MenuDisplay display;
     protected final Map<Character, List<Integer>> layoutSlotMap;
     protected @Nullable Inventory inventoryCache;
+    protected @Nullable Menu parentMenu;
     protected DataHolder dataHolder = new SimpleDataHolder();
 
     public Menu(@NotNull Player player) {
@@ -431,6 +432,54 @@ public class Menu implements InventoryHolder, DataHolder {
         this.display = display;
         updateLayout();
         return this;
+    }
+
+    /**
+     * 获取此页面的双亲页面
+     * 如果此页面没有双亲页面，则返回null
+     */
+    @Nullable
+    public Menu parentMenu() {
+        return parentMenu;
+    }
+
+    /**
+     * 判断此页面是否存在双亲页面
+     */
+    public boolean hasParentMenu() {
+        return parentMenu != null;
+    }
+
+    /**
+     * 设置此页面的双亲页面
+     * @param parentMenu 双亲页面，传入null表示清除双亲页面
+     */
+    public Menu setParentMenu(@Nullable Menu parentMenu) {
+        this.parentMenu = parentMenu;
+        return this;
+    }
+
+    /**
+     * 打开双亲页面
+     */
+    public void openParentMenu() {
+        openParentMenu(result -> {});
+    }
+
+    /**
+     * 打开双亲页面
+     * @param callback 回调函数，传入被打开的双亲页面，如果当前无双亲页面，则为空
+     */
+    public void openParentMenu(Consumer<Optional<Menu>> callback) {
+        Menu parentMenu = parentMenu();
+        if (parentMenu == null) {
+            callback.accept(Optional.empty());
+            return;
+        }
+        CrypticLibBukkit.scheduler().sync(() -> {
+            parentMenu.openMenu();
+            callback.accept(Optional.of(parentMenu));
+        });
     }
 
     /**
