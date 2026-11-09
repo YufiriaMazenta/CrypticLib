@@ -471,12 +471,13 @@ public class Menu implements InventoryHolder, DataHolder {
      * @param callback 回调函数，传入被打开的双亲页面，如果当前无双亲页面，则为空
      */
     public void openParentMenu(Consumer<Optional<Menu>> callback) {
-        Menu parentMenu = parentMenu();
-        if (parentMenu == null) {
-            callback.accept(Optional.empty());
-            return;
-        }
+        //延迟到下个tick执行主要是防止一些时序问题导致的奇怪问题
         CrypticLibBukkit.scheduler().sync(() -> {
+            Menu parentMenu = parentMenu();
+            if (parentMenu == null) {
+                callback.accept(Optional.empty());
+                return;
+            }
             parentMenu.openMenu();
             callback.accept(Optional.of(parentMenu));
         });
