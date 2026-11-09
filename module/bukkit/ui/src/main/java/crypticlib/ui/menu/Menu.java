@@ -5,6 +5,7 @@ import crypticlib.data.DataHolder;
 import crypticlib.data.SimpleDataHolder;
 import crypticlib.chat.BukkitTextProcessor;
 import crypticlib.ui.display.Icon;
+import crypticlib.ui.display.IconCreator;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
 import crypticlib.ui.util.MenuHelper;
@@ -34,7 +35,7 @@ public class Menu implements InventoryHolder, DataHolder {
     protected MenuDisplay display;
     protected final Map<Character, List<Integer>> layoutSlotMap;
     protected @Nullable Inventory inventoryCache;
-    private DataHolder dataHolder = new SimpleDataHolder();
+    protected DataHolder dataHolder = new SimpleDataHolder();
 
     public Menu(@NotNull Player player) {
         this(player, new MenuDisplay());
@@ -181,7 +182,8 @@ public class Menu implements InventoryHolder, DataHolder {
             String line = layout.layout().get(x);
             for (int y = 0; y < Math.min(line.length(), 9); y++) {
                 char key = line.charAt(y);
-                if (!layout.layoutMap().containsKey(key)) {
+                Optional<IconCreator> iconCreatorOpt = layout.getIcon(key);
+                if (!iconCreatorOpt.isPresent()) {
                     continue;
                 }
                 int slot = x * 9 + y;
@@ -190,7 +192,7 @@ public class Menu implements InventoryHolder, DataHolder {
                 } else {
                     layoutSlotMap.get(key).add(slot);
                 }
-                Icon icon = layout.layoutMap().get(key).get();
+                Icon icon = iconCreatorOpt.orElseThrow(() -> new IllegalStateException("Icon creator of `" + key + "` is null")).createIcon();
                 preprocessIconWhenUpdateLayout(slot, icon);
                 slotMap.put(slot, icon);
             }

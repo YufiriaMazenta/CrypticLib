@@ -26,8 +26,8 @@ public class Icon implements DataHolder {
     /**
      * 用于某些情况下图标需要解析玩家变量时使用,一般为图标所属页面的玩家,默认在{@link crypticlib.ui.menu.Menu#preprocessIconWhenDraw}前赋值
      */
-    private @Nullable UUID parsePlayerId;
-    private DataHolder dataHolder = new SimpleDataHolder();
+    protected @Nullable UUID parsePlayerId;
+    protected DataHolder dataHolder = new SimpleDataHolder();
 
     public Icon(@NotNull IconDisplay iconDisplay) {
         this.display = iconDisplay.toItemStack();

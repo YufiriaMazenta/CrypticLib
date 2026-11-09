@@ -1,6 +1,7 @@
 package crypticlib.ui.menu;
 
 import crypticlib.ui.display.Icon;
+import crypticlib.ui.display.IconCreator;
 import crypticlib.ui.display.MenuDisplay;
 import crypticlib.ui.display.MenuLayout;
 import crypticlib.util.ItemHelper;
@@ -180,7 +181,7 @@ class MenuLayoutRefreshTest {
     }
 
     private static MenuLayout layout(String row) {
-        Map<Character, Supplier<Icon>> icons = new HashMap<>();
+        Map<Character, IconCreator> icons = new HashMap<>();
         icons.put('A', () -> new RawIcon(Material.DIAMOND));
         icons.put('B', () -> new RawIcon(Material.EMERALD));
         return new MenuLayout(Collections.singletonList(row), icons);
