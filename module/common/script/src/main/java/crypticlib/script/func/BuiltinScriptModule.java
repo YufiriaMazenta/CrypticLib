@@ -20,6 +20,9 @@ public enum BuiltinScriptModule implements ScriptModule {
     @Override
     public void register(ScriptFunctionRegistry registry) {
         registry.register("delay", this::delay);
+        registry.register("invoker_name", this::invokerName);
+        registry.register("invoker_id", this::invokerId);
+        registry.register("invoker_type", this::invokerType);
     }
 
     /**
@@ -36,6 +39,18 @@ public enum BuiltinScriptModule implements ScriptModule {
         }
         vm.pauseAndScheduleResume(ticks);
         return ScriptValue.nil();
+    }
+
+    private ScriptValue invokerName(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        return ScriptValue.of(ctx.invoker().name());
+    }
+
+    private ScriptValue invokerId(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        return ScriptValue.of(ctx.invoker().uniqueId().toString());
+    }
+
+    private ScriptValue invokerType(ScriptContext ctx, ScriptVM vm, ScriptValue... args) {
+        return ScriptValue.of(ctx.invoker().invokerType().name());
     }
 
 }
